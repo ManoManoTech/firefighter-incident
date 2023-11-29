@@ -1,8 +1,8 @@
 ---
 site_name: FireFighter Dev Docs
+repo_url: https://github.com/ManoManoTech/firefighter-oss
 ***REMOVED***
-***REMOVED***
-***REMOVED***
+edit_uri: https://github.com/ManoManoTech/firefighter-oss/edit/main/docs/
 dev_addr: "127.0.0.1:9000"
 theme:
   name: "material"
@@ -37,14 +37,7 @@ theme:
         icon: material/weather-sunny
         name: Switch to light mode
 extra:
-  social:
-    - icon: fontawesome/brands/slack
-***REMOVED***
   generator: false
-  analytics:
-    provider: plausible
-***REMOVED***
-***REMOVED***
 
 copyright: Copyright &copy; 2021-2023 Colibri SAS
 watch:
@@ -65,7 +58,6 @@ nav:
               - UI Guidelines: Contributing/ui.md
               - UX Guidelines: Contributing/ux.md
               - Docs Guidelines: Contributing/documentation.md
-***REMOVED***
   - Reference:
       - Django Apps:
           - api: reference/api.md
