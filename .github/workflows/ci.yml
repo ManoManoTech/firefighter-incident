@@ -1,0 +1,74 @@
+---
+on: [push]
+
+name: Python CI
+
+jobs:
+  Testing:
+    env:
+      PYTHONDEVMODE: 1
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11"]
+        os: ["ubuntu-latest"]
+    services:
+      # Label used to access the service container
+      postgres:
+        # Docker Hub image
+        image: postgres:13-alpine
+        # Provide the password for postgres
+        env:
+          POSTGRES_DB: firefighter_test
+          POSTGRES_USER: firefighter_test
+          POSTGRES_PASSWORD: firefighter_test
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        # Docker Hub image
+        image: redis:6-alpine
+        # Set health checks to wait until redis has started
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup PDM
+        uses: ./
+        id: setup-pdm
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: true
+          allow-python-prereleases: true
+
+      - name: Install dependencies
+        run: pdm install -v && pdm info
+
+      - name: Run Tests
+        run: |
+          cp .env.example .env
+          pdm run collectstatic
+          pdm run tests-cov
+
+      - name: Type check with mypy
+        run: |
+          pdm run lint-mypy
+
+      - name: Lint with ruff
+        run: |
+          pdm run lint-ruff --output-format=github --exit-non-zero-on-fix
+
+      - name: Build with pdm
+        run: |
+          pdm build
+          # Do not upload to PyPI, here we only want to check that the build works
+
