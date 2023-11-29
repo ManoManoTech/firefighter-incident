@@ -1,0 +1,80 @@
+{% load widget_tweaks %}
+
+<form method="get" class="w-64 flex-shrink-0 h-auto" id="main-filter"
+  hx-trigger="input from:[type=checkbox],input delay:300ms"
+  hx-boost="true"
+  hx-ext="debug"
+  hx-get="{{ request.path }}"
+  hx-target="#filtered-container"
+  hx-swap="outerHTML"
+  hx-push-url="true"
+  hx-indicator=".progress">
+  <div class="shadow overflow-hidden h-full">
+    <div class="px-4 py-5 bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-100 sm:p-6 flex flex-col gap-5 h-full">
+      {% for filter_field in filter_order %}
+        {% if filter_field in filter.form.fields %}
+          {% with field=filter.form|get_item:filter_field %}
+            {% if filter_field == "search" %}
+              {% render_field filter.form.search class="input-ff" placeholder="Search" %}
+            {% elif filter_field == "metrics_period" %}
+              {% comment %} FIXME Widget for created_at and metrics_period {% endcomment %}
+              <div class="col-span-1">
+                <div class="parent relative cursor-pointer mb-2 z-10" >
+                  <div class=" py-3 w-full flex items-center text-sm px-2 dark:bg-neutral-700 rounded-lg ">
+                    <label for="{{ filter.form.metrics_period.html_name }}" display="contents" class="ml-1 font-medium text-neutral-900 dark:text-white"> {{ filter.form.metrics_period.label }} </label>
+                  </div>
+                </div>
+                <div class="px-2">
+                  {% render_field filter.form.metrics_period class="input-ff" placeholder="e.g. 2022" %}
+                </div>
+                {%if filter.form.cleaned_data.metrics_period  %}
+                  {% with date_gte=filter.form.metrics_period.metrics_period.0 date_lte=filter.form.metrics_period.metrics_period.1%}
+                    {%if date_gte and date_lte %}
+                      <div class="mt-2">
+                        <P class="my-auto text-xs "><span class="text-sm">From:</span> {{date_gte|date:"Y/m/d H:i:s e"}}</p>
+                        <P class="my-auto text-xs"><span class="text-sm">To:</span> {{date_lte|date:"Y/m/d H:i:s e"}}</p>
+                        {%if date_str %}<p class="my-auto text-xs">({{ date_str }})</p>{% endif %}
+                      </div>
+                    {% endif %}
+                  {% endwith%}
+                {% endif %}
+              </div>
+            {% elif filter_field == "created_at" %}
+              <div class="col-span-1">
+                <div class="parent relative cursor-pointer mb-2 z-10" >
+                  <div class=" py-3 w-full flex items-center text-sm px-2 dark:bg-neutral-700 rounded-lg ">
+                    <label for="{{ filter.form.created_at.html_name }}" display="contents" class="ml-1 font-medium text-neutral-900 dark:text-white"> {{ filter.form.created_at.label }} </label>
+                  </div>
+                  {% include "layouts/partials/created_at_help.html" %}
+                </div>
+                <div class="px-2">
+                  {% render_field filter.form.created_at class="input-ff" placeholder="2021/Q4 - 2022/Q1" %}
+                </div>
+                {%if filter.form.cleaned_data.created_at  %}
+                  {% with date_gte=filter.form.cleaned_data.created_at.0 date_lte=filter.form.cleaned_data.created_at.1%}
+                    {%if date_gte and date_lte %}
+                      <div class="mt-2">
+                        <P class="my-auto text-xs "><span class="text-sm">From:</span> {{date_gte|date:"Y/m/d H:i:s e"}}</p>
+                        <P class="my-auto text-xs"><span class="text-sm">To:</span> {{date_lte|date:"Y/m/d H:i:s e"}}</p>
+                        {%if date_str %}<p class="my-auto text-xs">({{ date_str }})</p>{% endif %}
+                      </div>
+                    {% endif %}
+                  {% endwith%}
+                {% endif %}
+              </div>
+            {% else %}
+              {% include "./widgets/form_container.html" with filter_form=field%}
+            {% endif%}
+          {% endwith%}
+        {% endif %}
+      {% endfor%}
+
+      <div class=" flex justify-center items-center">
+        <div class="w-max m-auto">
+          <button type="submit" form="main-filter" method="get" class="btn btn-primary"> Update filters
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>

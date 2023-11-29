@@ -1,0 +1,124 @@
+{% extends 'layouts/view_filters.html' %}
+{% comment %} XXX Chart system needs to be refactored completely {% endcomment %}
+{% load static %}
+{% block head %}
+  <script src="https://unpkg.com/chart.js@3.7.1/dist/chart.min.js" integrity="sha384-7NrRHqlWUj2hJl3a/dZj/a1GxuQc56mJ3aYsEnydBYrY1jR+RSt6SBvK3sHfj+mJ" crossOrigin="anonymous"></script>
+  <script src="https://unpkg.com/chartjs-plugin-datalabels@2.0.0/dist/chartjs-plugin-datalabels.min.js" integrity="sha384-M00GJNq2IplZCB3+JOJEl2H0un45ODvqJSSnIc4DvG8gPn8RX5ToITFXcv3AvOx5" crossOrigin="anonymous"></script>
+  <script>
+    let donught_status_config = {};
+    let donught_priority_config = {};
+    let donught_domain_config = {};
+
+    window.onload = function () {
+      // Cleanup for HTMX reload
+      if (window.donught_status) {
+        window.donught_status.destroy();
+      }
+      if (window.donught_priority) {
+        window.donught_priority.destroy();
+      }
+      if (window.donught_domain) {
+        window.donught_domain.destroy();
+      }
+      // Dark theme
+      if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        Chart.overrides.doughnut.plugins.legend.labels.color= 'white';
+      } else {
+        Chart.overrides.doughnut.plugins.legend.labels.color= 'black';
+      }
+
+      Chart.overrides.doughnut.aspectRatio= 4 / 3;
+      Chart.overrides.doughnut.layout= {
+        padding: 12
+      };
+      Chart.overrides.doughnut.cutout= "32%";
+      Chart.overrides.doughnut.responsive= true;
+
+      Chart.overrides.doughnut.plugins.tooltip= {
+        callbacks: {
+          label: function(context) {
+            let total = context.chart._metasets[0].total;
+            let value = context.raw;
+            let currentLabel = context.label;
+            let percentage = parseFloat((value / total * 100).toFixed(1));
+            return `${currentLabel}: ${value} (${ percentage }%)`;
+          },
+        }
+      },
+      Chart.overrides.doughnut.plugins.datalabels= {
+        backgroundColor: function (context) {
+          return context.dataset.backgroundColor;
+        },
+        borderColor: 'white',
+        borderRadius: 25,
+        borderWidth: 2,
+        color: 'white',
+        display: 'auto',
+        font: {
+          weight: 'bold'
+        },
+        padding: 6,
+        formatter: function (value, context) {
+          let total = context.chart._metasets[0].total;
+          let currentLabel = context.chart.data.labels[context.dataIndex];
+          let percentage = parseFloat((value / total * 100).toFixed(1));
+          return currentLabel + ' (' + percentage + '%)';
+        },
+      };
+
+      let donught_status_ctx = document
+        .getElementById("donught-status-chart")
+        .getContext("2d");
+      if (window.donught_status) {
+        window.donught_status.destroy();
+      }
+      window.donught_status = new Chart(
+        donught_status_ctx,
+        donught_status_config
+      );
+
+      let donught_domain_ctx = document
+        .getElementById("donught-domain-chart")
+        .getContext("2d");
+      window.donught_domain = new Chart(
+        donught_domain_ctx,
+        donught_domain_config
+      );
+      let donught_priority_ctx = document
+        .getElementById("donught-priority-chart")
+        .getContext("2d");
+      window.donught_priority = new Chart(
+        donught_priority_ctx,
+        donught_priority_config
+      );
+    };
+  </script>
+{% endblock %}
+
+{% block page_title %}
+  Incident statistics <span class="text-neutral-600 dark:text-neutral-400 text-sm">beta</span>
+  <div role="status" class="progress htmx-indicator inline">
+    <svg class="inline mr-2 w-6 h-6 text-gray-200 animate-spin dark:text-gray-600 fill-primary" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"/>
+      <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"/>
+    </svg>
+    <span class="sr-only">Loading...</span>
+  </div>
+{% endblock%}
+
+{% block page_actions %}
+  {{ block.super }}
+  {% component "export_button" base_url="api:incidents-list" %}
+  <button method="get" type="submit"
+    form="main-filter" formaction="{% url "incidents:incident-list" %}"
+    class="ml-4 btn btn-primary gap-2"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+      <path fill-rule="evenodd" d="M6 4.75A.75.75 0 016.75 4h10.5a.75.75 0 010 1.5H6.75A.75.75 0 016 4.75zM6 10a.75.75 0 01.75-.75h10.5a.75.75 0 010 1.5H6.75A.75.75 0 016 10zm0 5.25a.75.75 0 01.75-.75h10.5a.75.75 0 010 1.5H6.75a.75.75 0 01-.75-.75zM1.99 4.75a1 1 0 011-1H3a1 1 0 011 1v.01a1 1 0 01-1 1h-.01a1 1 0 01-1-1v-.01zM1.99 15.25a1 1 0 011-1H3a1 1 0 011 1v.01a1 1 0 01-1 1h-.01a1 1 0 01-1-1v-.01zM1.99 10a1 1 0 011-1H3a1 1 0 011 1v.01a1 1 0 01-1 1h-.01a1 1 0 01-1-1V10z" clip-rule="evenodd" />
+    </svg>
+
+    View list
+  </button>
+{% endblock%}
+
+{% block page_content %}
+  {% include "pages/incident_statistics_partial.html" %}
+{% endblock %}

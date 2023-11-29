@@ -1,0 +1,30 @@
+<div class="shadow overflow-hidden border-b-disabled border-neutral-200 dark:border-neutral-600 rounded-lg">
+  <table class="table-auto border-collapse w-full divide-y-disabled divide-neutral-200 dark:divide-neutral-600" aria-labelledby={{ labelledby }}>
+    <thead class="bg-neutral-200 dark:bg-neutral-700">
+      <tr class="text-xs font-medium uppercase text-neutral-800 dark:text-neutral-50 tracking-wider">
+        {% for header_cell in table.cols %}
+          <th scope="col" class="px-2 py-3">{{ header_cell }}</th>
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody
+      class=" bg-white dark:bg-neutral-800 divide-y-disabled divide-neutral-200 text-neutral-700 dark:text-neutral-100 dark:divide-neutral-600">
+      {% for body_row in table.body.objects %}
+        <tr class="text-center even:bg-neutral-50 odd:bg-white dark:even:bg-neutral-900 dark:odd:bg-neutral-800 ">
+          {% for body_col in table.body.format %}
+            <td>{{body_row|get_item:body_col.key|apply_filter:body_col|safe}}{{body_col|get_item:"suffix"|default_if_none:""}}</td>
+          {% endfor %}
+        </tr>
+      {% endfor %}
+    </tbody>
+    {% if table.footer %}
+      <tfoot class="bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-50 ">
+        <tr class="text-center">
+          {% for body_col in table.body.format %}
+            <td>{{table.footer|get_item:body_col.key|apply_filter:body_col}}{{body_col|get_item:"suffix"|default_if_none:""}}</td>
+          {% endfor %}
+        </tr>
+      </tfoot>
+    {% endif %}
+  </table>
+</div>

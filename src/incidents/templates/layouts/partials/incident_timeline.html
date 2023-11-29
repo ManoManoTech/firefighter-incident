@@ -1,0 +1,117 @@
+{% if incident_updates %}
+  <div class="flow-root pt-4">
+    <ul class="-mb-8">
+      {% for incident_update in incident_updates %}
+        <li>
+          <div class="relative pb-8">
+            {% if not forloop.last %}
+              <span class="absolute top-5 left-5 -ml-px h-full w-0.5 bg-neutral-200 dark:bg-neutral-600" aria-hidden="true"></span>
+            {% endif %}
+            <div class="relative flex items-start space-x-3">
+              <div class="relative">
+                <div class="h-8 w-8 bg-neutral-100 dark:bg-neutral-50 rounded-full ring-8 ring-white dark:ring-neutral-700 flex items-center justify-center">
+                    <!-- Heroicon name: solid/tag -->
+                  <svg
+                    class="h-5 w-5 text-neutral-500 dark:text-neutral-800"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M17.707 9.293a1 1 0 010 1.414l-7 7a1 1 0 01-1.414 0l-7-7A.997.997 0 012 10V5a3 3 0 013-3h5c.256 0 .512.098.707.293l7 7zM5 6a1 1 0 100-2 1 1 0 000 2z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
+                </div>
+              </div>
+              <div class="min-w-0 flex-1 mt-1">
+                <div>
+                  <div class="mb-1 text-sm text-neutral-500 dark:text-neutral-300 font-small ">
+                    <span>{{ incident_update.event_ts |date:'SHORT_DATETIME_FORMAT'}}</span>
+                    {% if incident_update.created_by%}
+                      <span>|</span>
+                      <span class="ff-tooltip">
+                        <span>{{ incident_update.created_by }}</span>
+                        {% include "./user_tooltip.html" with user=incident_update.created_by only %}
+                      </span>
+                    {% endif %}
+                  </div>
+                </div>
+                <div class="text-neutral-600 dark:text-neutral-100">
+                  {% if incident_update.event_type or incident_update.event_type|length > 0 %}
+                    <p class="mt-0.5">
+                      Key event: {{ incident_update.event_type|title }}
+                    </p>
+                  {% endif %}
+                  {% if incident_update.message or incident_update.message|length > 0 %}
+                    <div
+                      class="pb-2"
+                    >
+                      <div class="text-sm flex flex-col border-b border-neutral-200 py-1 p-4 text-left sm:border-0 sm:border-l-4 break-words">
+                        {{ incident_update.message | urlize | linebreaksbr}}
+                      </div>
+                    </div>
+                  {% endif %}
+                  {% if incident_update.status %}
+                    <p class="mt-0.5">
+                      Status update
+                    </p>
+                  {% endif %}
+                  {% if incident_update.status.label or incident_update.status.label|length > 0 %}
+                    <p class="pl-2 mt-0.5 text-sm text-neutral-500 dark:text-neutral-300">
+                      Status changed to:
+                      {% include "./status_pill.html" with status=incident_update.status IncidentStatus=IncidentStatus only %}
+                    </p>
+                  {% endif %}
+                  {% if incident_update.severity %}
+                    <p class="mt-0.5">
+                      Severity update
+                    </p>
+                    <p class="pl-2 mt-0.5 text-sm text-neutral-500 dark:text-neutral-300">
+                      Severity changed to: {{ incident_update.severity }}
+                    </p>
+                  {% elif incident_update.priority %}
+                    <p class="mt-0.5">
+                      Priority update
+                    </p>
+                    <p class="pl-2 mt-0.5 text-sm text-neutral-500 dark:text-neutral-300">
+                      Priority changed to: {{ incident_update.priority }}
+                    </p>
+                  {% endif %}
+                  {% if incident_update.component %}
+                    <p class="mt-0.5">
+                      Component update
+                    </p>
+                  {% endif %}
+                  {% if incident_update.component %}
+                    <p class="pl-2 mt-0.5 text-sm text-neutral-500 dark:text-neutral-300">
+                      Component impacted changed to:
+                      {{ incident_update.component}}
+                    </p>
+                  {% endif %}
+                  {% if incident_update.communication_lead or incident_update.commander %}
+                    <p class="mt-0.5">
+                      Role update
+                    </p>
+                    {% if incident_update.communication_lead %}
+                      <p class="pl-2 mt-0.5 text-sm text-neutral-500 dark:text-neutral-300">
+                        Communication Lead role assigned to: {{ incident_update.communication_lead }}
+                      </p>
+                    {% endif %}
+                    {% if incident_update.commander %}
+                      <p class="pl-2 mt-0.5 text-sm text-neutral-500 dark:text-neutral-300">
+                        Commander role assigned to: {{ incident_update.commander }}
+                      </p>
+                    {% endif %}
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+{% endif %}

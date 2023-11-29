@@ -1,0 +1,69 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+@layer components {
+  .input-ff-lg{
+      @apply block p-4 w-full text-neutral-900 bg-neutral-50 rounded-lg border border-neutral-300 sm:text-base focus:ring-indigo-500 focus:border-indigo-500 dark:bg-neutral-700 dark:border-neutral-600 dark:placeholder-neutral-400 dark:text-white dark:focus:ring-indigo-500 dark:focus:border-indigo-500;
+  }  .input-ff{
+      @apply bg-neutral-50 border border-neutral-300 text-neutral-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5 dark:bg-transparent dark:bg-neutral-700 dark:border-neutral-600 dark:placeholder-neutral-400 dark:text-white dark:focus:ring-indigo-500 dark:focus:border-indigo-500;
+  }    .label-ff{
+      @apply block mb-2 text-sm font-medium text-neutral-900 dark:text-neutral-200;
+  }
+
+  .select-ff {
+  @apply  bg-neutral-50 border border-neutral-300 text-neutral-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-neutral-700 dark:border-neutral-600 dark:placeholder-neutral-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500
+  }
+  /* dark:bg-neutral-700 */
+
+  .button {
+    @apply text-white bg-indigo-700 hover:bg-indigo-800 focus:ring-4 focus:outline-none focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary dark:hover:bg-indigo-700 dark:focus:ring-indigo-800;
+  }
+
+  .checkbox-style {
+    @apply w-4 h-4 text-primary bg-neutral-100 rounded border-neutral-300 focus:ring-indigo-500 dark:focus:ring-primary dark:ring-offset-neutral-800 focus:ring-2 dark:bg-neutral-700 dark:border-neutral-600;
+  }
+
+  table.rounded-md thead th:first-child {
+    @apply rounded-tl-md;
+
+  }
+  table.rounded-md thead th:last-child {
+    @apply rounded-tr-md;
+  }
+
+  .btn {
+    /* The button would "pop" on load, so we remove the fancier animation */
+    @apply animate-none;
+  }
+
+  .table-td {
+    @apply px-6 py-4 whitespace-nowrap text-sm;
+  }
+
+  .mermaid > svg {
+    @apply max-w-full mx-auto;
+  }
+}
+
+
+img[alt]:after {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: transparent;
+    font-weight: 300;
+    line-height: 2;
+    text-align: center;
+    content: attr(alt);
+  }
+  /* [data-theme="darkff"] .bg-base {
+    background-color: black;
+  }
+  [data-theme="light"] .bg-base {
+    background-color: rgb(255, 255, 255);
+  } */

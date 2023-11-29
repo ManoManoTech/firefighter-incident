@@ -1,0 +1,156 @@
+[
+  {
+    "model": "incidents.group",
+    "pk": "13a1b0b2-9ff9-4c2b-b665-f497102459d7",
+    "fields": {
+      "name": "Other",
+      "description": "",
+      "order": 100000,
+      "created_at": "2020-04-14T16:12:42Z",
+      "updated_at": "2021-08-02T09:57:09.306Z"
+    }
+  },
+  {
+    "model": "incidents.group",
+    "pk": "2cde4cb1-b14a-45ca-81a7-09d944d0f244",
+    "fields": {
+      "name": "Pro",
+      "description": "",
+      "order": 1000,
+      "created_at": "2021-08-02T09:48:44.025Z",
+      "updated_at": "2021-08-02T09:48:44.025Z"
+    }
+  },
+  {
+    "model": "incidents.group",
+    "pk": "3347e0d0-69e0-430a-ac17-940b61fd10e4",
+    "fields": {
+      "name": "Security",
+      "description": "",
+      "order": 1500,
+      "created_at": "2021-08-04T18:16:54.247Z",
+      "updated_at": "2021-08-04T18:16:54.247Z"
+    }
+  },
+  {
+    "model": "incidents.group",
+    "pk": "353115cd-2400-4a0f-9898-69752dd4b844",
+    "fields": {
+      "name": "Sellers",
+      "description": "",
+      "order": 102,
+      "created_at": "2020-04-14T16:12:00Z",
+      "updated_at": "2021-08-13T14:00:16.320Z"
+    }
+  },
+  {
+    "model": "incidents.group",
+    "pk": "80e46a9f-938c-4c6c-9623-2ced52e12529",
+    "fields": {
+      "name": "Mobile",
+      "description": "",
+      "order": 1300,
+      "created_at": "2021-08-13T10:35:21.912Z",
+      "updated_at": "2021-08-13T10:35:21.912Z"
+    }
+  },
+  {
+    "model": "incidents.group",
+    "pk": "99c96cfe-2b7c-4bb9-a750-e57fdebc79b6",
+    "fields": {
+      "name": "Buyers",
+      "description": "",
+      "order": 101,
+      "created_at": "2020-04-14T16:12:00Z",
+      "updated_at": "2021-08-13T14:00:16.313Z"
+    }
+  },
+  {
+    "model": "incidents.group",
+    "pk": "9fcb4bbc-f16d-4ca3-81a2-40d390669b88",
+    "fields": {
+      "name": "Care",
+      "description": "",
+      "order": 1600,
+      "created_at": "2021-08-13T12:04:50.661Z",
+      "updated_at": "2021-08-13T12:04:50.661Z"
+    }
+  },
+  {
+    "model": "incidents.group",
+    "pk": "a9f75904-41e4-44e5-93c7-4be64507cb68",
+    "fields": {
+      "name": "Order",
+      "description": "",
+      "order": 1400,
+      "created_at": "2021-08-13T11:56:51.278Z",
+      "updated_at": "2021-08-13T11:56:51.279Z"
+    }
+  },
+  {
+    "model": "incidents.group",
+    "pk": "c9618c26-4d0b-404c-8502-5b82b94ee0a6",
+    "fields": {
+      "name": "Traffic Acquisition",
+      "description": "",
+      "order": 1200,
+      "created_at": "2021-08-02T14:07:50.591Z",
+      "updated_at": "2021-08-02T14:07:50.591Z"
+    }
+  },
+  {
+    "model": "incidents.group",
+    "pk": "ccebacfe-7992-42e9-b6d6-6afcff7f40fc",
+    "fields": {
+      "name": "Finance Operations",
+      "description": "",
+      "order": 1100,
+      "created_at": "2021-08-02T10:12:50.114Z",
+      "updated_at": "2021-08-02T10:12:50.114Z"
+    }
+  },
+  {
+    "model": "incidents.group",
+    "pk": "d123aa86-64b5-4212-ba5b-193d619e2934",
+    "fields": {
+      "name": "Product Catalog",
+      "description": "",
+      "order": 900,
+      "created_at": "2021-08-02T09:24:13.061Z",
+      "updated_at": "2021-08-13T09:29:17.208Z"
+    }
+  },
+  {
+    "model": "incidents.group",
+    "pk": "d1d0fa81-4bce-4cf3-99d1-ef2ec611d65e",
+    "fields": {
+      "name": "Tech Platform",
+      "description": "",
+      "order": 1,
+      "created_at": "2021-08-02T09:17:49.230Z",
+      "updated_at": "2021-08-13T14:00:16.304Z"
+    }
+  },
+  {
+    "model": "incidents.group",
+    "pk": "db1d11b4-ed6d-415d-9d31-8e3ea07c3465",
+    "fields": {
+      "name": "Visitors",
+      "description": "",
+      "order": 100,
+      "created_at": "2021-08-02T14:44:31.886Z",
+      "updated_at": "2021-08-02T14:44:31.886Z"
+    }
+  },
+  {
+    "model": "incidents.group",
+    "pk": "e41036d0-08ab-4458-aa12-0098c68a55ec",
+    "fields": {
+      "name": "Sysadmin",
+      "description": "",
+      "order": 10000,
+      "created_at": "2021-04-09T09:19:45Z",
+      "updated_at": "2021-08-13T13:59:28.121Z"
+    }
+  }
+]

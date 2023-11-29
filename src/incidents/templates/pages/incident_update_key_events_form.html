@@ -1,0 +1,16 @@
+{% extends '../layouts/index.html' %}
+
+{% block content %}
+  <div class="mx-auto shadow-md border-b border-neutral-300 dark:border-neutral-700 flex px-4">
+    <div class="mx-auto border-b border-neutral-300 dark:border-neutral-700 flex px-4">
+      <div class="py-4 flex justify-start items-center">
+        <h1 class="text-3xl font-bold text-neutral-900 dark:text-neutral-100 ">
+          Update Key Events
+        </h1>
+      </div>
+    </div>
+  </div>
+  <div class="px-4">
+    {% include "../layouts/partials/incident_update_key_events_view.html" %}
+  </div>
+{% endblock %}

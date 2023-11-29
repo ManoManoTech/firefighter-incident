@@ -1,0 +1,121 @@
+
+
+
+
+<div id="filtered-container" class="grid lg:grid-cols-2 grid-cols-1 gap-4 md:gap-6 sm:px-6 lg:px-8 py-6 mx-auto auto-rows-min">
+  <div>
+    <h2  id="table-by-priority" class="text-xl font-bold text-neutral-900 dark:text-neutral-100 mb-4">
+      Declared incidents by priority
+    </h2>
+    {% include "../layouts/partials/table.html" with table=incident_by_priority_table labelledby="table-by-priority" only %}
+  </div>
+
+  <div>
+    <h2  id="table-age-by-priority" class="text-xl font-bold text-neutral-900 dark:text-neutral-100 mb-4">
+      Active (unclosed) incident age by priority
+    </h2>
+    {% include "../layouts/partials/table.html" with table=incident_age_by_priority_table labelledby="table-age-by-priority" only %}
+  </div>
+
+  <div>
+    <h2 id="table-ttf-distribution" class="text-xl font-bold text-neutral-900 dark:text-neutral-100 mb-4">
+      Time to Fix (TTF) distribution
+    </h2>
+    {% include "../layouts/partials/table.html" with table=incident_ttr_by_priority_table labelledby="table-ttf-distribution" only %}
+
+  </div>
+
+  <div>
+    <h2 id="table-ttf-distribution-percentage" class="text-xl font-bold text-neutral-900 dark:text-neutral-100 mb-4">
+      Time to Fix (TTF) distribution percentage
+    </h2>
+    {% include "../layouts/partials/table.html" with table=incident_ttr_by_priority_percentage_table labelledby="table-ttf-distribution-percentage" only %}
+  </div>
+
+  <div>
+    <h2 class="text-xl font-bold text-neutral-900 dark:text-neutral-100 mb-4">
+      Incidents by status
+    </h2>
+    <div class="chart-container">
+      <canvas id="donught-status-chart"></canvas>
+    </div>
+    <script>
+
+      donught_status_config = {
+        type: 'doughnut',
+        plugins: [ChartDataLabels],
+        data: {
+          datasets: [{
+            data: {{ incident_by_status_chart.values | safe }},
+            label: 'Statuses',
+            hoverOffset: 4,
+            backgroundColor: ['#991B1B', '#FCD34D', '#D97706', '#065F46', '#3730A3', '#059669'],
+          }],
+          labels: {{ incident_by_status_chart.keys | safe }}
+        }
+      };
+      if (window.onload && window.donught_status) {
+        window.onload();
+      }
+    </script>
+  </div>
+
+  <div>
+    <h2 class="text-xl font-bold text-neutral-900 dark:text-neutral-100 mb-4">
+      Incidents by group
+    </h2>
+    <div class="chart-container">
+      <canvas id="donught-domain-chart"></canvas>
+    </div>
+    <script>
+
+      donught_domain_config = {
+        type: 'doughnut',
+        plugins: [ChartDataLabels, Chart.registry.getPlugin('tooltip')],
+        data: {
+          datasets: [{
+            data: {{incident_by_domain_chart.values | safe }},
+            label: {{ incident_by_domain_chart.keys | safe}},
+            hoverOffset: 4,
+            backgroundColor: ['#6D28D9', '#991B1B', '#B45309', '#FBBF24', '#1E40AF', '#F472B6', '#6EE7B7'],
+            datalabels: {
+              anchor: 'middle'
+            }
+          }],
+          labels: {{ incident_by_domain_chart.keys | safe}}
+        },
+      };
+    </script>
+  </div>
+
+  <div>
+    <h2 class="text-xl font-bold text-neutral-900 dark:text-neutral-100 mb-4">
+      Incidents by priority
+    </h2>
+    <div class="chart-container">
+      <canvas id="donught-priority-chart"></canvas>
+    </div>
+    <script>
+      donught_priority_config = {
+        type: 'doughnut',
+        plugins: [ChartDataLabels],
+        data: {
+          datasets: [{
+            data: {{ incident_by_priority_chart.values | safe }},
+            label: 'Domain',
+            hoverOffset: 4,
+            backgroundColor: ['#991B1B', '#B45309', '#FBBF24', '#1E40AF', '#F472B6', '#6EE7B7'],
+            datalabels: {
+              anchor: 'middle'
+            }
+          }],
+          labels: {{ incident_by_priority_chart.keys | safe }}
+        },
+      };
+      if (window.onload && window.donught_priority) {
+        window.onload();
+      }
+
+    </script>
+  </div>
+</div>

@@ -1,0 +1,88 @@
+{% extends '../layouts/index.html' %}
+
+{% block content %}
+  <main class="py-10">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:max-w-4xl lg:px-8">
+      <div class="bg-white dark:bg-neutral-800 shadow overflow-hidden sm:rounded-lg p-6">
+        <div class="flex flex-row flex-grow justify-between">
+          <div class="mb-7">
+            <h1 class="text-2xl font-bold text-neutral-900 dark:text-neutral-100">
+              {{ incident_role_type.emoji }} {{ incident_role_type.name }}
+            </h1>
+            {% if incident_role_type.aka %}
+              <p class="text-neutral-500 dark:text-neutral-400">
+                Also known as: {{ incident_role_type.aka }}
+              </p>
+            {% endif %}
+
+          </div>
+
+          {% if perms.incidents.change_incidentroletype %}
+            <div>
+              <a href="{{ admin_edit_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary gap-2 ">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" />
+                  <path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd" />
+                </svg>
+                <span class="whitespace-nowrap font-semibold">Edit</span>
+              </a>
+            </div>
+          {% endif %}
+        </div>
+
+        {% if incident_role_type.required %}
+          <div class="alert alert-info  shadow-lg bg-primary text-base-content mb-3">
+            <div>
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current flex-shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+              <span>    This role is required, and will be automatically assigned to the incident creator.</span>
+            </div>
+          </div>
+        {% endif %}
+
+        {% if incident_role_type.summary %}
+          <div class="mb-7">
+            <h2 class="text-lg font-semibold text-neutral-900 dark:text-neutral-100">Summary</h2>
+            <p class="text-neutral-900 dark:text-neutral-100 mt-2">{{ incident_role_type.summary|linebreaksbr }}</p>
+          </div>
+        {% endif %}
+
+        {% if incident_role_type.description %}
+          <div class="mb-7">
+            <h2 class="text-lg font-semibold text-neutral-900 dark:text-neutral-100">Description</h2>
+            <p class="text-neutral-900 dark:text-neutral-100 mt-2">{{ incident_role_type.description|linebreaksbr }}</p>
+          </div>
+        {% endif %}
+
+        {% if incident_role_type.responsibilities %}
+          <div class="mb-7">
+            <h2 class="text-lg font-semibold text-neutral-900 dark:text-neutral-100">Responsibilities</h2>
+            <p class="text-neutral-900 dark:text-neutral-100 mt-2">{{ incident_role_type.responsibilities|linebreaksbr }}</p>
+          </div>
+        {% endif %}
+
+        {% if incident_role_type.requirements %}
+          <div class="mb-7">
+            <h2 class="text-lg font-semibold text-neutral-900 dark:text-neutral-100">Requirements</h2>
+            <p class="text-neutral-900 dark:text-neutral-100 mt-2">{{ incident_role_type.requirements|linebreaksbr }}</p>
+          </div>
+        {% endif %}
+
+        {% if incident_role_type.best_practices %}
+          <div class="mb-7">
+            <h2 class="text-lg font-semibold text-neutral-900 dark:text-neutral-100">Best Practices</h2>
+            <p class="text-neutral-900 dark:text-neutral-100 mt-2">{{ incident_role_type.best_practices|linebreaksbr }}</p>
+          </div>
+        {% endif %}
+
+
+        <div class="flex justify-end">
+          <a href="{% url 'incidents:docs-role-type-list' %}"
+             class="text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-200"
+          >
+            &larr; Back to All Roles
+          </a>
+        </div>
+      </div>
+    </div>
+  </main>
+{% endblock %}

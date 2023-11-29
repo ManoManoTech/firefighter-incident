@@ -1,0 +1,84 @@
+{% extends '../layouts/index.html' %}
+
+{% block content %}
+  <div class="mx-auto shadow-md border-b border-neutral-300 dark:border-neutral-700 flex px-4">
+
+    <div class="py-4 flex justify-start items-center">
+      <h1 class="text-3xl font-bold text-neutral-900 dark:text-neutral-100 ">
+        {% block page_title %}
+          On-call overview
+        {% endblock%}
+      </h1>
+    </div>
+    <div class="py-4 ml-auto flex items-end justify-end ">
+      {% block page_actions %}
+        {% if user.is_authenticated %}
+          <a class="btn btn-primary gap-2" href="{% url 'pagerduty:oncall_trigger' %}" hx-get="{% url 'pagerduty:oncall_trigger' %}" hx-target="body" hx-swap="beforeend" ><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+            <path d="M4.214 3.227a.75.75 0 00-1.156-.956 8.97 8.97 0 00-1.856 3.826.75.75 0 001.466.316 7.47 7.47 0 011.546-3.186zM16.942 2.271a.75.75 0 00-1.157.956 7.47 7.47 0 011.547 3.186.75.75 0 001.466-.316 8.971 8.971 0 00-1.856-3.826z" />
+            <path fill-rule="evenodd" d="M10 2a6 6 0 00-6 6c0 1.887-.454 3.665-1.257 5.234a.75.75 0 00.515 1.076 32.94 32.94 0 003.256.508 3.5 3.5 0 006.972 0 32.933 32.933 0 003.256-.508.75.75 0 00.515-1.076A11.448 11.448 0 0116 8a6 6 0 00-6-6zm0 14.5a2 2 0 01-1.95-1.557 33.54 33.54 0 003.9 0A2 2 0 0110 16.5z" clip-rule="evenodd" />
+          </svg>
+            Trigger on-call</a>
+        {% endif %}
+      {% endblock%}
+    </div>
+  </div>
+  {% if messages %}
+    <div class="p-4 pb-0">
+      {% component "messages" messages=messages %}
+    </div>
+  {% endif %}
+  <div class="py-10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="lg:text-center">
+        <p class="text-lg text-base-content lg:mx-auto">
+          This page shows the current on-call schedule per service.<br/>
+          You can trigger the on-call in any FireFighter incident channel, with <code>/incident oncall</code>.
+
+          <br/><em class="text-sm">Last updated: {{ last_updated|date:"SHORT_DATETIME_FORMAT" }}</em>
+        </p>
+      </div>
+
+      <div class="mt-10">
+        {% for escalation_policy in oncalls %}
+          <h2 class="m-8 text-2xl font-bold text-neutral-700 dark:text-neutral-100">
+            {{ escalation_policy.0.name }} <span class="font-normal text-base ">({{ escalation_policy.1 | length }})</span>
+          </h2>
+          <div class="flex flex-wrap mx-8">
+            <ul class="grid grid-cols-1 gap-6 sm:grid-cols-2 w-full">
+              {% for oncall in escalation_policy.1 %}
+                <li>
+                  <div class="flex items-center space-x-4 lg:space-x-6">
+                    <div class="inline-flex h-16 w-16 rounded-full lg:h-20 lg:w-20">
+                      {% component "avatar" user=oncall.pagerduty_user.user %}
+                    </div>
+                    <div class="space-y-1 text-lg font-medium leading-6">
+                      <h3>
+                        <a href="{{ oncall.pagerduty_user.user.get_absolute_url }}">{{ oncall.pagerduty_user.user.full_name }}</a>
+                        <span class="ml-1 text-sm text-base-content text-opacity-80">Level {{ oncall.escalation_level }}</span>
+                      </h3>
+                      {% if oncall.end %}
+                        <p class="text-base-content text-opacity-80 text-base">
+                          <span class="ff-tooltip">{{ oncall.end|timeuntil }} left
+                            <span class="tooltip_content bg-black dark:text-neutral-200 text-sm text-white rounded w-min p-2" style="width: fit-content">Until <time datetime="{{ oncall.end|date:"c"}}">{{ oncall.end|date:"SHORT_DATETIME_FORMAT" }}</time>
+                            </span>
+                          </span>
+                        </p>
+                      {% endif %}
+                    </div>
+                  </div>
+                </li>
+              {% endfor %}
+            </ul>
+          </div>
+        {% empty %}
+          <div class="my-20 lg:text-center">
+            <h1 class="text-2xl font-bold text-neutral-700 dark:text-neutral-100">
+              No on-calls found ⁉️
+            </h1>
+            <p class="italic mt-2">Please report it to this issue.</p>
+            <div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+{% endblock%}

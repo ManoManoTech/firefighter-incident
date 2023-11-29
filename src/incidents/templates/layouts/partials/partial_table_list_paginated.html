@@ -1,0 +1,108 @@
+
+{% load querystring from django_tables2 %}
+<div id="filtered-container" class="flex-grow min-w-0 pb-6">
+  {% if filter.form.errors %}
+    <div class="rounded-md bg-base-warning p-4 flex-grow min-w-0 m-10">
+      <div class="flex">
+        <div class="flex-shrink-0">
+          <!-- Heroicon name: solid/exclamation -->
+          <svg class="h-5 w-5 text-warning-content" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+          </svg>
+        </div>
+        <div class="ml-3">
+          <h3 class="text-sm font-medium text-warning-content">Bad request</h3>
+          <div class="mt-2 text-sm text-warning-content list-disc">
+            <ul class="list-disc">
+              {% for field in filter.form %}
+                {% if field.errors %}
+                  <li>{{ field.label }} field <code class="font-mono text-xs">(`{{ field.html_name}}`)</code>
+                    <ul class="list-disc list-inside">
+                      {% for error in field.errors %}
+                        <li>{{ error }}</li>
+                      {% endfor %}
+                    </ul>
+                  </li>
+                {% endif%}
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  {%elif page_obj.paginator.count is 0 %}
+    <div class=" px-4 py-16 sm:px-6 sm:py-24 md:grid md:place-items-center lg:px-8 mx-auto">
+      <div class="max-w-max mx-auto">
+        <main class="sm:flex">
+          <p class="text-4xl font-extrabold sm:text-5xl">🧐</p>
+          <div class="sm:ml-6">
+            <div class="sm:border-l sm:border-neutral-200 sm:pl-6">
+              <h1 class="text-4xl font-extrabold tracking-tight sm:text-5xl">No results</h1>
+              <p class="mt-1 text-base-content text-opacity-80">Try broadening your filtering.</p>
+            </div>
+
+          </div>
+        </main>
+      </div>
+    </div>
+  {% else %}
+
+    <div id="table-pagination" class="px-4 py-3 md:py-6 flex items-center justify-between">
+      <div class="flex-1 flex justify-between sm:hidden dark:text-neutral-100 text-neutral-700 pt-3 text-sm font-medium">
+        {% if page_obj.has_previous %}
+          <a href="?page={{ page_obj.previous_page_number }}" class="relative inline-flex items-center px-4 py-2 border border-neutral-300 dark:bg-neutral-800 dark:text-neutral-100 dark:hover:bg-neutral-700 dark:border-neutral-600  rounded-md bg-white hover:bg-neutral-50">
+            Previous
+          </a>
+        {% endif %}
+        {% if page_obj.has_next %}
+          <a href="?page={{ page_obj.next_page_number }}" class="ml-3 relative inline-flex items-center px-4 py-2 border border-neutral-300 dark:bg-neutral-800 dark:text-neutral-100 dark:hover:bg-neutral-700 dark:border-neutral-600 rounded-md bg-white hover:bg-neutral-50">
+            Next
+          </a>
+        {% endif %}
+      </div>
+      <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+        <div>
+          <p class="text-sm text-neutral-700 dark:text-neutral-100 font-medium">
+            Page
+            <span>{{ page_obj.number }}</span>
+            of
+            <span>{{ page_obj.paginator.num_pages }}</span>
+            for
+            <span>{{ page_obj.paginator.count }}</span>
+            results
+          </p>
+        </div>
+        <div>
+          <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination" role="navigation">
+            <a {% if page_obj.has_previous %}href="{% querystring "page"=page_obj.previous_page_number %}"{% else %}disabled{% endif %} class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-neutral-300 bg-white dark:bg-neutral-900 dark:border-neutral-700 dark:hover:bg-neutral-700 dark:text-neutral-200 text-sm font-medium text-neutral-500 hover:bg-neutral-50" aria-label="Goto previous page">
+              <span class="sr-only">Previous</span>
+              <!-- Heroicon name: solid/chevron-left -->
+              <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+              </svg>
+            </a>
+
+            {% for page_nb in page_range|default_if_none:page_obj.paginator.get_elided_page_range   %}
+              <a href="{% querystring "page"=page_nb %}" {%if page_obj.number == page_nb%}aria-current="Goto page" {% endif %}
+                class="dark:bg-neutral-900 dark:hover:bg-neutral-700 bg-white border-neutral-300 text-neutral-500 hover:bg-neutral-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium {%if page_obj.number == page_nb%}z-10 bg-indigo-50 dark:border-indigo-500 dark:text-indigo-300 border-indigo-500 text-primary {% else %}dark:border-neutral-700 dark:text-neutral-200 {% endif %}">
+                {{ page_nb }}
+              </a>
+            {% endfor %}
+            <a {% if page_obj.has_next %}href="{% querystring "page"=page_obj.next_page_number %}"{% else %}disabled{% endif %} class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-neutral-300 dark:bg-neutral-900 dark:border-neutral-700 dark:hover:bg-neutral-700 dark:text-neutral-200 bg-white text-sm font-medium text-neutral-500 hover:bg-neutral-50" aria-label="Goto next page">
+              <span class="sr-only">Next</span>
+              <!-- Heroicon name: solid/chevron-right -->
+              <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+              </svg>
+            </a>
+          </nav>
+        </div>
+      </div>
+    </div>
+
+    <div id="incidents-list "class="py-2 mx-4 overflow-x-auto">
+      {% load render_table from django_tables2 %}
+      {% render_table table %}
+    </div>
+  {% endif %}
+</div>

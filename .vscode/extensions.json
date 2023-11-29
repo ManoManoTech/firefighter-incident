@@ -1,0 +1,18 @@
+{
+  "recommendations": [
+    "batisteo.vscode-django",
+    "bradlc.vscode-tailwindcss",
+    "charliermarsh.ruff",
+    "davidanson.vscode-markdownlint",
+    "mikestead.dotenv",
+    "ms-python.black-formatter",
+    "ms-python.python",
+    "ms-python.vscode-pylance",
+    "tamasfe.even-better-toml",
+    "wholroyd.jinja"
+  ],
+  "unwantedRecommendations": [
+    "ms-python.flake8",
+    "ms-python.isort",
+  ]
+}

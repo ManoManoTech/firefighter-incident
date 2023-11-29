@@ -1,0 +1,4 @@
+<input
+  x-ref="all" @change="updateSelectAllStateGroup();"{% if group %}group="{{ group.order }}"{% endif %}
+  type="{{ widget.type }}" name="{{ widget.name }}"{% if widget.value != None %} value="{{ widget.value|stringformat:'s' }}"{% endif %}{% include "django/forms/widgets/attrs.html" %}>
+<label{% if widget.attrs.id %} for="{{ widget.attrs.id }}"{% endif %} class="text-sm ml-1 cursor-pointer"> {{ widget.label }}</label>

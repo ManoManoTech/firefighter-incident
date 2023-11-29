@@ -1,0 +1,80 @@
+[
+    {
+        "model": "incidents.milestonetype",
+        "pk": 1,
+        "fields": {
+            "name": "Started",
+            "event_type": "started",
+            "summary": "*Started*, when the first issues arose.",
+            "user_editable": true,
+            "required": true,
+            "asked_for": true,
+            "description": null
+        }
+    },
+    {
+        "model": "incidents.milestonetype",
+        "pk": 2,
+        "fields": {
+            "name": "Detected",
+            "event_type": "detected",
+            "summary": "*Detected*, when the monitor triggered or someone noticed.",
+            "user_editable": true,
+            "required": true,
+            "asked_for": true,
+            "description": null
+        }
+    },
+    {
+        "model": "incidents.milestonetype",
+        "pk": 3,
+        "fields": {
+            "name": "Declared",
+            "event_type": "declared",
+            "summary": "*Declared*, when the incident has been acknowledged and opened.",
+            "user_editable": false,
+            "required": true,
+            "asked_for": true,
+            "description": null
+        }
+    },
+    {
+        "model": "incidents.milestonetype",
+        "pk": 4,
+        "fields": {
+            "name": "Recovered",
+            "event_type": "recovered",
+            "summary": "*Recovered*, when the impact is no longer apparent.",
+            "user_editable": true,
+            "required": true,
+            "asked_for": true,
+            "description": null
+        }
+    },
+    {
+        "model": "incidents.milestonetype",
+        "pk": 5,
+        "fields": {
+            "name": "Resolved",
+            "event_type": "resolved",
+            "summary": "*Resolved*, when everything is back to a steady state.",
+            "user_editable": false,
+            "required": false,
+            "asked_for": false,
+            "description": null
+        }
+    },
+    {
+        "model": "incidents.milestonetype",
+        "pk": 6,
+        "fields": {
+            "name": "Mitigated",
+            "event_type": "mitigated",
+            "summary": "*Mitigated*, when actions (fixes, rollbacks...) have been applied.",
+            "user_editable": false,
+            "required": false,
+            "asked_for": false,
+            "description": null
+        }
+    }
+]

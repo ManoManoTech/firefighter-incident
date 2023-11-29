@@ -1,0 +1,14 @@
+{% load static %}
+{% if incident.priority.value == 1 %}
+  <img class="object-fill w-full" src="{% static "img/p1.png" %}" alt="{{ incident.priority.name }}">
+{% elif incident.priority.value == 2 %}
+  <img class="object-fill w-full" src="{% static "img/p2.png" %}" alt="{{ incident.priority.name }}">
+{% elif incident.priority.value == 3 %}
+  <img class="object-fill w-full" src="{% static "img/p3.png" %}" alt="{{ incident.priority.name }}">
+{% elif incident.priority.value == 4 %}
+  <img class="object-fill w-full" src="{% static "img/p4.png" %}" alt="{{ incident.priority.name }}">
+{% elif incident.priority.value == 5 %}
+  <img class="object-fill w-full" src="{% static "img/p5.png" %}" alt="{{ incident.priority.name }}">
+{% elif incident.priority.value == 20 %}
+  <img class="object-fill w-full" src="{% static "img/gameday.png" %}" alt="{{ incident.priority.name }}">
+{% endif %}

@@ -1,0 +1,34 @@
+{% load static %}
+
+{% load simple_menu %}
+{% generate_menu %}
+
+<footer class="bg-base-200 text-base-content shadow-inner" aria-labelledby="footer-heading">
+  <h2 id="footer-heading" class="sr-only">Footer</h2>
+  <div class="mx-auto max-w-7xl py-12 px-4 sm:px-6 lg:py-16 lg:px-8">
+    <div class="md:grid md:grid-cols-3 md:gap-8">
+
+      <div class="mt-8 md:mt-0 text-base-content">
+        <p class="font-medium">{{APP_DISPLAY_NAME}}{% if FF_VERSION %} <span class="text-base-content text-opacity-70 text-sm font-normal"> {{ FF_VERSION }} </span>{% endif %}</p>
+        <p class="mt-2 text-sm text-base-content text-opacity-80">Report, manage, escalate!</p>
+      </div>
+      <div class="grid grid-cols-3 gap-8 md:col-span-2">
+        {% for item in menus.footer %}
+          <div  class="mt-12 md:mt-0">
+            <h3 class="text-base font-medium">{{item.title}}</h3>
+            <ul role="list" class="mt-2 space-y-3 text-base-content text-opacity-70 text-sm">
+              {% for sub in item.children %}
+                <li>
+                  <a href="{{sub.url}}">{{sub.title}}</a>
+                </li>
+              {% endfor %}
+            </ul>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="mt-8 border-t border-neutral-700 pt-8 md:flex md:items-center md:justify-between">
+      <p class="mt-8 text-base-content text-sm text-opacity-70 md:order-1 md:mt-0">&copy; 2021 - 2023 Colibri SAS - Made with ❤️ by the Pulse Team.</p>
+    </div>
+  </div>
+</footer>

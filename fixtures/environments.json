@@ -1,0 +1,41 @@
+[
+  {
+    "model": "incidents.environment",
+    "pk": "1b960430-995b-47e1-beab-23dbe3dbccbf",
+    "fields": {
+      "value": "INT",
+      "name": "Int",
+      "description": "Integration environment",
+      "order": 3,
+      "default": false,
+      "created_at": "2021-06-08T20:22:42.620Z",
+      "updated_at": "2021-07-22T06:22:54.433Z"
+    }
+  },
+  {
+    "model": "incidents.environment",
+    "pk": "41e06f3b-4b42-4617-af9a-fa91e9af13c9",
+    "fields": {
+      "value": "STG",
+      "name": "Stg",
+      "description": "Staging environment",
+      "order": 1,
+      "default": false,
+      "created_at": "2021-02-19T16:52:37.057Z",
+      "updated_at": "2021-07-22T06:22:54.434Z"
+    }
+  },
+  {
+    "model": "incidents.environment",
+    "pk": "e5c46eb0-5620-4a30-81c6-4a647c189ff2",
+    "fields": {
+      "value": "PRD",
+      "name": "Prod",
+      "description": "Production environment",
+      "order": 0,
+      "default": true,
+      "created_at": "2021-02-19T16:52:37.057Z",
+      "updated_at": "2021-07-22T06:22:54.435Z"
+    }
+  }
+]
