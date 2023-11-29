@@ -165,62 +165,6 @@ class SlackMessageRaidComment(SlackMessageSurface):
         ]
 
 
-class SlackMessageRaidShowHelp(SlackMessageSurface):
-***REMOVED***
-
-    id = "raid_show_help"
-
-    def get_blocks(self) -> list[Block]:
-        return [
-            SectionBlock(text=":sos: *Help:*"),
-            DividerBlock(),
-            SectionBlock(
-                fields=[
-                    MarkdownTextObject(text="- `/raid create`: open an incident"),
-                    MarkdownTextObject(text="- `/raid help`: show the help"),
-                ]
-            ),
-        ]
-
-
-class SlackMessageRaidSingleMessageAction(SlackMessageSurface):
-***REMOVED***
-
-    id = "raid_single_message_actions"
-
-    def __init__(self, message: str) -> None:
-        self.message = message
-        super().__init__()
-
-    def get_blocks(self) -> list[Block]:
-        return [
-            SectionBlock(text=MarkdownTextObject(text=self.message)),
-            ActionsBlock(
-                block_id="actions_block",
-                elements=[
-                    ButtonElement(text="Validate", style="primary", value="approve"),
-                    ButtonElement(text="Reject", style="danger", value="reject"),
-                ],
-            ),
-        ]
-
-
-class SlackMessageRaidSingleMessage(SlackMessageSurface):
-***REMOVED***
-
-    id = "raid_single_message"
-    strategy = SlackMessageStrategy.APPEND
-
-    def __init__(self, message: str) -> None:
-        self.message = message
-        super().__init__()
-
-    def get_blocks(self) -> list[Block]:
-        return [
-            SectionBlock(text=MarkdownTextObject(text=self.message)),
-        ]
-
-
 class SlackMessageRaidDailyQualifierPublic(SlackMessageSurface):
 ***REMOVED***
 
