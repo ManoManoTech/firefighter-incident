@@ -1,0 +1,18 @@
+<span class="inline-flex font-semibold rounded-full
+  {% if size != "big" %}
+    px-2 text-xs leading-5
+  {% else %}
+    px-4 text-2xl py-2
+  {% endif %}
+  {% if status.value == IncidentStatus.CLOSED %}
+    bg-neutral-300 text-neutral-600
+  {% elif status.value == IncidentStatus.FIXED %}
+    bg-success text-success-content
+  {% elif status.value == IncidentStatus.POST_MORTEM %}
+    bg-indigo-100 text-indigo-800
+  {% else %}
+    bg-error text-error-content
+  {% endif %}
+">
+  {{ status.label }}
+</span>

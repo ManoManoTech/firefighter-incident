@@ -1,0 +1,110 @@
+{% extends '../layouts/index.html' %}
+
+{% block content %}
+  <main class="py-10">
+    <!-- Page header -->
+    <div class="mx-auto max-w-3xl px-4 sm:px-6 md:flex md:items-center md:justify-between md:space-x-5 lg:max-w-7xl lg:px-8">
+      <div class="flex items-center space-x-5">
+        <div class="flex-shrink-0">
+          <div class="relative h-16">
+            <span class="inline-flex w-16 h-16 rounded-full" >
+              {% component "avatar" user=target_user  %}
+            </span>
+          </div>
+        </div>
+        <div>
+          <h1 class="text-2xl font-bold text-neutral">{{ target_user.full_name }}</h1>
+        </div>
+      </div>
+
+      <div class="justify-stretch mt-6 flex flex-col-reverse space-y-4 space-y-reverse sm:flex-row-reverse sm:justify-end sm:space-y-0 sm:space-x-3 sm:space-x-reverse md:mt-0 md:flex-row md:space-x-3">
+        {% if perms.incidents.change_users %}
+        <a href="{{ admin_edit_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary gap-2 ">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" />
+            <path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd" />
+          </svg>
+          <span class="whitespace-nowrap font-semibold">Edit</span>
+        </a>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="mx-auto mt-8 grid max-w-3xl grid-cols-1 gap-6 sm:px-6 lg:max-w-7xl lg:grid-flow-col-dense lg:grid-cols-3">
+      <div class="space-y-6 lg:col-span-2 lg:col-start-1">
+        <div class="stats shadow w-full bg-base-200 rounded-lg">
+          <div class="stat">
+            <div class="stat-title">Incidents created</div>
+            <div class="stat-value"><a class="link" href="{%url "incidents:incident-list" %}?created_by={{ target_user.id }}">{{ target_user.incidents_created_by.count }}</a></div>
+          </div>
+        </div>
+
+        {% component_block "card" card_title="Responders groups" id="user-responder-groups" %}
+          {% fill "card_title" %}
+            <h2 id="{{ id }}-title" class="text-lg leading-6 font-medium text-neutral-900 dark:text-neutral-50">{{ card_title }}</h2>
+            {% if user == target_user %}<p class="mt-1 max-w-2xl text-sm text-content">You are a part of the following groups and conversations.</p>
+            {% else %} <p class="mt-1 max-w-2xl text-sm text-content">This user is a part of the following groups and conversations.</p>
+            {% endif %}
+          {% endfill %}
+          {% fill "card_content" %}
+            <ul role="list" class="mt-3 grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
+              {% for usergroup in target_user.usergroup_set.all %}
+                <li class="col-span-1 flex rounded-md shadow-sm">
+                  <div class="flex flex-1 items-center justify-between truncate rounded-md border border-neutral-200 dark:border-neutral-700">
+                    <div class="flex-1 truncate px-4 py-2 text-sm">
+                      <a href="{{ usergroup.link }}" class="font-medium text-neutral-900 hover:text-neutral-600 dark:text-neutral-100 hover:dark:text-neutral-300">@{{ usergroup.handle }}</a>
+                      <p class="text-neutral-500 dark:text-neutral-400">{{ usergroup.members.count }} Members</p>
+                    </div>
+                  </div>
+                </li>
+              {% endfor %}
+              {% for conversation in target_user.conversation_set.all %}
+                <li class="col-span-1 flex rounded-md shadow-sm">
+                  <div class="flex flex-1 items-center justify-between truncate rounded-md border border-neutral-200 dark:border-neutral-700">
+                    <div class="flex-1 truncate px-4 py-2 text-sm">
+                      <a href="{{ conversation.link }}" class="font-medium text-neutral-900 hover:text-neutral-600 dark:text-neutral-100 hover:dark:text-neutral-300">#{{ conversation.name }}</a>
+                      <p class="text-neutral-500 dark:text-neutral-400">{{ conversation.members.count }} Members</p>
+                    </div>
+                  </div>
+                </li>
+              {% endfor %}
+            </ul>
+          {% endfill %}
+        {% endcomponent_block%}
+
+
+
+
+      </div>
+      <div class="lg:col-span-1 lg:col-start-3">
+        {% component_block "card" card_title="Contact and accounts" id="user-contact-and-accounts" %}
+          {% fill "card_content" %}
+            <dl class="grid grid-cols-1 gap-x-4 gap-y-8 ">
+              <div class="sm:col-span-1">
+                <dt class="text-sm font-medium text-opacity-95">Email address</dt>
+                <dd class="mt-1 text-sm text-opacity-70"><a href="mailto:{{ target_user.email }}" class="truncate link">{{ target_user.email }}</a></dd>
+              </div>
+              <div class="sm:col-span-1">
+                <dt class="text-sm font-medium text-opacity-95">Slack</dt>
+                {% if target_user.slack_user.link %}
+                  <dd class="mt-1 text-sm text-opacity-70"><a href="{{ target_user.slack_user.link }}" class="link">@{{ target_user.slack_user.username }}</a></dd>
+                {% else %}
+                  <dd class="mt-1 text-sm text-opacity-70">Ø</dd>
+                {% endif%}
+              </div>
+              <div class="sm:col-span-1">
+                <dt class="text-sm font-medium text-opacity-95">Pagerduty</dt>
+                {% if target_user.pagerduty_user.pagerduty_url %}
+                  <dd class="mt-1 text-sm text-opacity-70"><a href="{{ target_user.pagerduty_user.pagerduty_url }}" class="link">{{ target_user.pagerduty_user.name }}</a></dd>
+                {% else %}
+                  <dd class="mt-1 text-sm text-opacity-70">Ø</dd>
+                {% endif %}
+              </div>
+            </dl>
+          {% endfill %}
+        {% endcomponent_block%}
+
+      </div>
+    </div>
+  </main>
+{% endblock%}

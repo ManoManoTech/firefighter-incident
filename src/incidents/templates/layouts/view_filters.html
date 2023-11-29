@@ -1,0 +1,30 @@
+{% extends 'layouts/index.html' %}
+
+{% block content %}
+  {% load widget_tweaks %}
+  {% block page_main_action_hidden %}
+    {% comment %} Hidden button to act as default button to filter. Selected because first in DOM {% endcomment %}
+    <button type="submit" form="main-filter" method="get" hidden="true"
+      formaction="{{ request.path }}" class="hidden" aria-hidden="true" tabindex="-1"></button>
+  {% endblock%}
+  <div class="mx-auto shadow-md border-b border-neutral-300 dark:border-neutral-700 flex px-4">
+    <div class="py-4 flex justify-start items-center">
+      <h1 class="text-3xl font-bold text-neutral-900 dark:text-neutral-100 ">
+        {% block page_title %}
+        {% endblock%}
+      </h1>
+    </div>
+    <div class="py-4 ml-auto flex items-end justify-end ">
+      {% block page_actions %}
+      {% endblock %}
+    </div>
+  </div>
+  <div class="w-full flex">
+    {% if filter %}
+      {% include "incidents/filter.html"%}
+    {% endif%}
+
+    {% block page_content %}
+    {% endblock%}
+  </div>
+{% endblock %}

@@ -1,0 +1,46 @@
+[
+    {
+        "model": "incidents.impacttype",
+        "pk": 1,
+        "fields": {
+            "emoji": "💰",
+            "name": "Business Impact",
+            "help_text": "Payment, order funnel, etc.",
+            "value": "business_impact",
+            "order": 10
+        }
+    },
+    {
+        "model": "incidents.impacttype",
+        "pk": 2,
+        "fields": {
+            "emoji": "📦",
+            "name": "Sellers Impact",
+            "help_text": "Toolbox, ingestion, etc.",
+            "value": "sellers_impact",
+            "order": 10
+        }
+    },
+    {
+        "model": "incidents.impacttype",
+        "pk": 3,
+        "fields": {
+            "emoji": "👥",
+            "name": "Customers Impact",
+            "help_text": "Search, login, order tracking, etc.",
+            "value": "customers_impact",
+            "order": 10
+        }
+    },
+    {
+        "model": "incidents.impacttype",
+        "pk": 4,
+        "fields": {
+            "emoji": "🧑‍💼",
+            "name": "Employees Impact",
+            "help_text": "Internal tools, Gitlab, etc.",
+            "value": "employees_impact",
+            "order": 10
+        }
+    }
+]

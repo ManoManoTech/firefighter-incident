@@ -1,0 +1,44 @@
+{% extends "admin/base_site.html" %}
+{% load i18n l10n admin_urls static %}
+
+{% comment %} TODO Proper form and HTML. {% endcomment %}
+
+{% block extrahead %}
+  {{ block.super }}
+  {{ media }}
+  <script src="{% static 'admin/js/cancel.js' %}" async></script>
+{% endblock %}
+
+{% block bodyclass %}{{ block.super }} app-{{ opts.app_label }} model-{{ opts.model_name }} send-message-conversation send-message-selected-conversation{% endblock %}
+
+{% block breadcrumbs %}
+  <div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">{% translate 'Home' %}</a>
+    &rsaquo; <a href="{% url 'admin:app_list' app_label=opts.app_label %}">{{ opts.app_config.verbose_name }}</a>
+    &rsaquo; <a href="{% url opts|admin_urlname:'changelist' %}">{{ opts.verbose_name_plural|capfirst }}</a>
+    &rsaquo; {% translate 'Send messages on conversations' %}
+  </div>
+{% endblock %}
+
+{% block content %}
+  <h2>Targeted conversations</h2>
+  {% for deletable_object in deletable_objects %}
+    <ul>{{ deletable_object|unordered_list }}</ul>
+  {% endfor %}
+  <form method="post">{% csrf_token %}
+    <div>
+      {% for obj in queryset %}
+        <input type="hidden" name="{{ action_checkbox_name }}" value="{{ obj.pk|unlocalize }}">
+      {% endfor %}
+      <input type="hidden" name="action" value="send_message">
+      <input type="hidden" name="post" value="yes">
+      <div style="display: flex; flex-direction:column;">
+        <textarea class="w-full" type="text" rows="6" name="text" placeholder="Slack markdown"></textarea>
+        <textarea class="w-full" type="text" rows="20" name="blocks" placeholder="Slack blocks"></textarea>
+        <p>Slack Blocks are a list of Slack Blocks, not a dict with the "blocks" key. You can create complex messages with the <a href="https://app.slack.com/block-kit-builder/">Slack Block Kit Builder</a>.</p>
+      </div>
+      <input type="submit" value="Send message(s)">
+      <a href="#" class="button cancel-link">{% translate "Cancel, take me back" %}</a>
+    </div>
+  </form>
+{% endblock %}

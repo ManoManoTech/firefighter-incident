@@ -1,0 +1,86 @@
+[
+    {
+        "model": "incidents.metrictype",
+        "pk": 1,
+        "fields": {
+            "name": "Time To Detect",
+            "code": "TTD",
+            "description": "The time it took before the problem was detected, from when the problem started.",
+            "milestone_lhs": 2,
+            "milestone_rhs": 1,
+            "type": "time_to_detect"
+        }
+    },
+    {
+        "model": "incidents.metrictype",
+        "pk": 2,
+        "fields": {
+            "name": "Time To Acknowledge",
+            "code": "TTA",
+            "description": "The time it took before the incident was declared, from when the problem started.",
+            "milestone_lhs": 3,
+            "milestone_rhs": 1,
+            "type": "time_to_internal_response"
+        }
+    },
+    {
+        "model": "incidents.metrictype",
+        "pk": 3,
+        "fields": {
+            "name": "Time To Repair",
+            "code": "TTRep",
+            "description": "The time it took to act (rollback, fix...), from when the incident was declared.",
+            "milestone_lhs": 6,
+            "milestone_rhs": 3,
+            "type": "time_to_repair"
+        }
+    },
+    {
+        "model": "incidents.metrictype",
+        "pk": 4,
+        "fields": {
+            "name": "Time To Fix",
+            "code": "TTF",
+            "description": "The time it took for our teams to put services back in an healthy state, from when the incident was declared.",
+            "milestone_lhs": 4,
+            "milestone_rhs": 3,
+            "type": "time_to_fix"
+        }
+    },
+    {
+        "model": "incidents.metrictype",
+        "pk": 5,
+        "fields": {
+            "name": "Time To Recovery",
+            "code": "TTRec",
+            "description": "The time it took for our teams to put services back in an healthy state, from when the problem started.",
+            "milestone_lhs": 4,
+            "milestone_rhs": 1,
+            "type": "time_to_recovery"
+        }
+    },
+    {
+        "model": "incidents.metrictype",
+        "pk": 6,
+        "fields": {
+            "name": "Time To Respond",
+            "code": "TTResp",
+            "description": "The time it took for our teams to put services back in an healthy state, from when the problem was detected.",
+            "milestone_lhs": 4,
+            "milestone_rhs": 2,
+            "type": "time_to_respond"
+        }
+    },
+    {
+        "model": "incidents.metrictype",
+        "pk": 7,
+        "fields": {
+            "name": "Time To Resolve",
+            "code": "TTReso",
+            "description": "The time it took before the incident was resolved, from when it started.",
+            "milestone_lhs": 5,
+            "milestone_rhs": 1,
+            "type": "time_to_resolve"
+        }
+    }
+]

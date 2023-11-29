@@ -1,0 +1,11 @@
+{% if user.avatar %}
+  <span class="rounded-full block overflow-hidden z-[1]">
+    <img src="{{ user.avatar }}" alt="{{ user.full_name }}'s avatar" height="{{ size_px }}" width="{{ size_px }}" onerror="this.style='display: none;'">
+  </span>
+{% endif %}
+{% comment %} Always display the fallback, as we don't control external CDN expiration {% endcomment %}
+<span class="inline-block overflow-hidden rounded-full bg-neutral-500 absolute w-[inherit] h-[inherit]">
+  <svg class="text-neutral-300 m-auto rounded-full" fill="currentColor" viewBox="0 0 24 24" style="width: calc(100% - 1px); height: calc(100% - 1px);" >
+    <path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" />
+  </svg>
+</span>

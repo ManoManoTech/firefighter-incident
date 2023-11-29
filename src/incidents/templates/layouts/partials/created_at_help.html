@@ -1,0 +1,58 @@
+
+{% component_block "modal" autoplay="true" %}
+  {% fill "modal_header" %}
+    Time Range syntax
+  {% endfill %}
+
+  {% fill "modal_enabler" %}
+    <div display="contents" class="absolute right-0 top-0 bottom-0 items-center flex pr-2 " >
+
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 my-auto text-neutral-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+
+    </div>
+  {% endfill %}
+  {% fill "modal_content" %}
+    <div class="prose dark:prose-invert prose-h2:text-lg max-w-none">
+      <p>You can filter the by the incident's creation date, by using time frames, inspired by the <a href="https://docs.datadoghq.com/dashboards/guide/custom_time_frames/">Datadog syntax</a> </p>
+      <p>You can either put a single date or time frame (<code>2020</code>) or a range of dates or time frames, separated by a dash (<code>2020-01-01 - 2020-01-31</code>, <code>Q1 - now</code>...).</p>
+      <p>Always make sure the returned date is correct. Be careful with CET/CEST!</p>
+      <h2>FireFighter calendar specifics</h2>
+      <ul>
+        <li><code>YYYY</code> for calendar year YYYY</li>
+        <li><code>IYYYY</code> for ISO year YYYY</li>
+        <li><code>YYYY/QX</code> for quarter X of year YYYY</li>
+        <li><code>YYYY/WXX</code> for week XX of year YYYY</li>
+      </ul>
+      <p>There are relative shortcuts</p>
+      <ul>
+        <li><code>current_quarter</code>, <code>previous_quarter</code></li>
+        <li> <code>current_week</code>, <code>previous_week</code></li>
+      </ul>
+      <h2>Human-readable date with dateparser</h2>
+      <p>Almost any date/datetime format can be parsed. However, it can have unexpected results! Try to keep a <code>YYYY/MM/DD</code> or ISO format if possible.</p>
+      <ul>
+        <li>Generic parsing of relative dates<ul>
+          <li><code>2 weeks ago</code>, <code>3 months, 1 week and 1 day ago</code>, <code>yesterday</code>.</li>
+        </ul>
+        </li>
+        <li>Generic parsing of dates with time zones abbreviations or UTC offsets<ul>
+          <li><code>August 14, 2021 EST</code>, <code>July 4, 2021 CEST</code>, <code>21 July 2021 10:15 pm +0500</code>.</li>
+        </ul>
+        </li>
+        <li>ISO 8601</li>
+        <li>Timestamps</li>
+      </ul>
+      <h2>Examples of ranges</h2>
+      <ul>
+        <li><code>1577883600 - 1578009540</code></li>
+        <li><code>6:00 am - 1:00 pm</code></li>
+        <li><code>today</code></li>
+        <li><code>last year</code></li>
+        <li><code>last month</code></li>
+        <li><code>this week</code></li>
+      </ul>
+    </div>
+  {% endfill %}
+{% endcomponent_block %}

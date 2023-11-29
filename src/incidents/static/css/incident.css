@@ -1,0 +1,171 @@
+.container.page h1 {
+  margin: 0.8em 0 0.6em 0;
+}
+
+.container.page h2 {
+  margin: 0.6em 0 0.4em 0;
+}
+
+.ff-tooltip {
+  position: relative;
+}
+
+/* Generic ff-tooltip */
+.ff-tooltip .tooltip_content {
+  visibility: hidden;
+  position: absolute;
+  z-index: 11;
+  transition: 0.25s all ease;
+  transition-delay: 0.25s;
+  opacity: 0;
+}
+
+.ff-tooltip:hover .tooltip_content {
+  visibility: visible;
+  transition: 0.25s all ease;
+  transition-delay: 0.15s;
+  opacity: 1;
+}
+
+/* Specific tooltips */
+.ff-tooltip .usertooltip_content {
+  /* bottom: 175%; */
+  margin-left: -5em;
+}
+
+.ff-tooltip .incident_time_tooltip {
+  bottom: 105%;
+}
+
+/* FILTER */
+
+.parent .hidden-child {
+  visibility: hidden;
+}
+
+.parent:hover .hidden-child {
+  visibility: visible;
+}
+
+[x-cloak] {
+  display: none !important;
+}
+
+/* TST HTMX */
+/***** MODAL DIALOG ****/
+#modal {
+  /* Underlay covers entire screen. */
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+
+  /* Flexbox centers the .modal-content vertically and horizontally */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  /* Animate when opening */
+  animation-name: fadeIn;
+  animation-duration: 150ms;
+  animation-timing-function: ease;
+}
+
+#modal > .modal-underlay {
+  /* underlay takes up the entire viewport. This is only
+      required if you want to click to dismiss the popup */
+  position: absolute;
+  z-index: -1;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+#modal > .modal-content {
+  /* Position visible dialog near the top of the window */
+  margin-top: 10vh;
+
+  /* Sizing for visible dialog */
+  width: 80%;
+  max-width: 600px;
+
+  /* Display properties for visible dialog*/
+  border: solid 1px #999;
+  border-radius: 8px;
+  box-shadow: 0 0 20px 0 rgba(0, 0, 0, 0.3);
+  background-color: white;
+  padding: 20px;
+
+  /* Animate when opening */
+  animation-name: zoomIn;
+  animation-duration: 150ms;
+  animation-timing-function: ease;
+}
+
+#modal.closing {
+  /* Animate when closing */
+  animation-name: fadeOut;
+  animation-duration: 150ms;
+  animation-timing-function: ease;
+}
+
+#modal.closing > .modal-content {
+  /* Aniate when closing */
+  animation-name: zoomOut;
+  animation-duration: 150ms;
+  animation-timing-function: ease;
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes zoomIn {
+  0% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes zoomOut {
+  0% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(0.9);
+  }
+}
+
+/* HTMX progress */
+.htmx-indicator {
+  opacity: 0;
+  transition: opacity 500ms ease-in;
+}
+
+.htmx-request .htmx-indicator {
+  opacity: 1;
+}
+
+.htmx-request.htmx-indicator {
+  opacity: 1;
+}

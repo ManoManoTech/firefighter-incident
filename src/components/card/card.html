@@ -1,0 +1,17 @@
+
+<section id="{{ id }}" aria-labelledby="{{ id }}-title">
+  <div class="bg-base-200 shadow sm:rounded-lg">
+    {% if card_title %}
+      <div class="px-4 py-5 sm:px-6">
+        {% slot "card_title" %}
+          <h2 id="{{ id }}-title" class="text-lg leading-6 font-medium text-neutral-900 dark:text-neutral-50">{{ card_title }}</h2>
+          {% if card_subtitle %}<p class="mt-1 max-w-2xl text-sm text-neutral-500">{{ card_subtitle }}</p>{% endif %}
+        {% endslot%}
+      </div>
+    {% endif %}
+    <div class="{% if card_title %}border-t border-neutral-200 dark:border-neutral-600 {% endif %}px-4 py-5 sm:px-6 grid grid-cols-1 gap-4">
+      {% slot "card_content" %}
+      {% endslot %}
+    </div>
+  </div>
+</section>

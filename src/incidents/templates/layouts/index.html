@@ -1,0 +1,25 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script defer src="{% static "js/main.min.js" %}"></script>
+    <link rel="stylesheet" href="{% static "css/main.min.css" %}" crossorigin="anonymous">
+    <link rel="icon" type="image/png" href="{% static "img/favicon/favicon-32x32.png" %}">
+    <title>{{ page_title }}{% if APP_DISPLAY_NAME %} | {{APP_DISPLAY_NAME}}{% endif %}</title>
+    {% block head %}
+    {% endblock %}
+    {% if PLAUSIBLE_DOMAIN and PLAUSIBLE_SCRIPT_URL %}
+      <script defer data-domain="{{ PLAUSIBLE_DOMAIN }}" src="{{ PLAUSIBLE_SCRIPT_URL }}"></script>
+    {% endif %}
+
+  </head>
+  <body class="flex flex-col min-h-screen bg-base-100 text-base-content">
+    {% include "./partials/header.html" %}
+    <div class="flex-grow">
+      {% block content %}
+      {% endblock %}
+    </div>
+    {% include "./partials/footer.html" %}
+  </body>
+</html>

@@ -1,0 +1,22 @@
+{% component_block "modal" autoplay=True header=False%}
+
+  {% fill "modal_header" %}
+    Update Key Events
+  {% endfill %}
+  {% fill "modal_content" %}
+
+    <div class="max-w-lg mx-auto">
+      <div class="alert alert-info shadow-lg text-sm">
+        <div>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current flex-shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          <span>Incident metrics are derived from key moments in the incident response, refered in FireFighter as Key Events.<br/>
+            Update these key events to update the metrics for this incident.</span>
+        </div>
+      </div>
+      {% include "./incident_update_key_events_view.html" %}
+    </div>
+
+  {% endfill %}
+  {% fill "modal_enabler" %}
+  {% endfill %}
+{% endcomponent_block %}

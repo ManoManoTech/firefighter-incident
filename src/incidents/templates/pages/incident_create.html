@@ -1,0 +1,53 @@
+{% extends '../layouts/index.html' %}
+{% block content %}
+  <main class="py-10  mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="md:grid md:grid-cols-3 md:gap-6 mx-auto ">
+      <div class="md:col-span-1">
+        <div class="px-4 sm:px-0">
+          <h1 class="text-3xl font-bold text-neutral-900 dark:text-neutral-100">
+            Create a critical incident
+          </h1>
+          <div class="my-4 alert alert-info shadow-lg text-sm" role="alert">
+            <div>
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current flex-shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+              <span>If your incident is not critical, use create it with the Slack App.</span>
+            </div>
+          </div>
+
+          <div class="mt-1 text-sm text-neutral-600 dark:text-neutral-200 prose  dark:prose-invert">
+            <h2>Declaring an incident</h2>
+            <h3>Declare an incident if:</h3>
+            <ul>
+
+              <li>An issue is or may be impacting customers, partners or services.</li>
+              <li>You don't know if you should call an incident - notify other people and increase priority appropriately.</li>
+            </ul>
+            <h3>Recommendations:</h3>
+            <ul>
+              <li>Estimate impact. Priority levels go from P1 (Critical) to P4 (Minor). In case of doubt, always choose the higher priority.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="mt-5 md:mt-0 md:col-span-2">
+        <div class="shadow overflow-hidden sm:rounded-md">
+          <div class="px-4 py-5 bg-neutral-50 dark:bg-neutral-900 text-neutral-800 dark:text-neutral-100 sm:p-6">
+
+            <form action="{% url 'incidents:incident-create' %}" method="POST">
+
+              {% component_block "form" form=form %}
+                {% fill "form_footer" %}
+                  <div class=" text-right sm:pl-6 py-8">
+                    <button type="submit" class="btn btn-primary">
+                      Declare Incident
+                    </button>
+                  </div>
+                {% endfill %}
+              {% endcomponent_block %}
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+{% endblock %}

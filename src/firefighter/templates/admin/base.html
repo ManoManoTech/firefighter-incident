@@ -1,0 +1,106 @@
+{% extends 'admin/base.html' %}
+{% load static %}
+{% block extrahead %}{{ block.super }}
+  <link rel="icon" href="{% static 'img/favicon/favicon.ico' %}" sizes="48x48" />
+{% endblock%}
+{% block extrastyle %}{{ block.super }}
+  <style>
+    body {
+      font-family: ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji" !important;
+    }
+
+    :root {
+      --primary: #C84146;
+      --secondary: #1f2937;
+      --accent: #C84146;
+
+
+      --header-color: #ececec;
+      --header-branding-color: #C84146;
+      --header-bg: #111;
+      --header-link-color: var(--primary-fg);
+
+      --breadcrumbs-fg: #eeeeee;
+      --breadcrumbs-link-fg: var(--body-bg);
+      --breadcrumbs-bg: var(--primary);
+
+      --link-fg: #313131;
+      --link-hover-color: #161616;
+      --link-selected-fg: #0a0a0a;
+
+      --hairline-color: #e8e8e8;
+      --border-color: #ccc;
+
+      --error-fg: #ba2121;
+
+      --message-success-bg: #dfd;
+      --message-warning-bg: #ffc;
+      --message-error-bg: #ffefef;
+
+      --darkened-bg: #f8f8f8; /* A bit darker than --body-bg */
+      --selected-bg: #e4e4e4; /* E.g. selected table cells */
+      /*--selected-row: #f5dddd;*/
+
+      --button-fg: #fff;
+      --button-bg: var(--primary);
+      --button-hover-bg: #882121;
+      --default-button-bg: var(--secondary);
+      --default-button-hover-bg: #205067;
+      --close-button-bg: #888; /* Previously #bbb, contrast 1.92 */
+      --close-button-hover-bg: #747474;
+      --delete-button-bg: #ba2121;
+      --delete-button-hover-bg: #a41515;
+
+      --object-tools-fg: var(--button-fg);
+      --object-tools-bg: var(--close-button-bg);
+      --object-tools-hover-bg: var(--close-button-hover-bg);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --primary: #471718;
+        --primary-fg: #eee;
+
+        --header-bg : #020202;
+
+        --body-fg: #eeeeee;
+        --body-bg: #121212;
+        --body-quiet-color: #e0e0e0;
+        --body-loud-color: #ffffff;
+
+        --breadcrumbs-link-fg: #e0e0e0;
+        --breadcrumbs-bg: var(--primary);
+
+        --link-fg: #D08184;
+        --link-hover-color: #f0babc;
+        --link-selected-fg: #d47073;
+
+        --hairline-color: #272727;
+        --border-color: #353535;
+
+        --error-fg: #e35f5f;
+        --message-success-bg: #006b1b;
+        --message-warning-bg: #583305;
+        --message-error-bg: #570808;
+
+        --darkened-bg: #212121;
+        --selected-bg: #1b1b1b;
+        --selected-row: #472C2D;
+
+        --button-fg: #fff;
+        --button-bg: var(--primary);
+        --button-hover-bg: #609ab6;
+        --default-button-bg: var(--secondary);
+        --default-button-hover-bg: #205067;
+        --close-button-bg: #333333;
+        --close-button-hover-bg: #666666;
+        --delete-button-bg: #ba2121;
+        --delete-button-hover-bg: #a41515;
+
+        --object-tools-fg: var(--button-fg);
+        --object-tools-bg: var(--close-button-bg);
+        --object-tools-hover-bg: var(--close-button-hover-bg);
+      }
+    }
+  </style>
+{% endblock %}

@@ -1,0 +1,8 @@
+<div class="text-sm text-neutral-900 dark:text-neutral-50">
+  <div class="float-left h-6 w-6 mr-2 ">
+    {% with incident=record %}
+      {% include "../../layouts/partials/priority_icon.html" %}
+    {% endwith%}
+  </div>
+
+</div> <span>{{ record.priority }}</span>

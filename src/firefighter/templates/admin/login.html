@@ -1,0 +1,14 @@
+{% extends 'admin/login.html' %}
+
+{% block content %}
+  <div style="padding:2rem; text-align: center;">
+    <a class="button" style="padding: 15px 20px; font-size:16px" href="{% url "oidc_authentication"%}?next={% if request.GET.next is not None %}{{ request.GET.next | default:"/" | urlencode}}{% else %}{{"/" | urlencode}}{% endif %}&fail=/admin/login/"/>Log in with SSO<a/>
+  </div>
+  {% if request.GET.error %}
+    <p class="errornote">
+      {{ request.GET.error }}
+    </p>
+  {% endif %}
+
+  {{ block.super }}
+{% endblock %}

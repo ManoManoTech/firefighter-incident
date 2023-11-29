@@ -1,0 +1,13 @@
+<div class="mt-10">
+  <form action="{% url 'incidents:incident-update-key-events' incident_id=incident.id %}" method="POST" >
+    {% component_block "form" form=form %}
+      {% fill "form_footer" %}
+        <div class=" text-right sm:pl-6 py-8">
+          <button type="submit" class="btn btn-primary">
+            Update key events
+          </button>
+        </div>
+      {% endfill %}
+    {% endcomponent_block %}
+  </form>
+</div>

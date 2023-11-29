@@ -1,0 +1,32 @@
+{% extends '../layouts/index.html' %}
+
+{% block content %}
+  <main class="py-10">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 md:flex md:items-center md:justify-between md:space-x-5 lg:max-w-7xl lg:px-8">
+      <div class="mb-6">
+        <h1 class="text-2xl font-bold text-neutral-900 dark:text-neutral-50">Incident Role Types</h1>
+        <p class="text-neutral-500 dark:text-neutral-400">Here are the role types involved in incident management.<br/>
+          Understanding the role types and their responsibilities is important for a successful incident response!
+        </p>
+      </div>
+    </div>
+    {% if incident_role_typesd_list.count == 0 %}
+  {% comment %} {% include 'incidents/includes/no_incident_role_types.html' %} {% endcomment %}
+    {% endif %}
+    <div class="max-w-3xl mx-auto mt-8 grid grid-cols-1 gap-6 sm:px-6 lg:max-w-7xl lg:grid-cols-2">
+      {% for incident_role_type in incident_role_types_list %}
+        <div class="bg-neutral-100 dark:bg-neutral-800 shadow rounded-lg p-6">
+          <h2 class="text-xl font-semibold text-neutral-900 dark:text-neutral-50">{{incident_role_type.emoji}} {{ incident_role_type.name }}</h2>
+          <p class="text-neutral-600 dark:text-neutral-300">{{ incident_role_type.summary }}</p>
+          <div class="mt-4">
+            <a href="{% url 'incidents:docs-role-type-detail' pk=incident_role_type.pk %}"
+               class="button">
+              View Details
+            </a>
+          </div>
+
+        </div>
+      {% endfor %}
+    </div>
+  </main>
+{% endblock %}

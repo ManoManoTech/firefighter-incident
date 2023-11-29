@@ -1,0 +1,92 @@
+[
+  {
+    "model": "incidents.severity",
+    "pk": "3d8a4e0f-cc79-4063-9431-8aa785a56ca0",
+    "fields": {
+      "name": "SEV1",
+      "value": 1,
+      "emoji": "🌪️",
+      "description": "Critical issue that warrants liaison with e-team.",
+      "order": 0,
+      "default": false,
+      "needs_postmortem": true,
+      "created_at": "2021-02-19T16:52:37.057Z",
+      "updated_at": "2021-06-25T16:00:19.556Z"
+    }
+  },
+  {
+    "model": "incidents.severity",
+    "pk": "701d498c-067f-43cd-b1ca-0977d983f27e",
+    "fields": {
+      "name": "GAMEDAY",
+      "value": 20,
+      "emoji": "🤡",
+      "description": "Gamedays experiments",
+      "order": 20,
+      "default": false,
+      "needs_postmortem": false,
+      "created_at": "2021-02-19T16:55:31.286Z",
+      "updated_at": "2021-06-25T16:00:39.195Z"
+    }
+  },
+  {
+    "model": "incidents.severity",
+    "pk": "8ab02fa9-f950-49cb-982e-b8d653e38ffc",
+    "fields": {
+      "name": "SEV2",
+      "value": 2,
+      "emoji": "⛈️",
+      "description": "Major issue impacting customers.",
+      "order": 1,
+      "default": false,
+      "needs_postmortem": true,
+      "created_at": "2021-02-19T16:53:11.854Z",
+      "updated_at": "2021-06-25T16:00:22.572Z"
+    }
+  },
+  {
+    "model": "incidents.severity",
+    "pk": "b814c9d2-48a8-4ac4-9c71-ff844e1b77f1",
+    "fields": {
+      "name": "SEV4",
+      "value": 4,
+      "emoji": "🌦️",
+      "description": "Minor issue not affecting customers.",
+      "order": 3,
+      "default": true,
+      "needs_postmortem": false,
+      "created_at": "2021-02-19T16:54:03.586Z",
+      "updated_at": "2021-06-25T16:00:28.819Z"
+    }
+  },
+  {
+    "model": "incidents.severity",
+    "pk": "e12c3836-ea9b-44bf-a3cf-5a715d62395b",
+    "fields": {
+      "name": "SEV3",
+      "value": 3,
+      "emoji": "🌩️",
+      "description": "Minor issue affecting customers.",
+      "order": 2,
+      "default": false,
+      "needs_postmortem": true,
+      "created_at": "2021-02-19T16:53:37.534Z",
+      "updated_at": "2021-06-25T16:00:25.446Z"
+    }
+  },
+  {
+    "model": "incidents.severity",
+    "pk": "e57c2084-d7e0-4dea-9f6b-a4e8bc5a55d4",
+    "fields": {
+      "name": "SEV5",
+      "value": 5,
+      "emoji": "🐞",
+      "description": "Cosmetic issue not affecting customers.",
+      "order": 4,
+      "default": false,
+      "needs_postmortem": false,
+      "created_at": "2021-02-19T16:54:53.358Z",
+      "updated_at": "2021-06-25T16:00:32.549Z"
+    }
+  }
+]

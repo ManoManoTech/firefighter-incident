@@ -1,0 +1,13 @@
+<div class="tooltip_content usertooltip_content bg-white dark:bg-black shadow rounded-lg font-normal text-sm flex flex-row pr-2">
+  {% if user.avatar %}
+    <img src="{{ user.avatar }}" alt=""
+      class="rounded-lg object-cover h-20 w-20"/>
+  {% endif %}
+  <div class="pr-20 pl-2 py-2">
+    <p class="font-bold text-md">{{ user.full_name }}</p>
+    <a href="mailto:{{ user.email }}" class="truncate">{{ user.email }}</a>
+    {% if user.avatar %}
+      <a href="{{ user.slack_user.link }}">@{{ user.slack_user.username }}</a>
+    {% endif %}
+  </div>
+</div>

@@ -1,0 +1,80 @@
+"""
+This module is used to provide configuration, fixtures, and plugins for pytest.
+It may be also used for extending doctest's context:
+1. https://docs.python.org/3/library/doctest.html
+2. https://docs.pytest.org/en/latest/doctest.html
+"""
+
+from __future__ import annotations
+
+import logging
+from importlib import resources as impresources
+from typing import Any
+
+import pytest
+from django.core.management import call_command
+from pytest_django import DjangoDbBlocker
+from pytest_django.fixtures import SettingsWrapper
+from zipp import Path
+
+from incidents.factories import IncidentFactory
+from incidents.models import Incident
+
+logger = logging.getLogger(__name__)
+
+
+@pytest.fixture(autouse=True)
+def _password_hashers(settings: SettingsWrapper) -> None:
+    """Forces Django to use fast password hashers for tests."""
+    settings.PASSWORD_HASHERS = [
+        "django.contrib.auth.hashers.MD5PasswordHasher",
+    ]
+
+
+@pytest.fixture(autouse=True)
+def _debug(settings: SettingsWrapper) -> None:
+    """Sets proper DEBUG and TEMPLATE debug mode for coverage of templates."""
+    settings.DEBUG = False
+    for template in settings.TEMPLATES:
+        template["OPTIONS"]["debug"] = True
+
+
+@pytest.fixture()
+def main_heading() -> str:
+    """An example fixture containing some html fragment."""
+    return '<p class="mt-2 text-sm text-base-content text-opacity-80">Report, manage, escalate!</p>'
+
+
+@pytest.fixture(scope="session")
+def django_db_setup(  # noqa: PT004
+    django_db_setup: Any, django_db_blocker: DjangoDbBlocker
+) -> None:
+    logger.info("Loading fixtures...")
+
+    # XXX Allow override of fixtures path
+    try:
+        fixtures_path = impresources.files("firefighter_fixtures")
+    except ModuleNotFoundError:
+        fixtures_path = Path(__file__).parent / "fixtures"
+    with django_db_blocker.unblock():
+        call_command("loaddata", fixtures_path / "groups.json")
+        call_command("loaddata", fixtures_path / "components.json")
+        call_command("loaddata", fixtures_path / "severities.json")
+        call_command("loaddata", fixtures_path / "priorities.json")
+        call_command("loaddata", fixtures_path / "environments.json")
+    django_db_blocker.restore()
+
+
+@pytest.fixture()
+def incident() -> Incident:
+    return IncidentFactory.build()
+
+
+@pytest.fixture()
+@pytest.mark.django_db()
+def incident_saved() -> Incident:
+    incident: Incident = IncidentFactory.build()
+    incident.component.group.save()
+    incident.created_by.save()
+    incident.save()
+    return incident

@@ -1,0 +1,84 @@
+{% extends '../layouts/index.html' %}
+{% block content %}
+
+  <div class="mx-auto shadow-md border-b border-neutral-300 dark:border-neutral-700 flex px-4">
+    <div class="py-4 flex justify-start items-center">
+      <h1 class="text-3xl font-bold text-neutral-900 dark:text-neutral-100 ">
+        {% block page_title %}
+          Metrics and Key Events
+        {% endblock%}
+      </h1>
+    </div>
+  </div>
+
+  <div class="py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 gap-4 grid">
+      {% component_block "card" id="metrics-sequence-graph" card_title="TLDR: Metrics Timeline" %}
+        {% fill "card_content" %}
+          {% autoescape off %}
+            <pre class="mermaid w-full">
+            {{metric_graph|join:"&#10;"}}
+          </pre>
+          {% endautoescape %}
+        {% endfill %}
+      {% endcomponent_block %}
+      <div class="gap-4 grid md:grid-cols-2 grid-cols-1">
+        {% component_block "card" id="metrics-details" card_title="Incident Metrics Details" %}
+          {% fill "card_content" %}
+          <div class="prose">
+            <p>
+              <b>Metrics are durations, used to track the time of the incident response.</b>
+            </p>
+            <p>
+              These durations are computed automatically from incident's Key Events.
+              <br/>`Time To` metrics relate to a single incident, but are used for `Mean Time To` metrics, about a group of incidents.
+            </p>
+            {% for metric in metrics%}
+              <h3 class="font-medium text-lg">{{metric.name|capfirst}} <abbr class="text-sm font-normal">({{ metric.code }})</abbr></h3>
+              <p>{{ metric.description }}</p>
+              <p class="">Metric formula:
+                <code class="font-mono inline text-sm">{{metric.code}} = {{metric.milestone_lhs.event_type|capfirst}} - {{metric.milestone_rhs.event_type|capfirst}}</code>
+              </p>
+
+            {% endfor %}
+            </div>
+          {% endfill %}
+        {% endcomponent_block %}
+        {% component_block "card" id="metrics-details" card_title="Key Events Details" %}
+          {% fill "card_content" %}
+          <div class="prose">
+            <p>
+              <b>Key Events are important events, point in time in your incident, that are equivalent to the status of the outage.</b>
+            </p>
+            <p>
+              They are used to derive Incident Metrics, that are useful to understand the impact of the incident.<br/>
+              Key Events can be modified by any user, either in Slack or in the Incident Page.
+            </p>
+            {% for key_event in key_events%}
+              {% if key_event.asked_for %}
+                <h3 class="font-medium text-lg">{{key_event.name|capfirst}}</h3>
+                {{key_event.description|default:key_event.summary|markdown|safe}}
+                {% if not key_event.user_editable%}
+                  <p class="alert alert-info">💡 This Key Event is added automatically to incidents by FireFighter, from the status you put in your `/incident update`.</p>
+                {% endif%}
+              {% endif %}
+            {% endfor %}
+            </div>
+          {% endfill %}
+        {% endcomponent_block %}
+      </div>
+    </div>
+  </div>
+{% endblock %}
+{% block head %}
+  <script type="module">
+    // XXX Serve without the CDN
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@9/dist/mermaid.esm.min.mjs';
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      mermaid.initialize({ startOnLoad: true,  theme: 'dark', });
+    }
+    else {
+      mermaid.initialize({ startOnLoad: true });
+    }
+  </script>
+{% endblock %}

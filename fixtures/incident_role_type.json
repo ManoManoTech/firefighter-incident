@@ -1,0 +1,32 @@
+[
+    {
+        "model": "incidents.incidentroletype",
+        "pk": 1,
+        "fields": {
+            "name": "Commander",
+            "slug": "commander",
+            "emoji": "🧑‍✈️",
+            "required": true,
+            "order": 1,
+            "summary": "The Commander acts as the single source of truth of what is currently happening and what is going to happen during a critical incident.",
+            "summary_first_person": null,
+            "description": "The Commander leads the incident response in a hierarchical organization.\n        They monitor activities, delegate tasks, and ensure efficient work distribution.\n        By attributing roles to responders, they maintain a macro view of the incident response, avoiding getting lost in details.\n        Additionally, they organize the post mortem, ensuring it is carried out before the incident closure.",
+            "aka": "Incident Lead"
+        }
+    },
+    {
+        "model": "incidents.incidentroletype",
+        "pk": 2,
+        "fields": {
+            "name": "Communication Lead",
+            "slug": "communication_lead",
+            "emoji": "🧑‍💼",
+            "required": false,
+            "order": 2,
+            "summary": "Ensures efficident communication between incident responders, within the organization, and to the outside world.",
+            "summary_first_person": null,
+            "description": "The Communication Lead coordinates communication channels within the incident response team. They ensure regular and timely updates and facilitate effective communication with stakeholders. They adapt the communication strategy based on needs and challenges.",
+            "aka": "Public Relations Lead"
+        }
+    }
+]

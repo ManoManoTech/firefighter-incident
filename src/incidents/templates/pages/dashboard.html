@@ -1,0 +1,40 @@
+{% extends '../layouts/index.html' %}
+
+{% block content %}
+  <div class="py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="lg:text-center">
+        <h1 class="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-neutral-900 dark:text-neutral-100 sm:text-4xl">
+          Status
+        </h1>
+        <p class="mt-4 max-w-2xl text-xl text-neutral-500 dark:text-neutral-200 lg:mx-auto">
+          {{ incidents | length }} active incidents on our platform.
+        </p>
+      </div>
+
+      <div class="mt-10">
+        {% regroup incidents by status as grouped_list %}
+        {% for status in grouped_list %}
+          <h2 class="m-8 text-2xl font-bold text-neutral-700 dark:text-neutral-100">
+            {{ status.grouper.label }} <span class="font-normal text-base ">({{ status.list | length }})</span>
+            {% comment %} {% include "../layouts/partials/status_pill.html" with status=status.grouper size="big" only %} {% endcomment %}
+          </h2>
+          <div class="flex flex-wrap">
+            <ul class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 w-full">
+              {% for incident in status.list %}
+                {% include "../layouts/partials/incident_card.html" with incident=incident status=False only %}
+              {% endfor %}
+            </ul>
+          </div>
+        {% empty %}
+          <div class="mt-20 lg:text-center">
+            <h1 class=" text-2xl font-bold text-neutral-700 dark:text-neutral-100 ">
+              No incidents declared 🎉
+            </h1>
+            <p class="italic mt-2">Or maybe we have an incident with the incident management tool?</p>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+{% endblock %}

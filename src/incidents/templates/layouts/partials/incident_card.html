@@ -1,0 +1,28 @@
+{% load humanize %}
+<div class="ff-tooltip flex-1 bg-white dark:bg-neutral-800 rounded-lg shadow p-2 hover:bg-neutral-50 dark:hover:bg-neutral-700">
+  <div class="bg-no-repeat bg-right-top p-4">
+    <span class="incident_time_tooltip tooltip_content bg-black dark:text-neutral-200 text-white rounded w-min p-2" style="width: fit-content">Opened:<br/>{{ incident.created_at |date:"SHORT_DATETIME_FORMAT"}} by {{ incident.created_by.full_name }}<br/>Last event:<br/>{{incident.latest_event_ts|date:"SHORT_DATETIME_FORMAT"}}</span>
+    <li class="col-span-1">
+      <a href="{{ incident.get_absolute_url }}" class="block items-center justify-between">
+        <div class="flex items-center space-x-3">
+          <h3 class="text-neutral-900 dark:text-neutral-200 text-sm font-medium pr-8">#{{ incident.id }} {{ incident.title }} </h3>
+        </div>
+        {% if status != False %}
+          {% include "./status_pill.html" with status=incident.status IncidentStatus=IncidentStatus only %}
+        {% endif %}
+        {% if incident.environment %}
+          {% include "./environment_pill.html" with environment=incident.environment only %}
+        {% endif %}
+        <span class="inline-flex font-semibold rounded-full px-2 text-xs leading-5 bg-neutral-300 text-neutral-600 ">
+          {{ incident.component.name }} ({{ incident.component.group.name }})
+        </span>
+        {% include "./priority_pill.html" with priority=incident.priority only %}
+        <p class="mt-2 text-neutral-500 dark:text-neutral-200 text-sm line-clamp-3">{{ incident.description | truncatechars:150  }}</p>
+        {% if incident.updated_at != incident.created_at%}
+          <p class="mt-2 text-neutral-400 dark:text-neutral-300 text-xs">Last event: {{ incident.latest_event_ts | naturaltime  }}</p>
+        {% endif %}
+        <p class=" text-neutral-400 dark:text-neutral-300 text-xs">Opened: {{ incident.created_at | naturaltime  }}</p>
+      </a>
+    </li>
+  </div>
+</div>
