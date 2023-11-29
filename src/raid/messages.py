@@ -5,15 +5,13 @@ from typing import TYPE_CHECKING
 
 from django.conf import settings
 from slack_sdk.models.blocks.basic_components import MarkdownTextObject
-from slack_sdk.models.blocks.block_elements import ButtonElement
 from slack_sdk.models.blocks.blocks import (
-    ActionsBlock,
     Block,
     DividerBlock,
     SectionBlock,
 )
 
-from slack.messages.base import SlackMessageStrategy, SlackMessageSurface
+from slack.messages.base import SlackMessageSurface
 from slack.slack_templating import user_slack_handle_or_name
 
 if TYPE_CHECKING:
