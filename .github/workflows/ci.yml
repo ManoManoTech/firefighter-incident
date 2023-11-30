@@ -43,7 +43,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Setup PDM
-        uses: pdm-project/setup-pdm@v3
+        uses: ManoManoTech/setup-pdm
         id: setup-pdm
         with:
           python-version: ${{ matrix.python-version }}
