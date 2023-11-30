@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from firefighter.incidents.models.incident import Incident
     from firefighter.incidents.models.incident_update import IncidentUpdate
 
-if apps.is_installed("slack"):
+if apps.is_installed("firefighter.slack"):
     from firefighter.slack.tasks.reminder_postmortem import (
         publish_fixed_next_actions,
         publish_postmortem_reminder,
@@ -31,7 +31,7 @@ def incident_updated_handler(
     updated_fields: list[str],
     **kwargs: Never,
 ) -> None:
-    if not apps.is_installed("slack"):
+    if not apps.is_installed("firefighter.slack"):
         logger.error("Slack app is not installed. Skipping.")
         return
     if sender == "update_status":

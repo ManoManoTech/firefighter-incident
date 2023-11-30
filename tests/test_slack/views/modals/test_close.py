@@ -50,7 +50,7 @@ class TestCloseModal:
         # Arrange
         modal = CloseModal()
         mocker.patch(
-            "incidents.models.incident.Incident.can_be_closed",
+            "firefighter.incidents.models.incident.Incident.can_be_closed",
             return_value=(True, []),
             new_callable=mocker.PropertyMock,
         )
@@ -108,7 +108,9 @@ class TestCloseModal:
         _trigger_incident_workflow = mocker.patch.object(
             modal, "_trigger_incident_workflow"
         )
-        respond = mocker.patch("slack.views.modals.close.respond", return_value=None)
+        respond = mocker.patch(
+            "firefighter.slack.views.modals.close.respond", return_value=None
+        )
 
         ack = MagicMock()
         user = UserFactory.build()
@@ -129,7 +131,7 @@ class TestCloseModal:
     ) -> None:
         modal = CloseModal()
         mocker.patch(
-            "incidents.models.incident.Incident.can_be_closed",
+            "firefighter.incidents.models.incident.Incident.can_be_closed",
             return_value=(True, []),
             new_callable=mocker.PropertyMock,
         )

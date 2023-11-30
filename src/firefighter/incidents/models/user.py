@@ -17,11 +17,11 @@ if TYPE_CHECKING:
 
     from firefighter.incidents.models.incident import IncidentRole
 
-    if apps.is_installed("slack"):
+    if apps.is_installed("firefighter.slack"):
         from firefighter.slack.models.user import SlackUser
-    if apps.is_installed("pagerduty"):
+    if apps.is_installed("firefighter.pagerduty"):
         from firefighter.pagerduty.models import PagerDutyUser
-    if apps.is_installed("jira_app"):
+    if apps.is_installed("firefighter.jira_app"):
         from firefighter.jira_app.models import JiraUser
 
 
@@ -83,12 +83,12 @@ class User(AbstractUser):
 
     if TYPE_CHECKING:
         roles_set: RelatedManager[IncidentRole]
-        if apps.is_installed("slack"):
+        if apps.is_installed("firefighter.slack"):
             slack_user: SlackUser | None
             slack_user_id: uuid.UUID | None
-        if apps.is_installed("pagerduty"):
+        if apps.is_installed("firefighter.pagerduty"):
             pagerduty_user: PagerDutyUser | None
             pagerduty_user_id: uuid.UUID | None
-        if apps.is_installed("raid"):
+        if apps.is_installed("firefighter.raid"):
             jira_user: JiraUser | None
             jira_user_id: str | None

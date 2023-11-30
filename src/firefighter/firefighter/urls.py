@@ -71,12 +71,12 @@ urlpatterns = [
     path("", include(firefighter_urlpatterns)),
     # Slack URLs are included later if needed (see slack/apps.py)
 ]
-if apps.is_installed("pagerduty"):
+if apps.is_installed("firefighter.pagerduty"):
     urlpatterns.insert(
         4,
         path("", include("firefighter.pagerduty.urls")),
     )
-if apps.is_installed("confluence"):
+if apps.is_installed("firefighter.confluence"):
     urlpatterns.insert(
         5,
         path("", include("firefighter.confluence.urls")),
@@ -95,7 +95,7 @@ if settings.ENV == "dev":
             path("__debug__/", include(debug_toolbar.urls)),
         )
 
-if apps.is_installed("slack") and (
+if apps.is_installed("firefighter.slack") and (
     "runserver" in sys.argv
     or "firefighter.wsgi" in sys.argv
     or "main.py" in sys.argv

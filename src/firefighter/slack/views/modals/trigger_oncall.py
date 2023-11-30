@@ -20,7 +20,7 @@ if TYPE_CHECKING:
     from slack_bolt.context.ack.ack import Ack
 
     from firefighter.incidents.models.incident import Incident, User
-if apps.is_installed("pagerduty"):
+if apps.is_installed("firefighter.pagerduty"):
     from firefighter.pagerduty.models import PagerDutyIncident, PagerDutyService
 
 logger = logging.getLogger(__name__)
