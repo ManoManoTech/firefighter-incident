@@ -74,25 +74,26 @@ def setup_navbar_menu() -> None:
         )
 
     if apps.is_installed("firefighter.confluence"):
-        submenu_items_confluence = [
+        knowledge_base_children = [
             MenuItem(
                 "Runbooks",
                 reverse("confluence:runbook_list"),
             ),
         ]
-        # XXX Rename submenu_items + move Confluence logic
-        Menu.add_item(
-            Menus.main,
-            MenuItem(
-                "Knowledge Base",
-                None,
-                children=[
-                    *submenu_items_confluence,
-                    MenuItem("Metrics Explanation", reverse("incidents:docs-metrics")),
-                    MenuItem("Role Types", reverse("incidents:docs-role-type-list")),
-                ],
-            ),
-        )
+    else:
+        knowledge_base_children = []
+    Menu.add_item(
+        Menus.main,
+        MenuItem(
+            "Knowledge Base",
+            None,
+            children=[
+                *knowledge_base_children,
+                MenuItem("Metrics Explanation", reverse("incidents:docs-metrics")),
+                MenuItem("Role Types", reverse("incidents:docs-role-type-list")),
+            ],
+        ),
+    )
 
     Menu.add_item(
         "user",
