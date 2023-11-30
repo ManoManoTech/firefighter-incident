@@ -506,7 +506,7 @@ class IncidentAdmin(admin.ModelAdmin[Incident]):
             "component",
             "created_by",
         ]
-        if apps.apps.is_installed("confluence"):
+        if apps.apps.is_installed("firefighter.confluence"):
             select_related.append("postmortem_for")
         return select_related
 

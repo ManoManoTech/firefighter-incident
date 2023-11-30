@@ -12,7 +12,7 @@ from firefighter.slack.views.modals.base_modal.mixins import (
     IncidentSelectableModalMixin,
 )
 
-if apps.is_installed("confluence"):
+if apps.is_installed("firefighter.confluence"):
     from firefighter.confluence.models import PostMortem
 
 if TYPE_CHECKING:
@@ -70,7 +70,7 @@ class PostMortemModal(
 
     @staticmethod
     def handle_modal_fn(ack: Ack, incident: Incident) -> None:  # type: ignore[override]
-        if not apps.is_installed("confluence"):
+        if not apps.is_installed("firefighter.confluence"):
             ack(text="Confluence is not enabled!")
             return
         if hasattr(incident, "postmortem_for"):

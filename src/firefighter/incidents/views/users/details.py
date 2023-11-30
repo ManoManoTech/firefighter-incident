@@ -14,7 +14,7 @@ SELECT_RELATED = []
 if apps.is_installed("firefighter.slack"):
     SELECT_RELATED.append("slack_user")
     from firefighter.slack.models import Conversation, UserGroup
-if apps.is_installed("pagerduty"):
+if apps.is_installed("firefighter.pagerduty"):
     SELECT_RELATED.append("pagerduty_user")
 
 

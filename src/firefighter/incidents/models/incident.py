@@ -323,7 +323,7 @@ class Incident(models.Model):
                 and self.priority.needs_postmortem
                 and self.environment.value == "PRD"
             )
-            if apps.is_installed("confluence")
+            if apps.is_installed("firefighter.confluence")
             else False
         )
 

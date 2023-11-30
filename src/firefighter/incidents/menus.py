@@ -64,7 +64,7 @@ def setup_navbar_menu() -> None:
         ),
     )
 
-    if apps.is_installed("pagerduty"):
+    if apps.is_installed("firefighter.pagerduty"):
         Menu.add_item(
             Menus.main,
             MenuItem(
@@ -73,7 +73,7 @@ def setup_navbar_menu() -> None:
             ),
         )
 
-    if apps.is_installed("confluence"):
+    if apps.is_installed("firefighter.confluence"):
         submenu_items_confluence = [
             MenuItem(
                 "Runbooks",
