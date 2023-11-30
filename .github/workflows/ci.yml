@@ -49,6 +49,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache: true
           allow-python-prereleases: true
+
       # Needed for CSS and JS minification
       - uses: actions/setup-node@v4
         with:
