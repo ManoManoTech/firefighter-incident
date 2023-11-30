@@ -5,10 +5,10 @@
   "main": "index.js",
   "scripts": {
     "build": "cross-env NODE_ENV=production yarn run build:js && yarn run build:css",
-    "dev:css": "tailwind build -i src/incidents/static/css/main.css --minify --watch -o ./src/incidents/static/css/main.min.css",
+    "dev:css": "tailwind build -i src/firefighter/incidents/static/css/main.css --minify --watch -o ./src/firefighter/incidents/static/css/main.min.css",
     "dev:js": "rollup -c -w --silent",
     "build:js": "rollup -c --silent",
-    "build:css": "tailwind build -i src/incidents/static/css/main.css --minify  -o ./style.css && cleancss -o ./src/incidents/static/css/main.min.css ./style.css && rm ./style.css"
+    "build:css": "tailwind build -i src/firefighter/incidents/static/css/main.css --minify  -o ./style.css && cleancss -o ./src/firefighter/incidents/static/css/main.min.css ./style.css && rm ./style.css"
   },
   "keywords": [],
   "author": "",

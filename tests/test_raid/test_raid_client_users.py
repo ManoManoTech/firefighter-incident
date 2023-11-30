@@ -7,9 +7,9 @@ import pytest
 from jira import JIRA
 from pytest_mock import MockerFixture
 
-from incidents.models.user import User
-from jira_app.models import JiraUser
-from raid.client import RaidJiraClient
+from firefighter.incidents.models.user import User
+from firefighter.jira_app.models import JiraUser
+from firefighter.raid.client import RaidJiraClient
 
 
 class MockJiraClient(RaidJiraClient):

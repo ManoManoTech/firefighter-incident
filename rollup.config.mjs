@@ -6,9 +6,9 @@ import terser from "@rollup/plugin-terser";
 /** @type {import('rollup').RollupOptions} */
 export default {
 
-    input: "src/incidents/static/js/main.js",
+    input: "src/firefighter/incidents/static/js/main.js",
     output: {
-        file: "src/incidents/static/js/main.min.js",
+        file: "src/firefighter/incidents/static/js/main.min.js",
         format: "iife",
         entryFileNames: "[name].js", // currently does not work for the legacy bundle
         assetFileNames: "[name].[ext]", // currently does not work for images

@@ -77,18 +77,9 @@ ff-manage = "manage:main"
 only-packages = false
 include = [
   "gunicorn.conf.py",
-  "templates",
   "main.py",
   "manage.py",
   "firefighter",
-  "incidents",
-  "api",
-  "slack",
-  "pagerduty",
-  "confluence",
-  "jira_app",
-  "components",
-  "raid",
 ]
 artifacts = [
   "src/**/*.min.js",
@@ -122,7 +113,7 @@ plugins = [
 # Common settings for all scripts
 [tool.pdm.scripts._]
 env_file =".env"
-env = {DJANGO_SETTINGS_MODULE="firefighter.settings"}
+env = {DJANGO_SETTINGS_MODULE="firefighter.firefighter.settings"}
 
 [tool.pdm.scripts]
 # CD Specific - some tools requires our full configuration, which we do not load by default
@@ -130,8 +121,8 @@ _copy_env = {shell="test -f .env || cp .env.example .env", help="Copy .env.examp
 _cd-lint-mypy = {composite= ["_copy_env",  "lint-mypy"], help="Run mypy type checker, copy .env.example to .env first"}
 _cd-lint-pylint = {composite= ["_copy_env", "lint-pylint-strict"], help="Run pylint, copy .env.example to .env first"}
 # Lint
-lint-pylint = {cmd="pylint --django-settings-module=firefighter.settings firefighter api confluence pagerduty slack incidents raid jira_app", help="Run pylint"}
-lint-pylint-strict = {shell="pylint --django-settings-module=firefighter.settings firefighter api confluence pagerduty slack incidents raid jira_app --fail-under=0.99", help="Run pylint, fail if score is under 9.99"}
+lint-pylint = {cmd="pylint --django-settings-module=firefighter.firefighter.settings src", help="Run pylint"}
+lint-pylint-strict = {shell="pylint --django-settings-module=firefighter.settings src --fail-under=0.99", help="Run pylint, fail if score is under 9.99"}
 lint-mypy = {shell= "mypy", help="Run mypy type checker", env={"ENABLE_PAGERDUTY"="True", "ENABLE_CONFLUENCE"="True"}}
 lint-ruff = {cmd="ruff .", help="Run ruff linter"}
 lint = {composite= ["lint-ruff", "lint-pylint", "lint-mypy"], help="Run all linters (ruff, pylint, mypy)."}
@@ -159,7 +150,7 @@ loaddata = {shell="ff-manage loaddata incidents/fixtures/*.json --ignorenonexist
 createsuperuser = {cmd="ff-manage createsuperuser --noinput", help="Create a superuser using `.env` values"}
 collectstatic = {cmd="ff-manage collectstatic --noinput", help="Collect the static files"}
 # Django aliases
-manage = {cmd="python manage.py", help="Run the Django management command"}
+manage = {cmd="ff-manage", help="Run the Django management command"}
 migrate = {cmd="ff-manage migrate", help="Run the Django migrations"}
 runserver = {cmd="ff-manage runserver", help="Run the Django dev server"}
 # Celery aliases
@@ -252,7 +243,7 @@ load-plugins = [
   "pylint.extensions.redefined_variable_type",
   "pylint.extensions.docparams",
 ]
-django-settings-module = "firefighter.settings"
+django-settings-module = "firefighter.firefighter.settings"
 ignore = "migrations"
 
 [tool.pylint.FORMAT]
@@ -375,14 +366,14 @@ default-docstring-type = "google"
 # Configuration name is weird, but it works
 [tool.pylint."django foreign keys referenced by strings"]
 # A module containing Django settings to be used while linting.
-django-settings-module = "firefighter.settings"
+django-settings-module = "firefighter.firefighter.settings"
 
-# XXX(dugab) Restrict imports of firefighter.settings
+# XXX(dugab) Restrict imports of firefighter.firefighter.settings
 
 ## Type checking (Mypy, Django-stubs, +plugins)
 
 [tool.mypy]
-files = ["firefighter", "api", "incidents", "slack", "pagerduty", "confluence", "jira_app", "components", "raid", "stubs"]
+files = ['src', "stubs"]
 python_version = "3.11"
 plugins = ["mypy_django_plugin.main", "mypy_drf_plugin.main"]
 strict = true
@@ -410,7 +401,7 @@ disallow_untyped_defs = false
 disallow_incomplete_defs = false
 
 [tool.django-stubs]
-django_settings_module = "firefighter.settings"
+django_settings_module = "firefighter.firefighter.settings"
 
 ## Testing and coverage (Pytest)
 
@@ -445,7 +436,7 @@ addopts = """
 
 # Pytest-django
 FAIL_INVALID_TEMPLATE_VARS = true
-DJANGO_SETTINGS_MODULE = "firefighter.settings"
+DJANGO_SETTINGS_MODULE = "firefighter.firefighter.settings"
 
 
 [tool.coverage.run]
@@ -540,16 +531,17 @@ external = [
 target-version = "py311"
 
 [tool.ruff.per-file-ignores]
-"components/**/*.py" = ["INP"]
+"**/components/**/*.py" = ["INP"]
 "__init__.py" = ["F401"]
+"_version.py" = ["Q000", "UP", "I"]
 "**/settings_builder.py" = ["F403"]
 "tests/*" = ["S101", "D", "ANN", "PLR2004", "INP", "DTZ005", "TCH", "SLF001"]
 "**/migrations/*" = ["PLR", "D", "ANN", "ARG", "N806", "I002"]
 "stubs/*" = ["ARG", "ANN", "D", "INP", "TCH"]
-"apps.py" = ["F401", "PLC0415"]
-"manage.py" = ["INP", "PLC0415"]
-"main.py" = ["INP"]
-"gunicorn.conf.py" = ["INP"]
+"**/apps.py" = ["F401", "PLC0415"]
+"**/manage.py" = ["INP", "PLC0415"]
+"**/main.py" = ["INP"]
+"**/gunicorn.conf.py" = ["INP"]
 
 [tool.ruff.mccabe]
 max-complexity = 15

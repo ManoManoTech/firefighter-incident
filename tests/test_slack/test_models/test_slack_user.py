@@ -6,8 +6,8 @@ from unittest.mock import MagicMock
 import pytest
 from slack_sdk.errors import SlackApiError
 
-from slack.models.user import SlackUser, SlackUserManager
-from slack.slack_app import SlackApp
+from firefighter.slack.models.user import SlackUser, SlackUserManager
+from firefighter.slack.slack_app import SlackApp
 from tests.test_slack.conftest import MockWebClient
 
 # Mock data for testing

@@ -4,20 +4,20 @@ from datetime import UTC, datetime, timedelta
 
 from django_htmx.middleware import HtmxDetails
 
-from firefighter.filters import (
+from firefighter.firefighter.filters import (
     apply_filter,
     get_item,
     readable_time_delta,
     timedelta_chop_microseconds,
 )
-from firefighter.utils import (
+from firefighter.firefighter.utils import (
     AuthenticatedHttpRequest,
     HtmxHttpRequest,
     get_first_in,
     get_in,
     is_during_office_hours,
 )
-from incidents.models.user import User
+from firefighter.incidents.models.user import User
 
 
 def test_get_in() -> None:

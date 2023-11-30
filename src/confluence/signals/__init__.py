@@ -1,3 +1,0 @@
-from __future__ import annotations
-
-from confluence.signals.incident_updated import incident_updated_handler

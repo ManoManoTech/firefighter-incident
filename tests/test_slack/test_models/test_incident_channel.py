@@ -9,14 +9,14 @@ from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
 from slack_sdk.web.slack_response import SlackResponse
 
-from incidents.factories import IncidentFactory, UserFactory
-from incidents.models import User
-from incidents.models.incident import Incident
-from slack.factories import SlackUserFactory
-from slack.models.conversation import ConversationStatus
-from slack.models.incident_channel import IncidentChannel
-from slack.models.user import SlackUser
-from slack.utils import channel_name_from_incident
+from firefighter.incidents.factories import IncidentFactory, UserFactory
+from firefighter.incidents.models import User
+from firefighter.incidents.models.incident import Incident
+from firefighter.slack.factories import SlackUserFactory
+from firefighter.slack.models.conversation import ConversationStatus
+from firefighter.slack.models.incident_channel import IncidentChannel
+from firefighter.slack.models.user import SlackUser
+from firefighter.slack.utils import channel_name_from_incident
 from tests.test_slack.conftest import MockWebClient
 
 

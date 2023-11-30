@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from slack.models.conversation import Conversation
+from firefighter.slack.models.conversation import Conversation
 from tests.test_slack.conftest import MockWebClient
 
 

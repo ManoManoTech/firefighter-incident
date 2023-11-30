@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from incidents.forms.select_impact import SelectImpactForm
+from firefighter.incidents.forms.select_impact import SelectImpactForm
 
 
 @pytest.mark.django_db()

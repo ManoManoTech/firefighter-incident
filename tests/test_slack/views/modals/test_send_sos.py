@@ -5,9 +5,9 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from incidents.factories import IncidentFactory, UserFactory
-from incidents.models import Incident
-from slack.views import SendSosModal
+from firefighter.incidents.factories import IncidentFactory, UserFactory
+from firefighter.incidents.models import Incident
+from firefighter.slack.views import SendSosModal
 
 logger = logging.getLogger(__name__)
 

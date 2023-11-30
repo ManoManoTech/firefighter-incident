@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from raid.utils import get_domain_from_email
+from firefighter.raid.utils import get_domain_from_email
 
 
 def test_get_domain_from_email() -> None:

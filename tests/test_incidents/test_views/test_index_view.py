@@ -4,7 +4,7 @@ import pytest
 from django.test import Client
 from django.urls import reverse
 
-from incidents.models.user import User
+from firefighter.incidents.models.user import User
 
 
 @pytest.mark.django_db()
