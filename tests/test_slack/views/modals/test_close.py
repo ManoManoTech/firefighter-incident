@@ -7,10 +7,10 @@ from unittest.mock import MagicMock, PropertyMock
 import pytest
 from pytest_mock import MockerFixture
 
-from incidents.enums import IncidentStatus
-from incidents.factories import IncidentFactory, UserFactory
-from incidents.models.incident import Incident
-from slack.views import CloseModal
+from firefighter.incidents.enums import IncidentStatus
+from firefighter.incidents.factories import IncidentFactory, UserFactory
+from firefighter.incidents.models.incident import Incident
+from firefighter.slack.views import CloseModal
 
 logger = logging.getLogger(__name__)
 

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from django.utils.timezone import datetime, get_current_timezone
 
-from confluence.utils import (
+from firefighter.confluence.utils import (
     CONFLUENCE_PM_ARCHIVE_TITLE_REGEX,
     CONFLUENCE_PM_TITLE_REGEX,
     parse_postmortem_title,

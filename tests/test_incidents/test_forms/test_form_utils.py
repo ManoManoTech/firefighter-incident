@@ -4,10 +4,10 @@ from __future__ import annotations
 import pytest
 from django.forms import Form
 
-from incidents.enums import IncidentStatus
-from incidents.forms.utils import EnumChoiceField, GroupedModelChoiceField
-from incidents.models.component import Component
-from incidents.models.group import Group
+from firefighter.incidents.enums import IncidentStatus
+from firefighter.incidents.forms.utils import EnumChoiceField, GroupedModelChoiceField
+from firefighter.incidents.models.component import Component
+from firefighter.incidents.models.group import Group
 
 
 class EnumChoiceFieldForm(Form):

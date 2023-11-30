@@ -6,12 +6,12 @@ from typing import TYPE_CHECKING
 import pytest
 from django.urls import reverse
 
-from incidents.factories import IncidentFactory, UserFactory
+from firefighter.incidents.factories import IncidentFactory, UserFactory
 
 if TYPE_CHECKING:
     from django.test import Client
 
-    from incidents.models.user import User
+    from firefighter.incidents.models.user import User
 
 logger = logging.getLogger(__name__)
 

@@ -5,13 +5,13 @@ from datetime import UTC, datetime, timedelta
 
 import pytest
 
-from incidents.views.date_filter import (
+from firefighter.incidents.views.date_filter import (
     get_date_range_from_calendar_value,
     get_date_range_from_special_date,
     get_range_look_args,
     parse_date_natural,
 )
-from incidents.views.date_utils import (
+from firefighter.incidents.views.date_utils import (
     TZ,
     get_bounds_from_quarter,
     get_bounds_from_week,

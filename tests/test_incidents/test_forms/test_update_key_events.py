@@ -4,10 +4,10 @@ from datetime import UTC, datetime
 
 import pytest
 
-from incidents.forms.update_key_events import IncidentUpdateKeyEventsForm
-from incidents.models import Incident, User
-from incidents.models.incident_update import IncidentUpdate
-from incidents.models.milestone_type import MilestoneType
+from firefighter.incidents.forms.update_key_events import IncidentUpdateKeyEventsForm
+from firefighter.incidents.models import Incident, User
+from firefighter.incidents.models.incident_update import IncidentUpdate
+from firefighter.incidents.models.milestone_type import MilestoneType
 
 
 @pytest.fixture()

@@ -3,7 +3,10 @@ from __future__ import annotations
 import pytest
 from rest_framework.exceptions import ValidationError
 
-from raid.serializers import IgnoreEmptyStringListField, LandbotIssueRequestSerializer
+from firefighter.raid.serializers import (
+    IgnoreEmptyStringListField,
+    LandbotIssueRequestSerializer,
+)
 
 base_valid_data = {
     "summary": "Test summary",

@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, call
 import pytest
 from slack_sdk.errors import SlackApiError
 
-from slack.utils import respond
+from firefighter.slack.utils import respond
 
 
 @pytest.fixture()

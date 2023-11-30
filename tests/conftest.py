@@ -17,8 +17,8 @@ from pytest_django import DjangoDbBlocker
 from pytest_django.fixtures import SettingsWrapper
 from zipp import Path
 
-from incidents.factories import IncidentFactory
-from incidents.models import Incident
+from firefighter.incidents.factories import IncidentFactory
+from firefighter.incidents.models import Incident
 
 logger = logging.getLogger(__name__)
 

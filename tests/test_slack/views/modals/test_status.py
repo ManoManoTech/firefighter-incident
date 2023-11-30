@@ -5,9 +5,9 @@ import logging
 import pytest
 from pytest_mock import MockerFixture
 
-from incidents.factories import IncidentFactory
-from incidents.models import Incident, IncidentUpdate
-from slack.views.modals.status import StatusModal
+from firefighter.incidents.factories import IncidentFactory
+from firefighter.incidents.models import Incident, IncidentUpdate
+from firefighter.slack.views.modals.status import StatusModal
 
 logger = logging.getLogger(__name__)
 

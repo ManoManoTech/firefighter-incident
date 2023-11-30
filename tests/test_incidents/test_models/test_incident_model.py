@@ -7,10 +7,10 @@ from hypothesis import given
 from hypothesis.extra import django
 from hypothesis.strategies import builds
 
-from incidents.factories import IncidentFactory
+from firefighter.incidents.factories import IncidentFactory
 
 if TYPE_CHECKING:
-    from incidents.models import Incident
+    from firefighter.incidents.models import Incident
 
 
 @pytest.mark.django_db()

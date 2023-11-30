@@ -6,16 +6,16 @@ from unittest.mock import MagicMock
 import pytest
 from slack_sdk import WebClient
 
-from incidents.factories import UserFactory
-from incidents.models import Incident, User
-from slack.factories import (
+from firefighter.incidents.factories import UserFactory
+from firefighter.incidents.models import Incident, User
+from firefighter.slack.factories import (
     IncidentChannelFactory,
     SlackConversationFactory,
     SlackUserFactory,
 )
-from slack.models import SlackUser
-from slack.models.conversation import Conversation
-from slack.models.incident_channel import IncidentChannel
+from firefighter.slack.models import SlackUser
+from firefighter.slack.models.conversation import Conversation
+from firefighter.slack.models.incident_channel import IncidentChannel
 
 # XXX: Deduplicate from other fixtures
 

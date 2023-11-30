@@ -9,10 +9,10 @@ from slack_sdk.models.blocks.blocks import (
     ActionsBlock,
 )
 
-from incidents.forms.create_incident import CreateIncidentFormBase
-from incidents.models.user import User
-from slack.views.modals.open import OpeningData, OpenModal
-from slack.views.modals.opening.set_details import SetIncidentDetails
+from firefighter.incidents.forms.create_incident import CreateIncidentFormBase
+from firefighter.incidents.models.user import User
+from firefighter.slack.views.modals.open import OpeningData, OpenModal
+from firefighter.slack.views.modals.opening.set_details import SetIncidentDetails
 
 
 def build_opening_data(**kwargs: Any) -> OpeningData:

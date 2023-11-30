@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from jira_app.types import StatusTransitionInfo
-from jira_app.utils import (
+from firefighter.jira_app.types import StatusTransitionInfo
+from firefighter.jira_app.utils import (
     _states_to_transitions_names,
     _transition_path,
     get_status_id_from_name,
