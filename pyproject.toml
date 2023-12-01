@@ -129,8 +129,6 @@ lint = {composite= ["lint-ruff", "lint-pylint", "lint-mypy"], help="Run all lint
 # Format
 fmt-black = {cmd="black .", help="Run black formatter"}
 fmt-ruff =  {cmd="ruff . --fix --select I001", help="Run isort-like import sorting with ruff"}
-_fmt-isort_deprecated = {shell="echo '⚠️ isort is deprecated, use `pdm run fmt-ruff` instead'. We will run it for you..."}
-fmt-isort =  {composite= ["_fmt-isort_deprecated", "fmt-ruff"], help="Run isort-like import sorting with ruff (deprecated)"}
 fmt = {composite= ["fmt-black", "fmt-ruff"], help="Run all formatters (black, isort-like ruff)"}
 # Tests
 tests = {cmd="pytest", help="Run the tests"}
