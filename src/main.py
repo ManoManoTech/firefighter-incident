@@ -6,7 +6,7 @@ from typing import Any
 import gunicorn.app.wsgiapp
 from gunicorn.app.base import Application
 
-HTTP_BIND = os.getenv("HTTP_BIND", "0.0.0.0")
+HTTP_BIND = os.getenv("HTTP_BIND", "0.0.0.0")  # noqa: S104
 HTTP_PORT = int(os.getenv("HTTP_PORT", "8000"))
 
 
