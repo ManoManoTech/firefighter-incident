@@ -21,9 +21,9 @@ jobs:
         image: postgres:13-alpine
         # Provide the password for postgres
         env:
-          POSTGRES_DB: firefighter_test
-          POSTGRES_USER: firefighter_test
-          POSTGRES_PASSWORD: firefighter_test
+          POSTGRES_DB: ff_dev
+          POSTGRES_USER: firefighter
+          POSTGRES_PASSWORD: firefighter
         # Set health checks to wait until postgres has started
         options: >-
           --health-cmd pg_isready
