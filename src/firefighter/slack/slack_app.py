@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-import sys
 from typing import TYPE_CHECKING, Any, ParamSpec, Self, TypedDict, TypeVar
 
 from django.conf import settings
@@ -36,6 +35,15 @@ class SlackApp(App):
 
     def __new__(cls, *args: Any, **kwargs: Any) -> Self:
         if not cls.instance:
+            if settings.FF_SLACK_SKIP_CHECKS:
+                logger.warning(
+                    "Skipping Slack checks! Only use for testing or demo. Features related to the Bot User or the Workspace may not work (e.g. some generated URLs may be invalid)"
+                )
+                kwargs["token_verification_enabled"] = False
+                kwargs["request_verification_enabled"] = False
+                kwargs["ssl_check_enabled"] = False
+                kwargs["url_verification_enabled"] = False
+
             slack_bot_token: str = settings.SLACK_BOT_TOKEN
             slack_signing_secret: str = settings.SLACK_SIGNING_SECRET
             kwargs["token"] = slack_bot_token
@@ -51,16 +59,18 @@ class SlackApp(App):
 
             if isinstance(single_team_authorization, SingleTeamAuthorization):
                 res = single_team_authorization.auth_test_result
-
+                if settings.FF_SLACK_SKIP_CHECKS:
+                    cls.details = cls.instance.details = SlackAppDetails(url="", team="", user="", team_id="", user_id="", bot_id="", is_enterprise_install=False)  # type: ignore
+                    return cls.instance  # type: ignore[return-value]
                 if res is None:
                     logger.critical("Could not verify Slack credentials! Exiting.")
-                    sys.exit(1)
+                    raise RuntimeError("Could not verify Slack credentials! Exiting.")
                 if not res.get("ok"):
                     logger.critical(
                         "Could not verify Slack credentials! Exiting. Credentials: %s",
                         res,
                     )
-                    sys.exit(1)
+                    raise RuntimeError("Could not verify Slack credentials! Exiting.")
                 cls.details = cls.instance.details = SlackAppDetails(url=res["url"], team=res["team"], user=res["user"], team_id=res["team_id"], user_id=res["user_id"], bot_id=res["bot_id"], is_enterprise_install=res["is_enterprise_install"])  # type: ignore
                 logger.debug("SlackAppDetails: %s", cls.details)
         return cls.instance  # type: ignore[return-value]
