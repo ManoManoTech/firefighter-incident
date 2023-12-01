@@ -153,4 +153,4 @@ pytest-coverage.xml
 /static/*
 .static
 
-src/firefighter/_version.py
+**/_version.py
