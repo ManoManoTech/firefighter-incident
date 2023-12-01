@@ -30,7 +30,8 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-
+        ports:
+          - 5432:5432
       redis:
         # Docker Hub image
         image: redis:6-alpine
@@ -40,6 +41,8 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+        ports:
+          - 6379:6379
     steps:
       - uses: actions/checkout@v4
       - name: Setup PDM
@@ -64,10 +67,6 @@ jobs:
           cp .env.example .env
 
           export FF_SLACK_SKIP_CHECKS=true
-          export POSTGRES_HOST=postgres
-          export POSTGRES_PORT=5432
-          export REDIS_HOST=redis
-          export REDIS_PORT=6379
 
           pdm run collectstatic
           pdm run tests-cov
