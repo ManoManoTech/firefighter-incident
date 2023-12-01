@@ -62,6 +62,13 @@ jobs:
       - name: Run Tests
         run: |
           cp .env.example .env
+
+          export FF_SLACK_SKIP_CHECKS=true
+          export POSTGRES_HOST=postgres
+          export POSTGRES_PORT=5432
+          export REDIS_HOST=redis
+          export REDIS_PORT=6379
+
           pdm run collectstatic
           pdm run tests-cov
 
