@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 class ConfluenceClient(HttpClient):
     """Helper methods for Confluence API.
 
-    Should not be used directly, be used by [confluence.service.ConfluenceService][].
+    Should not be used directly, be used by [firefighter.confluence.service.ConfluenceService][].
     """
 
     base_url_api: str

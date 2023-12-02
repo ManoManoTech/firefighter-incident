@@ -486,7 +486,7 @@ class Incident(models.Model):
         """Update the roles related to an incident, and create an IncidentUpdate.
         For each role, provide a User or None.
 
-        This function will update the incident, create an [IncidentUpdate][incidents.models.incident_update.IncidentUpdate], and trigger the [incident_updated][incidents.signals.incident_updated] signal, with `update_roles` sender.
+        This function will update the incident, create an [IncidentUpdate][firefighter.incidents.models.incident_update.IncidentUpdate], and trigger the [incident_updated][firefighter.incidents.signals.incident_updated] signal, with `update_roles` sender.
 
         Args:
             updater (User): The user who is updating the roles.

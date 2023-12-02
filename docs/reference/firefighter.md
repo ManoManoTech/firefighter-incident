@@ -1,2 +1,2 @@
 
-::: firefighter
+::: firefighter.firefighter

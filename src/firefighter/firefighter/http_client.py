@@ -18,7 +18,7 @@ class HttpClient:
     - a timeout of 15 seconds for the connection and 20 seconds for the read, to avoid hanging indefinitely
     - access logging
 
-    Used by [confluence.client.ConfluenceClient][].
+    Used by [firefighter.confluence.client.ConfluenceClient][].
     """
 
     _logger = logging.getLogger(__name__)

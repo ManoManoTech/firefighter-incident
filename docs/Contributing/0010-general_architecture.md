@@ -8,20 +8,20 @@ The project is built with multiple [Django apps](https://docs.djangoproject.com/
 
 ## Custom apps
 
-- [`firefighter`][firefighter]
+- [`firefighter`][firefighter.firefighter]
   - Main project package. Has the health-check URL, DB/Redis connections, all the settings... No features/models.
-- [`incidents`][incidents]
+- [`incidents`][firefighter.incidents]
   - App containing all the incidents models and features, as well as the views.
-- [`api`][api]
+- [`api`][firefighter.api]
   - App containing all the views for the FireFighter API. __Might be integrated in `incidents`__.
-- [`slack`][slack]
+- [`slack`][firefighter.slack]
   - All Slack models and API.
   - As we are still coupled to Slack, this app unfortunately still a lot of business logic.
-- [`confluence`][confluence]
+- [`confluence`][firefighter.confluence]
   - To read/write Confluence pages. Model for page.
-- [`pagerduty`][pagerduty]
+- [`pagerduty`][firefighter.pagerduty]
   - Read PagerDuty on-call.
-- [`raid`][raid]
+- [`raid`][firefighter.raid]
   - Non-critical incident (defects) management with Jira.
 
 `confluence`, `pagerduty` and `api` can be disabled in the settings. `slack` is not, as you would lose too much functionality.

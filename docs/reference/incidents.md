@@ -1,2 +1,2 @@
 
-::: incidents
+::: firefighter.incidents

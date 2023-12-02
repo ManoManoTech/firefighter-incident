@@ -42,6 +42,8 @@ class CustomJsonEncoder(JsonEncoder):
 
 
 class CustomJsonFormatter(JsonFormatter):
+    """Custom JSON formatter for Python loggin, with Datadog specific attributes."""
+
     RESERVED_ATTRS = RESERVED_ATTRS
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:

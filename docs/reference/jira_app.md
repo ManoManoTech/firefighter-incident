@@ -1,2 +1,2 @@
 
-::: jira_app
+::: firefighter.jira_app

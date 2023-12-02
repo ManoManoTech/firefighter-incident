@@ -1,2 +1,2 @@
 
-::: pagerduty
+::: firefighter.pagerduty
