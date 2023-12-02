@@ -37,11 +37,11 @@ logger = logging.getLogger(__name__)
 def slack_save_reminder_message(
     message_response_data: SlackResponse, *args: int, **_kwargs: Any
 ) -> bool:
-    """Save the [slack.models.Message][] from a Slack response. First `args` is an [incidents.models.Incident][] ID.
+    """Save the [firefighter.slack.models.Message][] from a Slack response. First `args` is an [firefighter.incidents.models.Incident][] ID.
 
     Args:
         message_response_data (dict): SlackResponse data.
-        *args: Expect one value, the [incidents.models.Incident][] ID.
+        *args: Expect one value, the [firefighter.incidents.models.Incident][] ID.
         **_kwargs: Ignored.
     """
     user = SlackUser.objects.get_user_by_slack_id(

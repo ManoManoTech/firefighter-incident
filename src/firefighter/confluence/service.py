@@ -88,7 +88,7 @@ class ConfluenceService:
             pm (dict[str, Any] | ConfluencePage): ConfluencePage from the API, or a dict with the same structure.
 
         Returns:
-            PageInfo: The parsed page details that are present on [confluence.models.ConfluencePage][].
+            PageInfo: The parsed page details that are present on [firefighter.confluence.models.ConfluencePage][].
 
         Raises:
             TypeError: If one of page_id, page_title, page_url or page_edit_url are not strings.

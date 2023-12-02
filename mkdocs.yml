@@ -1,9 +1,29 @@
 ---
-site_name: FireFighter Dev Docs
+site_name: FireFighter Docs
+site_description: FireFighter is ManoMano's incident management tool, built on top of Slack and Jira, with Django and Python.
+site_url: https://firefighter-oss.readthedocs.io/en/latest/ # FIXME OSS
+
 repo_url: https://github.com/ManoManoTech/firefighter-oss
-***REMOVED***
+repo_name: ManoManoTech/firefighter-oss
 edit_uri: https://github.com/ManoManoTech/firefighter-oss/edit/main/docs/
+
+copyright: Copyright &copy; 2021-2023 Colibri SAS
 dev_addr: "127.0.0.1:9000"
+
+watch:
+  - src
+  - docs
+  - mkdocs.yml
+  - README.md
+
+extra_css:
+  - css/style.css
+
+validation:
+  omitted_files: warn
+  absolute_links: warn
+  unrecognized_links: warn
+
 theme:
   name: "material"
   custom_dir: docs/overrides
@@ -19,8 +39,10 @@ theme:
     - search.share
     - search.suggest
     - content.code.annotate
+    - content.action.edit
+    - content.action.view
   icon:
-    repo: fontawesome/brands/gitlab
+    repo: fontawesome/brands/github
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
@@ -38,10 +60,12 @@ theme:
         name: Switch to light mode
 extra:
   generator: false
+  version:
+    provider: mike
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/ManoManoTech/firefighter-oss
 
-copyright: Copyright &copy; 2021-2023 Colibri SAS
-watch:
-  - src
 nav:
   - Home & Guides:
       - Readme: index.md
@@ -70,7 +94,6 @@ nav:
           - raid: reference/raid.md
 
 markdown_extensions:
-  # - mkdocs-click
   - abbr
   - admonition
   - tables
@@ -102,6 +125,9 @@ plugins:
   - search
   - include-markdown
   - autorefs
+  - mike:
+      canonical_version: "latest"
+      version_selector: true
   - mkdocstrings:
       handlers:
         python:
@@ -110,6 +136,7 @@ plugins:
             - "import sys"
             - "import django"
             - "sys.path.insert(0, os.path.abspath('.'))"
+            - "sys.path.insert(0, os.path.abspath('src'))"
             - "os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'firefighter.firefighter.settings')"
             - "django.setup()"
           import:
@@ -118,7 +145,7 @@ plugins:
             # - https://slack.dev/python-slack-sdk/objects.inv
             - url: https://docs.djangoproject.com/en/4.2/_objects/
               base_url: https://docs.djangoproject.com/en/4.2/
-          paths: [firefighter]  # search packages in the src folder
+          paths: [src]  # search packages in the src folder
           options:
             show_root_heading: true
             show_signature_annotations: true
@@ -131,11 +158,3 @@ plugins:
             docstring_options:
               ignore_init_summary: yes
   - git-revision-date
-
-extra_css:
-  - css/style.css
-
-validation:
-  nav:
-    omitted_files: warn
-    absolute_links: warn

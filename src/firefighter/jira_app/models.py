@@ -7,7 +7,7 @@ from firefighter.incidents.models.user import User
 
 
 class JiraUser(models.Model):
-    """Jira user model. It maps an [User][incidents.models.user.User] with the Jira account id."""
+    """Jira user model. It maps an [User][firefighter.incidents.models.user.User] with the Jira account id."""
 
     id = models.CharField(max_length=128, primary_key=True, editable=True)
     user = models.OneToOneField(

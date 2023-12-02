@@ -102,7 +102,7 @@ class IncidentUpdateKeyEventsForm(forms.Form):
         self,
         milestones_definitions: Iterable[MilestoneType],
     ) -> list[MilestoneTypeData]:
-        """Get each [incidents.models.milestone_type.MilestoneType][] with its `event_ts` from the IncidentUpdate."""
+        """Get each [firefighter.incidents.models.milestone_type.MilestoneType][] with its `event_ts` from the IncidentUpdate."""
         milestones_objects = self.incident.latest_updates_by_type
         ass = []
         for milestone_def in milestones_definitions:

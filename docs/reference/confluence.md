@@ -1,2 +1,2 @@
 
-::: confluence
+::: firefighter.confluence

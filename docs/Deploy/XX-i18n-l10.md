@@ -12,7 +12,7 @@ We plan to support Django's [internationalization](https://docs.djangoproject.co
 
 We support Django's [localization](https://docs.djangoproject.com/en/4.2/topics/i18n/), but it is only used with a single locale.
 
-We currently override some date formats to use an international format (YYYY-MM-DD, 24 hours time) in the configuration and  [][firefighter.formats]
+We currently override some date formats to use an international format (YYYY-MM-DD, 24 hours time) in the configuration and  [][firefighter.firefighter.formats]
 
 ## Timezones
 

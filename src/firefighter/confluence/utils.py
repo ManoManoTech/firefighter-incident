@@ -41,7 +41,7 @@ class ConfluencePage(TypedDict):
 
 
 class PageInfo(TypedDict):
-    """Dict mapped to mandatory fields for a [confluence.models.ConfluencePage][]."""
+    """Dict mapped to mandatory fields for a [firefighter.confluence.models.ConfluencePage][]."""
 
     name: str
     page_id: str
