@@ -5,7 +5,7 @@
 groups = ["default", "dev", "docs", "tests", "types"]
 strategy = ["cross_platform", "static_urls"]
 lock_version = "4.4"
-content_hash = "sha256:235b87b47e990f54278a862c824dbf8ed4d950e71f226da07c224ad193f6c8ba"
+content_hash = "sha256:715f9c9e686578c2b548fc868fde7346afbe6a49fccdf6ef4df2cb6e2870f396"
 
 [[package]]
 name = "aiohttp"
@@ -829,7 +829,7 @@ files = [
 
 [[package]]
 name = "django"
-version = "4.2.7"
+version = "4.2.8"
 requires_python = ">=3.8"
 summary = "A high-level Python web framework that encourages rapid development and clean, pragmatic design."
 dependencies = [
@@ -838,8 +838,8 @@ dependencies = [
     "tzdata; sys_platform == \"win32\"",
 ]
 files = [
-    {url = "https://files.pythonhosted.org/packages/2d/6d/e87236e3c7b2f5911d132034177aebb605f3953910cc429df8061b13bf10/Django-4.2.7-py3-none-any.whl", hash = "sha256:e1d37c51ad26186de355cbcec16613ebdabfa9689bbade9c538835205a8abbe9"},
-    {url = "https://files.pythonhosted.org/packages/5c/62/0c6ab2f3ac9a242b4562b6be1c418685fa7d1ccb8ca302cdb97e0b23cf4b/Django-4.2.7.tar.gz", hash = "sha256:8e0f1c2c2786b5c0e39fe1afce24c926040fad47c8ea8ad30aaf1188df29fc41"},
+    {url = "https://files.pythonhosted.org/packages/8a/79/7f45e9c129c3cd8e4d54806649efeb1db9c223c54a1c54b30511d246bc60/Django-4.2.8-py3-none-any.whl", hash = "sha256:6cb5dcea9e3d12c47834d32156b8841f533a4493c688e2718cafd51aa430ba6d"},
+    {url = "https://files.pythonhosted.org/packages/a0/bf/ff46fc1bd0f7d86390134e3869dd093be1d2bbaa9dafcb5389e87ef5bcb5/Django-4.2.8.tar.gz", hash = "sha256:d69d5e36cc5d9f4eb4872be36c622878afcdce94062716cf3e25bcedcb168b62"},
 ]
 
 [[package]]
@@ -1156,17 +1156,17 @@ files = [
 
 [[package]]
 name = "django"
-version = "4.2.7"
+version = "4.2.8"
 extras = ["argon2"]
 requires_python = ">=3.8"
 summary = "A high-level Python web framework that encourages rapid development and clean, pragmatic design."
 dependencies = [
     "argon2-cffi>=19.1.0",
-    "django==4.2.7",
+    "django==4.2.8",
 ]
 files = [
-    {url = "https://files.pythonhosted.org/packages/2d/6d/e87236e3c7b2f5911d132034177aebb605f3953910cc429df8061b13bf10/Django-4.2.7-py3-none-any.whl", hash = "sha256:e1d37c51ad26186de355cbcec16613ebdabfa9689bbade9c538835205a8abbe9"},
-    {url = "https://files.pythonhosted.org/packages/5c/62/0c6ab2f3ac9a242b4562b6be1c418685fa7d1ccb8ca302cdb97e0b23cf4b/Django-4.2.7.tar.gz", hash = "sha256:8e0f1c2c2786b5c0e39fe1afce24c926040fad47c8ea8ad30aaf1188df29fc41"},
+    {url = "https://files.pythonhosted.org/packages/8a/79/7f45e9c129c3cd8e4d54806649efeb1db9c223c54a1c54b30511d246bc60/Django-4.2.8-py3-none-any.whl", hash = "sha256:6cb5dcea9e3d12c47834d32156b8841f533a4493c688e2718cafd51aa430ba6d"},
+    {url = "https://files.pythonhosted.org/packages/a0/bf/ff46fc1bd0f7d86390134e3869dd093be1d2bbaa9dafcb5389e87ef5bcb5/Django-4.2.8.tar.gz", hash = "sha256:d69d5e36cc5d9f4eb4872be36c622878afcdce94062716cf3e25bcedcb168b62"},
 ]
 
 [[package]]
@@ -3004,12 +3004,12 @@ files = [
 
 [[package]]
 name = "slack-sdk"
-version = "3.26.0"
+version = "3.26.1"
 requires_python = ">=3.6.0"
 summary = "The Slack API Platform SDK for Python"
 files = [
-    {url = "https://files.pythonhosted.org/packages/07/69/34154b2a756edb522c3bbb1bb303e0b7238b122bd06242bfbb50a65f9e4c/slack_sdk-3.26.0-py2.py3-none-any.whl", hash = "sha256:b84c2d93163166eb682e290c19334683c2d0f0cb4a5479c809706b44038fdda1"},
-    {url = "https://files.pythonhosted.org/packages/7d/4f/9dddb20c202f2194b05d0224406d94b422b517786c503a7f9157b177a0a7/slack_sdk-3.26.0.tar.gz", hash = "sha256:147946f388ce73b17c377b823759fcb39c0eca7444ca0a942dc12a3940a4f44f"},
+    {url = "https://files.pythonhosted.org/packages/39/43/35372a2835049339d5c3f6ff825498760b2052bc5d0205314587b3f1bb1d/slack_sdk-3.26.1.tar.gz", hash = "sha256:d1600211eaa37c71a5f92daf4404074c3e6b3f5359a37c93c818b39d88ab4ca0"},
+    {url = "https://files.pythonhosted.org/packages/a9/c0/ddef7f1357a16ad29e78be6f7f498d4293046393eebd25b69f56d6209613/slack_sdk-3.26.1-py2.py3-none-any.whl", hash = "sha256:f80f0d15f0fce539b470447d2a07b03ecdad6b24f69c1edd05d464cf21253a06"},
 ]
 
 [[package]]
