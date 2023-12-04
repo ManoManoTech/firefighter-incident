@@ -25,5 +25,5 @@ SLACK_APP_EMOJI: str = config("SLACK_APP_EMOJI", default=":fire_extinguisher:")
 """Emoji to represent the app in Slack surfaces. Can be an actual emoji, or a string for a custom emoji present in your Workspace, like ":incident_logo:"."""
 
 
-FF_SLACK_SKIP_CHECKS: bool = config("FF_SLACK_SKIP_CHECKS", cast=bool, default=True)
+FF_SLACK_SKIP_CHECKS: bool = config("FF_SLACK_SKIP_CHECKS", cast=bool, default=False)
 """Skip Slack checks. Only use for testing or demo."""
