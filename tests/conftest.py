@@ -51,8 +51,9 @@ def django_db_setup(  # noqa: PT004
 ) -> None:
     # XXX Allow override of fixtures path
     try:
-        fixtures_path = impresources.files("firefighter_fixtures")
-    except ModuleNotFoundError:
+        fixtures_path_mp = impresources.files("firefighter_fixtures")
+        fixtures_path = fixtures_path_mp._paths[0]  # type: ignore
+    except (ModuleNotFoundError, IndexError, AttributeError):
         fixtures_path = Path(__file__).parent / "fixtures"
     logger.info(f"Loading fixtures from {fixtures_path}")
 

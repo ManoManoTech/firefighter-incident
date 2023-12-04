@@ -7,6 +7,7 @@ jobs:
   Testing:
     env:
       PYTHONDEVMODE: 1
+      FF_SLACK_SKIP_CHECKS: true
     runs-on: ${{ matrix.os }}
 
     strategy:
