@@ -7,17 +7,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-    replaces = [
-        ("raid", "0001_initial"),
-        ("raid", "0002_rename_pagerdutyuser_jirauser"),
-        ("raid", "0003_alter_jirauser_id"),
-        ("raid", "0004_jiraticket"),
-        ("raid", "0005_alter_jiraticket_options_alter_jiraticket_assignee_and_more"),
-        ("raid", "0006_jiraticket_incident"),
-        ("raid", "0007_alter_jiraticket_assignee_alter_jiraticket_incident"),
-        ("raid", "0008_qualifierrotation"),
-    ]
-
     dependencies = [
         ("incidents", "0036_severity_enabled_create_severity_enabled_update_and_more"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),

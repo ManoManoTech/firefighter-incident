@@ -7,16 +7,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-    replaces = [
-        ("confluence", "0001_squashed_0002_remove_page_order"),
-        ("confluence", "0002_auto_20210617_2224"),
-        ("confluence", "0003_auto_20210624_1135"),
-        ("confluence", "0004_alter_page_name"),
-        ("confluence", "0005_runbook"),
-        ("confluence", "0006_confluencepage_body_export_view_and_more"),
-        ("confluence", "0007_runbook_service_name_runbook_service_type_and_more"),
-    ]
-
     dependencies = [
         ("incidents", "0030_status_enum_constraints"),
         ("incidents", "0006_alter_user_slack_id"),

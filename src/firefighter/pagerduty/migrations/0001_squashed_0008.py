@@ -8,17 +8,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-    replaces = [
-        ("pagerduty", "0001_squashed_0005_auto_20210609_1010"),
-        ("pagerduty", "0002_auto_20210701_2140"),
-        ("pagerduty", "0003_auto_20220428_1602"),
-        ("pagerduty", "0004_pagerdutyteam_pagerdutyuser_teams"),
-        ("pagerduty", "0005_pagerdutyuser_name"),
-        ("pagerduty", "0006_new_models"),
-        ("pagerduty", "0007_alter_pagerdutyoncall_schedule"),
-        ("pagerduty", "0008_alter_pagerdutyservice_escalation_policy"),
-    ]
-
     dependencies = [
         ("incidents", "0006_alter_user_slack_id"),
         ("incidents", "0022_alter_user_name"),

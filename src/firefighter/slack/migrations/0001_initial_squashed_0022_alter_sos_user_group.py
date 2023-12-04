@@ -8,29 +8,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-    replaces = [
-        ("slack", "0001_initial"),
-        ("slack", "0002_auto_20210701_2140"),
-        ("slack", "0005_auto_20210713_1609_squashed_0006_auto_20210713_1707"),
-        ("slack", "0006_alter_usergroup_components"),
-        ("slack", "0007_alter_slackuser_username"),
-        ("slack", "0008_slackuser_slack_slack_slack_i_06073f_idx"),
-        ("slack", "0009_auto_20220621_1042"),
-        ("slack", "0010_message_ff_type"),
-        ("slack", "0011_message_incident"),
-        ("slack", "0012_usergroup_members"),
-        ("slack", "0013_alter_usergroup_description"),
-        ("slack", "0014_alter_usergroup_options"),
-        ("slack", "0015_conversation_components_conversation_members"),
-        ("slack", "0016_alter_conversation_incident_and_more"),
-        ("slack", "0017_alter_usergroup_components_and_more"),
-        ("slack", "0018_conversation_slack_conversation__type_valid_and_more"),
-        ("slack", "0019_alter_conversation_channel_id"),
-        ("slack", "0020_conversation_tag"),
-        ("slack", "0021_alter_conversation_tag_sos"),
-        ("slack", "0022_alter_sos_user_group"),
-    ]
-
     dependencies = [
         ("incidents", "0011_auto_20210628_1427"),
         ("incidents", "0027_remove_component_slack_conversations"),
