@@ -5,7 +5,7 @@
 groups = ["default", "dev", "docs", "tests", "types"]
 strategy = ["cross_platform", "static_urls"]
 lock_version = "4.4"
-content_hash = "sha256:30fbfa6973f2382d04e519fcb32c06963947349b4d30e0e9803ebe13a51a63f9"
+content_hash = "sha256:235b87b47e990f54278a862c824dbf8ed4d950e71f226da07c224ad193f6c8ba"
 
 [[package]]
 name = "aiohttp"
@@ -2290,36 +2290,62 @@ files = [
 ]
 
 [[package]]
-name = "psycopg2-binary"
-version = "2.9.9"
+name = "psycopg"
+version = "3.1.14"
 requires_python = ">=3.7"
-summary = "psycopg2 - Python-PostgreSQL Database Adapter"
+summary = "PostgreSQL database adapter for Python"
+dependencies = [
+    "typing-extensions>=4.1",
+    "tzdata; sys_platform == \"win32\"",
+]
 files = [
-    {url = "https://files.pythonhosted.org/packages/04/37/2429360ac5547378202db14eec0dde76edbe1f6627df5a43c7e164922859/psycopg2_binary-2.9.9-cp312-cp312-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:2d423c8d8a3c82d08fe8af900ad5b613ce3632a1249fd6a223941d0735fce493"},
-    {url = "https://files.pythonhosted.org/packages/14/33/12818c157e333cb9d9e6753d1b2463b6f60dbc1fade115f8e4dc5c52cac4/psycopg2_binary-2.9.9-cp312-cp312-musllinux_1_1_ppc64le.whl", hash = "sha256:911dda9c487075abd54e644ccdf5e5c16773470a6a5d3826fda76699410066fb"},
-    {url = "https://files.pythonhosted.org/packages/18/ca/da384fd47233e300e3e485c90e7aab5d7def896d1281239f75901faf87d4/psycopg2_binary-2.9.9-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:b0605eaed3eb239e87df0d5e3c6489daae3f7388d455d0c0b4df899519c6a38d"},
-    {url = "https://files.pythonhosted.org/packages/19/57/9f172b900795ea37246c78b5f52e00f4779984370855b3e161600156906d/psycopg2_binary-2.9.9-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:6e6f98446430fdf41bd36d4faa6cb409f5140c1c2cf58ce0bbdaf16af7d3f119"},
-    {url = "https://files.pythonhosted.org/packages/25/1f/7ae31759142999a8d06b3e250c1346c4abcdcada8fa884376775dc1de686/psycopg2_binary-2.9.9-cp311-cp311-win_amd64.whl", hash = "sha256:b76bedd166805480ab069612119ea636f5ab8f8771e640ae103e05a4aae3e417"},
-    {url = "https://files.pythonhosted.org/packages/3b/92/b463556409cdc12791cd8b1dae0072bf8efe817ef68b7ea3d9cf7d0e5656/psycopg2_binary-2.9.9-cp311-cp311-musllinux_1_1_ppc64le.whl", hash = "sha256:77853062a2c45be16fd6b8d6de2a99278ee1d985a7bd8b103e97e41c034006d2"},
-    {url = "https://files.pythonhosted.org/packages/50/66/fa53d2d3d92f6e1ef469d92afc6a4fe3f6e8a9a04b687aa28fb1f1d954ee/psycopg2_binary-2.9.9-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:8f8544b092a29a6ddd72f3556a9fcf249ec412e10ad28be6a0c0d948924f2212"},
-    {url = "https://files.pythonhosted.org/packages/56/a2/7851c68fe8768f3c9c246198b6356ee3e4a8a7f6820cc798443faada3400/psycopg2_binary-2.9.9-cp312-cp312-musllinux_1_1_x86_64.whl", hash = "sha256:57fede879f08d23c85140a360c6a77709113efd1c993923c59fde17aa27599fe"},
-    {url = "https://files.pythonhosted.org/packages/62/2a/c0530b59d7e0d09824bc2102ecdcec0456b8ca4d47c0caa82e86fce3ed4c/psycopg2_binary-2.9.9-cp312-cp312-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:2e5afae772c00980525f6d6ecf7cbca55676296b580c0e6abb407f15f3706996"},
-    {url = "https://files.pythonhosted.org/packages/6f/ee/3ba07c6dc7c3294e717e94720da1597aedc82a10b1b180203ce183d4631a/psycopg2_binary-2.9.9-cp312-cp312-win32.whl", hash = "sha256:64cf30263844fa208851ebb13b0732ce674d8ec6a0c86a4e160495d299ba3c93"},
-    {url = "https://files.pythonhosted.org/packages/70/bb/aec2646a705a09079d008ce88073401cd61fc9b04f92af3eb282caa3a2ec/psycopg2_binary-2.9.9-cp312-cp312-musllinux_1_1_i686.whl", hash = "sha256:cb16c65dcb648d0a43a2521f2f0a2300f40639f6f8c1ecbc662141e4e3e1ee07"},
-    {url = "https://files.pythonhosted.org/packages/73/17/ba28bb0022db5e2015a82d2df1c4b0d419c37fa07a588b3aff3adc4939f6/psycopg2_binary-2.9.9-cp311-cp311-musllinux_1_1_i686.whl", hash = "sha256:bc7bb56d04601d443f24094e9e31ae6deec9ccb23581f75343feebaf30423359"},
-    {url = "https://files.pythonhosted.org/packages/7a/1f/a6cf0cdf944253f7c45d90fbc876cc8bed5cc9942349306245715c0d88d6/psycopg2_binary-2.9.9-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:1ea665f8ce695bcc37a90ee52de7a7980be5161375d42a0b6c6abedbf0d81f0f"},
-    {url = "https://files.pythonhosted.org/packages/7b/08/9c66c269b0d417a0af9fb969535f0371b8c538633535a7a6a5ca3f9231e2/psycopg2_binary-2.9.9-cp312-cp312-win_amd64.whl", hash = "sha256:81ff62668af011f9a48787564ab7eded4e9fb17a4a6a74af5ffa6a457400d2ab"},
-    {url = "https://files.pythonhosted.org/packages/7c/ae/cedd56e1f4a2b0e37213283caf3733a875c4c76f3372241e19c0d2a87355/psycopg2_binary-2.9.9-cp311-cp311-win32.whl", hash = "sha256:dc4926288b2a3e9fd7b50dc6a1909a13bbdadfc67d93f3374d984e56f885579d"},
-    {url = "https://files.pythonhosted.org/packages/81/0b/3adf561107c865928455891156d1dde5325253f7f4316fe56cd2c3f73570/psycopg2_binary-2.9.9-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:143072318f793f53819048fdfe30c321890af0c3ec7cb1dfc9cc87aa88241de2"},
-    {url = "https://files.pythonhosted.org/packages/92/57/96576e07132d7f7a1ac1df939575e6fdd8951aea337ee152b586bb51a971/psycopg2_binary-2.9.9-cp311-cp311-musllinux_1_1_x86_64.whl", hash = "sha256:78151aa3ec21dccd5cdef6c74c3e73386dcdfaf19bced944169697d7ac7482fc"},
-    {url = "https://files.pythonhosted.org/packages/94/68/1176fc14ea76861b7b8360be5176e87fb20d5091b137c76570eb4e237324/psycopg2_binary-2.9.9-cp312-cp312-musllinux_1_1_aarch64.whl", hash = "sha256:c77e3d1862452565875eb31bdb45ac62502feabbd53429fdc39a1cc341d681ba"},
-    {url = "https://files.pythonhosted.org/packages/a5/ac/702d300f3df169b9d0cbef0340d9f34a78bc18dc2dbafbcb39ff0f165cf8/psycopg2_binary-2.9.9-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:ee825e70b1a209475622f7f7b776785bd68f34af6e7a46e2e42f27b659b5bc26"},
-    {url = "https://files.pythonhosted.org/packages/a7/d0/5f2db14e7b53552276ab613399a83f83f85b173a862d3f20580bc7231139/psycopg2_binary-2.9.9-cp312-cp312-macosx_10_9_x86_64.whl", hash = "sha256:8532fd6e6e2dc57bcb3bc90b079c60de896d2128c5d9d6f24a63875a95a088cf"},
-    {url = "https://files.pythonhosted.org/packages/c2/05/81e8bc7fca95574c9323e487d9ce1b58a4cfcc17f89b8fe843af46361211/psycopg2_binary-2.9.9-cp311-cp311-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:f7fc5a5acafb7d6ccca13bfa8c90f8c51f13d8fb87d95656d3950f0158d3ce53"},
-    {url = "https://files.pythonhosted.org/packages/ce/85/62825cabc6aad53104b7b6d12eb2ad74737d268630032d07b74d4444cb72/psycopg2_binary-2.9.9-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:977646e05232579d2e7b9c59e21dbe5261f403a88417f6a6512e70d3f8a046be"},
-    {url = "https://files.pythonhosted.org/packages/e9/b0/9ca2b8e01a0912c9a14234fd5df7a241a1e44778c5797bf4b8eaa8dc3d3a/psycopg2_binary-2.9.9-cp311-cp311-musllinux_1_1_aarch64.whl", hash = "sha256:b6356793b84728d9d50ead16ab43c187673831e9d4019013f1402c41b1db9b27"},
-    {url = "https://files.pythonhosted.org/packages/f7/98/c2fedcbf0a9607519a010dcf88571138b2251062dbde3610cdba5ba1eee1/psycopg2_binary-2.9.9-cp311-cp311-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:c332c8d69fb64979ebf76613c66b985414927a40f8defa16cf1bc028b7b0a7b0"},
-    {url = "https://files.pythonhosted.org/packages/fc/07/e720e53bfab016ebcc34241695ccc06a9e3d91ba19b40ca81317afbdc440/psycopg2-binary-2.9.9.tar.gz", hash = "sha256:7f01846810177d829c7692f1f5ada8096762d9172af1b1a28d4ab5b77c923c1c"},
+    {url = "https://files.pythonhosted.org/packages/19/9c/4801c983f06c3e6fa28597fa4ebbbf41b6d9114367ea1ebcc5c365411152/psycopg-3.1.14-py3-none-any.whl", hash = "sha256:f5bce37d357578b230ede15fb461e2c601122986f6dd590e94283aaca8958b14"},
+    {url = "https://files.pythonhosted.org/packages/4f/2b/fd8aaf32f8cae7efccb575da95e13f38d2b1062805ec96b37a3e8a98e84c/psycopg-3.1.14.tar.gz", hash = "sha256:7a63249f52e9c312d2d3978df5f170d21a0defd3a0c950d7859d226b7cfbfad5"},
+]
+
+[[package]]
+name = "psycopg-binary"
+version = "3.1.14"
+requires_python = ">=3.7"
+summary = "PostgreSQL database adapter for Python -- C optimisation distribution"
+files = [
+    {url = "https://files.pythonhosted.org/packages/18/9d/a6064747f8a8699f7659f223b3088a93f3920021f37cffbf0e9f750a0b83/psycopg_binary-3.1.14-cp311-cp311-musllinux_1_1_i686.whl", hash = "sha256:664cff756a8a636f9c6810d41dc5da46879142865ebcceae2edcd045dcb30b6f"},
+    {url = "https://files.pythonhosted.org/packages/1c/84/b606850564a1c3846345b39b11b5b12a75789626afec70ff9f6004a016d7/psycopg_binary-3.1.14-cp311-cp311-musllinux_1_1_ppc64le.whl", hash = "sha256:6babfd78e6e0a91eff45b82b2517e82bfe078de084f354853b1017cc04e37ad9"},
+    {url = "https://files.pythonhosted.org/packages/20/ad/87fd0e99c6af99c087a09bcc8c0faa918d6c3ad29e7d920a50c6b23c4830/psycopg_binary-3.1.14-cp312-cp312-musllinux_1_1_x86_64.whl", hash = "sha256:fd078bb91b5957913cebefbaa8b9e296e31c4f3eaab16b875e2f75a84640ebc6"},
+    {url = "https://files.pythonhosted.org/packages/32/a9/d9e991ccf30b5242817d90b686359a736fb5678e2af6bbc9e5a3ace434f5/psycopg_binary-3.1.14-cp312-cp312-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:abeb8ed0fe3ff635f10914edb8c8febe99046a99143d21e004352aebc4ab1241"},
+    {url = "https://files.pythonhosted.org/packages/34/6b/4a4b771bd3c37256157cdf78c453c697e45b0d347e1ec71f27d68ffa6def/psycopg_binary-3.1.14-cp311-cp311-musllinux_1_1_aarch64.whl", hash = "sha256:ab1f40717be4bb12e43c6789ba05efdffd342c8c7aa9db346110d814779a8088"},
+    {url = "https://files.pythonhosted.org/packages/3b/85/795f4e66038e98764fd74d8e794590c001a5dd1d4f9cb252ee0c063ff866/psycopg_binary-3.1.14-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:eb093578a56e3074c9573d8c1bea408ae857e3e8330ed831c4d7fc5ece6f9cad"},
+    {url = "https://files.pythonhosted.org/packages/3f/ba/c46ddd5d360b498a65477a5f8630341cadac526626a94b30cc2fe7f025ff/psycopg_binary-3.1.14-cp311-cp311-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:dad6eef513754219a696f8bd51c7c5f25f6b988ac5b6edc87e698c737158f4d3"},
+    {url = "https://files.pythonhosted.org/packages/40/ed/339d035c403d5201bf13b22edb2d487e0f20ec9dd67273c5ebbf4ca9472e/psycopg_binary-3.1.14-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:33a76e665826ebb4298fb931985f466e3cd553bb7cf30cfef9214e2c9156f026"},
+    {url = "https://files.pythonhosted.org/packages/7c/9c/252d36e386cc769f5af4c1c4f0636c270e48e9a3028fb33395d2b89eb4f4/psycopg_binary-3.1.14-cp311-cp311-win_amd64.whl", hash = "sha256:32f09adce74208aea1b6500ab07bda68bed45df902f0125a3b292137a2133a2a"},
+    {url = "https://files.pythonhosted.org/packages/82/33/85ac2ec9e0596e9b970b6f0a2f9110b03d96dea351809ec9a71f0e698559/psycopg_binary-3.1.14-cp312-cp312-macosx_10_9_x86_64.whl", hash = "sha256:d5ca34fad0558244d5fbfbc19a691b423a471e9e601d4ddabd759aa05ded0fa1"},
+    {url = "https://files.pythonhosted.org/packages/8a/32/46cd4fbec6d818ca50bf09f68121bc8b0674d7d70e96e94879800a0a14ee/psycopg_binary-3.1.14-cp312-cp312-musllinux_1_1_i686.whl", hash = "sha256:068d29ebcba782b815a5a3842c740af8d4c314e2caf82636a5e0e80120606655"},
+    {url = "https://files.pythonhosted.org/packages/8d/c5/0c7dc01776fc210e5c41504c503fae5912410739175165fe9bf3ffa682a8/psycopg_binary-3.1.14-cp312-cp312-musllinux_1_1_ppc64le.whl", hash = "sha256:b1528ea7ef8f5e109d9eda470e7a7917b467938c1371245eddad0caff8edb5a7"},
+    {url = "https://files.pythonhosted.org/packages/9a/a9/c9f05a742a93cad0ce9ca0292cd712bb59734fc29216bc143c224861d47e/psycopg_binary-3.1.14-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:f623d0952bc0e118c4de529a20fba98855654ff3a1f30d9bce77898af0518e70"},
+    {url = "https://files.pythonhosted.org/packages/b8/28/5748e65faa74b9f4bd0c722d93736ef460fed2a1570454d655b54e1e2b36/psycopg_binary-3.1.14-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:d431c41321168035dfd7217253ca02f985769636500ae951fa72cb9f6473d393"},
+    {url = "https://files.pythonhosted.org/packages/be/a9/37cd178048645d5dafe37af708533dd76880572bf7a2f31a603c066df969/psycopg_binary-3.1.14-cp311-cp311-musllinux_1_1_x86_64.whl", hash = "sha256:d88c15597732b6021e29cf5bdaa7245af51a986f2834ca2c77aca4c05f224f59"},
+    {url = "https://files.pythonhosted.org/packages/cc/d8/8f6a5208f54210b8179d1da227d1b89888976ada2880696986280a784fea/psycopg_binary-3.1.14-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:a19d4776ccb4c22192ffa5878c82389a0d2ba8a861933b95f91b73d426b2f54f"},
+    {url = "https://files.pythonhosted.org/packages/ce/e4/29e560a3d97cf1a463e8e66ada009156a14f294d4e97c06cadf4ebc12720/psycopg_binary-3.1.14-cp312-cp312-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:56e668a6a61f33d48b1696207393e5ec33a371a3692cc434c445b909f97a5e34"},
+    {url = "https://files.pythonhosted.org/packages/d3/28/36bcd3f52a75f37d5af2138992991221188056299b134bb623dee792b7d9/psycopg_binary-3.1.14-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:749760b5d963390859397b745c797b62ee0757c72a961ee77f918fd4a1ae6646"},
+    {url = "https://files.pythonhosted.org/packages/e3/b1/3b48f5725f9cd199734af36489c6f4fce8368fc86c8883d600a7899e3db4/psycopg_binary-3.1.14-cp311-cp311-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:05e0a41b2a2e78a785e7b415e495ae7f35817fac7377d34192b56ce7dd914c1f"},
+    {url = "https://files.pythonhosted.org/packages/e6/74/feb0adc26481774705a6f7f38319d1fe0a5ce25ccdc1d4624b48441a4062/psycopg_binary-3.1.14-cp312-cp312-win_amd64.whl", hash = "sha256:313be7a062e96dbc153ca7ecd6bce86fc67ac5fd9f5722cfbc5fba5431f4eb36"},
+    {url = "https://files.pythonhosted.org/packages/eb/11/49d407c5289e23e66eaf5e58d043aa99724f97284fd0ce1c32e058a29683/psycopg_binary-3.1.14-cp312-cp312-musllinux_1_1_aarch64.whl", hash = "sha256:57a4055b63a824589f9e9a8edc5dcf498ef49b888bc945d7a5e865ffe5a42ff8"},
+    {url = "https://files.pythonhosted.org/packages/fc/21/b40e7ce0ef3bf2cb5b0b16dcbc518893e978db7abe46d06c39b7a54d347f/psycopg_binary-3.1.14-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:ae1d4de5646460ea7f26fe19feffc9853648a05ee419d2f861029a1c9c53817d"},
+]
+
+[[package]]
+name = "psycopg"
+version = "3.1.14"
+extras = ["binary"]
+requires_python = ">=3.7"
+summary = "PostgreSQL database adapter for Python"
+dependencies = [
+    "psycopg-binary==3.1.14; implementation_name != \"pypy\"",
+    "psycopg==3.1.14",
+]
+files = [
+    {url = "https://files.pythonhosted.org/packages/19/9c/4801c983f06c3e6fa28597fa4ebbbf41b6d9114367ea1ebcc5c365411152/psycopg-3.1.14-py3-none-any.whl", hash = "sha256:f5bce37d357578b230ede15fb461e2c601122986f6dd590e94283aaca8958b14"},
+    {url = "https://files.pythonhosted.org/packages/4f/2b/fd8aaf32f8cae7efccb575da95e13f38d2b1062805ec96b37a3e8a98e84c/psycopg-3.1.14.tar.gz", hash = "sha256:7a63249f52e9c312d2d3978df5f170d21a0defd3a0c950d7859d226b7cfbfad5"},
 ]
 
 [[package]]
