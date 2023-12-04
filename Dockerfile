@@ -1,11 +1,11 @@
-FROM python:3.11.6-slim-bullseye
+FROM python:3.11-slim-bullseye
 
 ***REMOVED***
 LABEL org.opencontainers.image.title="ManoManoTech"
-LABEL org.opencontainers.image.description="Sentry runtime image"
-***REMOVED***
-***REMOVED***
-LABEL org.opencontainers.image.vendor="Functional Software, Inc."
+LABEL org.opencontainers.image.description="FireFighter runtime image"
+LABEL org.opencontainers.image.url="https://github.com/ManoManoTech/firefighter-incident/"
+LABEL org.opencontainers.image.documentation="https://github.com/ManoManoTech/firefighter-incident/"
+LABEL org.opencontainers.image.vendor="Colibri SAS"
 ***REMOVED***
 
 # add our user and group first to make sure their IDs get assigned consistently
