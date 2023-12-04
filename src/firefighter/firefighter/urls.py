@@ -97,7 +97,7 @@ if settings.ENV == "dev":
 
 if apps.is_installed("firefighter.slack") and (
     "runserver" in sys.argv
-    or "firefighter.wsgi" in sys.argv
+    or "firefighter.firefighter.wsgi" in sys.argv
     or "main.py" in sys.argv
     or (len(sys.argv) > 0 and "ff-web" in sys.argv[0])
 ):
