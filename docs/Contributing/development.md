@@ -10,19 +10,11 @@ It is **strongly advised** to contact the project owner(s) (Pulse team) **before
 
 ## Step to start contributing
 
-<!-- XXX Updated documentation for OSS -->
-
 1. Create a public fork of the FireFighter project
+2. Create a topic branch where changes will be done.
 
     ```bash
-***REMOVED***
-    cd firefighter
-    ```
-
-2. Create a topic branch where changes will be done. The topic branch must contain the ref of the Jira ticket
-
-    ```bash
-    git checkout -b ${FIR-XXX_TOPIC_BRANCH}
+    git checkout -b ${MY_TOPIC_BRANCH}
     ```
 
 3. Commit the changes in logical and incremental chunks and use
@@ -40,23 +32,25 @@ It is **strongly advised** to contact the project owner(s) (Pulse team) **before
     git commit -am 'Add new feature...'
     ```
 
-4. Add test if needed & make sure the test suite is passing.
+    > You may loosely follow [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/) if you want to.
+
+4. Add test if needed & make sure the test suite and various linters are passing.
 
 5. Push the topic branch to the remote forked repository.
 
     ```bash
-    git push origin ${FIR-XXX_TOPIC_BRANCH}
+    git push origin ${MY_TOPIC_BRANCH}
     ```
 
-6. [Open a Merge Request](https://docs.gitlab.com/ee/gitlab-basics/add-merge-request.html) to merge your code and its documentation. The earlier you open a merge request, the sooner you can get feedback.
+6. [Open a Pull Request](https://github.com/ManoManoTech/firefighter-oss/pulls) to merge your code and its documentation. The earlier you open a merge request, the sooner you can get feedback.
 
 7. Verify the test suite is passing in the CI & verify if the pipeline is green.
 
 8. Once the PR has been merged, the topic branch can be removed from the local fork.
 
     ```bash
-    git branch -d ${FIR-XXX_TOPIC_BRANCH}
-    git push origin --delete ${FIR-XXX_TOPIC_BRANCH}
+    git branch -d ${MY_TOPIC_BRANCH}
+    git push origin --delete ${MY_TOPIC_BRANCH}
     ```
 
 ## Dev tooling
@@ -82,7 +76,6 @@ Import sorting managed by `ruff`.
 ```shell
 pdm run lint-ruff
 ```
-
 
 ```shell
 pdm run lint-pylint
