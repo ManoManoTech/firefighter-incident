@@ -27,7 +27,7 @@ dependencies = [
     "drf-spectacular>=0.25.1",
     "gunicorn>=20.1.0",
     "httpx>=0.23.3",
-    "psycopg2-binary<3.0.0,>=2.9.5",
+    "psycopg[binary]>=3.1.14",
     "python-dateutil>=2.8.2",
     "python-decouple>=3.7",
     "python-json-logger>=2.0.6",
@@ -44,7 +44,6 @@ dependencies = [
     "markdown>=3.3.7",
     "jira>=3.4.1",
     "drf-standardized-errors>=0.12.6",
-    "mypy-to-codeclimate>=0.0.3",
     "aiohttp>=3.9.1", # Transitive dependency of slack_sdk
 ]
 requires-python = ">=3.11,<4.0"
