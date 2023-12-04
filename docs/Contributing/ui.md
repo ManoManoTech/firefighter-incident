@@ -2,15 +2,21 @@
 
 ## Web UI
 
+## Javascript Graceful degradation
+
+We use [htmx](https://htmx.org/) to build the web UI. It is a small JS library that allows you to access AJAXdirectly in HTML, using attributes like `hx-get`, `hx-post`, `hx-swap`, `hx-trigger`, etc.
+
+It allows, in conjonction with [Alpine.js](https://alpinejs.dev/) to have a more dynamic UI, without having to write a lot of JS code.
+
+The UI should be usable without JS, and should be accessible. If you need to use JS, make sure it is accessible.
+
+> The goal is to be usable without JS, even if the experience is really degraded.
+
 ## Tailwind CSS
 
-Firefighter uses [Tailwind CSS](https://tailwindcss.com/) for styling.
+Firefighter uses [Tailwind CSS](https://tailwindcss.com/) for styling. It is a utility-first CSS framework, which means it provides a set of utility classes that can be used to build your UI. It is highly customizable and easy to use.
 
-We use some [Tailwind UI](https://tailwindui.com/) components. Ask the [Pulse Team](https://manomano-team.slack.com/archives/CL3JAED88) if you need access to the Tailwind UI account.
-<!-- XXX OSS Don't ask the Pulse Team -->
-
-!!! info "For VSCode users"
-    Feel free to use the [Tailwind CSS IntelliSense](https://marketplace.visualstudio.com/items?itemName=bradlc.vscode-tailwindcss) VSCode extension to get autocompletion and linting.
+We use [Tailwind UI](https://tailwindui.com/) and [DaisyUI](https://daisyui.com/) to build the UI.
 
 ### Icons
 
