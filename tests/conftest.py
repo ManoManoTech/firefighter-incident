@@ -49,19 +49,28 @@ def main_heading() -> str:
 def django_db_setup(  # noqa: PT004
     django_db_setup: Any, django_db_blocker: DjangoDbBlocker
 ) -> None:
-    logger.info("Loading fixtures...")
-
     # XXX Allow override of fixtures path
     try:
         fixtures_path = impresources.files("firefighter_fixtures")
     except ModuleNotFoundError:
         fixtures_path = Path(__file__).parent / "fixtures"
+    logger.info(f"Loading fixtures from {fixtures_path}")
+
+    # XXX(dugab): Make sure we load all fixtures
     with django_db_blocker.unblock():
-        call_command("loaddata", fixtures_path / "groups.json")
-        call_command("loaddata", fixtures_path / "components.json")
-        call_command("loaddata", fixtures_path / "severities.json")
-        call_command("loaddata", fixtures_path / "priorities.json")
-        call_command("loaddata", fixtures_path / "environments.json")
+        call_command("loaddata", fixtures_path / "incidents" / "groups.json")
+        call_command("loaddata", fixtures_path / "incidents" / "components.json")
+        call_command("loaddata", fixtures_path / "incidents" / "severities.json")
+        call_command("loaddata", fixtures_path / "incidents" / "priorities.json")
+        call_command("loaddata", fixtures_path / "incidents" / "environments.json")
+        call_command("loaddata", fixtures_path / "incidents" / "impact_type.json")
+        call_command("loaddata", fixtures_path / "incidents" / "impact_level.json")
+        call_command("loaddata", fixtures_path / "incidents" / "milestone_type.json")
+        call_command("loaddata", fixtures_path / "incidents" / "metric_type.json")
+        call_command(
+            "loaddata", fixtures_path / "incidents" / "incident_role_type.json"
+        )
+        call_command("loaddata", fixtures_path / "raid" / "area.json")
     django_db_blocker.restore()
 
 

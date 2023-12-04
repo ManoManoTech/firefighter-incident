@@ -144,7 +144,7 @@ dev-env-start = {cmd="docker-compose -f docker-compose.yaml up -d", help="Start 
 dev-env-stop = {cmd="docker-compose -f docker-compose.yaml down", help="Stop the dev environment with Docker-compose"}
 dev-env-destroy = {shell ='echo "⚠️  This will destroy all data in the database. Are you sure? (y/n)" && read answer && [ "$answer" == "y" ] && docker-compose -f docker-compose.yaml down -v', help="Destroy the dev environment (including DB!)"}
 # Django setup
-loaddata = {shell="ff-manage loaddata fixtures/*.json --ignorenonexistent", help="Import fixture data"}
+loaddata = {shell="ff-manage loaddata fixtures/**/*.json --ignorenonexistent", help="Import fixture data"}
 createsuperuser = {cmd="ff-manage createsuperuser --noinput", help="Create a superuser using `.env` values"}
 collectstatic = {cmd="ff-manage collectstatic --noinput", help="Collect the static files"}
 # Django aliases
