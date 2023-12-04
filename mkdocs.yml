@@ -1,11 +1,11 @@
 ---
 site_name: FireFighter Docs
 site_description: FireFighter is ManoMano's incident management tool, built on top of Slack and Jira, with Django and Python.
-site_url: https://firefighter-oss.readthedocs.io/en/latest/ # FIXME OSS
+site_url: https://firefighter-incident.readthedocs.io/en/latest/ # FIXME OSS
 
-repo_url: https://github.com/ManoManoTech/firefighter-oss
-repo_name: ManoManoTech/firefighter-oss
-edit_uri: https://github.com/ManoManoTech/firefighter-oss/edit/main/docs/
+repo_url: https://github.com/ManoManoTech/firefighter-incident
+repo_name: ManoManoTech/firefighter-incident
+edit_uri: https://github.com/ManoManoTech/firefighter-incident/edit/main/docs/
 
 copyright: Copyright &copy; 2021-2023 Colibri SAS
 dev_addr: "127.0.0.1:9000"
@@ -64,7 +64,7 @@ extra:
     provider: mike
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/ManoManoTech/firefighter-oss
+      link: https://github.com/ManoManoTech/firefighter-incident
 
 nav:
   - Home & Guides:
