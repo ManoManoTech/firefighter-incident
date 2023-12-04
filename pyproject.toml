@@ -10,7 +10,7 @@ authors = [
 ***REMOVED***
 ]
 dependencies = [
-    "django[argon2]>=4.2.6",
+    "django[argon2]>=4.2.6,<5.0.0",
     "Jinja2<4.0.0,>=3.1.2",
     "celery[gevent,redis]<6.0.0,>=5.2.7",
     "ddtrace<3.0.0,>=2.1.0",
