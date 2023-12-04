@@ -42,7 +42,7 @@ It is **strongly advised** to contact the project owner(s) (Pulse team) **before
     git push origin ${MY_TOPIC_BRANCH}
     ```
 
-6. [Open a Pull Request](https://github.com/ManoManoTech/firefighter-oss/pulls) to merge your code and its documentation. The earlier you open a merge request, the sooner you can get feedback.
+6. [Open a Pull Request](https://github.com/ManoManoTech/firefighter-incident/pulls) to merge your code and its documentation. The earlier you open a merge request, the sooner you can get feedback.
 
 7. Verify the test suite is passing in the CI & verify if the pipeline is green.
 
