@@ -97,6 +97,7 @@ path = "hatch_build.py"
 "tests" = "firefighter_tests"
 # "~/lib.h" = "pkg/lib.h"
 
+# XXX(dugab): OSS either provide all static files in the package or none
 [tool.hatch.metadata]
 allow-direct-references = true
 
@@ -152,8 +153,8 @@ manage = {cmd="ff-manage", help="Run the Django management command"}
 migrate = {cmd="ff-manage migrate", help="Run the Django migrations"}
 runserver = {cmd="ff-manage runserver", help="Run the Django dev server"}
 # Celery aliases
-celery-worker = {cmd="celery -A firefighter worker -l DEBUG -c 4 -P gevent  ", help="Run the Celery worker (DEBUG)"}
-celery-beat = {cmd="celery -A firefighter beat -l INFO", help="Run the Celery beat (INFO)"}
+celery-worker = {cmd="celery -A firefighter.firefighter worker -l DEBUG -c 4 -P gevent  ", help="Run the Celery worker (DEBUG)"}
+celery-beat = {cmd="celery -A firefighter.firefighter beat -l INFO", help="Run the Celery beat (INFO)"}
 
 [tool.pdm.dev-dependencies]
 dev = [
