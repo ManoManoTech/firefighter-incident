@@ -464,7 +464,7 @@ class OpenModal(SlackModal):
             return OpeningCriticalModal
         if incident_type_value is None:
             return None
-        return INCIDENT_TYPE_MODAL_MAP.get(incident_type_value, None)
+        return INCIDENT_TYPE_MODAL_MAP.get(incident_type_value)
 
     def handle_modal_fn(  # type: ignore
         self,
