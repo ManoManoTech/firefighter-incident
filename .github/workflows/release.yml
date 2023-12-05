@@ -1,5 +1,5 @@
 ---
-name: "Release"
+name: "Release Pypi, Docker and GitHub"
 
 on:
   workflow_dispatch:
@@ -184,5 +184,6 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           push: ${{ inputs.tag != '' }}
-          tags: ghcr.io/ManoManoTech/firefighter-incident:latest,ghcr.io/ManoManoTech/firefighter-incident:${{ inputs.tag || 'dry-run' }}
+          # Repository name must be lowercase
+          tags: ghcr.io/manomanotech/firefighter-incident:latest,ghcr.io/manomanotech/firefighter-incident:${{ inputs.tag || 'dry-run' }}
           labels: ${{ steps.meta.outputs.labels }}
