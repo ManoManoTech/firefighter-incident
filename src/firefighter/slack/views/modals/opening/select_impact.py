@@ -210,7 +210,7 @@ class SelectImpactModal(
             ),
             impact_form_data=cast(dict[str, Any], form.form.data),
             details_form_data=private_metadata_raw.get("details_form_data", {}),
-            incident_type=private_metadata_raw.get("incident_type", None),
+            incident_type=private_metadata_raw.get("incident_type"),
         )
 
 
