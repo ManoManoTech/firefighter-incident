@@ -172,7 +172,10 @@ jobs:
         name: Download Python frozen requirements
         with:
           name: requirements
-          path: requirements.txt
+          path: requirements
+
+      - name: Move requirements.txt to root
+        run: mv requirements/requirements.txt .
 
       - uses: docker/setup-buildx-action@v3
 
