@@ -153,8 +153,9 @@ jobs:
     environment:
       name: release
     permissions:
-      # For the docker push
+      # For the docker push and the git clone
       packages: write
+      contents: read
     steps:
       - uses: actions/checkout@v4
         with:
