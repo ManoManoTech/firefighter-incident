@@ -21,6 +21,7 @@ env:
 
 jobs:
   sdist_wheels:
+    name: Build Python sdist and wheel
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -53,7 +54,7 @@ jobs:
           pdm export --prod -f requirements -o requirements.txt
 
       - name: Publish frozen requirements.txt
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: requirements
           path: requirements.txt
@@ -160,6 +161,12 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ inputs.sha }}
+
+      - uses: actions/download-artifact@v3
+        name: Download Python artifacts
+        with:
+          name: dist
+          path: dist
 
       - uses: docker/setup-buildx-action@v3
 
