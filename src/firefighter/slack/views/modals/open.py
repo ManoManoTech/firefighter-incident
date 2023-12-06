@@ -3,10 +3,11 @@ from __future__ import annotations
 import json
 import logging
 from datetime import timedelta
-from typing import TYPE_CHECKING, Any, Literal, NamedTuple, cast
+from typing import TYPE_CHECKING, Any, Literal, cast
 
 from django.conf import settings
 from django.utils import timezone
+from django.utils.translation import gettext as _
 from django.utils.translation import ngettext
 from slack_sdk.models.blocks.basic_components import MarkdownTextObject, Option
 from slack_sdk.models.blocks.block_elements import ButtonElement, StaticSelectElement
@@ -32,18 +33,8 @@ from firefighter.slack.views.modals.base_modal.modal_utils import update_modal
 from firefighter.slack.views.modals.opening.check_current_incidents import (
     CheckCurrentIncidentsModal,
 )
-from firefighter.slack.views.modals.opening.details.normal import (
-    OpeningRaidCustomerModal,
-    OpeningRaidDocumentationRequestModal,
-    OpeningRaidFeatureRequestModal,
-    OpeningRaidInternalModal,
-    OpeningRaidSellerModal,
-)
-from firefighter.slack.views.modals.opening.types import (
-    NormalIncidentTypes,
-    OpeningData,
-    ResponseType,
-)
+from firefighter.slack.views.modals.opening.details.critical import OpeningCriticalModal
+from firefighter.slack.views.modals.opening.types import OpeningData, ResponseType
 
 if TYPE_CHECKING:
     from slack_bolt.context.ack.ack import Ack
@@ -58,28 +49,13 @@ logger = logging.getLogger(__name__)
 SLACK_SEVERITY_HELP_GUIDE_URL: str = settings.SLACK_SEVERITY_HELP_GUIDE_URL
 
 
-class IncidentTypeNamedTuple(NamedTuple):
-    value: str
-    label: str
-    form: type[SetIncidentDetails[Any]]
-
-
-INCIDENT_TYPE_LABELS_MAP: dict[NormalIncidentTypes, str] = {
-    NormalIncidentTypes.CUSTOMER: "Customer",
-    NormalIncidentTypes.SELLER: "Seller",
-    NormalIncidentTypes.INTERNAL: "Internal",
-    NormalIncidentTypes.DOCUMENTATION_REQUEST: "Documentation request",
-    NormalIncidentTypes.FEATURE_REQUEST: "Feature request",
-}
-
-
-# Mapping between Form class and NormalIncidentTypes
-INCIDENT_TYPE_MODAL_MAP: dict[NormalIncidentTypes, type[SetIncidentDetails[Any]]] = {
-    NormalIncidentTypes.CUSTOMER: OpeningRaidCustomerModal,
-    NormalIncidentTypes.SELLER: OpeningRaidSellerModal,
-    NormalIncidentTypes.INTERNAL: OpeningRaidInternalModal,
-    NormalIncidentTypes.DOCUMENTATION_REQUEST: OpeningRaidDocumentationRequestModal,
-    NormalIncidentTypes.FEATURE_REQUEST: OpeningRaidFeatureRequestModal,
+INCIDENT_TYPES: dict[ResponseType, dict[str, dict[str, Any]]] = {
+    "critical": {
+        "critical": {
+            "label": "Critical",
+            "slack_form": OpeningCriticalModal,
+        },
+    },
 }
 
 
@@ -96,7 +72,7 @@ class OpenModal(SlackModal):
         is_impact_form_valid: bool = self._check_impact_form(open_incident_context)
 
         # 2. Check if we have a normal incident type
-        incident_type_value: NormalIncidentTypes | None = open_incident_context.get(
+        incident_type_value: str | None = open_incident_context.get(
             "incident_type", None
         )
 
@@ -246,29 +222,36 @@ class OpenModal(SlackModal):
     @staticmethod
     def get_select_incident_type_blocks(
         open_incident_context: OpeningData,
-        incident_type_value: NormalIncidentTypes | None,
+        incident_type_value: str | None,
     ) -> list[Block]:
-        if open_incident_context.get("response_type") == "normal":
-            return [
-                SectionBlock(
-                    text=f"{'✅' if incident_type_value else '📝'} Then, select the type of issue / affected users",
-                    accessory=StaticSelectElement(
-                        placeholder="Set type",
-                        action_id="set_type",
-                        options=[
-                            Option(value=x, label=INCIDENT_TYPE_LABELS_MAP[x])
-                            for x in NormalIncidentTypes
-                        ],
-                        initial_option=Option(
-                            value=incident_type_value,
-                            label=INCIDENT_TYPE_LABELS_MAP[incident_type_value],
-                        )
-                        if incident_type_value
-                        else None,
-                    ),
+        response_type = open_incident_context.get("response_type")
+        if (
+            response_type is None
+            or response_type not in INCIDENT_TYPES
+            or len(INCIDENT_TYPES[response_type]) == 1
+        ):
+            return []
+        options = [
+            Option(value=incident_type, label=incident_type_data["label"])
+            for incident_type, incident_type_data in INCIDENT_TYPES[
+                response_type
+            ].items()
+        ]
+        initial_option = next(
+            filter(lambda x: x.value == incident_type_value, options), None
+        )
+        return [
+            SectionBlock(
+                text=("✅" if incident_type_value else "📝")
+                + _("Then, select the type of issue / affected users"),
+                accessory=StaticSelectElement(
+                    placeholder=_("Set type"),
+                    action_id="set_type",
+                    options=options,
+                    initial_option=initial_option,
                 ),
-            ]
-        return []
+            ),
+        ]
 
     @staticmethod
     def get_done_review_blocks(
@@ -325,7 +308,7 @@ class OpenModal(SlackModal):
     def _check_details_form(
         self,
         open_incident_context: OpeningData,
-        incident_type_value: NormalIncidentTypes | None,
+        incident_type_value: str | None,
     ) -> tuple[
         bool,
         type[CreateIncidentFormBase] | None,
@@ -384,14 +367,18 @@ class OpenModal(SlackModal):
 
     @staticmethod
     def _build_response_type_blocks(open_incident_context: OpeningData) -> list[Block]:
-        if open_incident_context.get("response_type") not in {"critical", "normal"}:
+        selected_response_type = open_incident_context.get("response_type")
+        if selected_response_type not in {"critical", "normal"}:
             return []
 
-        response_types: list[ResponseType] = ["critical", "normal"]
+        response_types: list[ResponseType] = INCIDENT_TYPES.keys()
         elements: list[ButtonElement] = []
 
         for response_type in response_types:
-            is_selected = open_incident_context.get("response_type") == response_type
+            is_selected = (
+                open_incident_context.get("response_type") == response_type
+                or len(INCIDENT_TYPES) == 1
+            )
             style: str | None = "primary" if is_selected else None
             icon = (
                 ":firefighter_incident:"
@@ -412,7 +399,6 @@ class OpenModal(SlackModal):
         blocks: list[Block] = [ActionsBlock(elements=elements)]
         if impact_form_data := open_incident_context.get("impact_form_data"):
             impact_form = SelectImpactForm(impact_form_data)
-            selected_response_types = open_incident_context.get("response_type")
             if impact_form.is_valid():
                 priority: Priority = Priority.objects.get(
                     value=impact_form.suggest_priority_from_impact()
@@ -424,7 +410,7 @@ class OpenModal(SlackModal):
                                 text=f"> {priority.emoji} Selected priority: {priority}"
                                 + (
                                     f"\n> Critical incidents are for *emergency* only, <{SLACK_SEVERITY_HELP_GUIDE_URL}|learn more>."
-                                    if selected_response_types == "critical"
+                                    if selected_response_type == "critical"
                                     else ""
                                 )
                             )
@@ -434,7 +420,7 @@ class OpenModal(SlackModal):
 
                 if (
                     priority.recommended_response_type
-                    and priority.recommended_response_type != selected_response_types
+                    and priority.recommended_response_type != selected_response_type
                 ):
                     blocks.append(
                         ContextBlock(
@@ -451,20 +437,33 @@ class OpenModal(SlackModal):
     @staticmethod
     def get_details_modal_form_class(
         open_incident_context: OpeningData,
-        incident_type_value: NormalIncidentTypes | None,
+        incident_type_value: str | None,
     ) -> type[SetIncidentDetails[Any]] | None:
-        if (
-            open_incident_context
-            and open_incident_context.get("response_type") == "critical"
-        ):
-            from firefighter.slack.views.modals.opening.details.critical import (  # noqa: PLC0415
-                OpeningCriticalModal,
-            )
+        """Get the details modal form class based on the incident type.
 
-            return OpeningCriticalModal
-        if incident_type_value is None:
-            return None
-        return INCIDENT_TYPE_MODAL_MAP.get(incident_type_value)
+        Returns None if no incident type is selected.
+        """
+        if open_incident_context is not None:
+            response_type = open_incident_context.get("response_type")
+            if response_type is None:
+                return None
+            incident_types = INCIDENT_TYPES.get(response_type)
+            if incident_types and len(incident_types) == 1:
+                return incident_types[next(iter(incident_types.keys()))].get(
+                    "slack_form"
+                )
+            if incident_types and incident_type_value is not None:
+                return incident_types[incident_type_value].get("slack_form")
+            logger.warning(
+                f"No incident type found for {open_incident_context}. Fallback"
+            )
+            return next(iter(next(iter(INCIDENT_TYPES.values())).values())).get(
+                "slack_form"
+            )
+        logger.debug(
+            f"No incident type found for {open_incident_context} {incident_type_value}"
+        )
+        return None
 
     def handle_modal_fn(  # type: ignore
         self,
@@ -477,9 +476,7 @@ class OpenModal(SlackModal):
 
         details_form_data_raw = data.get("details_form_data", {})
 
-        incident_type_value: NormalIncidentTypes | None = data.get(
-            "incident_type", None
-        )
+        incident_type_value: str | None = data.get("incident_type", None)
 
         details_form_modal_class = self.get_details_modal_form_class(
             data, incident_type_value

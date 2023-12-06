@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from functools import cached_property
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Protocol
 
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -11,6 +11,8 @@ from django.utils.translation import gettext_lazy as _
 from django_stubs_ext.db.models import TypedModelMeta
 
 if TYPE_CHECKING:
+    from django.db.models.fields.related import ManyToManyField
+
     from firefighter.incidents.models.incident import Incident  # noqa: F401
 
 
@@ -116,3 +118,8 @@ class IncidentImpact(models.Model):
 
     def __str__(self) -> str:
         return f"{self.incident} - {self.impact}"
+
+
+class HasImpactProtocol(Protocol):
+    id: Any
+    impacts: ManyToManyField[Impact, Any]

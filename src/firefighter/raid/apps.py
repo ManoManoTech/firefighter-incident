@@ -21,5 +21,36 @@ class RaidConfig(AppConfig):
             incident_updated,
             update_qualifiers_rotation,
         )
+        from firefighter.raid.views.open_normal import (
+            OpeningRaidCustomerModal,
+            OpeningRaidDocumentationRequestModal,
+            OpeningRaidFeatureRequestModal,
+            OpeningRaidInternalModal,
+            OpeningRaidSellerModal,
+        )
+        from firefighter.slack.views.modals.open import INCIDENT_TYPES
+
+        INCIDENT_TYPES["normal"] = {
+            "CUSTOMER": {
+                "label": "Customer",
+                "slack_form": OpeningRaidCustomerModal,
+            },
+            "SELLER": {
+                "label": "Seller",
+                "slack_form": OpeningRaidSellerModal,
+            },
+            "INTERNAL": {
+                "label": "Internal",
+                "slack_form": OpeningRaidInternalModal,
+            },
+            "DOCUMENTATION_REQUEST": {
+                "label": "Documentation request",
+                "slack_form": OpeningRaidDocumentationRequestModal,
+            },
+            "FEATURE_REQUEST": {
+                "label": "Feature request",
+                "slack_form": OpeningRaidFeatureRequestModal,
+            },
+        }
 
         return super().ready()

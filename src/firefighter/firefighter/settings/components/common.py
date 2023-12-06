@@ -29,8 +29,6 @@ INSTALLED_APPS = [
     "firefighter.firefighter",
     "firefighter.incidents",
     "firefighter.slack",
-    "firefighter.jira_app",
-    "firefighter.raid",
     # Default django apps
     "django.contrib.auth",
     "django.contrib.contenttypes",
