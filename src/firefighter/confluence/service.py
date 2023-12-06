@@ -40,13 +40,11 @@ class ConfluenceService:
     jinja: Environment
     _client: ConfluenceClient | None
 
-    POSTMORTEM_FOLDER_ID: ConfluencePageId = int(
-        settings.CONFLUENCE_POSTMORTEM_FOLDER_ID
-    )
-    POSTMORTEM_TEMPLATE_PAGE_ID: ConfluencePageId = int(
+    POSTMORTEM_FOLDER_ID: int = int(settings.CONFLUENCE_POSTMORTEM_FOLDER_ID)
+    POSTMORTEM_TEMPLATE_PAGE_ID: int = int(
         settings.CONFLUENCE_POSTMORTEM_TEMPLATE_PAGE_ID
     )
-    RUNBOOKS_FOLDER_ID: ConfluencePageId = int(settings.CONFLUENCE_RUNBOOKS_FOLDER_ID)
+    RUNBOOKS_FOLDER_ID: int = int(settings.CONFLUENCE_RUNBOOKS_FOLDER_ID)
     DEFAULT_SPACE: str = settings.CONFLUENCE_POSTMORTEM_SPACE
 
     base_url: str = settings.CONFLUENCE_URL.removesuffix("/rest/api")

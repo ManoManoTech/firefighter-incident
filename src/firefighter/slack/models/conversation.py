@@ -19,8 +19,8 @@ from firefighter.slack.slack_app import DefaultWebClient, SlackApp, slack_client
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-    from django.db.models.manager import RelatedManager  # noqa: F401
     from django.db.models.query import QuerySet
+    from django_stubs_ext.db.models.manager import RelatedManager  # noqa: F401
     from slack_sdk.models.blocks.blocks import Block
     from slack_sdk.web.client import WebClient
     from slack_sdk.web.slack_response import SlackResponse

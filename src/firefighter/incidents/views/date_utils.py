@@ -12,7 +12,6 @@ from django.utils import timezone
 if TYPE_CHECKING:
     from dateparser.date import DateDataParser
 
-TIME_ZONE = settings.TIME_ZONE
 TZ = timezone.get_current_timezone()
 
 
@@ -26,7 +25,7 @@ def get_ddp() -> DateDataParser:
         settings={
             "RETURN_TIME_AS_PERIOD": True,
             "DATE_ORDER": "YMD",
-            "TIMEZONE": TIME_ZONE,
+            "TIMEZONE": settings.TIME_ZONE,
             "RETURN_AS_TIMEZONE_AWARE": True,
         },
     )

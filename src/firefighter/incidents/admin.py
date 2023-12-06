@@ -45,7 +45,7 @@ from firefighter.incidents.models.milestone_type import MilestoneType
 from firefighter.incidents.models.priority import Priority
 
 if TYPE_CHECKING:
-    from collections.abc import MutableSequence, Sequence
+    from collections.abc import MutableSequence
     from decimal import Decimal
 
     from django.contrib.admin.options import (
@@ -55,6 +55,7 @@ if TYPE_CHECKING:
     )
     from django.db.models.query import QuerySet
     from django.http.request import HttpRequest
+    from django.utils.datastructures import _ListOrTuple
 
     from firefighter.slack.models.incident_channel import IncidentChannel
 
@@ -164,7 +165,7 @@ class EnvironmentAdmin(admin.ModelAdmin[Environment]):
         self,
         request: HttpRequest,  # noqa: ARG002
         obj: Environment | None = None,
-    ) -> Sequence[str]:
+    ) -> _ListOrTuple[str]:
         """Deny changing the value of an existing object."""
         if obj:  # editing an existing object
             return *self.readonly_fields, "value"
@@ -470,7 +471,7 @@ class IncidentAdmin(admin.ModelAdmin[Incident]):
     incident_inlines.append(IncidentCostInline)
     incident_inlines.append(IncidentImpactInline)
     incident_inlines.append(IncidentMetricInline)
-    inlines = incident_inlines
+    inlines = incident_inlines  # type: ignore[assignment]
     search_fields: list[str] = [
         "title",
         "description",

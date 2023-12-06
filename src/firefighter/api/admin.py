@@ -15,12 +15,10 @@ logger = logging.getLogger(__name__)
 
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
-
     from django.db.models import ForeignKey
     from django.db.models.query import QuerySet
     from django.forms import ModelChoiceField, ModelForm
-    from django.http import HttpRequest as BaseHttpRequest
+    from django.http.request import HttpRequest as BaseHttpRequest
 
     class HttpRequest(BaseHttpRequest):
         user: User
@@ -57,7 +55,7 @@ class APITokenAdmin(TokenAdmin):
             return qs
         return qs.filter(user=request.user)
 
-    def get_sortable_by(self, request: HttpRequest) -> Sequence[str]:  # type: ignore[override]
+    def get_sortable_by(self, request: HttpRequest):  # type: ignore[no-untyped-def,override]
         """Hack to send a message depending on the status of the user."""
         if request.user.has_perm("api.can_view_any"):
             self.message_user(request, "You are seeing all tokens.", messages.WARNING)
