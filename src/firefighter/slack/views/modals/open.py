@@ -371,7 +371,9 @@ class OpenModal(SlackModal):
         if selected_response_type not in {"critical", "normal"}:
             return []
 
-        response_types: list[ResponseType] = INCIDENT_TYPES.keys()
+        response_types: list[ResponseType] = cast(
+            list[ResponseType], INCIDENT_TYPES.keys()
+        )
         elements: list[ButtonElement] = []
 
         for response_type in response_types:
@@ -443,27 +445,18 @@ class OpenModal(SlackModal):
 
         Returns None if no incident type is selected.
         """
-        if open_incident_context is not None:
-            response_type = open_incident_context.get("response_type")
-            if response_type is None:
-                return None
-            incident_types = INCIDENT_TYPES.get(response_type)
-            if incident_types and len(incident_types) == 1:
-                return incident_types[next(iter(incident_types.keys()))].get(
-                    "slack_form"
-                )
-            if incident_types and incident_type_value is not None:
-                return incident_types[incident_type_value].get("slack_form")
-            logger.warning(
-                f"No incident type found for {open_incident_context}. Fallback"
-            )
-            return next(iter(next(iter(INCIDENT_TYPES.values())).values())).get(
-                "slack_form"
-            )
-        logger.debug(
-            f"No incident type found for {open_incident_context} {incident_type_value}"
+        response_type = open_incident_context.get("response_type")
+        if response_type is None:
+            return None
+        incident_types = INCIDENT_TYPES.get(response_type)
+        if incident_types and len(incident_types) == 1:
+            return incident_types[next(iter(incident_types.keys()))].get("slack_form")
+        if incident_types and incident_type_value is not None:
+            return incident_types[incident_type_value].get("slack_form")
+        logger.warning(f"No incident type found for {open_incident_context}. Fallback")
+        return next(iter(next(iter(INCIDENT_TYPES.values())).values())).get(
+            "slack_form"
         )
-        return None
 
     def handle_modal_fn(  # type: ignore
         self,
