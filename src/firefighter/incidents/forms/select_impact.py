@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import contextlib
 import logging
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 
 from django import forms
 
@@ -14,8 +14,9 @@ from firefighter.incidents.models.impact import (
 )
 
 if TYPE_CHECKING:
-    from firefighter.incidents.models.incident import Incident
-    from firefighter.raid.models import JiraTicket
+    from django.db.models.fields.related_descriptors import ManyRelatedManager
+
+    from firefighter.incidents.models.impact import HasImpactProtocol
 
 
 logger = logging.getLogger(__name__)
@@ -79,8 +80,7 @@ class SelectImpactForm(forms.Form):
 
         return LevelChoices(impact_value).label if impact_value else None
 
-    # XXX typings
-    def save(self, incident: Incident | JiraTicket) -> None:
+    def save(self, incident: HasImpactProtocol) -> None:
         """Save the impact choices to the incident."""
         if self.is_valid():
             impacts: dict[str, ImpactLevel] = self.cleaned_data
@@ -113,10 +113,11 @@ class SelectImpactForm(forms.Form):
 
             # Create and save all Impact instances in one database call
             Impact.objects.bulk_create(impact_objects)
-
-            incident.impacts.add(
-                *impact_objects  # , through_defaults={"incident": incident}
+            impacts_related_manager: ManyRelatedManager[Impact] = cast(
+                "ManyRelatedManager[Impact]",
+                incident.impacts,
             )
+            impacts_related_manager.add(*impact_objects)
 
         else:
             raise forms.ValidationError("Form is not valid")

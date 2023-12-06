@@ -15,7 +15,6 @@ from firefighter.slack.views.modals.opening import select_impact
 from firefighter.slack.views.modals.opening.check_current_incidents import (
     CheckCurrentIncidentsModal,
 )
-from firefighter.slack.views.modals.opening.details import critical, normal
 from firefighter.slack.views.modals.opening.select_impact import modal_select_impact
 from firefighter.slack.views.modals.postmortem import PostMortemModal, modal_postmortem
 from firefighter.slack.views.modals.select import modal_select
