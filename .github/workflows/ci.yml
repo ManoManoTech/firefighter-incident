@@ -19,6 +19,9 @@ jobs:
     env:
       PYTHONDEVMODE: 1
       FF_SLACK_SKIP_CHECKS: true
+      ENABLE_JIRA: true
+      ENABLE_RAID: true
+
     runs-on: ${{ matrix.os }}
 
     strategy:
@@ -77,10 +80,6 @@ jobs:
       - name: Run Tests
         run: |
           cp .env.example .env
-
-          export FF_SLACK_SKIP_CHECKS=true
-          export ENABLE_JIRA=true
-          export ENABLE_RAID=true
 
           pdm run collectstatic
           pdm run tests-cov
