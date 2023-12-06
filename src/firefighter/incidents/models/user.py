@@ -13,7 +13,7 @@ from django_stubs_ext.db.models import TypedModelMeta
 
 if TYPE_CHECKING:
     from django.apps import apps
-    from django.db.models.manager import RelatedManager
+    from django_stubs_ext.db.models.manager import RelatedManager
 
     from firefighter.incidents.models.incident import IncidentRole
 

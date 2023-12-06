@@ -57,8 +57,8 @@ if TYPE_CHECKING:
     from decimal import Decimal
     from uuid import UUID
 
-    from django.db.models.manager import RelatedManager
     from django.db.models.query import QuerySet
+    from django_stubs_ext.db.models.manager import RelatedManager
 
     from firefighter.incidents.models.impact import (
         Impact,  # noqa: F401

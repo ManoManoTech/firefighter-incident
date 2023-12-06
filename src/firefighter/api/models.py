@@ -4,6 +4,7 @@ import uuid
 from typing import TYPE_CHECKING, ClassVar, Self, cast
 
 from django.conf import settings
+from django.utils.translation import gettext_lazy as _
 from django_stubs_ext.db.models import TypedModelMeta
 from rest_framework.authtoken.models import Token
 
@@ -40,4 +41,5 @@ class APITokenProxy(APIToken):
         default_permissions: ClassVar[Sequence[str]] = []
         proxy = "rest_framework.authtoken" in settings.INSTALLED_APPS
         abstract = "rest_framework.authtoken" not in settings.INSTALLED_APPS
-        verbose_name = "API Token"
+        verbose_name = _("API Token")
+        verbose_name_plural = _("API Tokens")

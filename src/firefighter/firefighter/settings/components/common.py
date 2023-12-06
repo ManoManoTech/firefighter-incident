@@ -110,7 +110,7 @@ LANGUAGE_CODE = "en"
 
 USE_I18N = False
 USE_TZ = True
-TIME_ZONE = config("TIME_ZONE", default="UTC")
+TIME_ZONE: str = config("TIME_ZONE", default="UTC")
 
 # Localization
 FORMAT_MODULE_PATH = ["firefighter.formats"]
@@ -264,8 +264,8 @@ LOGIN_URL = "/admin/login/"
 
 # Plausible analytics configuration
 
-PLAUSIBLE_SCRIPT_URL = config("PLAUSIBLE_SCRIPT_URL", "")
-PLAUSIBLE_DOMAIN = config("PLAUSIBLE_DOMAIN", "")
+PLAUSIBLE_SCRIPT_URL: str = config("PLAUSIBLE_SCRIPT_URL", "")
+PLAUSIBLE_DOMAIN: str = config("PLAUSIBLE_DOMAIN", "")
 
 
 # Components

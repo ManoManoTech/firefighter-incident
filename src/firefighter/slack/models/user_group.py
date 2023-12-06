@@ -14,7 +14,7 @@ from firefighter.slack.slack_app import DefaultWebClient, SlackApp, slack_client
 if TYPE_CHECKING:
     from collections.abc import Sequence  # noqa: F401
 
-    from django.db.models.manager import RelatedManager  # noqa: F401
+    from django_stubs_ext.db.models.manager import RelatedManager  # noqa: F401
     from slack_sdk.web.client import WebClient
 logger = logging.getLogger(__name__)
 
