@@ -11,7 +11,6 @@ LABEL org.opencontainers.image.authors="tech-pe-pulse-team@manomano.com"
 # add our user and group first to make sure their IDs get assigned consistently
 RUN groupadd -r firefighter && useradd -r -m -g firefighter firefighter
 
-
 # Sane defaults for pip
 ENV \
   PIP_NO_CACHE_DIR=1 \
@@ -36,6 +35,5 @@ USER firefighter
 ENTRYPOINT ["/bin/bash", "-c"]
 CMD ["ff-web"]
 
-LABEL org.opencontainers.image.revision=$SOURCE_COMMIT
 LABEL org.opencontainers.image.source="https://github.com/ManoManoTech/firefighter-incident/tree/${SOURCE_COMMIT:-master}/"
 LABEL org.opencontainers.image.licenses="https://github.com/ManoManoTech/firefighter-incident/blob/${SOURCE_COMMIT:-master}/LICENSE"
