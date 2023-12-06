@@ -79,6 +79,8 @@ jobs:
           cp .env.example .env
 
           export FF_SLACK_SKIP_CHECKS=true
+          export ENABLE_JIRA=true
+          export ENABLE_RAID=true
 
           pdm run collectstatic
           pdm run tests-cov
