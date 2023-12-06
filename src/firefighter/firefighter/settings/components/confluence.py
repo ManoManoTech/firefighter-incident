@@ -3,7 +3,7 @@ from __future__ import annotations
 from firefighter.firefighter.settings.components.common import INSTALLED_APPS
 from firefighter.firefighter.settings.settings_utils import config
 
-ENABLE_CONFLUENCE = config("ENABLE_CONFLUENCE", cast=bool)
+ENABLE_CONFLUENCE = config("ENABLE_CONFLUENCE", cast=bool, default=False)
 if ENABLE_CONFLUENCE:
     INSTALLED_APPS += ("firefighter.confluence",)
 

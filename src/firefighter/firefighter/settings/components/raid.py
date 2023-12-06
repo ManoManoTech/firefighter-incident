@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from firefighter.firefighter.settings.settings_utils import config
 
+ENABLE_RAID: bool = config("ENABLE_RAID", cast=bool, default=False)
+
 RAID_DEFAULT_JIRA_QRAFT_USER_ID: str = config("RAID_DEFAULT_JIRA_QRAFT_USER_ID")
 RAID_DEFAULT_JIRA_ARMATIS_USER_ID: str = config("RAID_DEFAULT_JIRA_ARMATIS_USER_ID")
 RAID_DEFAULT_JIRA_NEXUS_USER_ID: str = config("RAID_DEFAULT_JIRA_NEXUS_USER_ID")
