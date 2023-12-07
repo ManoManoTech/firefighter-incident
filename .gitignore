@@ -154,3 +154,8 @@ pytest-coverage.xml
 .static
 
 **/_version.py
+
+
+# Minified files
+*.min.js
+*.min.css
