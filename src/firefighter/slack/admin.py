@@ -8,8 +8,7 @@ from django.contrib.admin.decorators import action
 from django.contrib.messages import constants
 from django.contrib.messages.constants import ERROR, SUCCESS
 from django.urls import reverse
-from django.utils.html import format_html_join
-from django.utils.safestring import mark_safe
+from django.utils.html import format_html, format_html_join
 from django.utils.translation import gettext_lazy as _
 from django.utils.translation import ngettext
 from slack_sdk.errors import SlackApiError
@@ -111,15 +110,15 @@ class ConversationAdmin(admin.ModelAdmin[Conversation]):
         if failed_len > 0:
             self.message_user(
                 request=request,
-                message=mark_safe(  # noqa: S308
+                message=format_html(
+                    "{}: <br/>{}",
                     ngettext(
                         "Failed to update members and info for %d Slack conversations",
                         "Failed to update members and info for %d Slack conversations",
                         failed_len,
                     )
-                    % failed_len
-                    + ": <br/>"
-                    + format_html_join(
+                    % failed_len,
+                    format_html_join(
                         "<br/>",
                         "<a href={}> {}</a>",
                         (
@@ -131,7 +130,7 @@ class ConversationAdmin(admin.ModelAdmin[Conversation]):
                             )
                             for g in failed_updates
                         ),
-                    )
+                    ),
                 ),
                 level=ERROR,
             )
@@ -255,15 +254,15 @@ class UserGroupAdmin(admin.ModelAdmin[UserGroup]):
         if failed_len > 0:
             self.message_user(
                 request=request,
-                message=mark_safe(  # noqa: S308
+                message=format_html(
+                    "{}: <br/>{}",
                     ngettext(
                         "Failed to update members and info for %d Slack usergroup",
                         "Failed to update members and info for %d Slack usergroups",
                         failed_len,
                     )
-                    % failed_len
-                    + ": <br/>"
-                    + format_html_join(
+                    % failed_len,
+                    format_html_join(
                         "<br/>",
                         "<a href={}> {}</a>",
                         (
@@ -273,7 +272,7 @@ class UserGroupAdmin(admin.ModelAdmin[UserGroup]):
                             )
                             for g in failed_updates
                         ),
-                    )
+                    ),
                 ),
                 level=ERROR,
             )
@@ -370,8 +369,9 @@ def ask_key_timestamps(
     if len(errors) > 0:
         self.message_user(
             request,
-            mark_safe(  # nosec # noqa: S308
-                f"Error sending message: <br/>{'<br/>'.join(f'#{key[0]}: {key[2]}' for key in errors)}"
+            format_html(
+                "Error sending message: <br/>{}",
+                "<br/>".join(f"#{key[0]}: {key[2]}" for key in errors),
             ),
             constants.ERROR,
         )

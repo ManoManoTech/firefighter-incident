@@ -13,7 +13,7 @@ from django.contrib.admin.utils import model_ngettext
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.messages import constants
 from django.template.response import TemplateResponse
-from django.utils.safestring import mark_safe
+from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 from django.utils.translation import ngettext
 from slack_sdk.errors import SlackApiError
@@ -384,8 +384,11 @@ class IncidentAdmin(admin.ModelAdmin[Incident]):
         if len(errors) > 0:
             self.message_user(
                 request,
-                mark_safe(  # nosec # noqa: S308
-                    f"Error sending message: <br/>{'<br/>'.join(f'#{key[0][0]}, #{key[0][1]}: {key[2]}' for key in errors)}"
+                format_html(
+                    "Error sending message: <br/>{}",
+                    "<br/>".join(
+                        f"#{key[0][0]}, #{key[0][1]}: {key[2]}" for key in errors
+                    ),
                 ),
                 constants.ERROR,
             )
