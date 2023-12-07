@@ -1,9 +1,7 @@
 
 # Setup your Dev environment
 
-The following documentation assume you will use Docker to launch Redis and Postgres,
-and use a local Python 3.11+ environment with PDM for the server.
-
+The following documentation assume your system meet the [prerequisites](0000-prerequisites.md).
 
 ## Set your .env (part 1)
 
@@ -14,29 +12,20 @@ The first part of the `.env` is just your choice of local development, and depen
 Make sure the following environment variables are set in the `.env` file:
 
 ```bash title=".env (sample)"
-LOCALTUNNEL_DOMAIN=zormonponeyquetuesbeau
-
 TOOLS_COMMON_PGDB_HOST=localhost
 INFRA_FIREFIGHTER_V2_CACHE_HOST=localhost
 ```
 
 ## Local development setup
 
-If you want to work with Docker, skip this step.
-If you have chosen Option 1, this is for you.
-
-### Requirements
-
-You need PDM, and Docker, Docker-compose (or Redis/Postgres)
-
-#### Install PDM
+### Install PDM
 
 !!! note "TLDR"
 
     - If you have [pipx](https://pypa.github.io/pipx/installation/) installed, you can use it to install PDM: `pipx install pdm`
     - If you don't, install pipx then PDM `pip install --user pipx && pipx install pdm`
 
-***REMOVED***
+> Consider using ASDF or RTX instead.
 
 ## Launch dependencies
 

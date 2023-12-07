@@ -9,11 +9,6 @@ You **need** to have a working Slack integration for FireFighter to work. Other 
 3. Add it to a test Slack Workspace
 4. Complete your .env files with Slack API keys
 
-## Pre-requisites
-
-- Node 8+ (for [Localtunnel](https://theboroer.github.io/localtunnel-www/))
-  - Not needed if you have an alternative to LocalTunnel, like [expose](https://expose.dev/) or [ngrok](https://ngrok.com/).
-
 ## Slack API setup
 
 To use FireFighter, you'll need to have a working Slack App (*aka Slack Bot*) for your dev environment.

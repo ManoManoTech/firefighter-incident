@@ -8,3 +8,9 @@
 - After the implementation, you will be able to go see and test this idea in preview with the team in test environment!
 
 - After this validation, the request can go into production and make life easier for all users when they manage an incident!
+
+## Design guidelines
+
+- All actions taking place during the incident resolution must be able to be done via the Slack App.
+  - Some of these actions may be doable through other means (e.g.: opening an incident through Slack, but also API or Web UI.)
+- Actions taking place after the incident resolution may be done through the Web UI, API or Back-Office.

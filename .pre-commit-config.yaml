@@ -17,10 +17,6 @@ repos:
       - id: check-added-large-files
       - id: check-merge-conflict
       - id: fix-byte-order-marker
-  - repo: https://github.com/markdownlint/markdownlint
-    rev: v0.11.0
-    hooks:
-      - id: markdownlint
   # Versions must be kept in sync with lockfile
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: 'v0.1.7'
