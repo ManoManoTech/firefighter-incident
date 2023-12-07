@@ -2,7 +2,7 @@
   "$schema": "https://json.schemastore.org/package.json",
   "name": "firefighter",
   "version": "0.0.0",
-  "private":true,
+  "private": true,
   "main": "index.js",
   "scripts": {
     "build": "cross-env NODE_ENV=production yarn run build:js && yarn run build:css",
