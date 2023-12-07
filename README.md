@@ -6,9 +6,11 @@ FireFighter is ManoMano's in-house Incident Management Tool.
 
 It helps manage incidents, by automatically creating a Slack channel for communication, and much more.
 
+<!--intro-end-->
+
 ## Contributing
 
-See [CONTRIBUTING](.github/CONTRIBUTING.md) for details on submitting patches, the contribution workflow and developer's guide.
+See [CONTRIBUTING](CONTRIBUTING.md) for details on submitting patches, the contribution workflow and developer's guide.
 
 ### Testing
 

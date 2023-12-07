@@ -1,3 +1,5 @@
+"""Hatchling build hook to run JS and CSS build steps with Rollup."""
+
 from __future__ import annotations
 
 import subprocess
