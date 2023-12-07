@@ -85,7 +85,7 @@ artifacts = [
   "src/**/*.min.css",
 ]
 [tool.hatch.build.hooks.custom]
-path = "hatch_build.py"
+path = "scripts/hatch_build.py"
 [tool.hatch.build.sources]
 "src" = ""
 "fixtures" = "firefighter_fixtures"
