@@ -18,7 +18,7 @@
     "@alpinejs/focus": "^3.13.2",
     "@alpinejs/morph": "^3.13.2",
     "alpinejs": "^3.13.2",
-    "htmx.org": "^1.8.4",
+    "htmx.org": "^1.9.9",
     "hyperscript.org": "^0.9.12"
   },
   "devDependencies": {
@@ -26,6 +26,7 @@
     "@babel/preset-env": "^7.23.3",
     "@rollup/plugin-babel": "^6.0.4",
     "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-inject": "^5.0.5",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-terser": "^0.4.4",
     "@tailwindcss/aspect-ratio": "^0.4.2",

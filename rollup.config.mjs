@@ -1,5 +1,6 @@
 import { babel } from "@rollup/plugin-babel";
 import commonjs from "@rollup/plugin-commonjs";
+import inject from '@rollup/plugin-inject'
 import { nodeResolve } from "@rollup/plugin-node-resolve";
 import terser from "@rollup/plugin-terser";
 
@@ -14,6 +15,9 @@ export default {
         assetFileNames: "[name].[ext]", // currently does not work for images
     },
     plugins: [
+        inject({
+            htmx: 'htmx.org'
+         }),
         nodeResolve({
             browser: true,
             jsnext: true,

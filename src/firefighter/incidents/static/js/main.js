@@ -11,6 +11,7 @@ import morph from '@alpinejs/morph'
 // XXX Enable htmx debug ext automatically in DEV
 
 window.Alpine = Alpine;
+window.htmx = htmx;
 
 Alpine.plugin(collapse);
 Alpine.plugin(morph);
