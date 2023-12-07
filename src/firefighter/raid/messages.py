@@ -24,8 +24,6 @@ RAID_QUALIFIER_URL: str = settings.RAID_QUALIFIER_URL
 
 
 class SlackMessageRaidCreatedIssue(SlackMessageSurface):
-    """Imported from RAID https://git.manomano.tech/qraft/raid/-/blob/master/models/slack/messages/createdIssue.json ."""
-
     id = "raid_created_issue"
 
     def __init__(self, ticket: JiraTicket, reporter_user: User | None = None) -> None:
@@ -67,8 +65,6 @@ class SlackMessageRaidCreatedIssue(SlackMessageSurface):
 
 
 class SlackMessageRaidModifiedIssue(SlackMessageSurface):
-    """Imported from RAID https://git.manomano.tech/qraft/raid/-/blob/master/models/slack/messages/modifyIssue.json ."""
-
     id = "raid_modify_issue"
 
     def __init__(
@@ -116,8 +112,6 @@ class SlackMessageRaidModifiedIssue(SlackMessageSurface):
 
 
 class SlackMessageRaidComment(SlackMessageSurface):
-    """Imported from RAID https://git.manomano.tech/qraft/raid/-/blob/master/models/slack/messages/newCommentAdded.json ."""
-
     id = "raid_comment"
 
     def __init__(
@@ -164,8 +158,6 @@ class SlackMessageRaidComment(SlackMessageSurface):
 
 
 class SlackMessageRaidDailyQualifierPublic(SlackMessageSurface):
-    """Imported from RAID daily-qualifier https://git.manomano.tech/qraft/raid/-/blob/master/index.js#L503 ."""
-
     id = "raid_daily_qualifier_public"
 
     def __init__(self, qualifier: JiraUser) -> None:
@@ -190,8 +182,6 @@ class SlackMessageRaidDailyQualifierPublic(SlackMessageSurface):
 
 
 class SlackMessageRaidDailyQualifierPrivate(SlackMessageSurface):
-    """Imported from RAID daily-qualifier https://git.manomano.tech/qraft/raid/-/blob/master/index.js#L520 ."""
-
     id = "raid_daily_qualifier_private"
 
     def get_text(self) -> str:
@@ -216,8 +206,6 @@ class SlackMessageRaidDailyQualifierPrivate(SlackMessageSurface):
 
 
 class SlackMessageRaidWeeklyQualifiers(SlackMessageSurface):
-    """Imported from RAID https://git.manomano.tech/qraft/raid/-/blob/master/models/slack/messages/singleMessage.json ."""
-
     id = "raid_weekly_qualifiers_public"
 
     def __init__(self, qualifiers_rotation: Iterable[QualifierRotation]) -> None:

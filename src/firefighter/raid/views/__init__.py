@@ -34,9 +34,9 @@ if TYPE_CHECKING:
                 "summary": "Swagger test",
                 "description": "Description test where you want to depict your issue",
                 "seller_contract_id": "12345678",
-                "zoho": "https://crmplus.zoho.eu/somanomano/index.do/cxapp/agent/somanomano/all/tickets/details/123456789",
+                "zoho": "https://crmplus.zoho.eu/mycrmlink/index.do/cxapp/agent/mycompany/all/tickets/details/123456789",
                 "platform": "FR",
-                "reporter_email": "john.doe@manomano.com",
+                "reporter_email": "john.doe@mycompany.com",
                 "impacted_area": "Sellers>MF Stock Replenishment",
                 "project": "SBI",
                 "labels": ["originBot", "ProductsMerge"],
@@ -45,8 +45,8 @@ if TYPE_CHECKING:
                 "business_impact": "High",
                 "priority": 4,
                 "attachments": [
-                    "https://storage.googleapis.com/media.landbot.io/237910/customers/132290768/HTSJJSJA3R8F63A6X1QUV3BOU343AXX5.png",
-                    "https://storage.googleapis.com/media.landbot.io/237910/customers/132290768/5IQ0N5JEBTPGXTONSPFOFPH1VSDEWQOB.png",
+                    "https://storage.googleapis.com/media.landbot.io/123456/customers/123456789/ABCDEFGHIJKLMNOPQRSTUVWXYZ123456.png",
+                    "https://storage.googleapis.com/media.landbot.io/123456/customers/123456780/ABCDEFGHIJKLMNOPQRSTUVWXYZ123450.png",
                 ],
             },
             request_only=True,  # signal that example only applies to requests
@@ -55,7 +55,7 @@ if TYPE_CHECKING:
         OpenApiExample(
             "Create incident response",
             status_codes=["201"],
-            value={"https://manomano.atlassian.net/browse/1234567"},
+            value={"https://mycompany.atlassian.net/browse/1234567"},
             request_only=False,
             response_only=True,
         ),

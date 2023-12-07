@@ -161,7 +161,7 @@ class IncidentViewSet(
                 "environment_id": "1b960430-995b-47e1-beab-23dbe3dbccbf",
                 "component_id": "390a993a-d273-4db8-b7d6-190ab294961a",
                 "priority_id": "b814c9d2-48a8-4ac4-9c71-ff844e1b77f1",
-                "created_by_email": "john.doe@manomano.com",
+                "created_by_email": "john.doe@mycompany.com",
             },
             request_only=True,  # signal that example only applies to requests
             response_only=False,  # signal that example only applies to responses
@@ -214,21 +214,21 @@ class IncidentViewSet(
                     "updated_at": "2021-06-25T18:00:28.819000+02:00",
                 },
                 "slack_channel_name": "#None",
-                "status_page_url": "https://incidents.manomano.tech/incident/886",
+                "status_page_url": "https://incidents.mycompany.com/incident/1234",
                 "tags": [],
                 "metrics": [],
                 "costs": [],
                 "created_by": {
                     "name": "John Doe",
-                    "email": "john.doe@manomano.com",
+                    "email": "john.doe@mycompany.com",
                 },
                 "commander": {
                     "name": "John Doe",
-                    "email": "john.doe@manomano.com",
+                    "email": "john.doe@mycompany.com",
                 },
                 "communication_lead": {
                     "name": "John Doe",
-                    "email": "john.doe@manomano.com",
+                    "email": "john.doe@mycompany.com",
                 },
             },
             request_only=False,
