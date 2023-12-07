@@ -1,6 +1,6 @@
 # General Architecture
 
-FireFighter is built with Django 4.1+, and Python 10+.
+FireFighter is built with Django 4.2+, and Python 3.11+.
 
 ## Apps
 

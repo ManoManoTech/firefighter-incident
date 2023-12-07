@@ -12,6 +12,6 @@ welcome contributions about these contributing guidelines as well :-)
 ## Setup
 
 The project is a Django multi applications project.
-Lot of operation are managed using `make` or `docker-compose`
+Lot of operation are managed using `pdm` or `docker-compose`
 
 You will need a working local Python environment with PDM, and Docker with docker-compose for the dependencies.

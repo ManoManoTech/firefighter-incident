@@ -9,12 +9,15 @@ edit_uri: https://github.com/ManoManoTech/firefighter-incident/edit/main/docs/
 
 copyright: Copyright &copy; 2021-2023 Colibri SAS
 dev_addr: "127.0.0.1:9000"
+site_dir: site
+docs_dir: docs
 
 watch:
   - src
   - docs
   - mkdocs.yml
   - README.md
+  - scripts
 
 extra_css:
   - css/style.css
@@ -67,21 +70,22 @@ extra:
       link: https://github.com/ManoManoTech/firefighter-incident
 
 nav:
-  - Home & Guides:
-      - Readme: index.md
+  - Home:
+      - Home: index.md
+      - Roadmap: roadmap.md
       - Changelog: CHANGELOG.md
-      - Contributing:
-          - Contributing/0000-README.md
-          - Setup:
-              - 1. Environment setup: Contributing/0001-setup-environment.md
-              - 2. Slack App Setup: Contributing/0002-setup-slack-app.md
-              - 3. Environment Setup (bis): Contributing/0003-setup-finish.md
-          - Dev Tooling & Commands: Contributing/development.md
-          - Design:
-              - Architecture Overview: Contributing/0010-general_architecture.md
-              - UI Guidelines: Contributing/ui.md
-              - UX Guidelines: Contributing/ux.md
-              - Docs Guidelines: Contributing/documentation.md
+      - Code of Conduct: CODE_OF_CONDUCT.md
+      - Credits: credits.md
+      - License: license.md
+  - Usage:
+      - Deploy/00-intro.md
+      - Deploy/XX-auth.md
+      - Deploy/XX-custom-settings.md
+      - Deploy/XX-i18n-l10.md
+      - Deploy/XX-logs-traces.md
+      - Deploy/XX-settings.md
+      - Deploy/XX-support-policy.md
+
   - Reference:
       - Django Apps:
           - api: reference/api.md
@@ -92,6 +96,22 @@ nav:
           - slack: reference/slack.md
           - jira_app: reference/jira_app.md
           - raid: reference/raid.md
+
+  - Development:
+      - Contributing/0000-README.md
+      - Setup:
+          - 0. Prerequisites: Contributing/0000-prerequisites.md
+          - 1. Environment setup: Contributing/0001-setup-environment.md
+          - 2. Slack App Setup: Contributing/0002-setup-slack-app.md
+          - 3. Environment Setup (bis): Contributing/0003-setup-finish.md
+      - Dev Tooling & Commands: Contributing/development.md
+      - Design:
+          - Architecture Overview: Contributing/0010-general_architecture.md
+          - UI Guidelines: Contributing/ui.md
+          - UX Guidelines: Contributing/ux.md
+          - Docs Guidelines: Contributing/documentation.md
+      - FAQ: Contributing/faq.md
+
 
 markdown_extensions:
   - abbr
@@ -147,14 +167,32 @@ plugins:
               base_url: https://docs.djangoproject.com/en/4.2/
           paths: [src]  # search packages in the src folder
           options:
-            show_root_heading: true
-            show_signature_annotations: true
-            show_if_no_docstring: false
-            separate_signature: true
-            line_length: 140
+            docstring_options:
+              ignore_init_summary: true
+            docstring_section_style: list
+            filters: ["!^_"]
+            heading_level: 1
+            inherited_members: true
             merge_init_into_class: true
+            preload_modules: [mkdocstrings]
+            separate_signature: true
+            show_root_heading: true
+            show_root_full_path: false
+            show_signature_annotations: true
+            show_symbol_type_heading: true
+            show_symbol_type_toc: true
+            signature_crossrefs: true
+            summary: true
+            unwrap_annotated: true
+            # show_root_heading: true
+            # show_signature_annotations: true
+            show_if_no_docstring: false
+            # separate_signature: true
+            line_length: 140
+            # merge_init_into_class: true
             show_submodules: true
             docstring_style: google
-            docstring_options:
-              ignore_init_summary: yes
+            # docstring_options:
+              # ignore_init_summary: true
   - git-revision-date
+  - markdown-exec

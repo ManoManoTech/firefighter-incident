@@ -5,7 +5,7 @@
 groups = ["default", "dev", "docs", "tests", "types"]
 strategy = ["cross_platform", "static_urls"]
 lock_version = "4.4"
-content_hash = "sha256:efd67caa3fdbcb8f92f1f476f4507f5f8cc1454fca2e445cad8afafa8416952d"
+content_hash = "sha256:fbcafbedb345bee0cdc87884043f14f275567d232ecf7af2aed0df804f7a77fd"
 
 [[package]]
 name = "aiohttp"
@@ -1743,6 +1743,19 @@ summary = "Python implementation of John Gruber's Markdown."
 files = [
     {url = "https://files.pythonhosted.org/packages/35/14/1ec9742e151f3b06a723a20d9af7201a389ebd3aae8b7d93b521819489dc/Markdown-3.5.1.tar.gz", hash = "sha256:b65d7beb248dc22f2e8a31fb706d93798093c308dc1aba295aedeb9d41a813bd"},
     {url = "https://files.pythonhosted.org/packages/70/58/2c5a654173937d9f540a4971c569b44dcd55e5424a484d954cdaeebcf79c/Markdown-3.5.1-py3-none-any.whl", hash = "sha256:5874b47d4ee3f0b14d764324d2c94c03ea66bee56f2d929da9f2508d65e722dc"},
+]
+
+[[package]]
+name = "markdown-exec"
+version = "1.7.0"
+requires_python = ">=3.8"
+summary = "Utilities to execute code blocks in Markdown files."
+dependencies = [
+    "pymdown-extensions>=9",
+]
+files = [
+    {url = "https://files.pythonhosted.org/packages/48/3f/7f27d58c13be7dfcb7719bff0f949caf392a78d7f3bc9be48d8fa6e95693/markdown_exec-1.7.0-py3-none-any.whl", hash = "sha256:8f18d44dc055b11751f744978ea2dee6ff28dbc48ba50146b9056b11a19c9560"},
+    {url = "https://files.pythonhosted.org/packages/6e/c7/12a1c08819ab9f8cb8a9087ec5a635ac59655aadf218dd3e30977b2912fe/markdown_exec-1.7.0.tar.gz", hash = "sha256:d764cc50fa03be01f5f2fb96e6bf30b8cd0c93537bae985447b45f3b3c902de1"},
 ]
 
 [[package]]

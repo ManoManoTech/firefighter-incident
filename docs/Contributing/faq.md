@@ -1,4 +1,6 @@
-# For VS Code users and pyright
+# FAQ and Troubleshooting
+
+> Mainly for VS Code and pyright users
 
 ## Conflicting stubs with VS Code extension
 
