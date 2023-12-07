@@ -183,3 +183,6 @@ DATABASES["default"]["CONN_MAX_AGE"] = 0
 
 # Force Debug on Django templating system
 TEMPLATES[0]["OPTIONS"] = TEMPLATES[0]["OPTIONS"] | {"debug": True}  # type: ignore[operator]
+
+
+FF_DEBUG_ERROR_PAGES = config("FF_DEBUG_ERROR_PAGES", default=True, cast=bool)
