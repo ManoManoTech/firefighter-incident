@@ -8,7 +8,7 @@ It helps manage incidents, by automatically creating a Slack channel for communi
 
 ## Contributing
 
-Checkout the Contributing documentation in `docs/Contributing`, for an in-depth installation guide.
+See [CONTRIBUTING](.github/CONTRIBUTING.md) for details on submitting patches, the contribution workflow and developer's guide.
 
 ### Testing
 
@@ -28,3 +28,7 @@ pdm run lint
 ```
 
 Consider checking all dev commands using `pdm run --list`.
+
+## License
+
+FireFighter is under the MIT license. See the [LICENSE](LICENSE) file for details.
