@@ -38,7 +38,7 @@
     "daisyui": "^2.51.6",
     "postcss": "^8.4.31",
     "postcss-import": "^15.1.0",
-    "rollup": "^4.6.1",
+    "rollup": "^3.21.6",
     "rollup-plugin-postcss": "^4.0.2",
     "rollup-plugin-string": "^3.0.0",
     "stylelint": "^15.11.0",
