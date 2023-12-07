@@ -1,5 +1,6 @@
 <div class="mt-10">
-  <form method="post" action="{% url 'pagerduty:oncall_trigger' %}">{% csrf_token %}
+  <form method="post" action="{% url 'pagerduty:oncall_trigger' %}">
+    {% csrf_token %}
     {% component_block "form" form=form %}
       {% fill "form_footer" %}
         <div class=" text-right sm:pl-6 py-8">
