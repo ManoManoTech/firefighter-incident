@@ -41,7 +41,7 @@ class PostMortemManager(models.Manager["PostMortem"]):
             postmortem_topic, width=250, placeholder="..."
         )
 
-        pm = confluence_service.create_postmortem(postmortem_topic, incident)
+        pm = confluence_service.create_postmortem(postmortem_topic)
 
         # TODO More error checking on this side
         if not pm:
