@@ -9,5 +9,8 @@ if ENABLE_JIRA:
     INSTALLED_APPS += ("firefighter.jira_app",)
     RAID_JIRA_API_USER: str = config("RAID_JIRA_API_USER")
     RAID_JIRA_API_PASSWORD: str = config("RAID_JIRA_API_PASSWORD")
-    RAID_JIRA_API_PROTOCOL: str = config("RAID_JIRA_API_PROTOCOL")
     RAID_JIRA_API_URL: str = config("RAID_JIRA_API_URL")
+
+    # If no protocol, add https
+    if not RAID_JIRA_API_URL.startswith("http"):
+        RAID_JIRA_API_URL = f"https://{RAID_JIRA_API_URL}"

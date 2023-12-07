@@ -28,6 +28,9 @@ from firefighter.jira_app.utils import (
 logger = logging.getLogger(__name__)
 
 
+RAID_JIRA_API_URL: str = settings.RAID_JIRA_API_URL
+
+
 class JiraUserNotFoundError(Exception):
     pass
 
@@ -54,7 +57,7 @@ class GetReporterError(Exception):
 
 class JiraClient:
     def __init__(self) -> None:
-        self.url = f"{settings.RAID_JIRA_API_PROTOCOL}://{settings.RAID_JIRA_API_URL}"
+        self.url = RAID_JIRA_API_URL
 
     @cached_property
     def jira(self) -> JIRA:
