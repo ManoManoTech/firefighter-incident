@@ -24,8 +24,6 @@ RAID_QUALIFIER_URL: str = settings.RAID_QUALIFIER_URL
 
 
 class SlackMessageRaidCreatedIssue(SlackMessageSurface):
-***REMOVED***
-
     id = "raid_created_issue"
 
     def __init__(self, ticket: JiraTicket, reporter_user: User | None = None) -> None:
@@ -67,8 +65,6 @@ class SlackMessageRaidCreatedIssue(SlackMessageSurface):
 
 
 class SlackMessageRaidModifiedIssue(SlackMessageSurface):
-***REMOVED***
-
     id = "raid_modify_issue"
 
     def __init__(
@@ -116,8 +112,6 @@ class SlackMessageRaidModifiedIssue(SlackMessageSurface):
 
 
 class SlackMessageRaidComment(SlackMessageSurface):
-***REMOVED***
-
     id = "raid_comment"
 
     def __init__(
@@ -164,8 +158,6 @@ class SlackMessageRaidComment(SlackMessageSurface):
 
 
 class SlackMessageRaidDailyQualifierPublic(SlackMessageSurface):
-***REMOVED***
-
     id = "raid_daily_qualifier_public"
 
     def __init__(self, qualifier: JiraUser) -> None:
@@ -190,8 +182,6 @@ class SlackMessageRaidDailyQualifierPublic(SlackMessageSurface):
 
 
 class SlackMessageRaidDailyQualifierPrivate(SlackMessageSurface):
-***REMOVED***
-
     id = "raid_daily_qualifier_private"
 
     def get_text(self) -> str:
@@ -216,8 +206,6 @@ class SlackMessageRaidDailyQualifierPrivate(SlackMessageSurface):
 
 
 class SlackMessageRaidWeeklyQualifiers(SlackMessageSurface):
-***REMOVED***
-
     id = "raid_weekly_qualifiers_public"
 
     def __init__(self, qualifiers_rotation: Iterable[QualifierRotation]) -> None:

@@ -355,7 +355,7 @@ if settings.CONFLUENCE_MOCK_CREATE_POSTMORTEM:
                 "type": "known",
                 "accountId": "abc1234",
                 "accountType": "atlassian",
-***REMOVED***
+                "email": "john.doe@mycompany.com",
                 "publicName": "FireFighter",
                 "profilePicture": {
                     "path": "/wiki/aa-avatar/abc1234",
@@ -382,7 +382,7 @@ if settings.CONFLUENCE_MOCK_CREATE_POSTMORTEM:
                 "type": "known",
                 "accountId": "abc1234",
                 "accountType": "atlassian",
-***REMOVED***
+                "email": "john.doe@mycompany.com",
                 "publicName": "FireFighter",
                 "profilePicture": {
                     "path": "/wiki/aa-avatar/abc1234",
@@ -545,7 +545,7 @@ if settings.CONFLUENCE_MOCK_CREATE_POSTMORTEM:
         "macroRenderedOutput": {},
         "body": {
             "storage": {
-***REMOVED***
+                "value": '<p><span style="color: rgb(255,86,48);">&rarr; Delete all the red messages after your did what they say, starting by this one </span><ac:emoticon ac:name="smile" ac:emoji-shortname=":slight_smile:" ac:emoji-id="1f642" ac:emoji-fallback="🙂" /> <br /><br /><strong>Post-mortem published date</strong> YYYY-MM-DD</p><h2><strong>Incident Summary</strong></h2><p><em><strong><span style="color: rgb(255,86,48);">&rarr; Short</span></strong><span style="color: rgb(255,86,48);"> sentence or two summarizing the contributing factors, timeline summary, and the impact.</span></em><br /><em><span style="color: rgb(255,86,48);">E.g. &quot;On the morning of August 19th, we suffered a 1 minute SEV-1 due to a runaway process on our primary database.</span></em><br /><em><span style="color: rgb(255,86,48);">This database slowness introduced some slowdowns for users and we were out off SLA on our Global Health SLO&rdquo;.</span></em></p><h2><strong>Timeline (</strong><a href="https://www.timeanddate.com/time/zones/cet"><strong>Timezone CEST - Central European Summer Time</strong></a><strong> - military time)</strong></h2><p>February 1st 2021<span style="color: rgb(151,160,175);"> </span><span style="color: rgb(255,86,48);">(&rarr; Add the date before bullets if useful, don&rsquo;t use AM/PM&nbsp;Notation but Military time 00:00 until 23:59).</span></p><ul><li><p>XX:XX - Incident starts</p></li></ul><h2><strong>Root cause(s)</strong></h2><p>&hellip;</p><h2><strong>Impact</strong></h2><p>&hellip;</p><h2><strong>Resolution</strong></h2><p>&hellip;</p><h2><strong>Remediation and preventive measure(s)</strong></h2><p><em><span style="color: rgb(255,86,48);">&rarr; Did you receive an alert related to what you know is happening? Did the alert behave as you&rsquo;d expect?</span></em><br /><em><span style="color: rgb(255,86,48);">What tools were helpful (or unhelpful) during the incident? What did you learn/observe during the incident?</span></em><br /><em><span style="color: rgb(255,86,48);">How could you improve this impacted services? Are the service architecture &amp; behaviors clear to everyone?</span></em><br /><em><span style="color: rgb(255,86,48);">Have the roles been well distributed and performed?</span></em></p><ac:task-list>\n<ac:task>\n<ac:task-id>6</ac:task-id>\n<ac:task-status>incomplete</ac:task-status>\n<ac:task-body><span class="placeholder-inline-tasks">Task 1</span></ac:task-body>\n</ac:task>\n</ac:task-list><h2><strong>Closing the incident</strong></h2><ac:task-list>\n<ac:task>\n<ac:task-id>3</ac:task-id>\n<ac:task-status>incomplete</ac:task-status>\n<ac:task-body><span class="placeholder-inline-tasks">Link this post-mortem in the postmortems section of the application/service <a href="https://mycompany.atlassian.net/wiki/spaces/SRE/pages/1305739687/Runbooks">runbook</a> and replace ms.foobar by the correct runbook in Appendix section below.</span></ac:task-body>\n</ac:task>\n<ac:task>\n<ac:task-id>4</ac:task-id>\n<ac:task-status>incomplete</ac:task-status>\n<ac:task-body><span class="placeholder-inline-tasks">Move this post-mortem to the corresponding [Archive] folder <u>ordered from the oldest to the most&nbsp;recent</u></span></ac:task-body>\n</ac:task>\n<ac:task>\n<ac:task-id>5</ac:task-id>\n<ac:task-status>incomplete</ac:task-status>\n<ac:task-body><span class="placeholder-inline-tasks"><a href="https://mycompany.atlassian.net/wiki/spaces/SRE/pages/1234567/Incident+Management+Automation#IncidentManagementAutomation-Closeanincident">Close the incident</a> using the incident bot</span></ac:task-body>\n</ac:task>\n</ac:task-list><h2><strong>Appendix</strong></h2><p>Runbook(s): <br />PostMortem(s):</p>',
                 "representation": "storage",
                 "embeddedContent": [],
                 "_expandable": {"content": "/rest/api/content/012345"},
