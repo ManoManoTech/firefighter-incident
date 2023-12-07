@@ -5,16 +5,16 @@ from functools import cache, cached_property
 from typing import TYPE_CHECKING, Any, Literal, Never
 
 from django.conf import settings
-from jinja2 import Environment
-from jinja2.environment import Template
 from jinja2.loaders import PackageLoader
+from jinja2.sandbox import ImmutableSandboxedEnvironment
 
 from firefighter.firefighter.utils import get_in
 
 if TYPE_CHECKING:
+    from jinja2.environment import Template
+
     from firefighter.confluence.client import ConfluenceClient
     from firefighter.confluence.utils import ConfluencePage, ConfluencePageId, PageInfo
-    from firefighter.incidents.models.incident import Incident
     from firefighter.incidents.models.user import User
 
 logger = logging.getLogger(__name__)
@@ -37,7 +37,7 @@ class ConfluenceService:
     """
 
     logger = logging.getLogger(__name__)
-    jinja: Environment
+    jinja: ImmutableSandboxedEnvironment
     _client: ConfluenceClient | None
 
     POSTMORTEM_FOLDER_ID: int = int(settings.CONFLUENCE_POSTMORTEM_FOLDER_ID)
@@ -65,8 +65,8 @@ class ConfluenceService:
         return self._client
 
     @staticmethod
-    def _build_template_engine() -> Environment:
-        return Environment(
+    def _build_template_engine() -> ImmutableSandboxedEnvironment:
+        return ImmutableSandboxedEnvironment(
             loader=PackageLoader("firefighter.confluence", "templates"), autoescape=True
         )
 
@@ -151,14 +151,11 @@ class ConfluenceService:
         logger.info("Confluence OnCall page is up to date, and was not updated.")
         return False
 
-    def create_postmortem(
-        self, title: str, incident: Incident
-    ) -> None | ConfluencePage:
-        """Create the PostMortem page of an incident.
+    def create_postmortem(self, title: str) -> None | ConfluencePage:
+        """Create a PostMortem page.
 
         Args:
             title (str): Title of the PostMortem page.
-            incident (Incident): Incident object.
 
         Returns:
             None | ConfluencePage: The newly created page, or None if it failed.
@@ -170,15 +167,9 @@ class ConfluenceService:
         body = get_in(postmortem_template, "body.storage.value")
         logger.debug(body)
 
-        # Load body as Jinja template
-        # XXX make sure this is safe
-        pm_template_jinja = Template(source=body)
-        pm_body = self._build_page_from_template(
-            pm_template_jinja, incident=incident.__dict__
-        )
         # Create the postmortem with the template body
         page_created: ConfluencePage = self.create_page(
-            title, self.POSTMORTEM_FOLDER_ID, pm_body
+            title, self.POSTMORTEM_FOLDER_ID, body
         )
 
         logger.debug("Postmortem page id: %s ", page_created.get("id"))
