@@ -295,3 +295,6 @@ FF_USER_ID_HEADER: str = "FF-User-Id"
 
 FF_OVERRIDE_MENUS_CREATION: Callable[[], None] | None = None
 "Override the default menus creation. Useful for custom menus."
+
+FF_DEBUG_ERROR_PAGES: bool = config("FF_DEBUG_ERROR_PAGES", default=False, cast=bool)
+"Add routes to display error pages. Useful for debugging."
