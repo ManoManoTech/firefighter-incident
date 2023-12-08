@@ -42,7 +42,7 @@ def _entropy(value: str) -> float:
 
     if not value:
         return 0.0
-    entropy = 0
+    entropy: float = 0.0
     for x in string.printable:
         p_x = float(value.count(x)) / len(value)
         if p_x > 0:
