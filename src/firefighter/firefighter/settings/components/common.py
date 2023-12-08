@@ -298,3 +298,8 @@ FF_OVERRIDE_MENUS_CREATION: Callable[[], None] | None = None
 
 FF_DEBUG_ERROR_PAGES: bool = config("FF_DEBUG_ERROR_PAGES", default=False, cast=bool)
 "Add routes to display error pages. Useful for debugging."
+
+FF_SKIP_SECRET_KEY_CHECK: bool = config(
+    "FF_SKIP_SECRET_KEY_CHECK", default=False, cast=bool
+)
+"Skip the SECRET_KEY check. Make sure to set a strong SECRET_KEY in production."
