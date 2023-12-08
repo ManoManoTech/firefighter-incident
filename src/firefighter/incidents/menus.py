@@ -1,12 +1,13 @@
 from __future__ import annotations
 
+import contextlib
 import enum
 from typing import TYPE_CHECKING
 from urllib.parse import urlencode
 
 from django.apps import apps
 from django.conf import settings
-from django.urls import reverse
+from django.urls import NoReverseMatch, reverse
 from simple_menu import Menu, MenuItem
 
 if TYPE_CHECKING:
@@ -135,17 +136,18 @@ def setup_footer_menu() -> None:
         ),
     )
 
-    Menu.add_item(
-        Menus.footer,
-        MenuItem(
-            f"{APP_DISPLAY_NAME} API",
-            None,
-            children=[
-                MenuItem("OpenAPI specs", reverse("api:schema")),
-                MenuItem("OpenAPI Swagger-UI", reverse("api:swagger-ui")),
-            ],
-        ),
-    )
+    with contextlib.suppress(NoReverseMatch):
+        Menu.add_item(
+            Menus.footer,
+            MenuItem(
+                f"{APP_DISPLAY_NAME} API",
+                None,
+                children=[
+                    MenuItem("OpenAPI specs", reverse("api:schema")),
+                    MenuItem("OpenAPI Swagger-UI", reverse("api:swagger-ui")),
+                ],
+            ),
+        )
 
 
 if not settings.FF_OVERRIDE_MENUS_CREATION:

@@ -186,3 +186,6 @@ TEMPLATES[0]["OPTIONS"] = TEMPLATES[0]["OPTIONS"] | {"debug": True}  # type: ign
 
 
 FF_DEBUG_ERROR_PAGES = config("FF_DEBUG_ERROR_PAGES", default=True, cast=bool)
+
+
+FF_EXPOSE_API_DOCS: bool = config("FF_EXPOSE_API_DOCS", default=True, cast=bool)
