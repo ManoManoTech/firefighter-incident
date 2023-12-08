@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from django.conf import settings
 from django.urls import URLPattern, URLResolver, include, path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from rest_framework import routers
@@ -58,16 +59,21 @@ urlpatterns: list[URLPattern | URLResolver] = [
         ),  # pyright: ignore[reportGeneralTypeIssues]
         name="incidents",
     ),
-    path(
-        "schema",
-        SpectacularAPIView.as_view(),  # pyright: ignore[reportGeneralTypeIssues]
-        name="schema",
-    ),
-    path(
-        "schema/swagger-ui",
-        SpectacularSwaggerView.as_view(
-            url_name="api:schema"
-        ),  # pyright: ignore[reportGeneralTypeIssues]
-        name="swagger-ui",
-    ),
 ]
+if settings.FF_EXPOSE_API_DOCS:
+    urlpatterns.extend(
+        (
+            path(
+                "schema",
+                SpectacularAPIView.as_view(),  # pyright: ignore[reportGeneralTypeIssues]
+                name="schema",
+            ),
+            path(
+                "schema/swagger-ui",
+                SpectacularSwaggerView.as_view(
+                    url_name="api:schema"
+                ),  # pyright: ignore[reportGeneralTypeIssues]
+                name="swagger-ui",
+            ),
+        )
+    )

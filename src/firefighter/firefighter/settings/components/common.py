@@ -303,3 +303,6 @@ FF_SKIP_SECRET_KEY_CHECK: bool = config(
     "FF_SKIP_SECRET_KEY_CHECK", default=False, cast=bool
 )
 "Skip the SECRET_KEY check. Make sure to set a strong SECRET_KEY in production."
+
+FF_EXPOSE_API_DOCS: bool = config("FF_EXPOSE_API_DOCS", default=False, cast=bool)
+"Expose the API documentation. Useful for debugging. Can be a security issue."
