@@ -23,18 +23,14 @@ The `urlpatterns` list routes URLs to views. For more information please see:
 from __future__ import annotations
 
 import sys
-from typing import TYPE_CHECKING
 
 from django.apps import apps
 from django.conf import settings
-from django.urls import URLPattern, URLResolver, include, path
+from django.urls import URLPattern, include, path
 from django.views.generic.base import TemplateView
 
 from firefighter.firefighter import views
 from firefighter.firefighter.admin import admin_custom
-
-if TYPE_CHECKING:
-    from collections.abc import Sequence
 
 handler404 = "firefighter.incidents.views.errors.page_not_found"
 handler403 = "firefighter.incidents.views.errors.permission_denied"
@@ -42,7 +38,7 @@ handler400 = "firefighter.incidents.views.errors.bad_request"
 handler500 = "firefighter.incidents.views.errors.server_error"
 
 app_name = "firefighter"
-firefighter_urlpatterns: tuple[Sequence[URLResolver | URLPattern], str] = (
+firefighter_urlpatterns: tuple[list[URLPattern], str] = (
     [
         path(
             "robots.txt",
