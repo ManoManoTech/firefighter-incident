@@ -12,25 +12,6 @@ It helps manage incidents, by automatically creating a Slack channel for communi
 
 See [CONTRIBUTING](CONTRIBUTING.md) for details on submitting patches, the contribution workflow and developer's guide.
 
-### Testing
-
-Testing coverage is **very** limited at the moment.
-
-Pytest is used.
-
-```shell
-pdm run tests
-```
-
-### Code style
-
-```shell
-pdm run fmt
-pdm run lint
-```
-
-Consider checking all dev commands using `pdm run --list`.
-
 ## License
 
 FireFighter is under the MIT license. See the [LICENSE](LICENSE) file for details.
