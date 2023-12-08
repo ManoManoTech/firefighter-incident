@@ -1,0 +1,6 @@
+<h2><a href="{{oncall_page_link}}">On-call</a>:</h2>
+<ul>
+{% for team_name, user in users %}
+<li>{{ team_name | upper }} {% if user.slack_user %}<a href="{{ user.slack_user.url}}">{% endif %}{{ user.full_name }}{% if user.slack_user %}</a>{% endif %}{% if user.pagerduty_user.phone_number %}: <a href="tel:+{{ user.pagerduty_user.phone_number }}">+{{ user.pagerduty_user.phone_number }}</a>{% endif %}</li>
+{% endfor -%}
+</ul>

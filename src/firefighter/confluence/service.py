@@ -2,17 +2,13 @@ from __future__ import annotations
 
 import logging
 from functools import cache, cached_property
-from typing import TYPE_CHECKING, Any, Literal, Never
+from typing import TYPE_CHECKING, Any, Literal
 
 from django.conf import settings
-from jinja2.loaders import PackageLoader
-from jinja2.sandbox import ImmutableSandboxedEnvironment
 
 from firefighter.firefighter.utils import get_in
 
 if TYPE_CHECKING:
-    from jinja2.environment import Template
-
     from firefighter.confluence.client import ConfluenceClient
     from firefighter.confluence.utils import ConfluencePage, ConfluencePageId, PageInfo
     from firefighter.incidents.models.user import User
@@ -37,7 +33,6 @@ class ConfluenceService:
     """
 
     logger = logging.getLogger(__name__)
-    jinja: ImmutableSandboxedEnvironment
     _client: ConfluenceClient | None
 
     POSTMORTEM_FOLDER_ID: int = int(settings.CONFLUENCE_POSTMORTEM_FOLDER_ID)
@@ -52,7 +47,6 @@ class ConfluenceService:
 
     def __init__(self) -> None:
         self._client = None
-        self.jinja = self._build_template_engine()
 
     @cached_property
     def client(self) -> ConfluenceClient:
@@ -64,18 +58,14 @@ class ConfluenceService:
             )
         return self._client
 
-    @staticmethod
-    def _build_template_engine() -> ImmutableSandboxedEnvironment:
-        return ImmutableSandboxedEnvironment(
-            loader=PackageLoader("firefighter.confluence", "templates"), autoescape=True
-        )
-
-    def _build_page_from_template(
-        self, template: Template | str, *_: Never, **kwargs: Any
+    def _build_page_from_django_template(
+        self, template_name: str, context: dict[str, Any]
     ) -> str:
-        """Returns a unicode string, from a Jinja template (or path) and its arguments, if any."""
-        template = self.jinja.get_template(template)
-        rendered_page = template.render(kwargs)
+        """Returns a unicode string, from a Django template (or path) and its arguments, if any."""
+        from django.template import loader
+
+        template = loader.get_template(template_name)
+        rendered_page = template.render(context)
         logger.debug(rendered_page)
         return rendered_page
 
@@ -128,12 +118,13 @@ class ConfluenceService:
             logger.error("No page version in Confluence page! %s", content)
             return False
         page_version += 1
-        page_body = self._build_page_from_template(
-            "oncall_team.xml.j2",
-            users=users.items(),
-            oncall_page_link=SLACK_CURRENT_ONCALL_URL,
+        page_body = self._build_page_from_django_template(
+            "oncall_team.xml",
+            context={
+                "users": users.items(),
+                "oncall_page_link": SLACK_CURRENT_ONCALL_URL,
+            },
         )
-
         logger.debug("Confluence OnCall page body: %s", page_body)
         if get_in(content, "body.storage.value") != page_body:
             res = self.client.update_page(
