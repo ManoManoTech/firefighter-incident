@@ -62,6 +62,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Setup PDM
+        # XXX Use the upstream version when repository is not private
         uses: ManoManoTech/setup-pdm@main
         id: setup-pdm
         with:
@@ -104,64 +105,3 @@ jobs:
           path: |
             dist/*.whl
             dist/*.tar.gz
-
-  # publish:
-  #   name: Publish release
-  #   if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
-  #   needs:
-  #     - python_build
-  #   runs-on: ubuntu-latest
-
-  #   permissions:
-  #     contents: write
-  #     id-token: write
-
-  #   steps:
-  #     - name: Download Python artifacts
-  #       uses: actions/download-artifact@v3
-  #       with:
-  #         name: python-artifacts
-  #         path: dist
-
-  #     - name: Push Python artifacts to PyPI
-  #       uses: pypa/gh-action-pypi-publish@v1.8.11
-  #       with:
-  #         skip-existing: true
-
-  #     - name: Add assets to current release
-  #       uses: softprops/action-gh-release@v1
-  #       with:
-  #         files: |-
-  #           dist/*
-
-  # docker_build:
-  #   name: Build Docker image
-  #   if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
-  #   needs:
-  #     - python-artifacts
-  #   runs-on: ubuntu-latest
-  #   # ARM and AMD64
-  #   strategy:
-  #     matrix:
-  #       platform: [linux/amd64, linux/arm64]
-
-  #   permissions:
-  #     contents: write
-  #     id-token: write
-
-  #   steps:
-  #     - name: Download Python artifacts
-  #       uses: actions/download-artifact@v3
-  #       with:
-  #         name: python-artifacts
-  #         path: dist
-
-  #     - name: Build Docker image
-  #       run: |
-  #         docker build -t firefighter-incident .
-  #     - name: Publish Docker image
-  #       uses: docker/build-push-action@v2
-  #       with:
-  #         context: .
-  #         push: true
-  #         tags: ${{ github.repository }}:latest
