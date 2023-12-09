@@ -5,7 +5,7 @@
 groups = ["default", "dev", "docs", "tests", "types"]
 strategy = ["cross_platform", "static_urls"]
 lock_version = "4.4"
-content_hash = "sha256:778606062c2290dc69278d45d820dad48fb35f0af355e4950fbcc9e8b0a7034f"
+content_hash = "sha256:d111d0c275a5123a39d72e1eaf75cea4d640bff33f881a75e5d0cba5f9283bb9"
 
 [[package]]
 name = "aiohttp"
@@ -1834,6 +1834,19 @@ files = [
 ]
 
 [[package]]
+name = "mkdocs-git-authors-plugin"
+version = "0.7.2"
+requires_python = ">=3.7"
+summary = "Mkdocs plugin to display git authors of a page"
+dependencies = [
+    "mkdocs>=1.0",
+]
+files = [
+    {url = "https://files.pythonhosted.org/packages/43/ff/a759124da74b0874b8db4988af5f60f594917316ce82baaef36abae94073/mkdocs-git-authors-plugin-0.7.2.tar.gz", hash = "sha256:f541730e4cabdafa0ac758c94d28ba5e8ddca4c859e5de4c89f1226cb6ccd0ad"},
+    {url = "https://files.pythonhosted.org/packages/55/7c/c4b6d71921dd0cf33f87bfd69d7c72774bf4ece57b6aa23221d1ac31d9fb/mkdocs_git_authors_plugin-0.7.2-py3-none-any.whl", hash = "sha256:c8a2784a867db79ad3b477a96ee96875d17b09192b6d3be71f08df25afff76c4"},
+]
+
+[[package]]
 name = "mkdocs-git-revision-date-plugin"
 version = "0.3.2"
 requires_python = ">=3.4"
@@ -1863,7 +1876,7 @@ files = [
 
 [[package]]
 name = "mkdocs-material"
-version = "9.4.14"
+version = "9.5.1"
 requires_python = ">=3.8"
 summary = "Documentation that simply works"
 dependencies = [
@@ -1880,8 +1893,8 @@ dependencies = [
     "requests~=2.26",
 ]
 files = [
-    {url = "https://files.pythonhosted.org/packages/34/31/98fff7fe1401cf8c45127d836cd34b6d512a5e984f2f4dc3cbb17aad8674/mkdocs_material-9.4.14-py3-none-any.whl", hash = "sha256:dbc78a4fea97b74319a6aa9a2f0be575a6028be6958f813ba367188f7b8428f6"},
-    {url = "https://files.pythonhosted.org/packages/c8/c2/55f01d53432bfd7854f59c3829dedd86d4d0223588851bbbea38d168813a/mkdocs_material-9.4.14.tar.gz", hash = "sha256:a511d3ff48fa8718b033e7e37d17abd9cc1de0fdf0244a625ca2ae2387e2416d"},
+    {url = "https://files.pythonhosted.org/packages/91/18/3c005976e0a217ac5fc0c90c7f4dd67e0412cc1ff4e4eb368b1935b286e6/mkdocs_material-9.5.1-py3-none-any.whl", hash = "sha256:2e01249bc41813afe2479a4a659f8ba899c3355ccaf9310b5b782952df9c1dea"},
+    {url = "https://files.pythonhosted.org/packages/f2/ac/7dca07deee8884f76e032fb6bc92e25d9a40f4f92189b2739d990e08a2b8/mkdocs_material-9.5.1.tar.gz", hash = "sha256:7ec5d20ed5eee97bb090823a33b33e177ad0704d74bad5937b53acca571ddb3d"},
 ]
 
 [[package]]
@@ -1896,18 +1909,18 @@ files = [
 
 [[package]]
 name = "mkdocs-material"
-version = "9.4.14"
+version = "9.5.1"
 extras = ["imaging"]
 requires_python = ">=3.8"
 summary = "Documentation that simply works"
 dependencies = [
     "cairosvg~=2.6",
-    "mkdocs-material==9.4.14",
+    "mkdocs-material==9.5.1",
     "pillow~=9.4",
 ]
 files = [
-    {url = "https://files.pythonhosted.org/packages/34/31/98fff7fe1401cf8c45127d836cd34b6d512a5e984f2f4dc3cbb17aad8674/mkdocs_material-9.4.14-py3-none-any.whl", hash = "sha256:dbc78a4fea97b74319a6aa9a2f0be575a6028be6958f813ba367188f7b8428f6"},
-    {url = "https://files.pythonhosted.org/packages/c8/c2/55f01d53432bfd7854f59c3829dedd86d4d0223588851bbbea38d168813a/mkdocs_material-9.4.14.tar.gz", hash = "sha256:a511d3ff48fa8718b033e7e37d17abd9cc1de0fdf0244a625ca2ae2387e2416d"},
+    {url = "https://files.pythonhosted.org/packages/91/18/3c005976e0a217ac5fc0c90c7f4dd67e0412cc1ff4e4eb368b1935b286e6/mkdocs_material-9.5.1-py3-none-any.whl", hash = "sha256:2e01249bc41813afe2479a4a659f8ba899c3355ccaf9310b5b782952df9c1dea"},
+    {url = "https://files.pythonhosted.org/packages/f2/ac/7dca07deee8884f76e032fb6bc92e25d9a40f4f92189b2739d990e08a2b8/mkdocs_material-9.5.1.tar.gz", hash = "sha256:7ec5d20ed5eee97bb090823a33b33e177ad0704d74bad5937b53acca571ddb3d"},
 ]
 
 [[package]]

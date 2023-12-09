@@ -70,23 +70,3 @@ Providing more integrations is not planned, but we plan to help integrate with o
 > This means that the runbook or postmortem back-end can only be Confluence, the ticketing system can only be Jira, and the alerting system can only be PagerDuty, for now.
 > If you want to use other systems, you will have to integrate with them yourself.
 > Please open an issue if you need help with that.
-
-## Versioning, compatibility and support
-
-## Python and Django versions
-
-At the moment, we provide no guarantees regarding compatibility and support.
-
-We currently support one version of Django and Python, and one version of PostgreSQL and Redis.
-
-We plan to follow the latest versions of Django and Python, if possible.
-
-We may expand the list of supported versions of Python or Django in the future, but don't plan to support older versions.
-
-## FireFighter versions
-
-We plan to follow semantic versioning, and provide a changelog.
-
-However, we may break compatibility between minor versions, and don't plan to support older versions.
-
-Please check the changelog before upgrading.
