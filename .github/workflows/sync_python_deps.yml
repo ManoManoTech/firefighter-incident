@@ -15,7 +15,7 @@ jobs:
 
       - name: Update dependencies with PDM
         # XXX Use the upstream version when repository is not private
-        uses: ManoManoTech/update-deps-action@v1.4
+        uses: ManoManoTech/update-deps-action@main
         with:
           # The personal access token, default: ${{ github.token }}
           token: ${{ secrets.GH_TOKEN }}
