@@ -15,14 +15,14 @@ jobs:
 
       - name: Update dependencies with PDM
         # XXX Use the upstream version when repository is not private
-        uses: ManoManoTech/update-deps-action@main
+        uses: pdm-project/update-deps-action@main
         with:
           # The personal access token, default: ${{ github.token }}
           token: ${{ secrets.GH_TOKEN }}
           # The commit message"
-          commit-message: "chore: Update pdm.lock"
+          commit-message: "chore(deps): Update pdm.lock"
           # The PR title
-          pr-title: "Update Python PDM dependencies"
+          pr-title: "chore(deps): Update Python dependencies with PDM"
           # The update strategy, can be 'reuse', 'eager' or 'all'
           update-strategy: all
           # Whether to install PDM plugins before update
