@@ -1,0 +1,49 @@
+---
+# This configuration file is for the **development** setup.
+# It will launch Postgres and Redis containers, not the app itself.
+
+version: "3.1"
+
+services:
+  db:
+    container_name: ff-db
+    image: postgres:13-alpine
+    env_file:
+      - ".env"
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - firefighter-pg-13:/var/lib/postgresql/data
+    security_opt:
+      - no-new-privileges:true
+
+  redis:
+    container_name: ff-redis
+    image: redis:6.2-alpine
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - firefighter-redis:/data
+    security_opt:
+      - no-new-privileges:true
+
+  adminer:
+    container_name: ff-adminer
+    depends_on:
+      - db
+    image: adminer:4.8.1
+    restart: "no"
+    ports:
+      - "127.0.0.1:8080:8080"
+    security_opt:
+      - no-new-privileges:true
+
+    environment:
+      ADMINER_DEFAULT_SERVER: db
+      ADMINER_DESIGN: nette
+
+volumes:
+  firefighter-pg-13:
+  firefighter-redis:
