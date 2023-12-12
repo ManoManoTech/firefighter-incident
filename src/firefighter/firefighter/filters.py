@@ -6,6 +6,7 @@ from datetime import timedelta
 from typing import TYPE_CHECKING, Any, Literal, TypeVar, cast
 
 import markdown as md
+import nh3
 from django import template
 from django.template.defaulttags import register as register_base
 
@@ -135,10 +136,12 @@ def readable_time_delta(delta: timedelta) -> str:
 def markdown(text: str) -> str:
     """Converts markdown-formatted text to HTML.
 
+    Sanitize the HTML to only allow a subset of tags.
+
     Args:
         text (str): The markdown-formatted text to convert.
 
     Returns:
         str: The HTML-formatted text.
     """
-    return md.markdown(text, output_format="html")
+    return nh3.clean(md.markdown(text, output_format="html"), tags=nh3.ALLOWED_TAGS)
