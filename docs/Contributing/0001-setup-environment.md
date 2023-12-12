@@ -71,11 +71,14 @@ It will performan the following steps:
 docker-compose up -d db redis
 ```
 
-### 2. Migrate the database
+### 2. Apply the database migrations
 
 ```shell
 pdm run migrate
 ```
+
+> This PDM command uses the [`migrate`](https://docs.djangoproject.com/en/4.2/ref/django-admin/#migrate) command of Django to apply migrations on all enabled applications.
+> If you enable a new app (switch PagerDuty on for the first time for instance), you'll need to apply migrations again.
 
 ### 3. Load fixtures
 
@@ -83,11 +86,16 @@ pdm run migrate
 pdm run loaddata
 ```
 
+> This PDM command uses the [`loaddata`](https://docs.djangoproject.com/en/4.2/ref/django-admin/#loaddata) command of Django to gather necessary objects (Severities, Components, Groups...)
+
 ### 4. Create a superuser
 
 ```shell
 pdm run createsuperuser
 ```
+
+> This PDM command will use the env variables set earlier (`DJANGO_SUPERUSER_EMAIL`, `DJANGO_SUPERUSER_USERNAME` and `DJANGO_SUPERUSER_PASSWORD`) to create an admin user.
+> Tou can use this user to login at <http://127.0.0.1:8080/admin/>
 
 ### 5. Collect static files
 
@@ -101,7 +109,10 @@ pdm run collectstatic
 pdm runserver
 ```
 
+> This PDM command uses the [`runserver`](https://docs.djangoproject.com/en/4.2/ref/django-admin/#runserver) command of Django.
+
+
 You can login at http://127.0.0.1:8000/admin/ with the superuser you created.
 
-
-> If you run the server at this stage, you can expect some warnings/errors.
+!!! warning
+    If you run the server at this stage, you can expect some warnings/errors.
