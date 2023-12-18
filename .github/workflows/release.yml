@@ -92,7 +92,7 @@ jobs:
       # For pypi trusted publishing
       id-token: write
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: dist
           path: dist
@@ -134,7 +134,7 @@ jobs:
       # For GitHub release publishing
       contents: write
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: dist
           path: dist
@@ -164,13 +164,13 @@ jobs:
         with:
           ref: ${{ inputs.sha }}
 
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         name: Download Python artifacts
         with:
           name: dist
           path: dist
 
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         name: Download Python frozen requirements
         with:
           name: requirements
