@@ -45,7 +45,7 @@ jobs:
       - name: "Build wheel and sdist"
         run: pdm build
       - name: "Upload wheel and sdist"
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: dist
           path: dist
@@ -55,7 +55,7 @@ jobs:
           pdm export --prod -f requirements -o requirements.txt
 
       - name: Publish frozen requirements.txt
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: requirements
           path: requirements.txt
