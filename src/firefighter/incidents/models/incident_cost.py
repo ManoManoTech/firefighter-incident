@@ -36,13 +36,13 @@ class IncidentCost(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    class Meta(TypedModelMeta):
+        verbose_name = "Incident cost"
+        verbose_name_plural = "Incident costs"
+
     def __str__(self) -> str:
         return f"{self.cost_type.name} - {self.amount}"
 
     @property
     def currency(self) -> str:
         return "EUR"
-
-    class Meta(TypedModelMeta):
-        verbose_name = "Incident cost"
-        verbose_name_plural = "Incident costs"

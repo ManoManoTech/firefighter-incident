@@ -74,12 +74,12 @@ class QualifierRotation(models.Model):
     if TYPE_CHECKING:
         jira_user_id: str
 
-    def __str__(self) -> str:
-        return f"{self.day}: {self.jira_user}"
-
     class Meta:
         verbose_name = "Qualifiers rotation"
         verbose_name_plural = "Qualifiers rotation"
+
+    def __str__(self) -> str:
+        return f"{self.day}: {self.jira_user}"
 
 
 class Qualifier(models.Model):
@@ -93,12 +93,12 @@ class Qualifier(models.Model):
     if TYPE_CHECKING:
         jira_user_id: str
 
-    def __str__(self) -> str:
-        return f"{self.jira_user}"
-
     class Meta:
         verbose_name = "Qualifier"
         verbose_name_plural = "Qualifiers"
+
+    def __str__(self) -> str:
+        return f"{self.jira_user}"
 
 
 class RaidArea(models.Model):

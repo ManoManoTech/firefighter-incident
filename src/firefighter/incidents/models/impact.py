@@ -53,10 +53,6 @@ class ImpactLevel(models.Model):
     value = models.CharField(choices=LevelChoices.choices, max_length=2, default="NO")
     order = models.PositiveSmallIntegerField(default=10)
 
-    @cached_property
-    def value_label(self) -> str:
-        return LevelChoices(self.value).label
-
     class Meta(TypedModelMeta):
         constraints = [
             models.UniqueConstraint(
@@ -70,6 +66,10 @@ class ImpactLevel(models.Model):
 
     def __str__(self) -> str:
         return self.name or self.value
+
+    @cached_property
+    def value_label(self) -> str:
+        return LevelChoices(self.value).label
 
 
 class Impact(models.Model):
@@ -88,6 +88,10 @@ class Impact(models.Model):
     def __str__(self) -> str:
         return f"{self.impact_type}: {self.impact_level}"
 
+    def save(self, *args: Any, **kwargs: Any) -> None:
+        self.clean()
+        super().save(*args, **kwargs)
+
     def clean(self) -> None:
         """Ensure impact_type matches impact_level.impact_type.
 
@@ -95,10 +99,6 @@ class Impact(models.Model):
         """
         if self.impact_type != self.impact_level.impact_type:
             raise ValidationError("impact_type must match impact_level.impact_type")
-
-    def save(self, *args: Any, **kwargs: Any) -> None:
-        self.clean()
-        super().save(*args, **kwargs)
 
 
 @receiver(pre_save, sender=Impact)

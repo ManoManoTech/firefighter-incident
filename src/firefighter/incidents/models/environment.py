@@ -7,8 +7,6 @@ from django.db.models.manager import Manager
 
 
 class Environment(models.Model):
-    objects = Manager["Environment"]()
-
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     value = models.CharField(max_length=16, unique=True)
     name = models.CharField(max_length=128, unique=True)
@@ -17,6 +15,8 @@ class Environment(models.Model):
     default = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    objects = Manager["Environment"]()
 
     def __str__(self) -> str:
         return self.value

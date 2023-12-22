@@ -22,14 +22,14 @@ class Sos(models.Model):
         Conversation, blank=True, on_delete=models.CASCADE
     )
 
-    @property
-    def usergroup_slack_fmt(self) -> str:
-        """Returns either `@usergroup` or `@here` depending on usergroup presence."""
-        return f"@{self.user_group.handle}" if self.user_group else "@here"
-
     class Meta(TypedModelMeta):
         verbose_name = "SOS"
         verbose_name_plural = "SOS"
 
     def __str__(self) -> str:
         return self.name
+
+    @property
+    def usergroup_slack_fmt(self) -> str:
+        """Returns either `@usergroup` or `@here` depending on usergroup presence."""
+        return f"@{self.user_group.handle}" if self.user_group else "@here"

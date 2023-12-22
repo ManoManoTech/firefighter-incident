@@ -9,8 +9,6 @@ from django_stubs_ext.db.models import TypedModelMeta
 
 
 class Severity(models.Model):
-    objects = Manager["Severity"]()
-
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=128, unique=True)
     value = models.IntegerField(unique=True)
@@ -31,6 +29,8 @@ class Severity(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    objects = Manager["Severity"]()
 
     class Meta(TypedModelMeta):
         ordering = ["order"]

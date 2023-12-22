@@ -170,14 +170,14 @@ class Component(models.Model):
             usergroups: QuerySet[UserGroup]
             conversations: QuerySet[Conversation]
 
-    def get_absolute_url(self) -> str:
-        return reverse("incidents:component-detail", kwargs={"component_id": self.id})
-
     class Meta(TypedModelMeta):
         ordering = ["order"]
 
     def __str__(self) -> str:
         return f"{'🔒 ' if self.private else ''}{self.name}"
+
+    def get_absolute_url(self) -> str:
+        return reverse("incidents:component-detail", kwargs={"component_id": self.id})
 
 
 class ComponentFilterSet(django_filters.FilterSet):

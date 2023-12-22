@@ -401,7 +401,6 @@ class PagerDutyOncall(models.Model):
     - [API Schema](https://developer.pagerduty.com/api-reference/c2NoOjI3NDgwNDc-oncall)
     """
 
-    objects = PagerDutyOncallManager()
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     updated_at = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -432,6 +431,8 @@ class PagerDutyOncall(models.Model):
         blank=True,
         help_text="The end of the on-call. If null, the user does not go off-call.",
     )
+
+    objects = PagerDutyOncallManager()
 
     class Meta(TypedModelMeta):
         verbose_name = "PagerDuty on-call"

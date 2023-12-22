@@ -50,12 +50,12 @@ class IncidentRoleType(models.Model):
             )
         ]
 
+    def __str__(self) -> str:
+        return self.name
+
     def save(self, *args: Any, **kwargs: Any) -> None:
         self.slug = slugify(self.slug or self.name).replace("-", "_")
         super().save(*args, **kwargs)
-
-    def __str__(self) -> str:
-        return self.name
 
     def get_absolute_url(self) -> str:
         return reverse("incidents:docs-role-type-detail", kwargs={"pk": self.pk})
