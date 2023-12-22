@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import inspect
 import logging
+import operator
 import re
 from functools import reduce
 from typing import TYPE_CHECKING, Any, Generic, TypeVar
@@ -312,7 +313,7 @@ class ModalForm(SlackModal, Generic[T]):
     @staticmethod
     def _concat_validation_errors_msg(err: list[ValidationError]) -> str:
         """Return a string of all validation errors."""
-        return reduce(lambda a, b: a + b, ["; ".join(e.messages) for e in err], "")
+        return reduce(operator.add, ["; ".join(e.messages) for e in err], "")
 
 
 class MessageForm(SlackModal, Generic[T]):
