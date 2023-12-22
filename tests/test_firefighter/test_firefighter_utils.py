@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import operator
 from datetime import UTC, datetime, timedelta
 
 from django_htmx.middleware import HtmxDetails
@@ -68,7 +69,7 @@ def test_get_item() -> None:
 
 
 def test_apply_filter() -> None:
-    fn_holder = {"filter": lambda x, y: x * y, "filter_args": 2}
+    fn_holder = {"filter": operator.mul, "filter_args": 2}
     assert apply_filter(5, fn_holder) == 10
 
     fn_holder = {"filter": lambda x: x * 2}

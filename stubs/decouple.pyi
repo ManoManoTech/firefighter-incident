@@ -8,7 +8,7 @@ from typing import Any, TypeVar, overload
 
 from _typeshed import Incomplete
 
-PYVERSION: sys._version_info  # noqa: SLF001
+PYVERSION: sys._version_info
 text_type: type[str]
 
 read_config: Callable[[ConfigParser, Any], Any]
