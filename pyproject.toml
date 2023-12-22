@@ -446,8 +446,6 @@ branch = true
 omit = [
   "*/tests/*",
   "*/migrations/*",
-  "*/dev_packages_pipdl/*",
-  "*/dev_packages/*",
   "*/node_modules/*",
   "*/dist/*",
   "static/*",
@@ -510,7 +508,6 @@ ignore = [
   "TRY003",  # Avoid specifying long messages outside the exception class
   "DJ001",   # XXX: Enable later - Avoid using `null=True` on string-based fields such as TextField and CharField
   "PLC1901", # XXX: Enable later - Simplify empty string comparison
-  "DJ012",   # XXX: Enable later - Order of model's inner classes, methods, and fields does not follow the Django Style Guide
   "TD",      # XXX: Enable later - Too many T0D0s
   "FIX003",  # XXX: Enable later - Too many X*X
   "FIX002",  # XXX: Enable later - Too many T0D0s
@@ -557,7 +554,7 @@ ignore-overlong-task-comments = true
 
 [tool.ruff.isort]
 required-imports = ["from __future__ import annotations"]
-known-first-party = ["firefighter", "incidents", "raid", "api", "slack", "pagerduty", "confluence", "jira_app", "components", "mm_ff_settings"]
+known-first-party = ["firefighter", ]
 
 [tool.ruff.flake8-annotations]
 allow-star-arg-any = true
@@ -579,11 +576,4 @@ max-args = 10
 max-branches = 15
 max-returns = 10
 max-bool-expr = 6
-
-[tool.sync-pre-commit-lock]
-dependency-mapping = {"yamllint"= {"repo"= "https://github.com/adrienverge/yamllint", "rev"= "v${rev}"}}
-
-
-[tool.django_migration_linter]
-# Docs: https://github.com/3YOURMIND/django-migration-linter/blob/main/docs/usage.md
-ignore_name = ['0001_squashed_0008']
+max-locals = 20

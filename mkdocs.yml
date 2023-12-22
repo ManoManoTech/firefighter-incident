@@ -84,13 +84,14 @@ nav:
       - Credits: credits.md
       - License: license.md
   - Usage:
-      - Deploy/00-intro.md
-      - Deploy/XX-auth.md
-      - Deploy/XX-custom-settings.md
-      - Deploy/XX-i18n-l10.md
-      - Deploy/XX-logs-traces.md
-      - Deploy/XX-settings.md
-      - Deploy/XX-support-policy.md
+      - Deployment:
+          - Deploy/00-intro.md
+          - Deploy/XX-auth.md
+          - Deploy/XX-custom-settings.md
+          - Deploy/XX-i18n-l10.md
+          - Deploy/XX-logs-traces.md
+          - Deploy/XX-settings.md
+          - Deploy/XX-support-policy.md
 
   - Reference:
       - Django Apps:
