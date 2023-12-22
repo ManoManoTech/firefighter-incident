@@ -176,28 +176,11 @@ class Conversation(models.Model):
         choices=ConversationStatus.choices,
         default=ConversationStatus.NOT_OPENED,
     )
-
-    @property
-    def status(self) -> ConversationStatus:
-        return ConversationStatus(self._status)
-
-    @status.setter
-    def status(self, status: ConversationStatus) -> None:
-        self._status = status
-
     _type = models.IntegerField(
         db_column="type",
         choices=ConversationType.choices,
         default=ConversationType.UNKNOWN,
     )
-
-    @property
-    def type(self) -> ConversationType:
-        return ConversationType(self._type)
-
-    @type.setter
-    def type(self, type_: ConversationType) -> None:
-        self._type = type_
 
     is_shared = models.BooleanField(default=False)
 
@@ -232,6 +215,22 @@ class Conversation(models.Model):
 
     def __str__(self) -> str:
         return f"#{self.name} ({self.channel_id};{self.type.label};{self.status.label})"
+
+    @property
+    def status(self) -> ConversationStatus:
+        return ConversationStatus(self._status)
+
+    @status.setter
+    def status(self, status: ConversationStatus) -> None:
+        self._status = status
+
+    @property
+    def type(self) -> ConversationType:
+        return ConversationType(self._type)
+
+    @type.setter
+    def type(self, type_: ConversationType) -> None:
+        self._type = type_
 
     @property
     def link(self) -> str:

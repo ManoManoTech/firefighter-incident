@@ -11,8 +11,6 @@ from django_stubs_ext.db.models import TypedModelMeta
 class Priority(models.Model):
     """A priority for an incident."""
 
-    objects = Manager["Priority"]()
-
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=128, unique=True)
     value = models.IntegerField(unique=True)
@@ -41,6 +39,8 @@ class Priority(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    objects = Manager["Priority"]()
 
     class Meta(TypedModelMeta):
         ordering = ["order"]

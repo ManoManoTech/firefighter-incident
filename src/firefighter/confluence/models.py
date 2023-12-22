@@ -114,6 +114,9 @@ class PostMortem(ConfluencePage):
         Incident, on_delete=models.CASCADE, related_name="postmortem_for"
     )
 
+    def __str__(self) -> str:
+        return self.name
+
 
 class RunbookManager(models.Manager["Runbook"]):
     @staticmethod
