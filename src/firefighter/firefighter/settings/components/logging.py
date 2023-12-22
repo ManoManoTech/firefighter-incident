@@ -1,23 +1,14 @@
-# Logging
-# https://docs.djangoproject.com/en/4.2/topics/logging/
-
 from __future__ import annotations
 
 from logging import Filter, Formatter, LogRecord
 from typing import Any
 
-from firefighter.firefighter.settings.components.logging.custom_json_formatter import (
+from firefighter.firefighter.settings.settings_utils import ENV, config
+from firefighter.logging.custom_json_formatter import (
     CustomJsonEncoder,
     CustomJsonFormatter,
 )
-from firefighter.firefighter.settings.components.logging.pretty_formatter import (
-    PrettyFormatter,
-)
-from firefighter.firefighter.settings.settings_utils import ENV, config
-
-# See also:
-# 'Do not log' by Nikita Sobolev (@sobolevn)
-# https://sobolevn.me/2020/03/do-not-log
+from firefighter.logging.pretty_formatter import PrettyFormatter
 
 
 class AccessLogFilter(Filter):
