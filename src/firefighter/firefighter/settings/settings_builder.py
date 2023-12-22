@@ -11,7 +11,7 @@ from firefighter.firefighter.settings.components.celery import *
 from firefighter.firefighter.settings.components.common import *
 from firefighter.firefighter.settings.components.confluence import *
 from firefighter.firefighter.settings.components.jira_app import *
-from firefighter.firefighter.settings.components.logging.logging_settings import *
+from firefighter.firefighter.settings.components.logging import *
 from firefighter.firefighter.settings.components.pagerduty import *
 from firefighter.firefighter.settings.components.slack import *
 from firefighter.firefighter.settings.components.raid import *
