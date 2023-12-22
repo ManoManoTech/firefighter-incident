@@ -230,9 +230,7 @@ verify_ssl = true
 name = "pypi"
 include_packages = ["*"]
 
-
 [tool.black]
-target-version = ['py311']
 line-length = 88
 
 ## Linting (Pylint + pylint-django)
@@ -341,10 +339,11 @@ disable = [
   "use-a-generator",
   "use-dict-literal",
   "use-list-literal",
-  "useless-object-inheritance",
-  "too-many-branches",
-  "too-many-return-statements",
-  "too-many-arguments",
+  "useless-object-inheritance", # Replaed by Ruff UP004
+  "too-many-return-statements", # Replaced by Ruff PLR0911
+  "too-many-branches", # Replaced by Ruff PLR0912
+  "too-many-arguments", # Replaced by Ruff PLR0913
+  "too-many-locals", # Replaced by Ruff PLR0914
   "isinstance-second-argument-not-valid-type",
   "protected-access", # Replaced by Ruff SLF001
   "no-member",
@@ -357,7 +356,6 @@ disable = [
 enable = ["useless-suppression"]
 
 [tool.pylint.DESIGN]
-max-locals = 25
 max-args = 10
 max-attributes = 12
 max-parents = 10
@@ -376,7 +374,6 @@ django-settings-module = "firefighter.firefighter.settings"
 
 [tool.mypy]
 files = ['src', "stubs"]
-python_version = "3.11"
 plugins = ["mypy_django_plugin.main", "mypy_drf_plugin.main"]
 strict = true
 mypy_path = "$MYPY_CONFIG_FILE_DIR/stubs"
@@ -506,6 +503,7 @@ ignore = [
   "PGH003",  # Good point but too many tools
   "G004",    # Logging statement uses f-string
   "TRY003",  # Avoid specifying long messages outside the exception class
+  "TD001",   # Forbid F1XME and X*X comments
   "DJ001",   # XXX: Enable later - Avoid using `null=True` on string-based fields such as TextField and CharField
   "PLC1901", # XXX: Enable later - Simplify empty string comparison
   "TD",      # XXX: Enable later - Too many T0D0s
@@ -525,9 +523,6 @@ external = [
   "S104",
   "WPS440",
 ]
-
-# Assume Python 3.11.
-target-version = "py311"
 
 [tool.ruff.per-file-ignores]
 "**/components/**/*.py" = ["INP"]
