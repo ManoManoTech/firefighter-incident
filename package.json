@@ -18,7 +18,7 @@
     "@alpinejs/focus": "^3.13.2",
     "@alpinejs/morph": "^3.13.2",
     "alpinejs": "^3.13.2",
-    "htmx.org": "^1.9.9",
+    "htmx.org": "^1.9.10",
     "hyperscript.org": "^0.9.12"
   },
   "devDependencies": {
