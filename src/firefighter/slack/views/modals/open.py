@@ -453,10 +453,10 @@ class OpenModal(SlackModal):
             return incident_types[next(iter(incident_types.keys()))].get("slack_form")
         if incident_types and incident_type_value is not None:
             return incident_types[incident_type_value].get("slack_form")
-        logger.warning(f"No incident type found for {open_incident_context}. Fallback")
-        return next(iter(next(iter(INCIDENT_TYPES.values())).values())).get(
-            "slack_form"
+        logger.debug(
+            f"No incident type found for {open_incident_context}. No fallback."
         )
+        return None
 
     def handle_modal_fn(  # type: ignore
         self,
