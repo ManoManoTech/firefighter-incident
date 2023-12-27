@@ -7,7 +7,7 @@ from firefighter.api.urls import urlpatterns as api_urlspatterns
 from firefighter.raid import views
 
 # Patch `api` app router, if installed
-if apps.is_installed("api"):
+if apps.is_installed("firefighter.api"):
     api_urlspatterns.append(
         path(
             "raid/jira_bot",
