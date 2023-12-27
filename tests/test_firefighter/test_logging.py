@@ -8,7 +8,7 @@ def test_json_logging(caplog: pytest.LogCaptureFixture, capsys, settings) -> Non
     # ruff: noqa: PLC0415
     import logging
 
-    from firefighter.firefighter.settings.components.logging.logging_settings import (
+    from firefighter.firefighter.settings.components.logging import (
         get_json_formatter,
     )
 
