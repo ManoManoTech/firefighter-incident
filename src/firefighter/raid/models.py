@@ -43,7 +43,7 @@ class JiraTicket(JiraIssue):
 
     @property
     def url(self) -> str:
-        return f"https://{settings.RAID_JIRA_API_URL}/browse/{self.key}"
+        return f"{settings.RAID_JIRA_API_URL}/browse/{self.key}"
 
 
 class JiraTicketImpact(models.Model):
