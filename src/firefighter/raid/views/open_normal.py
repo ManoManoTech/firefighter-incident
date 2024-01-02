@@ -3,7 +3,6 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 
-from django.conf import settings
 from slack_sdk.models.blocks.basic_components import MarkdownTextObject
 from slack_sdk.models.blocks.blocks import ContextBlock
 
@@ -22,8 +21,6 @@ if TYPE_CHECKING:
     )
 
 logger = logging.getLogger(__name__)
-
-SLACK_SEVERITY_HELP_GUIDE_URL: str = settings.SLACK_SEVERITY_HELP_GUIDE_URL
 
 slack_fields: SlackFormAttributesDict = {
     "title": {

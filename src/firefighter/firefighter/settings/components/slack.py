@@ -28,6 +28,10 @@ SLACK_INCIDENT_HELP_GUIDE_URL: str | None = config(
     "SLACK_INCIDENT_HELP_GUIDE_URL", default=None
 )
 "URL to add in the Slack help message (/incident help). Useful to point to your own documentation."
+SLACK_SEVERITY_HELP_GUIDE_URL: str | None = config(
+    "SLACK_SEVERITY_HELP_GUIDE_URL", default=None
+)
+"URL to add in the form to choose the priority. Useful to point to your own documentation."
 SLACK_EMERGENCY_COMMUNICATION_GUIDE_URL: str | None = config(
     "SLACK_EMERGENCY_COMMUNICATION_GUIDE_URL", default=None
 )

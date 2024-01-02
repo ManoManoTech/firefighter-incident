@@ -43,8 +43,9 @@ class UpdateStatusFormSlack(UpdateStatusForm):
             "widget": {
                 "post_block": SectionBlock(
                     text=f"_<{settings.SLACK_SEVERITY_HELP_GUIDE_URL}|How to choose the priority?>_"
-                ),
-                # XXX Link to new Priority doc
+                )
+                if settings.SLACK_SEVERITY_HELP_GUIDE_URL
+                else None,
                 "label_from_instance": priority_label,
             },
         },
