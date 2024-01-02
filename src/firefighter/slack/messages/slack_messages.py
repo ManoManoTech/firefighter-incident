@@ -51,10 +51,10 @@ if TYPE_CHECKING:
 
 CURRENT_ONCALL_URL: str = settings.SLACK_CURRENT_ONCALL_URL
 POSTMORTEM_HELP_URL: str = settings.SLACK_POSTMORTEM_HELP_URL
-EMERGENCY_COMMUNICATION_GUIDE_URL: str = (
+EMERGENCY_COMMUNICATION_GUIDE_URL: str | None = (
     settings.SLACK_EMERGENCY_COMMUNICATION_GUIDE_URL
 )
-SLACK_EMERGENCY_USERGROUP_ID: str = settings.SLACK_EMERGENCY_USERGROUP_ID
+SLACK_EMERGENCY_USERGROUP_ID: str | None = settings.SLACK_EMERGENCY_USERGROUP_ID
 APP_DISPLAY_NAME: str = settings.APP_DISPLAY_NAME
 SLACK_APP_EMOJI: str = settings.SLACK_APP_EMOJI
 
@@ -253,7 +253,7 @@ class SlackMessageIncidentDeclaredAnnouncementGeneral(SlackMessageSurface):
     incident: Incident
 
     def __init__(self, incident: Incident) -> None:
-        """The message to post in general incident channel (#tech-incidents) when an incident is opened.
+        """The message to post in general incident channel (tag=tech_incidents) when an incident is opened.
 
         Args:
             incident (Incident): Your incident
@@ -631,6 +631,16 @@ class SlackMessageIncidentComProcess(SlackMessageSurface):
         super().__init__()
 
     def get_blocks(self) -> list[Block]:
+        mention_emergency_process = (
+            f"\n\n:arrow_right: <{EMERGENCY_COMMUNICATION_GUIDE_URL}|COM PROCESS> "
+            if SLACK_EMERGENCY_USERGROUP_ID
+            else ""
+        )
+        mention_usergroup = (
+            f":arrow_left:\n\n :loudspeaker: <!subteam^{SLACK_EMERGENCY_USERGROUP_ID}> *must* be informed."
+            if SLACK_EMERGENCY_USERGROUP_ID
+            else ""
+        )
         return [
             HeaderBlock(
                 text=PlainTextObject(
@@ -639,7 +649,7 @@ class SlackMessageIncidentComProcess(SlackMessageSurface):
             ),
             SectionBlock(
                 text=MarkdownTextObject(
-                    text=f"As a {self.incident.priority.name} incident, it may drastically impact our customers for hours. If so, we created a emergency procedure to communicate with them. \n\n:arrow_right: <{EMERGENCY_COMMUNICATION_GUIDE_URL}|COM PROCESS> :arrow_left:\n\n :loudspeaker: <!subteam^{SLACK_EMERGENCY_USERGROUP_ID}> *must* be informed."
+                    text=f"As a {self.incident.priority.name} incident, it may drastically impact our customers for hours. If so, we created a emergency procedure to communicate with them.{mention_emergency_process}{mention_usergroup}"
                 )
             ),
         ]

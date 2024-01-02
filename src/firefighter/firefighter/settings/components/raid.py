@@ -4,7 +4,7 @@ from firefighter.firefighter.settings.components.common import INSTALLED_APPS
 from firefighter.firefighter.settings.settings_utils import config
 
 ENABLE_RAID: bool = config("ENABLE_RAID", cast=bool, default=False)
-"Enable the Raid app. Jira must be enabled and configured as well."
+"Enable the Raid app. Jira app must be enabled and configured as well."
 
 if ENABLE_RAID:
     INSTALLED_APPS += ("firefighter.raid",)

@@ -117,7 +117,7 @@ class SlackUserManager(models.Manager["SlackUser"]):
         try:
             user = User.objects.get(email=email)
         except User.DoesNotExist:
-            logger.info("No user in DB. Fetching it from firefighter.slack...")
+            logger.info("No user in DB. Fetching it from Slack...")
         else:
             return user
 
@@ -125,9 +125,7 @@ class SlackUserManager(models.Manager["SlackUser"]):
         try:
             user_info = client.users_lookupByEmail(email=email)
             if not user_info.get("ok"):
-                logger.error(
-                    f"Could not fetch user from firefighter.slack. User: email={email}"
-                )
+                logger.error(f"Could not fetch user from Slack. User: email={email}")
                 return None
         except slack_sdk.errors.SlackApiError:
             logger.exception(f"Could not find Slack user with email: {email}")
