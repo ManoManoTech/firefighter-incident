@@ -111,6 +111,10 @@ class ConfluenceService:
         Returns:
             bool: has the page been updated?
         """
+        if not settings.CONFLUENCE_ON_CALL_PAGE_ID:
+            logger.info("No Confluence OnCall page ID, skipping.")
+            return False
+
         content = (self.client.get_page(settings.CONFLUENCE_ON_CALL_PAGE_ID)).json()
 
         page_version = get_in(content, "version.number")

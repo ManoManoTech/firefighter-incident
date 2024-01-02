@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 COMMAND: str = settings.SLACK_INCIDENT_COMMAND
-INCIDENT_DOC_URL: str = settings.SLACK_INCIDENT_HELP_GUIDE_URL
+INCIDENT_DOC_URL: str | None = settings.SLACK_INCIDENT_HELP_GUIDE_URL
 
 
 def shorten_long(text: str, width: int, **kwargs: Any) -> str:
@@ -102,8 +102,12 @@ def slack_block_help_commands() -> SectionBlock:
 
 @cache
 def slack_block_help_description() -> SectionBlock:
+    if INCIDENT_DOC_URL is None:
+        return SectionBlock(
+            text=f"{settings.APP_DISPLAY_NAME} is our tool for incident management."
+        )
     return SectionBlock(
-        text=f"{settings.APP_DISPLAY_NAME} is our tool for the incident management, more about incidents is visible <{INCIDENT_DOC_URL}|here>."
+        text=f"{settings.APP_DISPLAY_NAME} is our tool for incident management, more about incidents is visible <{INCIDENT_DOC_URL}|here>."
     )
 
 
