@@ -46,7 +46,7 @@ if TYPE_CHECKING:
 app = SlackApp()
 logger = logging.getLogger(__name__)
 
-SLACK_SEVERITY_HELP_GUIDE_URL: str = settings.SLACK_SEVERITY_HELP_GUIDE_URL
+SLACK_SEVERITY_HELP_GUIDE_URL: str | None = settings.SLACK_SEVERITY_HELP_GUIDE_URL
 
 
 INCIDENT_TYPES: dict[ResponseType, dict[str, dict[str, Any]]] = {
@@ -411,7 +411,14 @@ class OpenModal(SlackModal):
                             MarkdownTextObject(
                                 text=f"> {priority.emoji} Selected priority: {priority}"
                                 + (
-                                    f"\n> Critical incidents are for *emergency* only, <{SLACK_SEVERITY_HELP_GUIDE_URL}|learn more>."
+                                    (
+                                        "\n> Critical incidents are for *emergency* only"
+                                        + (
+                                            f"<{SLACK_SEVERITY_HELP_GUIDE_URL}|learn more>"
+                                            if SLACK_SEVERITY_HELP_GUIDE_URL
+                                            else "" + "."
+                                        )
+                                    )
                                     if selected_response_type == "critical"
                                     else ""
                                 )
