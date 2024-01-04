@@ -1,16 +1,30 @@
 # Development
 
-We want to make contributing straightforward and easy for everyone. As such and unless otherwise stated we will use the traditional GitLab fork and pull workflow: any commit must be made to a feature/topic branch in a local fork and submitted via a merge request before it can be merged.
-It is **strongly advised** to contact the project owner(s) (Pulse team) **before** working on implementing a new feature or making any kind of large code refactoring.
+We want to make contributing straightforward and easy for everyone. As such and unless otherwise stated we will use the traditional Github fork and pull workflow: any commit must be made to a feature/topic branch in a local fork and submitted via a merge request before it can be merged.
+It is **strongly advised** to open a discussion or an issue **before** working on implementing a new feature or making any kind of large code refactoring.
 
-## Global principe
 
-***REMOVED***
-- Issues and merge requests should be in English.
+*Issues and merge requests should be in English.*
 
-## Step to start contributing
+## Git
 
-1. Create a public fork of the FireFighter project
+Make sure you have a [GitHub account](https://github.com/join).
+The *main* branch should be considered as the production/deploy branch.
+
+#### Forking workflow
+
+> Extensive information can be found in this excellent [forking workflow
+> tutorial](https://www.atlassian.com/git/tutorials/comparing-workflows#forking-workflow).
+
+In a nutshell:
+
+1. [Fork](https://help.github.com/articles/fork-a-repo) the repository and clone it locally.
+
+    ```bash
+    git clone https://github.com/${USERNAME}/firefighter-incident
+    cd firefighter-incident
+    ```
+
 2. Create a topic branch where changes will be done.
 
     ```bash
@@ -52,6 +66,33 @@ It is **strongly advised** to contact the project owner(s) (Pulse team) **before
     git branch -d ${MY_TOPIC_BRANCH}
     git push origin --delete ${MY_TOPIC_BRANCH}
     ```
+
+
+### Syncing a fork with its upstream
+
+This is used to keep a local fork up-to-date with the original upstream repository.
+
+1. Connect the local to the original upstream repository.
+
+    ```
+    git remote add upstream https://github.com/${USERNAME}/${REPONAME}
+    ```
+
+2. Checkout, fetch and merge the upstream master branch to the local one.
+
+    ```
+    git checkout main
+    git fetch upstream
+    git merge upstream/master
+    ```
+
+3. Push changes to update to remote forked repository.
+
+    ```
+    git push
+    ```
+
+See [GitHub help](https://help.github.com/articles/syncing-a-fork) for more information.
 
 ## Dev tooling
 
@@ -114,6 +155,8 @@ pdm run docs-serve
 
 > This is the equivalent of running `mkdocs serve` in the project root.
 // TODO Pre-commit hook
+
+Read more in [the documentation contribution docs](documentation.md).
 
 ## Conventions
 
