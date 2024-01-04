@@ -83,6 +83,7 @@ nav:
       - Code of Conduct: CODE_OF_CONDUCT.md
       - Credits: credits.md
       - License: license.md
+      - FAQ: FAQ.md
   - Usage:
       - Deployment:
           - Deploy/00-intro.md
@@ -92,6 +93,20 @@ nav:
           - Deploy/XX-logs-traces.md
           - Deploy/XX-settings.md
           - Deploy/XX-support-policy.md
+
+  - Development:
+      - Contributing/0000-README.md
+      - Local Development:
+          - 0. Prerequisites: Contributing/0000-prerequisites.md
+          - 1. Setup environment & app: Contributing/0001-setup-environment.md
+          - 2. Configure Slack: Contributing/0002-setup-slack-app.md
+      - Developper Guide & Tools: Contributing/development.md
+      - Architecture & Design:
+          - Architecture Overview: Contributing/0010-general_architecture.md
+          - UI Guidelines: Contributing/ui.md
+          - UX Guidelines: Contributing/ux.md
+          - Docs Guidelines: Contributing/documentation.md
+      - Developper FAQ: Contributing/faq.md
 
   - Reference:
       - Django Apps:
@@ -103,21 +118,7 @@ nav:
           - slack: reference/slack.md
           - jira_app: reference/jira_app.md
           - raid: reference/raid.md
-
-  - Development:
-      - Contributing/0000-README.md
-      - Setup:
-          - 0. Prerequisites: Contributing/0000-prerequisites.md
-          - 1. Setup environment & app: Contributing/0001-setup-environment.md
-          - 2. Configure Slack: Contributing/0002-setup-slack-app.md
-      - Dev Tooling & Commands: Contributing/development.md
-      - Design:
-          - Architecture Overview: Contributing/0010-general_architecture.md
-          - UI Guidelines: Contributing/ui.md
-          - UX Guidelines: Contributing/ux.md
-          - Docs Guidelines: Contributing/documentation.md
-      - FAQ: Contributing/faq.md
-
+      - logging: reference/logging.md
 
 markdown_extensions:
   - abbr

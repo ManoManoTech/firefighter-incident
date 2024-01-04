@@ -4,69 +4,105 @@
    end="<!--intro-end-->"
 %}
 
+## Features
 
-# Caveats
+<div class="grid cards" markdown>
 
-FireFighter is an internal tool, and works great for us, but may not be suitable for your use case.
+-   :fontawesome-brands-slack:{ .lg .middle } __Slack first__
 
-## Performance
+    ---
 
-FireFighter has not be built with performance in mind, and may not scale well.
+    Don't leave Slack to manage incidents, and keep your team in the loop.
 
-The goal is still to have response times under 1s, to provide a decent user experience, for all user interfaces (Slack, Web UI).
+    <!-- [:octicons-arrow-right-24: Slack App](#) -->
 
-API and Back-Office are not as critical, and may be slower.
+    <!-- [:octicons-arrow-right-24: Getting started](#) -->
 
-Nevertheless, we have been able to handle incidents with hundreds of messages, and hundreds of users, without any issue.
+-   :simple-pagerduty:{ .lg .middle }  __Forward to PagerDuty__ _(optional)_
 
-If you have any important performance issue, please open an issue, and we will try to help.
+    ---
 
-## Back-Office
+    Expose your on-call schedule, and allow anyone to escalate to PagerDuty.
 
-The current back-office works great, but lacks many safety features, and must be handled with caution.
-It is necessary to access it to configure some features (e.g.: define a metric type or cost type)
+    <!-- [:octicons-arrow-right-24: Reference](#) -->
 
-## API
+-   :fontawesome-brands-jira:{ .lg .middle } __Follow on Jira__ _(optional)_
 
-The API is almost exclusively read-only, and is useful for read-only integrations and reporting.
-The API is not exhaustive, and is missing models and fields.
-Most GET routes supports filtering, ordering, and rendering in JSON, CSV or TSV.
+    ---
 
-There is an API route to create an incident, if you want to integrate with other systems.
-All routes support Cookie and API Key authentication.
+    Create a Jira ticket for the incident, and follow the incident from Jira.
 
-Please check the OpenAPI schema or Swagger UI for more information.
+-   :fontawesome-brands-confluence:{ .lg .middle } __Manage Confluence documents__ _(optional)_
 
-## Web UI
+    ---
 
-The Web-UI supports authentication (for us, with OpenID Connect), and is the main way to interact with the system.
+    Automatically create a Post-mortem on Confluence, and sync your runbooks.
 
-No authentication is required to access pages, only to create or update.
+-   :fontawesome-solid-puzzle-piece:{ .lg .middle } __Extend with the API__
 
-The Web-UI was built with progressive enhancement in mind, and should work without JavaScript, although the experience will be degraded.
+    ---
 
-The Web-UI has not yet been tested with screen readers, and may not be accessible.
+    Integrate with other systems, and extend the application with the API.
+</div>
 
-The Web-UI is not regularly tested with mobile devices, and may not provide a good experience on small screens or screens with unusual aspect ratios.
+!!! warning "Young project disclaimer"
+
+    FireFighter was only recently open-sourced, and is still a work in progress.
+
+    While we are working on improving the documentation, and making the application more generic, there are still some caveats and FireFighter may not be ready for you yet.
+
+    Python and Django knowledge is still recommended to install, configure and troubleshoot the application.
+
+    Please open an issue if you have any question, or if you need help.
+
+    The [FAQ](FAQ.md) may also answer some of your questions.
 
 ## Integrations
 
+### PagerDuty
+
+#### Features
+
+Expose the current on-call schedule, and allow anyone to escalate to PagerDuty.
+
+![PagerDuty integration](assets/screenshots/pagerduty_web_oncall_overview.png)
+_Exposing the on-call schedule, even for users with no PagerDuty access._
+
+![PagerDuty integration](assets/screenshots/pagerduty_web_oncall_overview.png)
+_Trigger a PagerDuty incident from the Web UI, even with no PagerDuty access._
+
+![PagerDuty integration](assets/screenshots/pagerduty_slack_trigger.png)
+_In a Slack conversation about an incident, anyone can escalate to PagerDuty, with `/incident oncall`._
+
+
+#### Tasks
+
+Tasks are provided to regularly sync the on-call schedules, services and users from PagerDuty, as well as a task to trigger PagerDuty incidents.
+<!-- See FIXME links to reference. -->\
+
+
+If Confluence is enabled, there is a task to export the on-call schedule to a Confluence page set with `CONFLUENCE_ON_CALL_PAGE_ID`.
+
+#### Settings and configuration
+
+Basic ENV configuration.
+
+No Back-Office configuration.
+
+### Confluence
+
 ### Slack
 
-The Slack App is the main way to interact with the system, and is the only way to interact with the system during an incident.
-Supporting other chat platforms is not planned, but may be possible with some work.
+#### Settings and configuration
 
-Slack is currently also used as the user directory.
+See settings in [slack.py][firefighter.firefighter.settings.components.slack]
 
-We currently only support one workspace, and do not support enterprise grid.
+##### Back-Office configuration
 
-We don't support Slack OAuth.
+You can add custom tags to Slack conversations in the back-office.
 
-### Other systems
+Some tags have special meaning:
 
-The application integrates with Confluence, PagerDuty and Jira.
-Providing more integrations is not planned, but we plan to help integrate with other systems, by exposing Python APIs and hooks.
-
-> This means that the runbook or postmortem back-end can only be Confluence, the ticketing system can only be Jira, and the alerting system can only be PagerDuty, for now.
-> If you want to use other systems, you will have to integrate with them yourself.
-> Please open an issue if you need help with that.
+- `tech_incidents`: send incidents notifications to the channel
+- `dev_firefighter`: Where users can get help with the bot. Will be shown in `/incident help` for instance.
+- `it_deploy`: Where the bot send notifications for deployment freezes.
