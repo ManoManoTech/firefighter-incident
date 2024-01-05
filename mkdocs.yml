@@ -7,7 +7,7 @@ repo_url: https://github.com/ManoManoTech/firefighter-incident
 repo_name: ManoManoTech/firefighter-incident
 edit_uri: https://github.com/ManoManoTech/firefighter-incident/edit/main/docs/
 
-copyright: Copyright &copy; 2021-2023 Colibri SAS
+copyright: Copyright &copy; 2021-2024 Colibri SAS
 dev_addr: "127.0.0.1:9000"
 site_dir: site
 docs_dir: docs
@@ -121,35 +121,35 @@ nav:
       - logging: reference/logging.md
 
 markdown_extensions:
-  - abbr
-  - admonition
-  - attr_list
-  - codehilite
-  - def_list
-  - tables
-  - md_in_html
-  - mdx_truly_sane_lists
-  - pymdownx.magiclink
-  - pymdownx.details
-  - pymdownx.highlight:
-      anchor_linenums: true
-  - pymdownx.inlinehilite
-  - pymdownx.snippets:
-      check_paths: true
-  - pymdownx.tabbed:
-      alternate_style: true
-  - pymdownx.superfences:
-      custom_fences:
-        - name: mermaid
-          class: mermaid
-          format: !!python/name:pymdownx.superfences.fence_code_format
-  - pymdownx.tasklist:
-      custom_checkbox: true
-  - pymdownx.emoji:
-      emoji_index: !!python/name:material.extensions.emoji.twemoji
-      emoji_generator: !!python/name:material.extensions.emoji.to_svg
-  - toc:
-      permalink: "¤"
+  abbr: {}
+  admonition: {}
+  attr_list: {}
+  codehilite: {}
+  def_list: {}
+  tables: {}
+  md_in_html: {}
+  mdx_truly_sane_lists: {}
+  pymdownx.magiclink: {}
+  pymdownx.details: {}
+  pymdownx.highlight:
+    anchor_linenums: true
+  pymdownx.inlinehilite: {}
+  pymdownx.snippets:
+    check_paths: true
+  pymdownx.tabbed:
+    alternate_style: true
+  pymdownx.superfences:
+    custom_fences:
+      - name: mermaid
+        class: mermaid
+        format: !!python/name:pymdownx.superfences.fence_code_format
+  pymdownx.tasklist:
+    custom_checkbox: true
+  pymdownx.emoji:
+    emoji_index: !!python/name:material.extensions.emoji.twemoji
+    emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  toc:
+    permalink: "¤"
 plugins:
   - autorefs
   - include-markdown

@@ -10,14 +10,15 @@ git clone git@github.com:ManoManoTech/firefighter-incident.git
 cd firefighter-incident
 ```
 
-## Load ASDF/RTX/Direnv _(optional)_
+## Load ASDF/Mise/Direnv _(optional)_
 
-If you use ASDF, RTX or Direnv, you can load the environment with:
+If you use ASDF, Mise (previously rtx) or Direnv, you can load the environment with:
 
 ```shell
 asdf install
 # or
-rtx install
+mise install
+# then
 direnv allow
 ```
 
