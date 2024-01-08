@@ -21,8 +21,10 @@ SLACK_INCIDENT_COMMAND_ALIASES: list[str] = config(
 )
 "Comma-separated list of aliases for the incident command."
 
-SLACK_CURRENT_ONCALL_URL: str = config("SLACK_CURRENT_ONCALL_URL")
-SLACK_POSTMORTEM_HELP_URL: str = config("SLACK_POSTMORTEM_HELP_URL")
+SLACK_POSTMORTEM_HELP_URL: str | None = config(
+    "SLACK_POSTMORTEM_HELP_URL", default=None
+)
+"""URL to a guide on how to write a postmortem. Useful to point to your own documentation."""
 
 SLACK_INCIDENT_HELP_GUIDE_URL: str | None = config(
     "SLACK_INCIDENT_HELP_GUIDE_URL", default=None
