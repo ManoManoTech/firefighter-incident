@@ -3,8 +3,10 @@ from __future__ import annotations
 import logging
 from functools import cache, cached_property
 from typing import TYPE_CHECKING, Any, Literal
+from urllib.parse import urljoin
 
 from django.conf import settings
+from django.urls import reverse
 
 from firefighter.firefighter.utils import get_in
 
@@ -14,7 +16,6 @@ if TYPE_CHECKING:
     from firefighter.incidents.models.user import User
 
 logger = logging.getLogger(__name__)
-SLACK_CURRENT_ONCALL_URL: str = settings.SLACK_CURRENT_ONCALL_URL
 
 
 @cache
@@ -126,7 +127,9 @@ class ConfluenceService:
             "oncall_team.xml",
             context={
                 "users": users.items(),
-                "oncall_page_link": SLACK_CURRENT_ONCALL_URL,
+                "oncall_page_link": urljoin(
+                    settings.BASE_URL, reverse("pagerduty:oncall-list")
+                ),
             },
         )
         logger.debug("Confluence OnCall page body: %s", page_body)

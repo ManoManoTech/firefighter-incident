@@ -2,8 +2,10 @@ from __future__ import annotations
 
 from textwrap import shorten
 from typing import TYPE_CHECKING, Any, Never
+from urllib.parse import urljoin
 
 from django.conf import settings
+from django.urls import reverse
 from slack_sdk.models.blocks.basic_components import (
     MarkdownTextObject,
     PlainTextObject,
@@ -49,8 +51,7 @@ if TYPE_CHECKING:
     from firefighter.incidents.models.incident_update import IncidentUpdate
     from firefighter.incidents.models.priority import Priority
 
-CURRENT_ONCALL_URL: str = settings.SLACK_CURRENT_ONCALL_URL
-POSTMORTEM_HELP_URL: str = settings.SLACK_POSTMORTEM_HELP_URL
+POSTMORTEM_HELP_URL: str | None = settings.SLACK_POSTMORTEM_HELP_URL
 EMERGENCY_COMMUNICATION_GUIDE_URL: str | None = (
     settings.SLACK_EMERGENCY_COMMUNICATION_GUIDE_URL
 )
@@ -98,15 +99,6 @@ class SlackMessageIncidentPostMortemReminder(SlackMessageSurface):
             SectionBlock(
                 text="<!here> The post-mortem is *required* to close an incident P2 and below.\nPlease update the incident as you move in the post-mortem process, to keep track of incidents and avoid similar ones in the future. "
             ),
-            SectionBlock(
-                text='Need guidance on how to create a post-mortem? See our presentation "PostMortems // How to run them after incidents?"',
-                accessory=ButtonElement(
-                    text="Open presentation",
-                    url=POSTMORTEM_HELP_URL,
-                    value=POSTMORTEM_HELP_URL,
-                    action_id="open_link",
-                ),
-            ),
             DividerBlock(),
             SectionBlock(text=":arrow_down:  *Post-mortem process*  :arrow_down: "),
             SectionBlock(
@@ -147,6 +139,19 @@ class SlackMessageIncidentPostMortemReminder(SlackMessageSurface):
                 ]
             ),
         ]
+        if POSTMORTEM_HELP_URL:
+            blocks.insert(
+                4,
+                SectionBlock(
+                    text='Need guidance on how to create a post-mortem? See our presentation "PostMortems // How to run them after incidents?"',
+                    accessory=ButtonElement(
+                        text="Open presentation",
+                        url=POSTMORTEM_HELP_URL,
+                        value=POSTMORTEM_HELP_URL,
+                        action_id="open_link",
+                    ),
+                ),
+            )
         return blocks
 
 
@@ -552,9 +557,10 @@ class SlackMessageIncidentDuringOffHours(SlackMessageSurface):
         return "We are out of office hours. If you need it, you can trigger an on-call response with `/incident oncall`."
 
     def get_blocks(self) -> list[Block]:
+        oncall_url = urljoin(settings.BASE_URL, reverse("pagerduty:oncall-list"))
         return [
             SectionBlock(
-                text=f":palm_tree: *Incident during out of office hours* :palm_tree: \nIf you need help, you can trigger an on-call that will call the person in charge in the gear.\n_You can also see current on-call people and their escalation on <{CURRENT_ONCALL_URL}|this Confluence page>._",
+                text=f":palm_tree: *Incident during out of office hours* :palm_tree: \nIf you need help, you can trigger an on-call that will call the person in charge in the gear.\n_You can also see current on-call people and their escalation on <{oncall_url}|this page>._",
                 accessory=ImageElement(
                     image_url="https://freesvg.org/img/phone-call-icon.png",
                     alt_text="phone icon",
@@ -586,7 +592,7 @@ class SlackMessageIncidentDuringOffHours(SlackMessageSurface):
                             emoji=True,
                         ),
                         action_id="open_link",
-                        url=CURRENT_ONCALL_URL,
+                        url=oncall_url,
                     ),
                 ]
             ),
