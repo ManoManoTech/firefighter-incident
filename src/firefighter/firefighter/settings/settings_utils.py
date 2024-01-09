@@ -20,4 +20,6 @@ ENV = SETTINGS_ENV
 # Commonly reused params
 FF_VERSION: str | int = config("VERSION", default="dev")
 APP_DISPLAY_NAME: str = config("APP_DISPLAY_NAME", default="FireFighter")
+"""The name of the app. Used in the title of the app, and in the navigation bar."""
 BASE_URL: str = config("BASE_URL")
+"""The base URL of the app. Used for links in externals surfaces, like Slack or documents."""

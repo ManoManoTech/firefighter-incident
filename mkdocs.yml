@@ -1,7 +1,7 @@
 ---
 site_name: FireFighter Docs
 site_description: FireFighter is ManoMano's incident management tool, built on top of Slack and Jira, with Django and Python.
-site_url: https://firefighter-incident.readthedocs.io/en/latest/ # FIXME OSS
+site_url: https:/manomanotech.github.io/firefighter-incident/
 
 repo_url: https://github.com/ManoManoTech/firefighter-incident
 repo_name: ManoManoTech/firefighter-incident
@@ -29,7 +29,7 @@ validation:
 
 theme:
   name: "material"
-  custom_dir: docs/overrides
+  custom_dir: !relative $docs_dir/overrides
   logo: assets/logo_firefighter.png
   favicon: assets/FireFighterIcon.png
   features:
@@ -39,8 +39,11 @@ theme:
     - content.tabs.link
     - navigation.expand
     - navigation.instant
+    - navigation.instant.progress
     # - navigation.indexes
+    - navigation.tracking
     - navigation.tabs
+    - navigation.tabs.sticky
     - navigation.top
     - search.highlight
     - search.share
@@ -136,6 +139,7 @@ markdown_extensions:
   pymdownx.inlinehilite: {}
   pymdownx.snippets:
     check_paths: true
+    base_path: !relative $docs_dir/..
   pymdownx.tabbed:
     alternate_style: true
   pymdownx.superfences:
@@ -150,6 +154,8 @@ markdown_extensions:
     emoji_generator: !!python/name:material.extensions.emoji.to_svg
   toc:
     permalink: "¤"
+
+
 plugins:
   - autorefs
   - include-markdown
@@ -178,6 +184,7 @@ plugins:
             # - https://slack.dev/python-slack-sdk/objects.inv
             - url: https://docs.djangoproject.com/en/4.2/_objects/
               base_url: https://docs.djangoproject.com/en/4.2/
+              domains: [std, py]
           paths: [src]  # search packages in the src folder
           options:
             docstring_options:
@@ -206,4 +213,4 @@ plugins:
             show_submodules: true
             docstring_style: google
             # docstring_options:
-              # ignore_init_summary: true
+            # ignore_init_summary: true
