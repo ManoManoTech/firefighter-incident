@@ -4,6 +4,7 @@ import logging
 from unittest.mock import MagicMock
 
 import pytest
+from django.conf import settings
 from pytest_mock import MockerFixture
 
 from firefighter.incidents.factories import IncidentFactory, UserFactory
@@ -11,6 +12,7 @@ from firefighter.incidents.models import Incident
 from firefighter.slack.views import UpdateStatusModal
 
 logger = logging.getLogger(__name__)
+SLACK_SEVERITY_HELP_GUIDE_URL = settings.SLACK_SEVERITY_HELP_GUIDE_URL
 
 
 @pytest.mark.django_db()
@@ -32,7 +34,9 @@ class TestUpdateStatusModal:
 
         values = res.to_dict()
         assert "blocks" in values
-        assert len(values["blocks"]) == 7
+        # If link, to doc, additionnal block
+        blocks_count = 7 if SLACK_SEVERITY_HELP_GUIDE_URL else 6
+        assert len(values["blocks"]) == blocks_count
 
     @staticmethod
     def test_submit_empty_bodied_form(incident: Incident) -> None:
