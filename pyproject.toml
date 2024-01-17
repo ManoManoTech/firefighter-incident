@@ -207,6 +207,7 @@ docs = [
     "mike>=2.0.0",
     "markdown-exec>=1.7",
     "mkdocs-git-authors-plugin>=0.7.2",
+    "mkdocs-git-revision-date-localized-plugin>=1.2.2",
 ]
 types = [
     "django-stubs>=4.2.6",
