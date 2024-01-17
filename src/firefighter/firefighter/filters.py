@@ -41,18 +41,15 @@ def get_item(dictionary: dict[str, Any], key: Any) -> Any:
     Returns:
         Any: The value of the key in the dictionary or object.
     """
-    # pylint: disable=unnecessary-dunder-call
     if hasattr(dictionary, key):
         return getattr(dictionary, key)
     if hasattr(dictionary, "__getitem__"):
         try:
-            return dictionary.__getitem__(key)
+            return dictionary[key]
         except KeyError:
             pass
     if hasattr(dictionary, "get"):
         return dictionary.get(key)
-    if hasattr(dictionary, "__contains__"):
-        return key in dictionary
     if not isinstance(dictionary, dict):
         dictionary = dictionary.__dict__  # type: ignore
 
