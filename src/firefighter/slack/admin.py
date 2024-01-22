@@ -286,6 +286,7 @@ class UserGroupInline(admin.StackedInline[UserGroup, Any]):
     extra = 0
     verbose_name = "Slack User Group"
     verbose_name_plural = "Slack User Groups"
+    autocomplete_fields = ["usergroup"]
 
 
 class SlackUserInline(admin.StackedInline[SlackUser, Any]):
