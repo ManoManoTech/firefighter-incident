@@ -31,8 +31,6 @@ Redis DBs:
 
 ## FireFighter settings
 
-
-
 - [`BASE_URL`][firefighter.firefighter.settings.settings_utils.BASE_URL]
 - [`FF_ROLE_REMINDER_MIN_DAYS_INTERVAL`][firefighter.firefighter.settings.components.common.FF_ROLE_REMINDER_MIN_DAYS_INTERVAL]
 - [`FF_USER_ID_HEADER`][firefighter.firefighter.settings.components.common.FF_USER_ID_HEADER]
@@ -85,10 +83,10 @@ See [django-oauth2-codeflow](https://gitlab.com/systra/qeto/lib/django-oauth2-au
 
 ## Pagerduty integration
 
-- `ENABLE_PAGERDUTY`: default: `False`
-- `PAGERDUTY_API_KEY`
-- `PAGERDUTY_ACCOUNT_EMAIL`
-- `PAGERDUTY_URL`: default: `https://api.pagerduty.com`
+- [`ENABLE_PAGERDUTY`][firefighter.firefighter.settings.components.pagerduty.ENABLE_PAGERDUTY]: default: `False`
+- [`PAGERDUTY_API_KEY`][firefighter.firefighter.settings.components.pagerduty.PAGERDUTY_API_KEY]
+- [`PAGERDUTY_ACCOUNT_EMAIL`][firefighter.firefighter.settings.components.pagerduty.PAGERDUTY_ACCOUNT_EMAIL]
+- [`PAGERDUTY_URL`][firefighter.firefighter.settings.components.pagerduty.PAGERDUTY_URL]: default: `https://api.pagerduty.com`
 
 ## Other settings
 

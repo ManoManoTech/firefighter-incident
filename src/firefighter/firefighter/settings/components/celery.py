@@ -28,9 +28,9 @@ CELERY_SETTINGS = {
     "result_serializer": "json",
     # http://docs.celeryproject.org/en/latest/userguide/configuration.html#task-time-limit
     # set to whatever value is adequate in your circumstances
-    "task_time_limit": 3 * 60,
+    "task_time_limit": 3 * 60,  # in seconds
     # http://docs.celeryproject.org/en/latest/userguide/configuration.html#task-soft-time-limit
-    "task_soft_time_limit": 2 * 60,
+    "task_soft_time_limit": 2 * 60,  # in seconds
     # http://docs.celeryproject.org/en/latest/userguide/configuration.html#beat-scheduler
     "beat_scheduler": "django_celery_beat.schedulers:DatabaseScheduler",
     # https://docs.celeryq.dev/en/stable/userguide/configuration.html#std-setting-broker_connection_retry

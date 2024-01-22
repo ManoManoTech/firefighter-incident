@@ -1,7 +1,7 @@
 ---
 site_name: FireFighter Docs
 site_description: FireFighter is ManoMano's incident management tool, built on top of Slack and Jira, with Django and Python.
-site_url: https:/manomanotech.github.io/firefighter-incident/
+site_url: https://manomanotech.github.io/firefighter-incident/
 
 repo_url: https://github.com/ManoManoTech/firefighter-incident
 repo_name: ManoManoTech/firefighter-incident
@@ -88,13 +88,16 @@ nav:
       - License: license.md
       - FAQ: FAQ.md
   - Usage:
+      - Integrations: Usage/integrations.md
       - Deployment:
           - Deploy/00-intro.md
+          - Settings:
+              - Deploy/XX-settings.md
+              - Deploy/XX-custom-settings.md
           - Deploy/XX-auth.md
-          - Deploy/XX-custom-settings.md
-          - Deploy/XX-i18n-l10.md
+          - Translation and timezone: Deploy/XX-i18n-l10.md
           - Deploy/XX-logs-traces.md
-          - Deploy/XX-settings.md
+          - Deploy/XX-tasks.md
           - Deploy/XX-support-policy.md
 
   - Development:

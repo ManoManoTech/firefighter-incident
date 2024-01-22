@@ -444,7 +444,7 @@ def send_message_to_watchers(
             )
         except SlackApiError:
             logger.warning(
-                f"Couldn't send private message to reporter with jira_id={watcher}"
+                f"Couldn't send private message to reporter with jira_id={watcher.get('accountId', watcher)}"
             )
     return True
 

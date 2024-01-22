@@ -1,0 +1,65 @@
+
+# Integrations
+
+## :simple-pagerduty: PagerDuty
+
+### Features
+
+Expose the current on-call schedule, and allow anyone to escalate to PagerDuty.
+
+![PagerDuty integration](../assets/screenshots/pagerduty_web_oncall_overview.png)
+_Exposing the on-call schedule, even for users with no PagerDuty access._
+
+![PagerDuty integration](../assets/screenshots/pagerduty_web_oncall_overview.png)
+_Trigger a PagerDuty incident from the Web UI, even with no PagerDuty access._
+
+![PagerDuty integration](../assets/screenshots/pagerduty_slack_trigger.png)
+_In a Slack conversation about an incident, anyone can escalate to PagerDuty, with `/incident oncall`._
+
+### Tasks
+
+Tasks are provided to regularly sync the on-call schedules, services and users from PagerDuty, as well as a task to trigger PagerDuty incidents.
+
+If Confluence is enabled, there is a task to export the on-call schedule to a Confluence page set with environment variable `CONFLUENCE_ON_CALL_PAGE_ID`.
+
+See the [available PagerDuty tasks][firefighter.pagerduty.tasks] that can be [scheduled from the Back-Office](../Deploy/XX-tasks.md).
+
+### Settings and configuration
+
+[Basic configuration with environment variables](../Deploy/XX-settings.md#pagerduty-integration).
+
+No Back-Office configuration.
+
+## :fontawesome-brands-confluence: Confluence
+
+!!! warning
+    This integration is disabled by default, and is not yet documented.
+    It is specific to our internal use case.
+
+## :fontawesome-brands-slack: Slack
+
+### Tasks
+
+Tasks are provided to regularly sync users, conversations, usergroups and channel members from Slack.
+
+See the [available Slack tasks][firefighter.slack.tasks] that can be [scheduled from the Back-Office](../Deploy/XX-tasks.md).
+
+### Settings and configuration
+
+See [Slack environment variables settings](../Deploy/XX-settings.md#slack-integration).
+
+#### Back-Office configuration
+
+You can add custom tags to Slack conversations in the back-office.
+
+Some tags have special meaning:
+
+- `tech_incidents`: send incidents notifications to the channel
+- `dev_firefighter`: Where users can get help with the bot. Will be shown in `/incident help` for instance.
+- `it_deploy`: Where the bot send notifications for deployment freezes.
+
+## :fontawesome-brands-jira: Jira
+
+!!! warning
+    This integration is disabled by default, and is not yet documented.
+    It is specific to our internal use case.

@@ -21,6 +21,9 @@ logger = logging.getLogger(__name__)
 
 @celery_app.task(name="pagerduty.fetch_oncalls")
 def fetch_oncalls() -> None:
+    """Celery task to fetch PagerDuty oncalls and save them in the database.
+    Will try to update services, users, schedules and escalation policies if needed.
+    """
     services = pagerduty_service.get_all_oncalls()
     return create_oncalls(services)
 

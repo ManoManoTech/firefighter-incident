@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 @shared_task(name="pagerduty.fetch_services")
 @transaction.atomic
 def fetch_services() -> None:
+    """Celery task to fetch PagerDuty services and save them in the database."""
     fetched_services_key = []
     for service in pagerduty_service.client.session.iter_all("services"):
         fetched_services_key.append(service["id"])

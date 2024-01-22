@@ -24,7 +24,7 @@
 
     Expose your on-call schedule, and allow anyone to escalate to PagerDuty.
 
-    <!-- [:octicons-arrow-right-24: Reference](#) -->
+    [:octicons-arrow-right-24: Learn more](Usage/integrations.md#pagerduty)
 
 -   :fontawesome-brands-jira:{ .lg .middle } __Follow on Jira__ _(optional)_
 
@@ -56,53 +56,3 @@
     Please open an issue if you have any question, or if you need help.
 
     The [FAQ](FAQ.md) may also answer some of your questions.
-
-## Integrations
-
-### PagerDuty
-
-#### Features
-
-Expose the current on-call schedule, and allow anyone to escalate to PagerDuty.
-
-![PagerDuty integration](assets/screenshots/pagerduty_web_oncall_overview.png)
-_Exposing the on-call schedule, even for users with no PagerDuty access._
-
-![PagerDuty integration](assets/screenshots/pagerduty_web_oncall_overview.png)
-_Trigger a PagerDuty incident from the Web UI, even with no PagerDuty access._
-
-![PagerDuty integration](assets/screenshots/pagerduty_slack_trigger.png)
-_In a Slack conversation about an incident, anyone can escalate to PagerDuty, with `/incident oncall`._
-
-
-#### Tasks
-
-Tasks are provided to regularly sync the on-call schedules, services and users from PagerDuty, as well as a task to trigger PagerDuty incidents.
-<!-- See FIXME links to reference. -->\
-
-
-If Confluence is enabled, there is a task to export the on-call schedule to a Confluence page set with `CONFLUENCE_ON_CALL_PAGE_ID`.
-
-#### Settings and configuration
-
-Basic ENV configuration.
-
-No Back-Office configuration.
-
-### Confluence
-
-### Slack
-
-#### Settings and configuration
-
-See settings in [slack.py][firefighter.firefighter.settings.components.slack]
-
-##### Back-Office configuration
-
-You can add custom tags to Slack conversations in the back-office.
-
-Some tags have special meaning:
-
-- `tech_incidents`: send incidents notifications to the channel
-- `dev_firefighter`: Where users can get help with the bot. Will be shown in `/incident help` for instance.
-- `it_deploy`: Where the bot send notifications for deployment freezes.

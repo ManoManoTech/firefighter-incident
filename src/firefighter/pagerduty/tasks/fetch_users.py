@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 
 @shared_task(name="pagerduty.fetch_users")
 def fetch_users(*, delete_stale_user: bool = True) -> None:
+    """Celery task to fetch PagerDuty users and save them in the database."""
     fetched_users_id = []
     for user in pagerduty_service.client.get_all_users():
         logger.debug(user)

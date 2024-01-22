@@ -27,7 +27,9 @@ def trigger_oncall(
     incident_id: int | None = None,
     triggered_by: User | None = None,
 ) -> PagerDutyIncident:
-    """XXX Trigger from PD user if it exists, instead of admin.
+    """Celery task to trigger an on-call in PagerDuty, from a FireFighter incident.
+
+    XXX Trigger from PD user if it exists, instead of admin.
     XXX Should be a service ID instead of a service object.
     """
     service = oncall_service

@@ -1,3 +1,4 @@
+"""PagerDuty Celery tasks."""
 from __future__ import annotations
 
 from firefighter.pagerduty.tasks.fetch_oncall import fetch_oncalls
