@@ -21,6 +21,7 @@ if TYPE_CHECKING:
     from firefighter.raid.models import JiraTicket, JiraUser, QualifierRotation
 
 RAID_QUALIFIER_URL: str = settings.RAID_QUALIFIER_URL
+RAID_JIRA_API_URL: str = settings.RAID_JIRA_API_URL
 
 
 class SlackMessageRaidCreatedIssue(SlackMessageSurface):
@@ -104,7 +105,7 @@ class SlackMessageRaidModifiedIssue(SlackMessageSurface):
                         text=f":light_check_mark: *To:*\n{self.jira_field_to}"
                     ),
                     MarkdownTextObject(
-***REMOVED***
+                        text=f":jira_new: *URL:*\n{RAID_JIRA_API_URL}/browse/{self.jira_ticket_key}"
                     ),
                 ]
             ),
@@ -150,7 +151,7 @@ class SlackMessageRaidComment(SlackMessageSurface):
                     ),
                     MarkdownTextObject(text=f":pencil2: *Comment:*\n{self.comment}"),
                     MarkdownTextObject(
-***REMOVED***
+                        text=f":jira_new: *Jira:*\n{RAID_JIRA_API_URL}/browse/{self.jira_ticket_key}"
                     ),
                 ]
             ),
