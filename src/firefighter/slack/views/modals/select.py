@@ -4,7 +4,12 @@ import logging
 
 from slack_sdk.models.blocks.basic_components import Option, TextObject
 from slack_sdk.models.blocks.block_elements import StaticSelectElement
-from slack_sdk.models.blocks.blocks import ActionsBlock, ContextBlock, SectionBlock
+from slack_sdk.models.blocks.blocks import (
+    ActionsBlock,
+    Block,
+    ContextBlock,
+    SectionBlock,
+)
 from slack_sdk.models.views import View
 
 from firefighter.incidents.enums import IncidentStatus
@@ -53,19 +58,26 @@ class SelectModal(SlackModal):
             )
             for inc in active_incidents
         ]
-        select_incident_blocks = [
-            SectionBlock(text=select_class.get_select_title()),
-            ActionsBlock(
-                block_id="incident_update_select_incident",
-                elements=[
-                    StaticSelectElement(
-                        action_id="incident_update_select_incident",
-                        placeholder="Select an active incident",
-                        options=incident_options,
-                    ),
-                ],
-            ),
-        ]
+        if len(incident_options) > 0:
+            select_incident_blocks: list[Block] = [
+                SectionBlock(text=select_class.get_select_title()),
+                ActionsBlock(
+                    block_id="incident_update_select_incident",
+                    elements=[
+                        StaticSelectElement(
+                            action_id="incident_update_select_incident",
+                            placeholder="Select an active incident",
+                            options=incident_options,
+                        ),
+                    ],
+                ),
+            ]
+        else:
+            select_incident_blocks = [
+                SectionBlock(
+                    text=":x: This command requires an active incident. Please create one first."
+                )
+            ]
         if missing_incident_error:
             select_incident_blocks.append(
                 ContextBlock(

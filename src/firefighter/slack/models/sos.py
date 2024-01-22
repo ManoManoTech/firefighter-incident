@@ -10,7 +10,12 @@ from firefighter.slack.models.user_group import UserGroup
 
 
 class Sos(models.Model):
-    """Sos model."""
+    """A SOS is a target with a name, a conversation, and optionally a user group.
+
+    Incident responders can use it with `/incident sos` to ask for help to a specific group of people.
+
+    Helpers will be notified in the selected conversation, and the user group will be mentioned (or `@here` if no user group is selected)
+    """
 
     # XXX We need a relation to `Gear` or `Group` here, but current data is not good enough.
     id = models.UUIDField(primary_key=True, editable=False, default=uuid.uuid4)
