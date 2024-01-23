@@ -5,16 +5,12 @@
   --md-default-bg-color--lighter: hsla(var(--md-hue), 15%, 12%, 0.26);
   --md-default-bg-color--lightest: hsla(var(--md-hue), 15%, 12%, 0.07);
 }
-/* Dark header in dark theme */
-[data-md-color-scheme="slate"] .md-header {
+/* Dark header in all theme */
+.md-header {
   background-color: #151515;
   color: #d3d3d3
 }
 
-/* White shadow on logo in white theme */
-[data-md-color-scheme="default"] .md-header__button.md-logo img {
-  filter: drop-shadow(0px 0px 3px #ffffff);
-}
 
 /*
 From https://github.com/mkdocstrings/mkdocstrings/blob/master/docs/css/mkdocstrings.css

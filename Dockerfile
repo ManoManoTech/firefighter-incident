@@ -1,12 +1,12 @@
 FROM python:3.11-slim-bullseye
 
-***REMOVED***
+LABEL maintainer="tech-pe-pulse-team@manomano.com"
 LABEL org.opencontainers.image.title="ManoManoTech"
 LABEL org.opencontainers.image.description="FireFighter runtime image"
 LABEL org.opencontainers.image.url="https://github.com/ManoManoTech/firefighter-incident/"
 LABEL org.opencontainers.image.documentation="https://github.com/ManoManoTech/firefighter-incident/"
 LABEL org.opencontainers.image.vendor="Colibri SAS"
-***REMOVED***
+LABEL org.opencontainers.image.authors="tech-pe-pulse-team@manomano.com"
 
 # add our user and group first to make sure their IDs get assigned consistently
 RUN groupadd -r firefighter && useradd -r -m -g firefighter firefighter

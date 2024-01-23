@@ -117,7 +117,7 @@ jobs:
           ref: ${{ inputs.sha }}
       - name: git tag
         run: |
-***REMOVED***
+          git config user.email "firefighter@manomano.com"
           git config user.name "FireFighter Release CI"
           git tag -m "v${{ inputs.tag }}" "v${{ inputs.tag }}"
           # If there is duplicate tag, this will fail. The publish to pypi action will have been a noop (due to skip

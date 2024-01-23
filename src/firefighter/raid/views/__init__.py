@@ -34,7 +34,7 @@ if TYPE_CHECKING:
                 "summary": "Swagger test",
                 "description": "Description test where you want to depict your issue",
                 "seller_contract_id": "12345678",
-***REMOVED***
+                "zoho": "https://crmplus.zoho.eu/mycrmlink/index.do/cxapp/agent/mycompany/all/tickets/details/123456789",
                 "platform": "FR",
                 "reporter_email": "john.doe@mycompany.com",
                 "impacted_area": "Sellers>MF Stock Replenishment",

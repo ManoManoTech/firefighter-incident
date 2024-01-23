@@ -6,8 +6,8 @@ build-backend = "hatchling.build"
 name = "firefighter-incident"
 description = "Incident Management tool made for Slack using Django"
 authors = [
-***REMOVED***
-***REMOVED***
+  { name = "Gabriel Dugny", email = "gabriel.dugny@manomano.com" },
+  { name = "SRE", email = "teamsre@manomano.com" },
 ]
 dependencies = [
     "django[argon2]>=4.2.8,<5.0.0",

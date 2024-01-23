@@ -30,7 +30,7 @@ validation:
 theme:
   name: "material"
   custom_dir: !relative $docs_dir/overrides
-  logo: assets/logo_firefighter.png
+  logo: assets/FireFighterIcon.png
   favicon: assets/FireFighterIcon.png
   features:
     - content.action.edit
