@@ -126,6 +126,7 @@ nav:
           - raid: reference/raid.md
       - logging: reference/logging.md
 
+
 markdown_extensions:
   abbr: {}
   admonition: {}
@@ -172,6 +173,9 @@ plugins:
   - mike:
       canonical_version: "latest"
       version_selector: true
+  - redirects:
+      redirect_maps:
+        contributing.md: Contributing/0000-README.md
   - mkdocstrings:
       handlers:
         python:

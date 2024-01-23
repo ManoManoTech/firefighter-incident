@@ -50,6 +50,8 @@ See [Slack environment variables settings](../Deploy/XX-settings.md#slack-integr
 
 #### Back-Office configuration
 
+##### Conversations tags
+
 You can add custom tags to Slack conversations in the back-office.
 
 Some tags have special meaning:
@@ -57,6 +59,17 @@ Some tags have special meaning:
 - `tech_incidents`: send incidents notifications to the channel
 - `dev_firefighter`: Where users can get help with the bot. Will be shown in `/incident help` for instance.
 - `it_deploy`: Where the bot send notifications for deployment freezes.
+
+##### Usergroups
+
+You can add or import usergroups in the back-office.
+
+!!! note "Hint"
+    When adding a usergroup in the BackOffice, you can put only its ID. The rest of the information will be fetched from Slack.
+
+##### SOSes
+
+You can configure [SOSes][firefighter.slack.models.sos.Sos] in the back-office.
 
 ## :fontawesome-brands-jira: Jira
 

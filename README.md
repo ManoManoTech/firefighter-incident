@@ -14,9 +14,13 @@ Incidents are unplanned interruptions or reductions in quality of services, like
 
 <!--intro-end-->
 
+## Learn more
+
+Check out our [documentation](https://manomanotech.github.io/firefighter-incident/latest/) for more details.
+
 ## Contributing
 
-See [CONTRIBUTING](CONTRIBUTING.md) for details on submitting patches, the contribution workflow and developer's guide.
+See [our Contribution Guide](https://manomanotech.github.io/firefighter-incident/latest/contributing/) for details on submitting patches, the contribution workflow and developer's guide.
 
 ## License
 

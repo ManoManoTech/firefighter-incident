@@ -5,7 +5,7 @@
 groups = ["default", "dev", "docs", "tests", "types"]
 strategy = ["cross_platform", "static_urls"]
 lock_version = "4.4.1"
-content_hash = "sha256:95792e40fb2b35fbe55cd45e4724a9daff323d4a09b069f7e29852f5dfaa8d7f"
+content_hash = "sha256:61fac2ec8cfa1df81a3fe4adc3f3de02bb9eae50a3dfa492b1be6d28d34d245b"
 
 [[package]]
 name = "aiohttp"
@@ -1938,6 +1938,18 @@ dependencies = [
 files = [
     {url = "https://files.pythonhosted.org/packages/29/5e/0ee4bd54da0f2d4e5cd8254ba0f054dcb8812dd351586e5c7c87de2ce5bb/mkdocs_material-9.5.4.tar.gz", hash = "sha256:3d196ee67fad16b2df1a458d650a8ac1890294eaae368d26cee71bc24ad41c40"},
     {url = "https://files.pythonhosted.org/packages/dd/3f/81c7d3477b0554fdfdeb78d0bc066729806d4ae7c2ddfcbd0eea61cdaf03/mkdocs_material-9.5.4-py3-none-any.whl", hash = "sha256:efd7cc8ae03296d728da9bd38f4db8b07ab61f9738a0cbd0dfaf2a15a50e7343"},
+]
+
+[[package]]
+name = "mkdocs-redirects"
+version = "1.2.1"
+requires_python = ">=3.6"
+summary = "A MkDocs plugin for dynamic page redirects to prevent broken links."
+dependencies = [
+    "mkdocs>=1.1.1",
+]
+files = [
+    {url = "https://files.pythonhosted.org/packages/04/6a/50edd7ad78042b25c379aac7e8fa9cc34c6f55e3d2c03eb28814a9446617/mkdocs-redirects-1.2.1.tar.gz", hash = "sha256:9420066d70e2a6bb357adf86e67023dcdca1857f97f07c7fe450f8f1fb42f861"},
 ]
 
 [[package]]

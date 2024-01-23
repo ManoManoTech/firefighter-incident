@@ -189,3 +189,16 @@ FF_DEBUG_ERROR_PAGES = config("FF_DEBUG_ERROR_PAGES", default=True, cast=bool)
 
 
 FF_EXPOSE_API_DOCS: bool = config("FF_EXPOSE_API_DOCS", default=True, cast=bool)
+
+
+FF_DEBUG_NO_SSO_REDIRECT: bool = config(
+    "FF_DEBUG_NO_SSO_REDIRECT", default=True, cast=bool
+)
+
+if FF_DEBUG_NO_SSO_REDIRECT:
+    MIDDLWARE = tuple(
+        middleware
+        for middleware in MIDDLEWARE
+        if middleware != "oauth2_authcodeflow.middleware.LoginRequiredMiddleware"
+    )
+    OIDC_MIDDLEWARE_LOGIN_REQUIRED_REDIRECT = False
