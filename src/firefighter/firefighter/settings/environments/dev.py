@@ -192,7 +192,7 @@ FF_EXPOSE_API_DOCS: bool = config("FF_EXPOSE_API_DOCS", default=True, cast=bool)
 
 
 FF_DEBUG_NO_SSO_REDIRECT: bool = config(
-    "FF_DEBUG_NO_SSO_REDIRECT", default=True, cast=bool
+    "FF_DEBUG_NO_SSO_REDIRECT", default=False, cast=bool
 )
 
 if FF_DEBUG_NO_SSO_REDIRECT:
