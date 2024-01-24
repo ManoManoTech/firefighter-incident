@@ -88,31 +88,31 @@ nav:
       - License: license.md
       - FAQ: FAQ.md
   - Usage:
-      - Integrations: Usage/integrations.md
+      - Integrations: usage/integrations.md
       - Deployment:
-          - Deploy/00-intro.md
+          - deploy/00-intro.md
           - Settings:
-              - Deploy/XX-settings.md
-              - Deploy/XX-custom-settings.md
-          - Deploy/XX-auth.md
-          - Translation and timezone: Deploy/XX-i18n-l10.md
-          - Deploy/XX-logs-traces.md
-          - Deploy/XX-tasks.md
-          - Deploy/XX-support-policy.md
+              - deploy/XX-settings.md
+              - deploy/XX-custom-settings.md
+          - deploy/XX-auth.md
+          - Translation and timezone: deploy/XX-i18n-l10.md
+          - deploy/XX-logs-traces.md
+          - deploy/XX-tasks.md
+          - deploy/XX-support-policy.md
 
   - Development:
-      - Contributing/0000-README.md
+      - contributing/0000-README.md
       - Local Development:
-          - 0. Prerequisites: Contributing/0000-prerequisites.md
-          - 1. Setup environment & app: Contributing/0001-setup-environment.md
-          - 2. Configure Slack: Contributing/0002-setup-slack-app.md
-      - Developper Guide & Tools: Contributing/development.md
+          - 0. Prerequisites: contributing/0000-prerequisites.md
+          - 1. Setup environment & app: contributing/0001-setup-environment.md
+          - 2. Configure Slack: contributing/0002-setup-slack-app.md
+      - Developper Guide & Tools: contributing/development.md
       - Architecture & Design:
-          - Architecture Overview: Contributing/0010-general_architecture.md
-          - UI Guidelines: Contributing/ui.md
-          - UX Guidelines: Contributing/ux.md
-          - Docs Guidelines: Contributing/documentation.md
-      - Developper FAQ: Contributing/faq.md
+          - Architecture Overview: contributing/0010-general_architecture.md
+          - UI Guidelines: contributing/ui.md
+          - UX Guidelines: contributing/ux.md
+          - Docs Guidelines: contributing/documentation.md
+      - Developper FAQ: contributing/faq.md
 
   - Reference:
       - Django Apps:
@@ -175,7 +175,7 @@ plugins:
       version_selector: true
   - redirects:
       redirect_maps:
-        contributing.md: Contributing/0000-README.md
+        contributing.md: contributing/0000-README.md
   - mkdocstrings:
       handlers:
         python:

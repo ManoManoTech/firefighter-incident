@@ -22,11 +22,11 @@ Tasks are provided to regularly sync the on-call schedules, services and users f
 
 If Confluence is enabled, there is a task to export the on-call schedule to a Confluence page set with environment variable `CONFLUENCE_ON_CALL_PAGE_ID`.
 
-See the [available PagerDuty tasks][firefighter.pagerduty.tasks] that can be [scheduled from the Back-Office](../Deploy/XX-tasks.md).
+See the [available PagerDuty tasks][firefighter.pagerduty.tasks] that can be [scheduled from the Back-Office](../deploy/XX-tasks.md).
 
 ### Settings and configuration
 
-[Basic configuration with environment variables](../Deploy/XX-settings.md#pagerduty-integration).
+[Basic configuration with environment variables](../deploy/XX-settings.md#pagerduty-integration).
 
 No Back-Office configuration.
 
@@ -42,11 +42,11 @@ No Back-Office configuration.
 
 Tasks are provided to regularly sync users, conversations, usergroups and channel members from Slack.
 
-See the [available Slack tasks][firefighter.slack.tasks] that can be [scheduled from the Back-Office](../Deploy/XX-tasks.md).
+See the [available Slack tasks][firefighter.slack.tasks] that can be [scheduled from the Back-Office](../deploy/XX-tasks.md).
 
 ### Settings and configuration
 
-See [Slack environment variables settings](../Deploy/XX-settings.md#slack-integration).
+See [Slack environment variables settings](../deploy/XX-settings.md#slack-integration).
 
 #### Back-Office configuration
 

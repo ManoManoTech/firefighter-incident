@@ -24,7 +24,7 @@
 
     Expose your on-call schedule, and allow anyone to escalate to PagerDuty.
 
-    [:octicons-arrow-right-24: Learn more](Usage/integrations.md#pagerduty)
+    [:octicons-arrow-right-24: Learn more](usage/integrations.md#pagerduty)
 
 -   :fontawesome-brands-jira:{ .lg .middle } __Follow on Jira__ _(optional)_
 
