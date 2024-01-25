@@ -1,6 +1,6 @@
 ---
 name: Update Python dependencies with PDM
-# Other dependeices updates are managed dy renovatebot
+# Other dependencies updates are managed by renovatebot
 
 on:
   schedule:

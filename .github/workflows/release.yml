@@ -28,6 +28,13 @@ jobs:
         with:
           ref: ${{ inputs.sha }}
 
+      - name: Set local tag for version
+        if: ${{ inputs.tag }}
+        run: |
+          git config user.email "firefighter@manomano.com"
+          git config user.name "FireFighter Release CI"
+          git tag -m "v${{ inputs.tag }}" "v${{ inputs.tag }}"
+
       - name: Setup Python & PDM
         # XXX Use the upstream version when repository is not private
         uses: ManoManoTech/setup-pdm@main
