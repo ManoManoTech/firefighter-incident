@@ -74,9 +74,14 @@ extra:
   generator: false
   version:
     provider: mike
+    default:
+      - latest
+      - dev
   social:
     - icon: fontawesome/brands/github
       link: https://github.com/ManoManoTech/firefighter-incident
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/firefighter-incident/
 
 nav:
   - Home:
@@ -170,12 +175,16 @@ plugins:
   - markdown-exec
   - search
   - section-index
+  - social:
+      enabled: !ENV [CI, false]
   - mike:
       canonical_version: "latest"
       version_selector: true
   - redirects:
       redirect_maps:
         contributing.md: contributing/0000-README.md
+  - minify:
+      minify_html: true
   - mkdocstrings:
       handlers:
         python:

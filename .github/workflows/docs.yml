@@ -1,0 +1,93 @@
+---
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request:
+
+name: Mkdocs CI
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref_name }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_VERSION: "3.11"
+
+jobs:
+  docs:
+    name: Test, build and deploy docs
+    env:
+      PYTHONDEVMODE: 1
+
+    runs-on: "ubuntu-latest"
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11"]
+
+
+      # Label used to access the service container
+      postgres:
+        # Docker Hub image
+        image: postgres:13-alpine
+        # Provide the password for postgres
+        env:
+          POSTGRES_DB: ff_dev
+          POSTGRES_USER: firefighter
+          POSTGRES_PASSWORD: firefighter
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      redis:
+        # Docker Hub image
+        image: redis:6-alpine
+        # Set health checks to wait until redis has started
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup PDM
+        # XXX Use the upstream version when repository is not private
+        uses: ManoManoTech/setup-pdm@main
+        id: setup-pdm
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: true
+          allow-python-prereleases: true
+
+      - name: Install dependencies
+        run: pdm install -v && pdm info
+
+      - name: "Check for mkdocs build --strict"
+        run: |
+          pdm run docs-build --strict
+        # If pull request or not main branch and not a tag
+        if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref != 'refs/heads/main' && !startsWith(github.ref, 'refs/tags/')) || github.event_name == 'workflow_dispatch'
+
+      - name: Deploy docs (dev)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          export SHORT_SHA=$(echo "${GITHUB_SHA}" | cut -c1-7)
+          mike deploy dev --update-aliases --title "dev (${SHORT_SHA})" --push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Deploy docs (tag)
+        if: startsWith(github.ref, 'refs/tags/') && github.event_name == 'push'
+        run: |
+          mike deploy ${{ github.ref }} latest --push --update-aliases
+          mike set-default latest --push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

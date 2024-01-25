@@ -209,6 +209,7 @@ docs = [
     "mkdocs-git-authors-plugin>=0.7.2",
     "mkdocs-git-revision-date-localized-plugin>=1.2.2",
     "mkdocs-redirects>=1.2.1",
+    "mkdocs-minify-plugin>=0.7.2",
 ]
 types = [
     "django-stubs>=4.2.6",
@@ -224,6 +225,9 @@ types = [
     "types-six>=1.16.21.9",
     "types-markdown>=3.5.0.3",
     "celery-types>=0.20.0",
+]
+docs-img = [
+    "mkdocs-material[imaging]>=9.5.5",
 ]
 
 [[tool.pdm.source]]
