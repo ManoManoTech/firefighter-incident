@@ -35,8 +35,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Setup PDM
-        # XXX Use the upstream version when repository is not private
-        uses: ManoManoTech/setup-pdm@main
+        uses: pdm-project/setup-pdm@main
         id: setup-pdm
         with:
           python-version: ${{ matrix.python-version }}

@@ -36,8 +36,7 @@ jobs:
           git tag -m "v${{ inputs.tag }}" "v${{ inputs.tag }}"
 
       - name: Setup Python & PDM
-        # XXX Use the upstream version when repository is not private
-        uses: ManoManoTech/setup-pdm@main
+        uses: pdm-project/setup-pdm@main
         id: setup-pdm
         with:
           python-version: ${{ env.PYTHON_VERSION }}
@@ -146,8 +145,7 @@ jobs:
           name: dist
           path: dist
       - name: "Publish to GitHub"
-        # XXX Use the upstream version when repository is not private
-        uses: ManoManoTech/action-gh-release@v1
+        uses: softprops/action-gh-release@v1
         with:
           draft: true
           files: dist/*
