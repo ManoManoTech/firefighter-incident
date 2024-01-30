@@ -2,6 +2,7 @@
 
 This module may be removed in a future version.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

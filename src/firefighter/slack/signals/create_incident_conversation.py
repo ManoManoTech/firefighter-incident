@@ -3,6 +3,7 @@
 XXX It might be divided into two signals/tasks, one for creating, one for inviting.
 XXX Sending the end signal should be done by this signal's caller, not by this signal receiver directly.
 """
+
 from __future__ import annotations
 
 import logging

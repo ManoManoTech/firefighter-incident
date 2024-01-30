@@ -4,6 +4,7 @@ It may be also used for extending doctest's context:
 1. https://docs.python.org/3/library/doctest.html
 2. https://docs.pytest.org/en/latest/doctest.html
 """
+
 # pylint: disable=redefined-outer-name
 from __future__ import annotations
 

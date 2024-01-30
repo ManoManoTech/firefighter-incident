@@ -339,9 +339,9 @@ class SlackMessageIncidentRolesUpdated(SlackMessageSurface):
             event_payload={
                 "ff_type": self.id,
                 "incident_id": self.incident.id,
-                "incident_update_id": str(self.incident_update.id)
-                if self.incident_update
-                else None,
+                "incident_update_id": (
+                    str(self.incident_update.id) if self.incident_update else None
+                ),
                 "new_roles": {
                     role.role_type.slug: user_slack_handle_or_name(
                         role.user if hasattr(role, "user") else None
@@ -491,13 +491,15 @@ class SlackMessageIncidentStatusUpdated(SlackMessageSurface):
                     SectionBlock(
                         block_id="message_status_update",
                         fields=fields,
-                        accessory=ButtonElement(
-                            text="Update",
-                            value=str(self.incident.id),
-                            action_id=UpdateStatusModal.open_action,
-                        )
-                        if self.in_channel
-                        else None,
+                        accessory=(
+                            ButtonElement(
+                                text="Update",
+                                value=str(self.incident.id),
+                                action_id=UpdateStatusModal.open_action,
+                            )
+                            if self.in_channel
+                            else None
+                        ),
                     ),
                 ]
             )

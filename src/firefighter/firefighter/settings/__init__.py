@@ -10,6 +10,7 @@
     ```
 
 """
+
 # ruff: noqa: E402, F403
 # pylint: disable=wrong-import-position
 # isort: off

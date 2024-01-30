@@ -460,9 +460,9 @@ class Incident(models.Model):
         users_list: list[User] = []
 
         # Send signal to modules (Confluence, PagerDuty...)
-        result_users: list[
-            tuple[Any, Exception | list[User]]
-        ] = signals.get_invites.send_robust(sender=None, incident=self)
+        result_users: list[tuple[Any, Exception | list[User]]] = (
+            signals.get_invites.send_robust(sender=None, incident=self)
+        )
 
         # Aggregate the results
         for provider in result_users:

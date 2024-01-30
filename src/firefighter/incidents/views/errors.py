@@ -2,7 +2,6 @@
 https://github.com/django/django/blob/0dd29209091280ccf34e07c9468746c396b7778e/django/views/defaults.py.
 """
 
-
 from __future__ import annotations
 
 import logging
@@ -43,9 +42,9 @@ class JsonHttpResponseBadRequest(JsonResponse, HttpResponseBadRequest):
     pass
 
 
-ERROR_404_TEMPLATE_NAME = (
-    ERROR_403_TEMPLATE_NAME
-) = ERROR_400_TEMPLATE_NAME = ERROR_500_TEMPLATE_NAME = "incidents/errors/base.html"
+ERROR_404_TEMPLATE_NAME = ERROR_403_TEMPLATE_NAME = ERROR_400_TEMPLATE_NAME = (
+    ERROR_500_TEMPLATE_NAME
+) = "incidents/errors/base.html"
 
 BACKUP_ERROR_PAGE_TEMPLATE = """
 <!doctype html>

@@ -6,9 +6,9 @@ from typing import Any
 import httpx
 from django.conf import settings
 
-FF_HTTP_CLIENT_ADDITIONAL_HEADERS: dict[
-    str, Any
-] | None = settings.FF_HTTP_CLIENT_ADDITIONAL_HEADERS
+FF_HTTP_CLIENT_ADDITIONAL_HEADERS: dict[str, Any] | None = (
+    settings.FF_HTTP_CLIENT_ADDITIONAL_HEADERS
+)
 
 
 class HttpClient:

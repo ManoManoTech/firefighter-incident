@@ -32,8 +32,8 @@ def test_get_active_slack_users(
     with patch.object(
         SlackUser.objects, "add_slack_id_to_user"
     ) as mock_add_slack_id_to_user:
-        mock_add_slack_id_to_user.side_effect = (
-            lambda user: user if user.is_active else None
+        mock_add_slack_id_to_user.side_effect = lambda user: (
+            user if user.is_active else None
         )
 
         for i, user in enumerate(users_mapped):
@@ -91,10 +91,8 @@ def test_invite_users_to_conversation_individually(
     with patch.object(
         incident_channel, "_invite_users_with_slack_id", autospec=True
     ) as mock_invite_users:
-        mock_invite_users.side_effect = (
-            lambda user_ids, client: user_ids  # noqa: ARG005
-            if "user1" in user_ids
-            else SlackApiError
+        mock_invite_users.side_effect = lambda user_ids, client: (  # noqa: ARG005
+            user_ids if "user1" in user_ids else SlackApiError
         )
 
         invited_slack_ids = incident_channel._invite_users_to_conversation_individually(
@@ -220,13 +218,17 @@ def test_invite_users(incident_channel: IncidentChannel, mock_web_client: WebCli
         user.slack_user = SlackUserFactory(user=user)
 
     # Mock the sub-methods of invite_users
-    with patch.object(
-        incident_channel, "_get_active_slack_users", autospec=True
-    ) as mock_get_active_users, patch.object(
-        incident_channel, "_get_slack_id_list", autospec=True
-    ) as mock_get_slack_ids, patch.object(
-        incident_channel, "_invite_users_to_conversation", autospec=True
-    ) as mock_invite:
+    with (
+        patch.object(
+            incident_channel, "_get_active_slack_users", autospec=True
+        ) as mock_get_active_users,
+        patch.object(
+            incident_channel, "_get_slack_id_list", autospec=True
+        ) as mock_get_slack_ids,
+        patch.object(
+            incident_channel, "_invite_users_to_conversation", autospec=True
+        ) as mock_invite,
+    ):
         mock_get_active_users.return_value = users
         mock_get_slack_ids.return_value = {u.slack_user.slack_id for u in users}
         mock_invite.return_value = {u.slack_user.slack_id for u in users}
@@ -267,13 +269,17 @@ def test_invite_users_one_no_slack(
         user.slack_user = SlackUserFactory(user=user)
 
     # Mock the sub-methods of invite_users
-    with patch.object(
-        incident_channel, "_get_active_slack_users", autospec=True
-    ) as mock_get_active_users, patch.object(
-        incident_channel, "_get_slack_id_list", autospec=True
-    ) as mock_get_slack_ids, patch.object(
-        incident_channel, "_invite_users_to_conversation", autospec=True
-    ) as mock_invite:
+    with (
+        patch.object(
+            incident_channel, "_get_active_slack_users", autospec=True
+        ) as mock_get_active_users,
+        patch.object(
+            incident_channel, "_get_slack_id_list", autospec=True
+        ) as mock_get_slack_ids,
+        patch.object(
+            incident_channel, "_invite_users_to_conversation", autospec=True
+        ) as mock_invite,
+    ):
         mock_get_active_users.return_value = users[:-1]
         mock_get_slack_ids.return_value = {u.slack_user.slack_id for u in users[:-1]}
         mock_invite.return_value = {u.slack_user.slack_id for u in users[:-1]}
@@ -301,9 +307,12 @@ def test_invite_users_all_inactive(
         u.is_active = False
 
     # Mock the sub-methods of invite_users
-    with patch.object(
-        incident_channel, "_get_slack_id_list", autospec=True
-    ) as mock_get_slack_ids, caplog.at_level(logging.INFO):
+    with (
+        patch.object(
+            incident_channel, "_get_slack_id_list", autospec=True
+        ) as mock_get_slack_ids,
+        caplog.at_level(logging.INFO),
+    ):
         mock_get_slack_ids.return_value = {}
 
         incident_channel.invite_users(users, client=MagicMock())

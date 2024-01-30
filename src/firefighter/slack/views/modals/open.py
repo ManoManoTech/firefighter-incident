@@ -97,9 +97,9 @@ class OpenModal(SlackModal):
             ):
                 open_incident_context["details_form_data"] = {}
             assert open_incident_context["details_form_data"] is not None  # noqa: S101
-            open_incident_context["details_form_data"][
-                "priority"
-            ] = open_incident_context["priority"]
+            open_incident_context["details_form_data"]["priority"] = (
+                open_incident_context["priority"]
+            )
 
         # Make blocks with all this context
         intro_blocks = self.get_intro_blocks()
@@ -353,9 +353,9 @@ class OpenModal(SlackModal):
         if not details_form_modal_class:
             return False, None, None
 
-        details_form_class: type[
-            CreateIncidentFormBase
-        ] = details_form_modal_class.form_class
+        details_form_class: type[CreateIncidentFormBase] = (
+            details_form_modal_class.form_class
+        )
 
         if not details_form_class:
             return False, None, None
@@ -482,9 +482,9 @@ class OpenModal(SlackModal):
             data, incident_type_value
         )
         if details_form_modal_class:
-            details_form_class: type[
-                CreateIncidentFormBase
-            ] = details_form_modal_class.form_class
+            details_form_class: type[CreateIncidentFormBase] = (
+                details_form_modal_class.form_class
+            )
             if details_form_class:
                 details_form: CreateIncidentFormBase = details_form_class(
                     details_form_data_raw

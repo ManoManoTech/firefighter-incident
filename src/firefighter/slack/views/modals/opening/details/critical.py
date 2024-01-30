@@ -48,11 +48,13 @@ class CreateIncidentFormSlack(CreateIncidentForm):
                 "placeholder": "Select a priority",
             },
             "widget": {
-                "post_block": SectionBlock(
-                    text=f"_<{settings.SLACK_SEVERITY_HELP_GUIDE_URL}|How to choose the priority?>_"
-                )
-                if settings.SLACK_SEVERITY_HELP_GUIDE_URL
-                else None,
+                "post_block": (
+                    SectionBlock(
+                        text=f"_<{settings.SLACK_SEVERITY_HELP_GUIDE_URL}|How to choose the priority?>_"
+                    )
+                    if settings.SLACK_SEVERITY_HELP_GUIDE_URL
+                    else None
+                ),
                 "label_from_instance": lambda obj: f"{obj.emoji}  {obj.name} - {obj.description}",
             },
         },

@@ -52,7 +52,6 @@ def update_home_tab(
     event: dict[str, Any], client: WebClient = DefaultWebClient
 ) -> None:
     logger.debug(event)
-
     # Show only the latest 30 incidents, as Slack does not allow more than 100 elements
     shown_incidents = list(
         Incident.objects.filter(_status__lt=IncidentStatus.CLOSED.value)
@@ -154,20 +153,22 @@ def _home_incident_element(
                     text=f":speaking_head_in_silhouette: *Last update:* {date_time(incident.updated_at) }"
                 ),
             ],
-            accessory=OverflowMenuElement(
-                action_id="app_home_incident_action",
-                options=[
-                    Option(text="Update status", value="update_status"),
-                    Option(
-                        text="See status page",
-                        url=incident.status_page_url
-                        + "?utm_medium=FireFighter+Slack&utm_source=Slack+Home&utm_campaign=Slack+Home+Button",
-                        value="open_link",
-                    ),
-                ],
-            )
-            if show_actions
-            else None,
+            accessory=(
+                OverflowMenuElement(
+                    action_id="app_home_incident_action",
+                    options=[
+                        Option(text="Update status", value="update_status"),
+                        Option(
+                            text="See status page",
+                            url=incident.status_page_url
+                            + "?utm_medium=FireFighter+Slack&utm_source=Slack+Home&utm_campaign=Slack+Home+Button",
+                            value="open_link",
+                        ),
+                    ],
+                )
+                if show_actions
+                else None
+            ),
         ),
         slack_block_quote(incident.description, length=1500),
     ]
