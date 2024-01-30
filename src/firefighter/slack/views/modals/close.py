@@ -109,18 +109,20 @@ class CloseModal(
                         ),
                         ActionsBlock(
                             elements=[
-                                ButtonElement(
-                                    text="Fill the post-mortem on Confluence",
-                                    action_id="open_link",
-                                    url=incident.postmortem_for.page_edit_url,
-                                    style="primary",
-                                )
-                                if hasattr(incident, "postmortem_for")
-                                else ButtonElement(
-                                    text="Create the post-mortem",
-                                    action_id=str(PostMortemModal.push_action),
-                                    value=str(incident.id),
-                                    style="primary",
+                                (
+                                    ButtonElement(
+                                        text="Fill the post-mortem on Confluence",
+                                        action_id="open_link",
+                                        url=incident.postmortem_for.page_edit_url,
+                                        style="primary",
+                                    )
+                                    if hasattr(incident, "postmortem_for")
+                                    else ButtonElement(
+                                        text="Create the post-mortem",
+                                        action_id=str(PostMortemModal.push_action),
+                                        value=str(incident.id),
+                                        style="primary",
+                                    )
                                 ),
                                 ButtonElement(
                                     text="Update status",

@@ -2,6 +2,7 @@
 
 This file is required and if `ENV=dev` these values are not used.
 """
+
 from __future__ import annotations
 
 from pathlib import Path

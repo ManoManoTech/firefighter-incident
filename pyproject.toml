@@ -66,7 +66,9 @@ classifiers = [
 dynamic = ["version"]
 
 [project.urls]
-Source = "https://github.com/ManoManoTech/firefighter-incident"
+Repository = "https://github.com/ManoManoTech/firefighter-incident"
+Documentation = "https://manomanotech.github.io/firefighter-incident/latest/"
+Changelog = "https://github.com/ManoManoTech/firefighter-incident/releases"
 
 [project.scripts]
 ff-web = "main:main"
@@ -413,7 +415,7 @@ django_settings_module = "firefighter.firefighter.settings"
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 # markers = [{unit="tests that are isolated from the db, external api calls and other mockable internal code."}]
-norecursedirs = "*.egg .eggs dist build docs .tox .git __pycache__ node_modules .venv __pypackages__"
+norecursedirs = "*.egg .eggs dist build docs .tox .git __pycache__ node_modules .venv"
 timeout = 15
 # Ignore deprecation warnings from libs
 filterwarnings = [
@@ -535,7 +537,7 @@ external = [
 "__init__.py" = ["F401"]
 "_version.py" = ["Q000", "UP", "I"]
 "**/settings_builder.py" = ["F403"]
-"tests/*" = ["S101", "D", "ANN", "PLR2004", "INP", "DTZ005", "TCH", "SLF001"]
+"tests/*" = ["S101", "D", "ANN", "PLR2004", "INP", "DTZ005", "TCH", "SLF001", "PLC2701"]
 "**/migrations/*" = ["PLR", "D", "ANN", "ARG", "N806", "I002"]
 "stubs/*" = ["ARG", "ANN", "D", "INP", "TCH"]
 "**/apps.py" = ["F401", "PLC0415"]

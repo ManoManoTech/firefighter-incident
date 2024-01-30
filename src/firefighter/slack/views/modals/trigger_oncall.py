@@ -46,16 +46,18 @@ class OnCallModal(IncidentSelectableModalMixin, SlackModal):
                 text=f"You are about to trigger on-call for incident #{incident.id}. Please select the on-call line that you want to trigger."
             ),
             DividerBlock(),
-            InputBlock(
-                block_id="oncall_service",
-                label="Select on-call line",
-                element=RadioButtonsElement(
-                    action_id="select_oncall_service", options=pd_options
-                ),
-            )
-            if len(pd_options) > 0
-            else SectionBlock(
-                text=":warning: No PagerDuty services in the database! :warning:\nAdministrator action is needed."
+            (
+                InputBlock(
+                    block_id="oncall_service",
+                    label="Select on-call line",
+                    element=RadioButtonsElement(
+                        action_id="select_oncall_service", options=pd_options
+                    ),
+                )
+                if len(pd_options) > 0
+                else SectionBlock(
+                    text=":warning: No PagerDuty services in the database! :warning:\nAdministrator action is needed."
+                )
             ),
         ]
 
@@ -109,9 +111,11 @@ class OnCallModal(IncidentSelectableModalMixin, SlackModal):
                 title=incident.title,
                 details=incident.description,
                 incident_id=incident.id,
-                conference_url=incident.slack_channel_url
-                if incident.slack_channel_url
-                else incident.status_page_url,
+                conference_url=(
+                    incident.slack_channel_url
+                    if incident.slack_channel_url
+                    else incident.status_page_url
+                ),
                 triggered_by=user,
             )
         except Exception as e:  # TODO better exception handling

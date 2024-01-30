@@ -88,15 +88,15 @@ class KeyEvents(MessageForm[IncidentUpdateKeyEventsForm]):
         """Handle the time and date inputs for the key events."""
         logger.debug(body)
 
-        slack_form: SlackForm[
-            IncidentUpdateKeyEventsForm
-        ] | None = self.handle_form_errors(
-            ack,
-            body,
-            forms_kwargs={
-                "incident": incident,
-                "user": user,
-            },
+        slack_form: SlackForm[IncidentUpdateKeyEventsForm] | None = (
+            self.handle_form_errors(
+                ack,
+                body,
+                forms_kwargs={
+                    "incident": incident,
+                    "user": user,
+                },
+            )
         )
         form = slack_form.form if slack_form else None
 
