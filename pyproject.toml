@@ -11,7 +11,6 @@ authors = [
 ]
 dependencies = [
     "django[argon2]>=4.2.8,<5.0.0",
-    "Jinja2>=3.1.2,<4.0.0",
     "celery[gevent,redis]>=5.3.6",
     "ddtrace>=2.3.3,<2.4.0",
     "django-celery-beat>=2.5.0",
@@ -181,8 +180,7 @@ dev = [
     "werkzeug>=3.0.1",
     "django-watchfiles>=0.1.0",
     "ruff>=0.1.6",
-    "mypy-to-codeclimate>=0.0.3",
-    "jinja2>=3.1.2",
+    "mypy-to-codeclimate>=0.0.3"
 ]
 tests = [
     "pytest>=7.4.3",
@@ -212,6 +210,7 @@ docs = [
     "mkdocs-git-revision-date-localized-plugin>=1.2.2",
     "mkdocs-redirects>=1.2.1",
     "mkdocs-minify-plugin>=0.7.2",
+    "jinja2>=3.1.2",
 ]
 types = [
     "django-stubs>=4.2.6",
