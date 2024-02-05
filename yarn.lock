@@ -7,23 +7,23 @@
   resolved "https://registry.npmjs.org/@alloc/quick-lru/-/quick-lru-5.2.0.tgz#7bf68b20c0a350f936915fcae06f58e32007ce30"
   integrity sha512-UrcABB+4bUrFABwbluTIBErXwvbsU/V7TZWfmbgJfbkwiBuziS9gxdODUyuiecfdGQ85jglMW6juS3+z5TsKLw==
 
-"@alpinejs/collapse@^3.13.2":
-  version "3.13.3"
-  resolved "https://registry.npmjs.org/@alpinejs/collapse/-/collapse-3.13.3.tgz#5b34adc372c2d6134ef95261d2777e378f577669"
-  integrity sha512-iGO6IzqBwVNxAaoS4XCCJIIg9U/mH7v4vk6wlzxXKFWMXt2yynw93TkdELyjwxQqeNTEGimZRR+2wNf9yhJn0A==
+"@alpinejs/collapse@^3.13.5":
+  version "3.13.5"
+  resolved "https://registry.yarnpkg.com/@alpinejs/collapse/-/collapse-3.13.5.tgz#25e0d9122944996b49516d842f1000a2c7db0723"
+  integrity sha512-LHtSF/T3Zrhr0WOeVm4ebdXNH6ftqoZMbmkBTU1n/j8r0joV3oLUsPCyn5qOU8+27d2P/N2a057etOm0MH60oQ==
 
-"@alpinejs/focus@^3.13.2":
-  version "3.13.3"
-  resolved "https://registry.npmjs.org/@alpinejs/focus/-/focus-3.13.3.tgz#fd06d055175ff64b07a7e4a64fa01a4ad85104dd"
-  integrity sha512-fTRX/9wOfysyZ1PJ4gHeUnmiNTIgqBDIqKxeP5iMvj1UHD3TFLDXllvoIKH3ezqcsyQZqxd/q1MFM7dlIhkmeg==
+"@alpinejs/focus@^3.13.5":
+  version "3.13.5"
+  resolved "https://registry.yarnpkg.com/@alpinejs/focus/-/focus-3.13.5.tgz#024cffefbdff7214c4f18f81dde9b09dca8b9407"
+  integrity sha512-ViZ1W9M3/leZKNdsMyTZvGCu2DPMyUSbRwrbGNOnCkzHMHOIP6zdGpzPkD+1HyhQ2SuG7wRgf7YlrPnlE6tMqA==
   dependencies:
     focus-trap "^6.9.4"
     tabbable "^5.3.3"
 
-"@alpinejs/morph@^3.13.2":
-  version "3.13.3"
-  resolved "https://registry.npmjs.org/@alpinejs/morph/-/morph-3.13.3.tgz#0a212a54ca6dba609b698fcc2b2c6e0e9a134529"
-  integrity sha512-JYDqmN/2mV4x3UnmUaZv2VDxvuPNjEAd1nxcKoMhPFWAACS6b+Z51fEf8o97Be9Hqr9bgTxtJDP5GjKWbILXYA==
+"@alpinejs/morph@^3.13.5":
+  version "3.13.5"
+  resolved "https://registry.yarnpkg.com/@alpinejs/morph/-/morph-3.13.5.tgz#d5f3e6c8d01157403bef271ae6d0a7f40bbd28e7"
+  integrity sha512-nuyONu4Fmms2udx7z6H0fC25i6S70Z7iREsrWHIu/67iBCum9nusF3cZKWQ3mWOovQYiKpEuuvDT0GoLLVlp7A==
 
 "@ampproject/remapping@^2.2.0":
   version "2.2.1"
@@ -1276,10 +1276,10 @@ ajv@^8.0.1:
     require-from-string "^2.0.2"
     uri-js "^4.2.2"
 
-alpinejs@^3.13.2:
-  version "3.13.3"
-  resolved "https://registry.npmjs.org/alpinejs/-/alpinejs-3.13.3.tgz#92eb7e869b99ff548e7a55044e45660597cf530b"
-  integrity sha512-WZ6WQjkAOl+WdW/jukzNHq9zHFDNKmkk/x6WF7WdyNDD6woinrfXCVsZXm0galjbco+pEpYmJLtwlZwcOfIVdg==
+alpinejs@^3.13.5:
+  version "3.13.5"
+  resolved "https://registry.yarnpkg.com/alpinejs/-/alpinejs-3.13.5.tgz#c06f067e847a295085b4c6f76c42a6a35499d953"
+  integrity sha512-1d2XeNGN+Zn7j4mUAKXtAgdc4/rLeadyTMWeJGXF5DzwawPBxwTiBhFFm6w/Ei8eJxUZeyNWWSD9zknfdz1kEw==
   dependencies:
     "@vue/reactivity" "~3.1.1"
 
@@ -2187,10 +2187,10 @@ html-tags@^3.3.1:
   resolved "https://registry.npmjs.org/html-tags/-/html-tags-3.3.1.tgz#a04026a18c882e4bba8a01a3d39cfe465d40b5ce"
   integrity sha512-ztqyC3kLto0e9WbNp0aeP+M3kTt+nbaIveGmUxAtZa+8iFgKLUOD4YKM5j+f3QD89bra7UeumolZHKuOXnTmeQ==
 
-htmx.org@^1.9.9:
-  version "1.9.9"
-  resolved "https://registry.npmjs.org/htmx.org/-/htmx.org-1.9.9.tgz#e9f94cb3e39ab249430244dc9ae168b47d610920"
-  integrity sha512-PDEZU1me7UGLzQk98LyfLvwFgdtn9mrCVMmAxv1/UjshUnxsc+rouu+Ot2QfFZxsY4mBCoOed5nK7m9Nj2Tu7g==
+htmx.org@^1.9.10:
+  version "1.9.10"
+  resolved "https://registry.yarnpkg.com/htmx.org/-/htmx.org-1.9.10.tgz#63c67e1e7a447086a3119c156f08722c624aacac"
+  integrity sha512-UgchasltTCrTuU2DQLom3ohHrBvwr7OqpwyAVJ9VxtNBng4XKkVsqrv0Qr3srqvM9ZNI3f1MmvVQQqK7KW/bTA==
 
 hyperscript.org@^0.9.12:
   version "0.9.12"
