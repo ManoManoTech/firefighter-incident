@@ -31,7 +31,7 @@
     "--rootdir=."
   ],
   "[python]": {
-    "editor.defaultFormatter": "ms-python.black-formatter",
+    "editor.defaultFormatter": "charliermarsh.ruff",
     "editor.formatOnSave": true,
     "editor.codeActionsOnSave": {
         "source.organizeImports": true,
@@ -43,5 +43,4 @@
   "python.analysis.stubPath": "stubs",
   "python.analysis.inlayHints.variableTypes": false,
   "python.analysis.autoImportCompletions": true,
-  "black-formatter.importStrategy": "fromEnvironment",
 }

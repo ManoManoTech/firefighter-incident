@@ -3,7 +3,10 @@ from __future__ import annotations
 import re
 from typing import TypeAlias, TypedDict
 
-from django.utils.timezone import datetime, get_current_timezone  # type: ignore[attr-defined]
+from django.utils.timezone import (  # type: ignore[attr-defined]
+    datetime,
+    get_current_timezone,
+)
 
 from firefighter.incidents.views.date_utils import get_quarter_from_week
 

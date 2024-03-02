@@ -130,8 +130,8 @@ lint-mypy = {shell= "mypy", help="Run mypy type checker", env={"ENABLE_PAGERDUTY
 lint-ruff = {cmd="ruff .", help="Run ruff linter"}
 lint = {composite= ["lint-ruff", "lint-pylint", "lint-mypy"], help="Run all linters (ruff, pylint, mypy)."}
 # Format
-fmt-black = {cmd="black .", help="Run black formatter"}
-fmt-ruff =  {cmd="ruff . --fix --select I001", help="Run isort-like import sorting with ruff"}
+fmt-black = {cmd="ruff format .", help="Run black-like ruff formatter"}
+fmt-ruff =  {cmd="ruff check . --fix --select I001", help="Run isort-like import sorting with ruff"}
 fmt = {composite= ["fmt-black", "fmt-ruff"], help="Run all formatters (black, isort-like ruff)"}
 # Tests
 tests = {cmd="pytest", help="Run the tests"}
@@ -172,7 +172,6 @@ dev = [
     "django-migration-linter>=5.0.0",
     "ipdb>=0.13.13",
     "ipython>=8.18.1",
-    "black>=23.11.0",
     "djhtml>=3.0.6",
     "django-extensions>=3.2.3",
     "pyparsing>=3.1.1",
@@ -181,7 +180,7 @@ dev = [
     "werkzeug>=3.0.1",
     "django-watchfiles>=0.1.0",
     "ruff>=0.1.6",
-    "mypy-to-codeclimate>=0.0.3"
+    "mypy-to-codeclimate>=0.0.3",
 ]
 tests = [
     "pytest>=7.4.3",
@@ -237,9 +236,6 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 name = "pypi"
 include_packages = ["*"]
-
-[tool.black]
-line-length = 88
 
 ## Linting (Pylint + pylint-django)
 
@@ -482,8 +478,10 @@ exclude_lines = [
 
 [tool.ruff]
 preview = true
-line-length = 140
+line-length = 88
 respect-gitignore = true
+[tool.ruff.format]
+docstring-code-format = true
 
 [tool.ruff.lint]
 select = ["ALL"]
