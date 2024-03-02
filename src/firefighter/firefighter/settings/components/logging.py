@@ -1,14 +1,16 @@
 from __future__ import annotations
 
-from logging import Filter, Formatter, LogRecord
-from typing import Any
+from logging import Filter, LogRecord
+from typing import TYPE_CHECKING
 
-from firefighter.firefighter.settings.settings_utils import ENV, config
-from firefighter.logging.custom_json_formatter import (
-    CustomJsonEncoder,
-    CustomJsonFormatter,
-)
-from firefighter.logging.pretty_formatter import PrettyFormatter
+from loggia.conf import FlexibleFlag, LoggerConfiguration
+from loggia.logger import initialize
+from loggia.utils.logrecordutils import STANDARD_FIELDS, popattr
+
+from firefighter.firefighter.settings.settings_utils import ENV
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
 
 
 class AccessLogFilter(Filter):
@@ -32,16 +34,17 @@ class AccessLogFilter(Filter):
         return True
 
 
-def get_json_formatter() -> dict[str, type[Formatter] | Any]:
-    attr_whitelist = {"name", "levelname", "pathname", "lineno", "funcName"}
-    attrs = [x for x in CustomJsonFormatter.RESERVED_ATTRS if x not in attr_whitelist]
-    return {
-        "()": CustomJsonFormatter,
-        "json_indent": None,
-        "json_encoder": CustomJsonEncoder,
-        "reserved_attrs": attrs,
-        "timestamp": True,
-    }
+class RemoveExtraDev(Filter):
+    def __init__(self, name: str = "", to_ignore: Iterable[str] = ()) -> None:
+        self.to_ignore = to_ignore
+        super().__init__(name)
+
+    def filter(self, record: LogRecord) -> bool:
+        for extra in set(record.__dict__.keys() - STANDARD_FIELDS) & set(
+            self.to_ignore
+        ):
+            popattr(record, extra, None)
+        return True
 
 
 base_level = "DEBUG" if ENV == "dev" else "INFO"
