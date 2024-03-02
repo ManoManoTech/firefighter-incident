@@ -492,7 +492,7 @@ def slack_view_submission_to_dict(
 
     # We expect only one action per input
     # The action_id must be block_id or block_id___{whatever}
-    # We support block_id and block_id___{whatever} because SLack won't update the value in the user's form if the action_id is the same
+    # We support block_id and block_id___{whatever} because Slack won't update the value in the user's form if the action_id is the same
     # Hence, we need to add a unique identifier to the action_id to force Slack to update the value, replacing the input by another one
     for block in values.values():
         if len(block) == 0:

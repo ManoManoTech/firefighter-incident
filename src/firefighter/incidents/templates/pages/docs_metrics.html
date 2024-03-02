@@ -13,7 +13,7 @@
 
   <div class="py-12">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 gap-4 grid">
-      {% component_block "card" id="metrics-sequence-graph" card_title="TLDR: Metrics Timeline" %}
+      {% component "card" id="metrics-sequence-graph" card_title="TLDR: Metrics Timeline" %}
         {% fill "card_content" %}
           {% autoescape off %}
             <pre class="mermaid w-full">
@@ -21,9 +21,9 @@
           </pre>
           {% endautoescape %}
         {% endfill %}
-      {% endcomponent_block %}
+      {% endcomponent %}
       <div class="gap-4 grid md:grid-cols-2 grid-cols-1">
-        {% component_block "card" id="metrics-details" card_title="Incident Metrics Details" %}
+        {% component "card" id="metrics-details" card_title="Incident Metrics Details" %}
           {% fill "card_content" %}
           <div class="prose">
             <p>
@@ -43,8 +43,8 @@
             {% endfor %}
             </div>
           {% endfill %}
-        {% endcomponent_block %}
-        {% component_block "card" id="metrics-details" card_title="Key Events Details" %}
+        {% endcomponent %}
+        {% component "card" id="metrics-details" card_title="Key Events Details" %}
           {% fill "card_content" %}
           <div class="prose">
             <p>
@@ -65,7 +65,7 @@
             {% endfor %}
             </div>
           {% endfill %}
-        {% endcomponent_block %}
+        {% endcomponent %}
       </div>
     </div>
   </div>
