@@ -66,7 +66,7 @@ class OpenModal(SlackModal):
 
     def build_modal_fn(
         self, open_incident_context: OpeningData | None = None, user: User | None = None
-    ) -> View:  # type: ignore
+    ) -> View:
         if user is None:
             raise ValueError("user is required for OpenModal!")
         open_incident_context = open_incident_context or OpeningData()

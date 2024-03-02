@@ -30,8 +30,11 @@ class APITokenAdmin(TokenAdmin):
     """
 
     def formfield_for_foreignkey(
-        self, db_field: ForeignKey[Any, Any], request: HttpRequest, **kwargs: Any
-    ) -> ModelChoiceField:  # type: ignore[override]
+        self,
+        db_field: ForeignKey[Any, Any],
+        request: HttpRequest,  # type: ignore[override]
+        **kwargs: Any,
+    ) -> ModelChoiceField:
         """Show all or only current user depending on permissions."""
         if db_field.name == "user":
             if request.user.has_perm("api.can_add_any") or request.user.has_perm(
@@ -44,11 +47,11 @@ class APITokenAdmin(TokenAdmin):
 
     def get_form(
         self,
-        request: HttpRequest,
+        request: HttpRequest,  # type: ignore[override]
         obj: APITokenProxy | None = None,
         change: bool = False,  # noqa: FBT001, FBT002
         **kwargs: Any,
-    ) -> type[ModelForm[APITokenProxy]]:  # type: ignore[override]
+    ) -> type[ModelForm[APITokenProxy]]:
         """Prefill the form with the current user."""
         form: type[ModelForm[APITokenProxy]] = super().get_form(
             request, obj, change, **kwargs
@@ -74,8 +77,10 @@ class APITokenAdmin(TokenAdmin):
         return super().get_sortable_by(request)
 
     def has_view_permission(
-        self, request: HttpRequest, obj: APITokenProxy | None = None
-    ) -> bool:  # type: ignore[override]
+        self,
+        request: HttpRequest,  # type: ignore[override]
+        obj: APITokenProxy | None = None,
+    ) -> bool:
         if obj is None:
             return request.user.has_perm("api.can_view_any") or request.user.has_perm(
                 "api.can_view_own"
@@ -92,8 +97,10 @@ class APITokenAdmin(TokenAdmin):
         )
 
     def has_delete_permission(
-        self, request: HttpRequest, obj: APITokenProxy | None = None
-    ) -> bool:  # type: ignore[override]
+        self,
+        request: HttpRequest,  # type: ignore[override]
+        obj: APITokenProxy | None = None,
+    ) -> bool:
         if obj is None:
             return request.user.has_perm("api.can_delete_any") or request.user.has_perm(
                 "api.can_delete_own"
@@ -105,8 +112,10 @@ class APITokenAdmin(TokenAdmin):
         return False
 
     def has_change_permission(
-        self, request: HttpRequest, obj: APITokenProxy | None = None
-    ) -> bool:  # type: ignore[override]
+        self,
+        request: HttpRequest,  # type: ignore[override]
+        obj: APITokenProxy | None = None,
+    ) -> bool:
         if obj is None:
             return request.user.has_perm("api.can_edit_any")
         if request.user.has_perm("api.can_edit_any"):

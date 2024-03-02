@@ -51,7 +51,7 @@ class SetIncidentDetails(ModalForm[T], Generic[T]):
 
     def build_modal_fn(
         self, open_incident_context: OpeningData | None = None, **kwargs: Any
-    ) -> View:  # type: ignore
+    ) -> View:
         open_incident_context = open_incident_context or {}
         details_form_data: dict[str, Any] = (
             open_incident_context.get("details_form_data") or {}
