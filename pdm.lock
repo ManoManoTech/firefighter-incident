@@ -5,7 +5,7 @@
 groups = ["default", "dev", "docs", "tests", "types", "docs-img"]
 strategy = ["cross_platform", "static_urls"]
 lock_version = "4.4.1"
-content_hash = "sha256:a3cbc48404e7bfe3ebb0f9a0c042b899ad068e5a787826726c04517f194d5c93"
+content_hash = "sha256:a3de806358c110b8ae9fdd36a25c151b6deb4a9b0917432ed4e6ada60ac75860"
 
 [[package]]
 name = "aiohttp"
@@ -1723,6 +1723,19 @@ files = [
     {url = "https://files.pythonhosted.org/packages/d0/5d/768a7f2ccebb29604def61842fd54f6f5f75c79e366ee8748dda84de0b13/lazy_object_proxy-1.10.0-cp312-cp312-macosx_10_9_x86_64.whl", hash = "sha256:e98c8af98d5707dcdecc9ab0863c0ea6e88545d42ca7c3feffb6b4d1e370c7ba"},
     {url = "https://files.pythonhosted.org/packages/f5/33/467a093bf004a70022cb410c590d937134bba2faa17bf9dc42a48f49af35/lazy_object_proxy-1.10.0-cp312-cp312-win32.whl", hash = "sha256:3ad54b9ddbe20ae9f7c1b29e52f123120772b06dbb18ec6be9101369d63a4074"},
     {url = "https://files.pythonhosted.org/packages/ff/e1/99a7ec68b892c9b8c6212617f54e7e9b0304d47edad8c0ff043ae3aeb1a9/lazy_object_proxy-1.10.0-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:fec03caabbc6b59ea4a638bee5fce7117be8e99a4103d9d5ad77f15d6f81020c"},
+]
+
+[[package]]
+name = "loggia"
+version = "0.3.0"
+requires_python = ">=3.9"
+summary = "A convenient logging configuration manager for Python's standard logging library and Loguru."
+dependencies = [
+    "python-json-logger>=2.0.7",
+]
+files = [
+    {url = "https://files.pythonhosted.org/packages/18/25/bdde3f28a98c867815e6df719f4ca7a777225572f9ff7b5e68487f03c9d8/loggia-0.3.0-py3-none-any.whl", hash = "sha256:c51b672abf2b01091002475e73aad6ee8815fb5830dc2a30bea8019969d7780a"},
+    {url = "https://files.pythonhosted.org/packages/a4/5d/33a94a9d1050c17f9dc470528bc69dcf5dcd9c84182831353f6821ddeb49/loggia-0.3.0.tar.gz", hash = "sha256:e9de76c15cd3ffaf47228d95be90a9558e869ae761c92b258f3ff2e8fa4a1095"},
 ]
 
 [[package]]
