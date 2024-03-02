@@ -336,9 +336,7 @@ class SlackForm(Generic[T]):
         ):
             slack_input_kwargs["options"].append(slack_input_kwargs["initial_option"])
 
-        field_name = (
-            f"{field_name}___{f.initial}{datetime.now().timestamp()}"  # noqa: DTZ005
-        )
+        field_name = f"{field_name}___{f.initial}{datetime.now().timestamp()}"  # noqa: DTZ005
         field_name = field_name[:254]
         return SelectElement(action_id=field_name, **slack_input_kwargs)
 
@@ -364,9 +362,7 @@ class SlackForm(Generic[T]):
             )
             slack_input_kwargs["initial_user"] = initial_user_slack_id
 
-        field_name = (
-            f"{field_name}___{f.initial}{datetime.now().timestamp()}"  # noqa: DTZ005
-        )
+        field_name = f"{field_name}___{f.initial}{datetime.now().timestamp()}"  # noqa: DTZ005
         field_name = field_name[:254]
         return UserSelectElement(action_id=field_name, **slack_input_kwargs)
 

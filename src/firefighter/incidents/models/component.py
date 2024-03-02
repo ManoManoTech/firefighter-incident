@@ -86,14 +86,12 @@ class ComponentManager(models.Manager["Component"]):
                 incidents_downtime=F("metric_subquery"),
                 incident_uptime=Value(date_interval) - F("incidents_downtime"),
             )
-            .annotate(
-                **{
-                    field_name: Cast(
-                        F("incident_uptime") / F("incident_count"),
-                        output_field=DurationField(),
-                    )
-                }
-            )
+            .annotate(**{
+                field_name: Cast(
+                    F("incident_uptime") / F("incident_count"),
+                    output_field=DurationField(),
+                )
+            })
         )
 
     @staticmethod

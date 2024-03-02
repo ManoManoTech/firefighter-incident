@@ -127,7 +127,7 @@ _cd-lint-pylint = {composite= ["_copy_env", "lint-pylint-strict"], help="Run pyl
 lint-pylint = {cmd="pylint --django-settings-module=firefighter.firefighter.settings src", help="Run pylint"}
 lint-pylint-strict = {shell="pylint --django-settings-module=firefighter.settings src --fail-under=0.99", help="Run pylint, fail if score is under 9.99"}
 lint-mypy = {shell= "mypy", help="Run mypy type checker", env={"ENABLE_PAGERDUTY"="True", "ENABLE_CONFLUENCE"="True"}}
-lint-ruff = {cmd="ruff .", help="Run ruff linter"}
+lint-ruff = {cmd="ruff check .", help="Run ruff linter"}
 lint = {composite= ["lint-ruff", "lint-pylint", "lint-mypy"], help="Run all linters (ruff, pylint, mypy)."}
 # Format
 fmt-black = {cmd="ruff format .", help="Run black-like ruff formatter"}
@@ -545,6 +545,7 @@ external = [
 "**/main.py" = ["INP"]
 "**/gunicorn.conf.py" = ["INP"]
 "scripts/*" = ["INP"]
+"*.pyi" = ["E301", "E302", "E305"]
 
 [tool.ruff.lint.mccabe]
 max-complexity = 15

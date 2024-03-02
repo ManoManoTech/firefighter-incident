@@ -49,7 +49,7 @@ class IncidentUpdateRolesForm(forms.Form):
             )
 
             logger.debug(
-                f"Initial {field_name} was set to { self.initial.get(field_name)}"
+                f"Initial {field_name} was set to {self.initial.get(field_name)}"
             )
 
     def clean(self) -> dict[str, Any] | None:

@@ -85,9 +85,9 @@ def page_not_found(
         request.headers.get("Accept", "") == JSON_CONTENT_TYPE
         or request.headers.get("Content-Type", "") == JSON_CONTENT_TYPE
     ):
-        return JsonHttpResponseNotFound(
-            {"error": {"app_code": "NOT_FOUND", "message": "Page not found"}}
-        )
+        return JsonHttpResponseNotFound({
+            "error": {"app_code": "NOT_FOUND", "message": "Page not found"}
+        })
     exception_repr = exception.__class__.__name__
     # Try to get an "interesting" exception message, if any (and not the ugly
     # Resolver404 dictionary)
@@ -148,9 +148,9 @@ def server_error(
         request.headers.get("Accept", "") == JSON_CONTENT_TYPE
         or request.headers.get("Content-Type", "") == JSON_CONTENT_TYPE
     ):
-        return JsonHttpResponseServerError(
-            {"error": {"app_code": "SERVER_ERROR", "message": "Server error"}}
-        )
+        return JsonHttpResponseServerError({
+            "error": {"app_code": "SERVER_ERROR", "message": "Server error"}
+        })
     try:
         template = loader.get_template(template_name)
     except TemplateDoesNotExist:
@@ -179,9 +179,9 @@ def bad_request(
         request.headers.get("Accept", "") == JSON_CONTENT_TYPE
         or request.headers.get("Content-Type", "") == JSON_CONTENT_TYPE
     ):
-        return JsonHttpResponseBadRequest(
-            {"error": {"app_code": "BAD_REQUEST", "message": "Bad request"}}
-        )
+        return JsonHttpResponseBadRequest({
+            "error": {"app_code": "BAD_REQUEST", "message": "Bad request"}
+        })
     context = {
         "request_path": quote(request.path),
         "page_title": "Bad request",
@@ -225,9 +225,9 @@ def permission_denied(
         request.headers.get("Accept", "") == JSON_CONTENT_TYPE
         or request.headers.get("Content-Type", "") == JSON_CONTENT_TYPE
     ):
-        return JsonHttpResponseForbidden(
-            {"error": {"app_code": "FORBIDDEN", "message": "Forbidden"}}
-        )
+        return JsonHttpResponseForbidden({
+            "error": {"app_code": "FORBIDDEN", "message": "Forbidden"}
+        })
     context = {
         "request_path": quote(request.path),
         "exception": str(exception),

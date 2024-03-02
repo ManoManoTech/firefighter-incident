@@ -32,9 +32,10 @@ def user_details_url(request: AuthenticatedHttpRequest) -> str | None:
 
 def log_out_url(_request: HttpRequest) -> str:
     url = reverse("oidc_logout")
-    return "?".join(
-        [url, urlencode({"next": "/admin/login/", "fail": "/admin/login/"})]
-    )
+    return "?".join([
+        url,
+        urlencode({"next": "/admin/login/", "fail": "/admin/login/"}),
+    ])
 
 
 def setup_navbar_menu() -> None:

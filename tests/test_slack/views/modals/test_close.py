@@ -973,6 +973,6 @@ invalid_title = deepcopy(valid_submission)
 invalid_title["view"]["state"]["values"]["title"]["title"]["value"] = "short"  # type: ignore
 
 invalid_component = deepcopy(valid_submission)
-invalid_component["view"]["state"]["values"]["component"]["component"][  # type: ignore
+invalid_component["view"]["state"]["values"]["component"]["component"][
     "selected_option"
-]["value"] = "notauuid-d445-4fc9-92eb-e742ee14fd4a"
+]["value"] = "notauuid-d445-4fc9-92eb-e742ee14fd4a"  # type: ignore

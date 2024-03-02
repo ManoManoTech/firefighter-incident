@@ -54,26 +54,20 @@ urlpatterns: list[URLPattern | URLResolver] = [
     path("", include(router.urls)),
     path(
         "incidents",
-        views.incidents.CreateIncidentViewSet.as_view(
-            {"post": "create"}
-        ),  # pyright: ignore[reportGeneralTypeIssues]
+        views.incidents.CreateIncidentViewSet.as_view({"post": "create"}),  # pyright: ignore[reportGeneralTypeIssues]
         name="incidents",
     ),
 ]
 if settings.FF_EXPOSE_API_DOCS:
-    urlpatterns.extend(
-        (
-            path(
-                "schema",
-                SpectacularAPIView.as_view(),  # pyright: ignore[reportGeneralTypeIssues]
-                name="schema",
-            ),
-            path(
-                "schema/swagger-ui",
-                SpectacularSwaggerView.as_view(
-                    url_name="api:schema"
-                ),  # pyright: ignore[reportGeneralTypeIssues]
-                name="swagger-ui",
-            ),
-        )
-    )
+    urlpatterns.extend((
+        path(
+            "schema",
+            SpectacularAPIView.as_view(),  # pyright: ignore[reportGeneralTypeIssues]
+            name="schema",
+        ),
+        path(
+            "schema/swagger-ui",
+            SpectacularSwaggerView.as_view(url_name="api:schema"),  # pyright: ignore[reportGeneralTypeIssues]
+            name="swagger-ui",
+        ),
+    ))

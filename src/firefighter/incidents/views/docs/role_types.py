@@ -29,7 +29,8 @@ class RoleTypeDetailView(CustomDetailView[IncidentRoleType]):
 class RoleTypeRedirectView(View):
     @staticmethod
     def get(
-        request: HttpRequest, slug: str | None = None  # noqa: ARG004
+        request: HttpRequest,  # noqa: ARG004
+        slug: str | None = None,
     ) -> HttpResponseRedirect:
         incident_role_type = get_object_or_404(IncidentRoleType, slug=slug)
         return redirect(incident_role_type)
