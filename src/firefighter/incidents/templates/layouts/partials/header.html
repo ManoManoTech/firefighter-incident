@@ -34,22 +34,29 @@
     </a>
   </div>
   <div class="navbar-center hidden sm:flex">
-    <ul class="menu menu-horizontal p-0 text-sm rounded-lg md:gap-1">
+    <ul class="menu menu-horizontal text-sm rounded-lg md:gap-1">
       {% for item in menus.main %}
         {% if item.children %}
-          <li tabindex="0">
-            <a {% if item.boost %}hx-boost="true"{% else %}hx-boost="false"{% endif %} {% if item.url %}href="{{item.url}}"{% endif %} class="rounded-lg {% if item.selected %}active{% endif %}">
-              {{item.title}}
-              <svg class="fill-current" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z"/></svg>
-            </a>
-            <ul class="p-2 bg-base-200 gap-y-1 rounded-md">
-              {% for child in item.children%}
-                <li><a {% if item.boost %}hx-boost="true"{% else %}hx-boost="false"{% endif %} href="{{child.url}}" class="rounded-lg {% if child.selected %}active{% endif %}">{{child.title}}</a></li>
-              {% endfor %}
-            </ul>
+          <li>
+            <details>
+                <summary>
+                    <li class="rounded-lg {% if item.selected %}active{% endif %}">
+                        {{ item.title }}
+                    </li>
+                </summary>
+                <ul class="p-2 bg-base-200 rounded-md">
+                    {% for child in item.children %}
+                        <li>
+                          <a {% if item.boost %}hx-boost="true"{% else %}hx-boost="false"{% endif %} href="{{ child.url }}" class="whitespace-nowrap rounded-lg {% if child.selected %}active{% endif %}">
+                            {{ child.title }}
+                          </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </details>
           </li>
         {% else %}
-          <li><a href="{{item.url}}" class="rounded-lg {% if item.selected %}active{% endif %}">{{item.title}}</a></li>
+            <li><a href="{{ item.url }}" class="rounded-lg {% if item.selected %}active{% endif %}">{{ item.title }}</a></li>
         {% endif %}
       {% endfor %}
     </ul>

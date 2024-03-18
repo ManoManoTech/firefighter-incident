@@ -40,6 +40,13 @@ def log_out_url(_request: HttpRequest) -> str:
 def setup_navbar_menu() -> None:
     submenu_items = [
         MenuItem(
+            "Incidents List",
+            reverse(
+                "incidents:incident-list",
+            ),
+            boost=False,
+        ),
+        MenuItem(
             "Declare a critical incident",
             reverse("incidents:incident-create"),
             boost=False,
@@ -57,9 +64,7 @@ def setup_navbar_menu() -> None:
         Menus.main,
         MenuItem(
             "Incidents",
-            reverse(
-                "incidents:incident-list",
-            ),
+            None,
             icon="menu-app",
             children=submenu_items,
         ),
