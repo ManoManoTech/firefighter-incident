@@ -45,15 +45,18 @@
           <li>
             <details>
                 <summary>
-                    <li class="rounded-lg {% if item.selected %}active{% endif %}">
-                        {{ item.title }}
-                    </li>
+                    <div>
+                        <a {% if item.boost %}hx-boost="true"{% else %}hx-boost="false"{% endif %} {% if item.url %} href="{{item.url}}"{% endif %} class="rounded-lg {% if item.selected %}bg-indigo-700{% endif %}">
+                          {{item.title}}
+                        </a>
+                    </div>
                 </summary>
                 <ul class="p-2 bg-base-200 rounded-md">
                     {% for child in item.children %}
-                        <li>
-                          <a {% if item.boost %}hx-boost="true"{% else %}hx-boost="false"{% endif %} href="{{ child.url }}" class="whitespace-nowrap rounded-lg {% if child.selected %}active{% endif %}">
-                            {{ child.title }}
+                        <li class="py-1">
+                          <a {% if item.boost %}hx-boost="true"{% else %}hx-boost="false"{% endif %} href="{{ child.url }}"
+                             class="whitespace-nowrap rounded-lg {% if child.selected %}active{% endif %} {% if child.selected %}btn btn-primary{% endif %}">
+                              {{ child.title }}
                           </a>
                         </li>
                     {% endfor %}
