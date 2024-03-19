@@ -17,7 +17,7 @@ export default {
     plugins: [
         inject({
             htmx: 'htmx.org'
-         }),
+        }),
         nodeResolve({
             browser: true,
             jsnext: true,

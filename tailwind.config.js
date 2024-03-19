@@ -50,9 +50,7 @@ module.exports = {
         themes: [
             {
                 light: {
-                    ...require("daisyui/src/theming/themes")[
-                        "[light]"
-                    ],
+
                     "base-100": "#ffffff",
                     "base-200": "#F9F9F9",
                     "base-300": "#E5E6E6",
@@ -61,6 +59,7 @@ module.exports = {
             "wireframe",
             {
                 darkff: {
+                    ...require("daisyui/src/theming/themes")["dark"],
                     "color-scheme": "dark",
                     primary: "#4F46E5",
                     "primary-content": "#ffffff",
@@ -71,6 +70,7 @@ module.exports = {
                     neutral: "#1b1d1d",
                     "base-100": "#1b1d1d",
                     "base-200": "#212121",
+                    "base-300": "#2c2c2c",
                     "base-content": "#E5E5E5",
                     info: "#2563eb",
                     success: "#16a34a",
@@ -79,7 +79,6 @@ module.exports = {
                     error: "#dc2626",
                 },
             },
-
             "dark",
         ],
         base: true,
