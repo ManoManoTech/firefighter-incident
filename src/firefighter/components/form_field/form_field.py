@@ -15,7 +15,9 @@ logger = logging.getLogger(__name__)
 class FormField(component.Component):
     template_name = "form_field/form_field.html"
 
-    def get_context_data(self, field: forms.BoundField | forms.Field, *args: Any, **kwargs: Any) -> dict[str, Any]:
+    def get_context_data(
+        self, field: forms.BoundField | forms.Field, *args: Any, **kwargs: Any
+    ) -> dict[str, Any]:
         if field is None:
             raise ValueError("Field not set!")
 
