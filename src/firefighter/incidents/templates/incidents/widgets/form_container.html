@@ -62,7 +62,7 @@
   <h3 class="flow-root">
     <!-- Expand/collapse section button -->
     <div class="parent relative cursor-pointer" >
-      <div class=" py-3 w-full flex items-center text-sm px-2 dark:bg-neutral-700 rounded-lg " @click="expanded_form = ! expanded_form" aria-controls="filter-section-1" aria-expanded_form="false">
+      <div class="py-3 w-full flex items-center text-sm px-2 bg-base-200  rounded-lg " @click="expanded_form = ! expanded_form" aria-controls="filter-section-1" aria-expanded_form="false">
         <span class="flex items-center" >
 
           <!-- Heroicon name: solid/minus-sm -->
@@ -80,12 +80,11 @@
         {% comment %} <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 my-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
       <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
     </svg> {% endcomment %}
-        <input type="checkbox" class="checkbox-style" x-ref="checkAll" x-on:click="toggleAllCheckboxes(); " x-model="selectAll">
-
+        <input type="checkbox" class="checkbox checkbox-sm" x-ref="checkAll" x-on:click="toggleAllCheckboxes(); " x-model="selectAll">
       </div>
     </div>
   </h3>
   <div class="pl-2 mt-2" x-show="expanded_form" x-collapse>
-    {% render_field filter_form class=" checkbox-style sm:text-sm h-4 w-4 " %}
+    {% render_field filter_form class="checkbox sm:text-sm checkbox-sm" %}
   </div>
 </div>
