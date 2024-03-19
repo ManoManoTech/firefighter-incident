@@ -34,10 +34,10 @@
     "editor.defaultFormatter": "charliermarsh.ruff",
     "editor.formatOnSave": true,
     "editor.codeActionsOnSave": {
-        "source.organizeImports": true,
-        "source.organizeImports.ruff": true,
-        "source.organizeImports.isort": false,
-        "source.organizeImports.isort.check": false
+        "source.organizeImports": "explicit",
+        "source.organizeImports.ruff": "explicit",
+        "source.organizeImports.isort": "never",
+        "source.organizeImports.isort.check": "never"
     },
   },
   "python.analysis.stubPath": "stubs",
