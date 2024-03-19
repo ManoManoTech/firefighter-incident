@@ -44,7 +44,7 @@
         {% if item.children %}
           <li class="dropdown dropdown-hover dropdown-bottom ">
             <div tabindex="0" role="button" class="btn btn-ghost">
-              <a {% if item.boost %}hx-boost="true"{% else %}hx-boost="false"{% endif %} {% if item.url %} href="{{item.url}}"{% endif %} class=" {% if item.selected %}{% endif %}">
+              <a {% if item.boost %}hx-boost="true"{% else %}hx-boost="false"{% endif %} {% if item.url %} href="{{item.url}}"{% endif %} class="{% if item.selected %}{% endif %}">
                 {{item.title}}
               </a>
             </div>
