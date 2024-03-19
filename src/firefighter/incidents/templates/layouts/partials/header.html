@@ -8,7 +8,7 @@
       <label tabindex="0" class="btn btn-ghost sm:hidden">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16" /></svg>
       </label>
-      <ul tabindex="0" class="dropdown-content menu mt-3 z-50 p-2 shadow bg-base-200 dark:bg-black rounded-box w-52">
+      <ul tabindex="0" class="menu dropdown-content mt-3 z-[15] p-2 shadow bg-base-200 dark:bg-black rounded-box w-52">
         {% for item in menus.main %}
           {% if item.children %}
             <li tabindex="0">
@@ -18,9 +18,9 @@
                     {{item.title}}
                   </a>
                 </summary>
-                <ul class="p-2 rounded-md z-[15]">
+                <ul class="p-2 bg-base-200 rounded-md z-[15]">
                   {% for child in item.children%}
-                    <li><a {% if item.boost %}hx-boost="true"{% else %}hx-boost="false"{% endif %} href="{{child.url}}" class="dropdown dropdown-right {% if child.selected %}active{% endif %}">{{child.title}}{% if item.badge %}<span class="badge">{{child.badge}}</span>
+                    <li><a {% if item.boost %}hx-boost="true"{% else %}hx-boost="false"{% endif %} href="{{child.url}}" class="{% if child.selected %}active{% endif %}">{{child.title}}{% if item.badge %}<span class="badge">{{child.badge}}</span>
                     {% endif %}</a></li>
                   {% endfor %}
                 </ul>
@@ -42,29 +42,25 @@
     <ul class="menu menu-horizontal text-sm rounded-lg md:gap-1">
       {% for item in menus.main %}
         {% if item.children %}
-          <li>
-            <details>
-                <summary>
-                    <div>
-                        <a {% if item.boost %}hx-boost="true"{% else %}hx-boost="false"{% endif %} {% if item.url %} href="{{item.url}}"{% endif %} class="rounded-lg {% if item.selected %}bg-indigo-700{% endif %}">
-                          {{item.title}}
-                        </a>
-                    </div>
-                </summary>
-                <ul class="p-2 bg-base-200 rounded-md">
-                    {% for child in item.children %}
-                        <li class="py-1">
-                          <a {% if item.boost %}hx-boost="true"{% else %}hx-boost="false"{% endif %} href="{{ child.url }}"
-                             class="whitespace-nowrap rounded-lg {% if child.selected %}active{% endif %} {% if child.selected %}btn btn-primary{% endif %}">
-                              {{ child.title }}
-                          </a>
-                        </li>
-                    {% endfor %}
-                </ul>
-            </details>
+          <li class="dropdown dropdown-hover dropdown-bottom ">
+            <div tabindex="0" role="button" class="btn btn-ghost">
+              <a {% if item.boost %}hx-boost="true"{% else %}hx-boost="false"{% endif %} {% if item.url %} href="{{item.url}}"{% endif %} class=" {% if item.selected %}{% endif %}">
+                {{item.title}}
+              </a>
+            </div>
+            <ul  tabindex="0" class="dropdown-content p-2 bg-base-200 rounded-md z-[15] menu  ml-0 p-2 shadow bg-base-100 rounded-box w-52">
+              {% for child in item.children %}
+                <li class="py-1">
+                  <a {% if item.boost %}hx-boost="true"{% else %}hx-boost="false"{% endif %} href="{{ child.url }}"
+                     class="whitespace-nowrap  {% if child.selected %}active {% endif %}">
+                    {{ child.title }}
+                  </a>
+                </li>
+              {% endfor %}
+            </ul>
           </li>
         {% else %}
-            <li><a href="{{ item.url }}" class="rounded-lg {% if item.selected %}active{% endif %}">{{ item.title }}</a></li>
+          <li><a href="{{ item.url }}" class="btn btn-ghost{% if item.selected %}active{% endif %}">{{ item.title }}</a></li>
         {% endif %}
       {% endfor %}
     </ul>
