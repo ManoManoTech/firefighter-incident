@@ -6,11 +6,6 @@
   <div x-ref="modal1_button"
        @click="open = true">
     {% slot "modal_enabler" %}
-      <button
-        type="button"
-        class="w-full bg-primary px-4 py-2 border border-transparent rounded-md flex items-center justify-center text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:w-auto sm:inline-flex">
-        Open Modal
-      </button>
     {% endslot %}
   </div>
   <div

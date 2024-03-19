@@ -3,7 +3,7 @@
     {% csrf_token %}
     {% component "form" form=form %}
       {% fill "form_footer" %}
-        <div class=" text-right sm:pl-6 py-8">
+        <div class="text-right sm:pl-6 py-8">
           <button type="submit" action="{% url 'pagerduty:oncall_trigger' %}" class="btn btn-primary">
             Trigger on-call
           </button>
