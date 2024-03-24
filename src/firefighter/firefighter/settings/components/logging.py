@@ -27,7 +27,7 @@ class AccessLogFilter(Filter):
             return False
         if raw_uri.startswith("/static/") and record.levelno <= 20:
             return False
-        if raw_uri == "/favicon.ico" and record.levelno <= 30:
+        if raw_uri == "/favicon.ico" and record.levelno <= 30:  # noqa: SIM103
             return False
         return True
 

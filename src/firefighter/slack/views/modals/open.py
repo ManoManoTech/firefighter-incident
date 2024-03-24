@@ -303,9 +303,7 @@ class OpenModal(SlackModal):
         if not done:
             return False
         form = SelectImpactForm(open_incident_context.get("impact_form_data"))
-        if not form.is_valid():
-            return False
-        return True
+        return form.is_valid()
 
     def _check_details_form(
         self,

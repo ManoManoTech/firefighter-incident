@@ -114,13 +114,9 @@ class APITokenAdmin(TokenAdmin):
     def has_change_permission(
         self,
         request: HttpRequest,  # type: ignore[override]
-        obj: APITokenProxy | None = None,
+        _obj: APITokenProxy | None = None,
     ) -> bool:
-        if obj is None:
-            return request.user.has_perm("api.can_edit_any")
-        if request.user.has_perm("api.can_edit_any"):
-            return True
-        return False
+        return request.user.has_perm("api.can_edit_any")
 
 
 # Remove the default TokenAdmin created by DRF and replace it with our custom one.

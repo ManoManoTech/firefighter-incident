@@ -52,8 +52,7 @@ class ComponentManager(models.Manager["Component"]):
         field_name: str = "mtbf",
     ) -> QuerySet[Component]:
         """Returns a queryset of components with an additional `mtbf` field."""
-        if date_to > datetime.now(tz=TZ):
-            date_to = datetime.now(tz=TZ)
+        date_to = min(date_to, datetime.now(tz=TZ))
 
         date_interval = date_to - date_from
         queryset = queryset or self.get_queryset()
