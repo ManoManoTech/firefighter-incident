@@ -100,6 +100,7 @@ jobs:
 
       - name: Publish Python artifacts on Github artifacts
         uses: actions/upload-artifact@v4
+        if: ${{ matrix.python-version == env.PYTHON_VERSION }}
         with:
           name: python-artifacts
           path: |
