@@ -4,7 +4,7 @@
   x-data="{ open: false }"
   {% if autoplay == True %}x-init="$nextTick(() => { open = true })"{% endif %} >
   <div x-ref="modal1_button"
-    @click="open = true">
+       @click="open = true">
     {% slot "modal_enabler" %}
       <button
         type="button"
@@ -26,25 +26,25 @@
     style="display: none;"
     class="z-50 fixed top-0 left-0 w-full h-screen flex justify-center items-center" >
     <div aria-hidden="true"
-      class="absolute top-0 left-0 w-full h-screen bg-black transition duration-300 z-[90]"
-      :class="{ 'opacity-60': open, 'opacity-0': !open }"
-      x-show="open"
-      style="display: none;"
-      x-transition:leave="delay-150"></div>
+         class="absolute top-0 left-0 w-full h-screen bg-black transition duration-300 z-[90]"
+         :class="{ 'opacity-60': open, 'opacity-0': !open }"
+         x-show="open"
+         style="display: none;"
+         x-transition:leave="delay-150"></div>
     <div data-modal-document
-      @click.stop=""
-      @keydown.escape="open = false"
-      x-show="open"
-      x-trap="open"
-      x-trap.noscroll="open"
-      x-trap.inert="open"
-      x-transition:enter="transition ease-out duration-300"
-      x-transition:enter-start="transform scale-50 opacity-0"
-      x-transition:enter-end="transform scale-100 opacity-100"
-      x-transition:leave="transition ease-out duration-200"
-      x-transition:leave-start="transform scale-100 opacity-100"
-      x-transition:leave-end="transform scale-50 opacity-0"
-      class="flex flex-col rounded-lg shadow-lg overflow-hidden bg-white dark:bg-neutral-900 dark:text-neutral-100 m-w-4/5 xl:m-w-3/5  min-h-4/5 z-[100]" style="max-height: 95vh;">
+         @click.stop=""
+         @keydown.escape="open = false"
+         x-show="open"
+         x-trap="open"
+         x-trap.noscroll="open"
+         x-trap.inert="open"
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="transform scale-50 opacity-0"
+         x-transition:enter-end="transform scale-100 opacity-100"
+         x-transition:leave="transition ease-out duration-200"
+         x-transition:leave-start="transform scale-100 opacity-100"
+         x-transition:leave-end="transform scale-50 opacity-0"
+         class="flex flex-col rounded-lg shadow-lg overflow-hidden bg-white dark:bg-neutral-900 dark:text-neutral-100 m-w-4/5 xl:m-w-3/5  min-h-4/5 z-[100]" style="max-height: 95vh;">
       <div class="p-6 border-b border-neutral-300 dark:border-neutral-700 flex justify-between">
         <h1 id="modal1_label" class="font-semibold" x-ref="modal1_label"> {% slot "modal_header" %} {% if title %}{{ title }}{% endif %}{% endslot %}</h1>
 

@@ -84,7 +84,7 @@
 
             {% for page_nb in page_range|default_if_none:page_obj.paginator.get_elided_page_range   %}
               <a href="{% querystring "page"=page_nb %}" {%if page_obj.number == page_nb%}aria-current="Goto page" {% endif %}
-                class="dark:bg-neutral-900 dark:hover:bg-neutral-700 bg-white border-neutral-300 text-neutral-500 hover:bg-neutral-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium {%if page_obj.number == page_nb%}z-10 bg-indigo-50 dark:border-indigo-500 dark:text-indigo-300 border-indigo-500 text-primary {% else %}dark:border-neutral-700 dark:text-neutral-200 {% endif %}">
+                 class="dark:bg-neutral-900 dark:hover:bg-neutral-700 bg-white border-neutral-300 text-neutral-500 hover:bg-neutral-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium {%if page_obj.number == page_nb%}z-10 bg-indigo-50 dark:border-indigo-500 dark:text-indigo-300 border-indigo-500 text-primary {% else %}dark:border-neutral-700 dark:text-neutral-200 {% endif %}">
                 {{ page_nb }}
               </a>
             {% endfor %}

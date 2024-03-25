@@ -28,3 +28,10 @@ repos:
     rev: v1.35.1
     hooks:
       - id: yamllint
+
+  - repo: https://github.com/rtts/djhtml
+    rev: '3.0.6'
+    hooks:
+      - id: djhtml
+      # djcss disabled for now
+      - id: djjs
