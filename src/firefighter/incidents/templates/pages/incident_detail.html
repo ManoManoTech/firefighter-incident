@@ -114,27 +114,27 @@
                   <li class="py-4 flex items-center">
                     <div class="h-10 w-10 flex shrink-0">
                       <svg class="fill-current h-8 w-8 m-auto " xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-                        viewBox="68 68 135 135" >
+                           viewBox="68 68 135 135" >
                         <g>
                           <g>
                             <path d="M99.4,151.2c0,7.1-5.8,12.9-12.9,12.9s-12.9-5.8-12.9-12.9c0-7.1,5.8-12.9,12.9-12.9h12.9V151.2z"/>
                             <path d="M105.9,151.2c0-7.1,5.8-12.9,12.9-12.9s12.9,5.8,12.9,12.9v32.3c0,7.1-5.8,12.9-12.9,12.9s-12.9-5.8-12.9-12.9
-                              C105.9,183.5,105.9,151.2,105.9,151.2z"/>
+                                     C105.9,183.5,105.9,151.2,105.9,151.2z"/>
                           </g>
                           <g>
                             <path d="M118.8,99.4c-7.1,0-12.9-5.8-12.9-12.9s5.8-12.9,12.9-12.9s12.9,5.8,12.9,12.9v12.9H118.8z"/>
                             <path d="M118.8,105.9c7.1,0,12.9,5.8,12.9,12.9s-5.8,12.9-12.9,12.9H86.5c-7.1,0-12.9-5.8-12.9-12.9s5.8-12.9,12.9-12.9
-                              C86.5,105.9,118.8,105.9,118.8,105.9z"/>
+                                     C86.5,105.9,118.8,105.9,118.8,105.9z"/>
                           </g>
                           <g>
                             <path d="M170.6,118.8c0-7.1,5.8-12.9,12.9-12.9c7.1,0,12.9,5.8,12.9,12.9s-5.8,12.9-12.9,12.9h-12.9V118.8z"/>
                             <path d="M164.1,118.8c0,7.1-5.8,12.9-12.9,12.9c-7.1,0-12.9-5.8-12.9-12.9V86.5c0-7.1,5.8-12.9,12.9-12.9
-                              c7.1,0,12.9,5.8,12.9,12.9V118.8z"/>
+                                     c7.1,0,12.9,5.8,12.9,12.9V118.8z"/>
                           </g>
                           <g>
                             <path d="M151.2,170.6c7.1,0,12.9,5.8,12.9,12.9c0,7.1-5.8,12.9-12.9,12.9c-7.1,0-12.9-5.8-12.9-12.9v-12.9H151.2z"/>
                             <path d="M151.2,164.1c-7.1,0-12.9-5.8-12.9-12.9c0-7.1,5.8-12.9,12.9-12.9h32.3c7.1,0,12.9,5.8,12.9,12.9
-                              c0,7.1-5.8,12.9-12.9,12.9H151.2z"/>
+                                     c0,7.1-5.8,12.9-12.9,12.9H151.2z"/>
                           </g>
                         </g>
                       </svg> </div>
@@ -158,15 +158,15 @@
                   </li>
                 {% endif %}
                 {% if incident.jira_ticket %}
-                <li class="py-4 flex items-center">
-                  <div class="h-10 w-10 flex shrink-0">
-                    <svg viewBox="0 0 24 24"  class="h-8 w-8 m-auto" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M11.571 11.513H0a5.218 5.218 0 0 0 5.232 5.215h2.13v2.057A5.215 5.215 0 0 0 12.575 24V12.518a1.005 1.005 0 0 0-1.005-1.005zm5.723-5.756H5.736a5.215 5.215 0 0 0 5.215 5.214h2.129v2.058a5.218 5.218 0 0 0 5.215 5.214V6.758a1.001 1.001 0 0 0-1.001-1.001zM23.013 0H11.455a5.215 5.215 0 0 0 5.215 5.215h2.129v2.057A5.215 5.215 0 0 0 24 12.483V1.005A1.001 1.001 0 0 0 23.013 0Z"/></svg>
-                  </div>
-                  <div class="ml-3">
-                    <p class="text-sm font-medium text-neutral-900 dark:text-neutral-100">Jira Incident Ticket</p>
-                    <p class="text-sm text-neutral-500 dark:text-neutral-300"> <a href="{{ incident.jira_ticket.url }}" target="_blank" rel="noopener noreferrer" class="underline" >{{incident.jira_ticket.key |truncatechars:70}}</a></p>
-                  </div>
-                </li>
+                  <li class="py-4 flex items-center">
+                    <div class="h-10 w-10 flex shrink-0">
+                      <svg viewBox="0 0 24 24"  class="h-8 w-8 m-auto" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M11.571 11.513H0a5.218 5.218 0 0 0 5.232 5.215h2.13v2.057A5.215 5.215 0 0 0 12.575 24V12.518a1.005 1.005 0 0 0-1.005-1.005zm5.723-5.756H5.736a5.215 5.215 0 0 0 5.215 5.214h2.129v2.058a5.218 5.218 0 0 0 5.215 5.214V6.758a1.001 1.001 0 0 0-1.001-1.001zM23.013 0H11.455a5.215 5.215 0 0 0 5.215 5.215h2.129v2.057A5.215 5.215 0 0 0 24 12.483V1.005A1.001 1.001 0 0 0 23.013 0Z"/></svg>
+                    </div>
+                    <div class="ml-3">
+                      <p class="text-sm font-medium text-neutral-900 dark:text-neutral-100">Jira Incident Ticket</p>
+                      <p class="text-sm text-neutral-500 dark:text-neutral-300"> <a href="{{ incident.jira_ticket.url }}" target="_blank" rel="noopener noreferrer" class="underline" >{{incident.jira_ticket.key |truncatechars:70}}</a></p>
+                    </div>
+                  </li>
                 {% endif %}
                 {% for pagerduty_incident in incident.pagerduty_incident_set.all %}
                   <li class="py-4 flex items-center">
@@ -198,14 +198,14 @@
         {% component "card" card_title="Impacts" id="incident-impacts" %}
           {% fill "card_content" %}
             {% for impact in incident.impacts.all|dictsort:"impact_level.value" %}
-                <ul role="list" class="divide-y divide-gray-100">
-                  <li class="py-1">
-                    <div class="flex items-center gap-x-3">
-                      <span class="h-full w-5">{{impact.impact_type.emoji}}</span>
-                      <h3 class="flex-auto truncate text-sm font-semibold leading-6 text-neutral-900 dark:text-neutral-100">    {{impact.impact_type}}</h3>
-                     </div>
-                    <p class="mt-2 truncate text-sm text-neutral-500 dark:text-neutral-300">{{impact.impact_level.value_label}}: {{impact.impact_level.name}}</p>
-                  </li>
+              <ul role="list" class="divide-y divide-gray-100">
+                <li class="py-1">
+                  <div class="flex items-center gap-x-3">
+                    <span class="h-full w-5">{{impact.impact_type.emoji}}</span>
+                    <h3 class="flex-auto truncate text-sm font-semibold leading-6 text-neutral-900 dark:text-neutral-100">    {{impact.impact_type}}</h3>
+                  </div>
+                  <p class="mt-2 truncate text-sm text-neutral-500 dark:text-neutral-300">{{impact.impact_level.value_label}}: {{impact.impact_level.name}}</p>
+                </li>
               </ul>
             {% endfor %}
           {% endfill %}

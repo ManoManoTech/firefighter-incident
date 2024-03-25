@@ -5,7 +5,7 @@
   {% block page_main_action_hidden %}
     {% comment %} Hidden button to act as default button to filter. Selected because first in DOM {% endcomment %}
     <button type="submit" form="main-filter" method="get" hidden="true"
-      formaction="{{ request.path }}" class="hidden" aria-hidden="true" tabindex="-1"></button>
+            formaction="{{ request.path }}" class="hidden" aria-hidden="true" tabindex="-1"></button>
   {% endblock%}
   <div class="mx-auto shadow-md border-b border-neutral-300 dark:border-neutral-700 flex px-4">
     <div class="py-4 flex justify-start items-center">

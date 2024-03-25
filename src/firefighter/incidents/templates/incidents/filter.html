@@ -1,14 +1,14 @@
 {% load widget_tweaks %}
 
 <form method="get" class="w-64 flex-shrink-0 h-auto" id="main-filter"
-  hx-trigger="input from:[type=checkbox],input delay:300ms"
-  hx-boost="true"
-  hx-ext="debug"
-  hx-get="{{ request.path }}"
-  hx-target="#filtered-container"
-  hx-swap="outerHTML"
-  hx-push-url="true"
-  hx-indicator=".progress">
+      hx-trigger="input from:[type=checkbox],input delay:300ms"
+      hx-boost="true"
+      hx-ext="debug"
+      hx-get="{{ request.path }}"
+      hx-target="#filtered-container"
+      hx-swap="outerHTML"
+      hx-push-url="true"
+      hx-indicator=".progress">
   <div class="shadow overflow-hidden h-full">
     <div class="px-4 py-5 bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-100 sm:p-6 flex flex-col gap-5 h-full">
       {% for filter_field in filter_order %}

@@ -132,7 +132,8 @@ lint = {composite= ["lint-ruff", "lint-pylint", "lint-mypy"], help="Run all lint
 # Format
 fmt-black = {cmd="ruff format .", help="Run black-like ruff formatter"}
 fmt-ruff =  {cmd="ruff check . --fix --select I001", help="Run isort-like import sorting with ruff"}
-fmt = {composite= ["fmt-black", "fmt-ruff"], help="Run all formatters (black, isort-like ruff)"}
+fmt-dj = {cmd="djhtml src", help="Run HTML formatting with djhtml"}
+fmt = {composite= ["fmt-black", "fmt-ruff", "fmt-dj"], help="Run all formatters (black, isort-like ruff, djhtml)"}
 # Tests
 tests = {cmd="pytest", help="Run the tests"}
 tests-cov ={cmd= "pytest --junitxml=pytest-report.xml --cov --cov-report xml:pytest-coverage.xml --cov-fail-under=0 --cov-report html", help="Run the tests with coverage, and generate reports"}

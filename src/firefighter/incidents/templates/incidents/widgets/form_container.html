@@ -1,63 +1,63 @@
 {% load widget_tweaks %}
 
 <div class="col-span-1 select-none" x-data="{
-  expanded_form: true,
-  selectAll : false,
-  selected_{{ filter_form.html_name }}: [],
-  toggleAllCheckboxes() {
-  this.selectAll = !this.selectAll
-  this.selected_{{ filter_form.html_name }} = [];
+                                            expanded_form: true,
+                                            selectAll : false,
+                                            selected_{{ filter_form.html_name }}: [],
+                                            toggleAllCheckboxes() {
+                                            this.selectAll = !this.selectAll
+                                            this.selected_{{ filter_form.html_name }} = [];
 
-  checkboxes = document.querySelectorAll('input[name={{ filter_form.html_name }}]');
-  [...checkboxes].map((el) => {
-  el.checked = this.selectAll;
-  (this.selectAll) ? this.selected_{{ filter_form.html_name }}.push(el.value) : this.selected_{{ filter_form.html_name }} = [];
-  })
+                                            checkboxes = document.querySelectorAll('input[name={{ filter_form.html_name }}]');
+                                            [...checkboxes].map((el) => {
+                                            el.checked = this.selectAll;
+                                            (this.selectAll) ? this.selected_{{ filter_form.html_name }}.push(el.value) : this.selected_{{ filter_form.html_name }} = [];
+                                            })
 
-  this.updateSelectAllState()
-  },
-  updateSelectAllStateGroup() {
-  this.updateSelectAllState()
-  },
-  updateSelectAllState() {
+                                            this.updateSelectAllState()
+                                            },
+                                            updateSelectAllStateGroup() {
+                                            this.updateSelectAllState()
+                                            },
+                                            updateSelectAllState() {
 
-  checkboxes_group = document.querySelectorAll('input[group-select]');
-  checkboxes = document.querySelectorAll('input[name={{ filter_form.html_name }}]');
-  this.selected_{{ filter_form.html_name }}= [];
-  [...checkboxes].map((el) => {
-  if (el.checked) {
+                                            checkboxes_group = document.querySelectorAll('input[group-select]');
+                                            checkboxes = document.querySelectorAll('input[name={{ filter_form.html_name }}]');
+                                            this.selected_{{ filter_form.html_name }}= [];
+                                            [...checkboxes].map((el) => {
+                                            if (el.checked) {
 
-  this.selected_{{ filter_form.html_name }}.push(el.value);
-  }
-  })
+                                            this.selected_{{ filter_form.html_name }}.push(el.value);
+                                            }
+                                            })
 
 
-  if (this.selected_{{ filter_form.html_name }}.length == 0) {
-  this.selectAll = false;
-  $refs.checkAll.indeterminate = false;
-  [...checkboxes_group].map((el) => {
-  el.checked = false
-  })
-  } else if (this.selected_{{ filter_form.html_name }}.length < checkboxes.length) {
+                                            if (this.selected_{{ filter_form.html_name }}.length == 0) {
+                                            this.selectAll = false;
+                                            $refs.checkAll.indeterminate = false;
+                                            [...checkboxes_group].map((el) => {
+                                            el.checked = false
+                                            })
+                                            } else if (this.selected_{{ filter_form.html_name }}.length < checkboxes.length) {
 
-  this.selectAll = false;
-  $refs.checkAll.indeterminate = true;
+                                            this.selectAll = false;
+                                            $refs.checkAll.indeterminate = true;
 
-  } else {
-  this.selectAll = true;
-  $refs.checkAll.indeterminate = false;
+                                            } else {
+                                            this.selectAll = true;
+                                            $refs.checkAll.indeterminate = false;
 
-  [...checkboxes_group].map((el) => {
-  el.checked = true
-  })
-  }
+                                            [...checkboxes_group].map((el) => {
+                                            el.checked = true
+                                            })
+                                            }
 
-  this.selectAll = (this.selected_{{ filter_form.html_name }}.length == checkboxes.length) ? true : false;
+                                            this.selectAll = (this.selected_{{ filter_form.html_name }}.length == checkboxes.length) ? true : false;
 
-  checkboxes_group = document.querySelectorAll('input[group-select]');
-  }
-  }"
-  x-init="updateSelectAllStateGroup();"
+                                            checkboxes_group = document.querySelectorAll('input[group-select]');
+                                            }
+                                            }"
+     x-init="updateSelectAllStateGroup();"
 >
   <h3 class="flow-root">
     <!-- Expand/collapse section button -->

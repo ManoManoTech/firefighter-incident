@@ -24,8 +24,8 @@
       {% for format in formats %}
         <li>
           <button method="get" formtarget="_blank" type="submit"
-            name="fields" value="{{format.fields}}"
-            form="main-filter" formaction="{{format.url}}" class="" role="menuitem" tabindex="-1">{{format.label}}</button>
+                  name="fields" value="{{format.fields}}"
+                  form="main-filter" formaction="{{format.url}}" class="" role="menuitem" tabindex="-1">{{format.label}}</button>
         </li>
       {% endfor %}
     </ul>

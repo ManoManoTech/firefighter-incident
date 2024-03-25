@@ -4,56 +4,56 @@
 
       {% if group is not null %}
         <div class="mt-1"
-          x-data="{
-            expanded_{{ group.order }}: true,
-            selectAll_{{ group.order }} : false,
-            selected_{{ group.order }}: [],
-            toggleAllCheckboxesGroup() {
-            this.selectAll_{{ group.order }} = !this.selectAll_{{ group.order }}
-            this.selected_{{ group.order }} = [];
+             x-data="{
+                     expanded_{{ group.order }}: true,
+                     selectAll_{{ group.order }} : false,
+                     selected_{{ group.order }}: [],
+                     toggleAllCheckboxesGroup() {
+                     this.selectAll_{{ group.order }} = !this.selectAll_{{ group.order }}
+                     this.selected_{{ group.order }} = [];
 
-            checkboxes = document.querySelectorAll('input[group=\'{{ group.order }}\']');
-            [...checkboxes].map((el) => {
-            el.checked = this.selectAll_{{ group.order }};
-            (this.selectAll_{{ group.order }}) ? this.selected_{{ group.order }}.push(el.value) : this.selected_{{ group.order }} = [];
-            })
+                     checkboxes = document.querySelectorAll('input[group=\'{{ group.order }}\']');
+                     [...checkboxes].map((el) => {
+                     el.checked = this.selectAll_{{ group.order }};
+                     (this.selectAll_{{ group.order }}) ? this.selected_{{ group.order }}.push(el.value) : this.selected_{{ group.order }} = [];
+                     })
 
-            this.updateSelectAllStateGroup()
+                     this.updateSelectAllStateGroup()
 
-            },
-            updateSelectAllStateGroup() {
-            checkboxes = document.querySelectorAll('input[group=\'{{ group.order }}\']');
-            this.selected_{{ group.order }}= [];
-            [...checkboxes].map((el) => {
-            if (el.checked) {
+                     },
+                     updateSelectAllStateGroup() {
+                     checkboxes = document.querySelectorAll('input[group=\'{{ group.order }}\']');
+                     this.selected_{{ group.order }}= [];
+                     [...checkboxes].map((el) => {
+                     if (el.checked) {
 
-            this.selected_{{ group.order }}.push(el.value);
-            }
-            })
+                     this.selected_{{ group.order }}.push(el.value);
+                     }
+                     })
 
 
-            if (this.selected_{{ group.order }}.length == 0) {
-            this.selectAll_{{ group.order }} = false;
-            $refs.checkAll_{{ group.order }}.indeterminate = false;
+                     if (this.selected_{{ group.order }}.length == 0) {
+                     this.selectAll_{{ group.order }} = false;
+                     $refs.checkAll_{{ group.order }}.indeterminate = false;
 
-            } else if (this.selected_{{ group.order }}.length < checkboxes.length) {
-            this.selectAll_{{ group.order }} = false;
-            $refs.checkAll_{{ group.order }}.indeterminate = true;
-            } else {
-            this.selectAll_{{ group.order }} = true;
-            $refs.checkAll_{{ group.order }}.indeterminate = false;
-            }
+                     } else if (this.selected_{{ group.order }}.length < checkboxes.length) {
+                     this.selectAll_{{ group.order }} = false;
+                     $refs.checkAll_{{ group.order }}.indeterminate = true;
+                     } else {
+                     this.selectAll_{{ group.order }} = true;
+                     $refs.checkAll_{{ group.order }}.indeterminate = false;
+                     }
 
-            this.selectAll = (this.selected_{{ group.order }}.length == checkboxes.length) ? true : false;
+                     this.selectAll = (this.selected_{{ group.order }}.length == checkboxes.length) ? true : false;
 
-            this.updateSelectAllState()
-            },
+                     this.updateSelectAllState()
+                     },
 
-            get showSelected_{{ group.order }}(){
-            return (this.selected_{{ group.order }}.length > 0);
-            }
-            }"
-          x-init="updateSelectAllStateGroup();"
+                     get showSelected_{{ group.order }}(){
+                     return (this.selected_{{ group.order }}.length > 0);
+                     }
+                     }"
+             x-init="updateSelectAllStateGroup();"
         >
 
           {% comment %} <label class="font-semibold ">{{ group }}</label> {% endcomment %}
