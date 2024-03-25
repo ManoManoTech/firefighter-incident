@@ -50,8 +50,8 @@ module.exports = {
         themes: [
             {
                 light: {
-                    ...require("daisyui/src/colors/themes")[
-                        "[data-theme=light]"
+                    ...require("daisyui/src/theming/themes")[
+                        "[light]"
                     ],
                     "base-100": "#ffffff",
                     "base-200": "#F9F9F9",
