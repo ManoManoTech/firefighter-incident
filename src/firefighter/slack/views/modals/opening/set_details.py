@@ -49,7 +49,9 @@ class SetIncidentDetails(ModalForm[T], Generic[T]):
             self.push_action = f"push_{self.id}"
         super().__init__()
 
-    def build_modal_fn(self, open_incident_context: OpeningData | None = None, **kwargs: Any) -> View:  # type: ignore
+    def build_modal_fn(
+        self, open_incident_context: OpeningData | None = None, **kwargs: Any
+    ) -> View:
         open_incident_context = open_incident_context or {}
         details_form_data: dict[str, Any] = (
             open_incident_context.get("details_form_data") or {}

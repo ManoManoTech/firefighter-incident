@@ -210,15 +210,13 @@ class SlackMessageIncidentDeclaredAnnouncement(SlackMessageSurface):
     def get_blocks(self) -> list[Block]:
         fields = [
             f"{self.incident.priority.emoji} *Priority:* {self.incident.priority.name}",
-            f":package: *Component:* { self.incident.component.name }",
-            f":speaking_head_in_silhouette: *Opened by:* { user_slack_handle_or_name(self.incident.created_by)}",
-            f":calendar: *Created at:* { date_time(self.incident.created_at) }",
-            f"{SLACK_APP_EMOJI} <{ self.incident.status_page_url + '?utm_medium=FireFighter+Slack&utm_source=Slack+Message&utm_campaign=Announcement+Message+In+Channel' }|*{APP_DISPLAY_NAME} Status Page*>",
+            f":package: *Component:* {self.incident.component.name}",
+            f":speaking_head_in_silhouette: *Opened by:* {user_slack_handle_or_name(self.incident.created_by)}",
+            f":calendar: *Created at:* {date_time(self.incident.created_at)}",
+            f"{SLACK_APP_EMOJI} <{self.incident.status_page_url + '?utm_medium=FireFighter+Slack&utm_source=Slack+Message&utm_campaign=Announcement+Message+In+Channel'}|*{APP_DISPLAY_NAME} Status Page*>",
         ]
         if hasattr(self.incident, "jira_ticket") and self.incident.jira_ticket:
-            fields.append(
-                f":jira_new: <{ self.incident.jira_ticket.url }|*Jira ticket*>"
-            )
+            fields.append(f":jira_new: <{self.incident.jira_ticket.url}|*Jira ticket*>")
         blocks: list[Block] = [
             SectionBlock(
                 text=f"{self.incident.priority.emoji} {self.incident.priority.name} - A new incident has been declared:"
@@ -272,21 +270,19 @@ class SlackMessageIncidentDeclaredAnnouncementGeneral(SlackMessageSurface):
     def get_blocks(self) -> list[Block]:
         fields = [
             f"{self.incident.priority.emoji} *Priority:* {self.incident.priority.name}",
-            f":package: *Component:* { self.incident.component.name }",
-            f"{SLACK_APP_EMOJI} <{ self.incident.status_page_url + '?utm_medium=FireFighter+Slack&utm_source=Slack+Message&utm_campaign=Announcement+Message+General'  }|*{APP_DISPLAY_NAME} Status Page*>",
-            f":speaking_head_in_silhouette: *Opened by:* { user_slack_handle_or_name(self.incident.created_by)}",
-            f":calendar: *Created at:* { date_time(self.incident.created_at) }",
+            f":package: *Component:* {self.incident.component.name}",
+            f"{SLACK_APP_EMOJI} <{self.incident.status_page_url + '?utm_medium=FireFighter+Slack&utm_source=Slack+Message&utm_campaign=Announcement+Message+General'}|*{APP_DISPLAY_NAME} Status Page*>",
+            f":speaking_head_in_silhouette: *Opened by:* {user_slack_handle_or_name(self.incident.created_by)}",
+            f":calendar: *Created at:* {date_time(self.incident.created_at)}",
         ]
         if hasattr(self.incident, "jira_ticket") and self.incident.jira_ticket:
-            fields.append(
-                f":jira_new: <{ self.incident.jira_ticket.url }|*Jira ticket*>"
-            )
+            fields.append(f":jira_new: <{self.incident.jira_ticket.url}|*Jira ticket*>")
         blocks: list[Block] = [
             SectionBlock(
                 text=f"{self.incident.priority.emoji} {self.incident.priority.name} - A new incident has been declared in #{self.incident.slack_channel_name}."
             ),
             SectionBlock(
-                text=f"*{shorten(self.incident.title, 2995, placeholder='...', )}*"
+                text=f"*{shorten(self.incident.title, 2995, placeholder='...')}*"
             ),
             slack_block_quote(self.incident.description),
             DividerBlock(),
@@ -331,7 +327,7 @@ class SlackMessageIncidentRolesUpdated(SlackMessageSurface):
             f"{role.role_type.name}: {user_slack_handle_or_name(role.user if hasattr(role, 'user') else None)}"
             for role in self._new_roles
         ]
-        return f"Roles updated. {roles_text}. Updated by: {user_slack_handle_or_name(self.incident_update.created_by if self.incident_update else self.incident.created_by) }."
+        return f"Roles updated. {roles_text}. Updated by: {user_slack_handle_or_name(self.incident_update.created_by if self.incident_update else self.incident.created_by)}."
 
     def get_metadata(self) -> Metadata:
         return Metadata(
@@ -357,33 +353,31 @@ class SlackMessageIncidentRolesUpdated(SlackMessageSurface):
             blocks.append(SectionBlock(text="_Roles updated._"))
 
         fields = [
-            f"{role.role_type.emoji} *{role.role_type.name}:*\n{ user_slack_handle_or_name(role.user if hasattr(role, 'user') else None)  }"
+            f"{role.role_type.emoji} *{role.role_type.name}:*\n{user_slack_handle_or_name(role.user if hasattr(role, 'user') else None)}"
             for role in self._new_roles
         ]
         if len(fields) == 0:
             fields.append("_No changes detected._")
 
-        blocks.extend(
-            [
-                DividerBlock(),
-                SectionBlock(
-                    block_id="message_role_update",
-                    fields=fields,
-                    accessory=ButtonElement(
-                        text="Update",
-                        value=str(self.incident.id),
-                        action_id=UpdateRolesModal.open_action,
-                    ),
+        blocks.extend([
+            DividerBlock(),
+            SectionBlock(
+                block_id="message_role_update",
+                fields=fields,
+                accessory=ButtonElement(
+                    text="Update",
+                    value=str(self.incident.id),
+                    action_id=UpdateRolesModal.open_action,
                 ),
-            ]
-        )
+            ),
+        ])
         if not self.first_update:
             blocks.append(
                 ContextBlock(
                     elements=[
                         TextObject(
                             type="mrkdwn",
-                            text=f":speaking_head_in_silhouette: *Updated by:* {  user_slack_handle_or_name(self.incident_update.created_by if self.incident_update else self.incident.created_by) }",
+                            text=f":speaking_head_in_silhouette: *Updated by:* {user_slack_handle_or_name(self.incident_update.created_by if self.incident_update else self.incident.created_by)}",
                         )
                     ]
                 )
@@ -474,7 +468,7 @@ class SlackMessageIncidentStatusUpdated(SlackMessageSurface):
             if self.incident_update.priority:
                 fields.append(
                     MarkdownTextObject(
-                        text=f":rotating_light: *Priority:* { self.incident.priority.emoji } { self.incident.priority.name }"
+                        text=f":rotating_light: *Priority:* {self.incident.priority.emoji} {self.incident.priority.name}"
                     )
                 )
             if self.incident_update.component:
@@ -485,24 +479,22 @@ class SlackMessageIncidentStatusUpdated(SlackMessageSurface):
                 )
 
         if len(fields) > 0:
-            blocks.extend(
-                [
-                    DividerBlock(),
-                    SectionBlock(
-                        block_id="message_status_update",
-                        fields=fields,
-                        accessory=(
-                            ButtonElement(
-                                text="Update",
-                                value=str(self.incident.id),
-                                action_id=UpdateStatusModal.open_action,
-                            )
-                            if self.in_channel
-                            else None
-                        ),
+            blocks.extend([
+                DividerBlock(),
+                SectionBlock(
+                    block_id="message_status_update",
+                    fields=fields,
+                    accessory=(
+                        ButtonElement(
+                            text="Update",
+                            value=str(self.incident.id),
+                            action_id=UpdateStatusModal.open_action,
+                        )
+                        if self.in_channel
+                        else None
                     ),
-                ]
-            )
+                ),
+            ])
 
         if self.incident_update.created_by:
             blocks.append(
@@ -546,7 +538,7 @@ class SlackMessageIncidentPostMortemCreated(SlackMessageSurface):
         super().__init__()
 
     def get_text(self) -> str:
-        return f"📔 The post-mortem has been created, you can edit it here: { self.incident.postmortem_for.page_url }."
+        return f"📔 The post-mortem has been created, you can edit it here: {self.incident.postmortem_for.page_url}."
 
     def get_blocks(self) -> list[Block]:
         return [SectionBlock(text=self.get_text())]
@@ -611,9 +603,9 @@ class SlackMessageIncidentUpdateReminder(SlackMessageSurface):
 
     def get_blocks(self) -> list[Block]:
         if self.incident.priority.value >= 4:
-            text = f"It is a {self.incident.priority.name} incident with no update for { self.time_delta_fmt}. You may want to update this incident."
+            text = f"It is a {self.incident.priority.name} incident with no update for {self.time_delta_fmt}. You may want to update this incident."
         else:
-            text = f"It is a { self.incident.priority.name} incident and a lot of people, customers and employees, are probably impacted. This incident has no update for { self.time_delta_fmt}. You need to update this incident to broadcast information in #tech-incidents."
+            text = f"It is a {self.incident.priority.name} incident and a lot of people, customers and employees, are probably impacted. This incident has no update for {self.time_delta_fmt}. You need to update this incident to broadcast information in #tech-incidents."
 
         return [
             HeaderBlock(
@@ -679,7 +671,7 @@ class SlackMessageDeployWarning(SlackMessageSurface):
         blocks = [
             HeaderBlock(
                 text=PlainTextObject(
-                    text=f":warning: Deploy warning {'(Mitigated) ' if self.incident.status  == IncidentStatus.FIXED else '' }:warning:",
+                    text=f":warning: Deploy warning {'(Mitigated) ' if self.incident.status == IncidentStatus.FIXED else ''}:warning:",
                     emoji=True,
                 )
             ),
@@ -691,15 +683,13 @@ class SlackMessageDeployWarning(SlackMessageSurface):
         ]
 
         if self.incident.status >= IncidentStatus.FIXED:
-            blocks.extend(
-                [
-                    SectionBlock(
-                        text=MarkdownTextObject(
-                            text=f":white_check_mark: *UPDATE*: Incident #{self.incident.conversation.name} has been mitigated, you can resume your deployments."
-                        )
+            blocks.extend([
+                SectionBlock(
+                    text=MarkdownTextObject(
+                        text=f":white_check_mark: *UPDATE*: Incident #{self.incident.conversation.name} has been mitigated, you can resume your deployments."
                     )
-                ]
-            )
+                )
+            ])
         return blocks
 
     def get_text(self) -> str:

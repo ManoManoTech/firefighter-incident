@@ -100,13 +100,13 @@ Check all available commands using `pdm run --list`.
 
 ### Formatting
 
-We use `black`. You can run `pdm run fmt` or `black .` in the project root to format every file.
+We use `ruff`. You can run `pdm run fmt` or `ruff format .` in the project root to format every file.
 
 ```shell
 pdm run fmt
 ```
 
-> This is the equivalent of running `black .` in the project root.
+> This is the equivalent of running `ruff format .` in the project root.
 
 Import sorting managed by `ruff`.
 

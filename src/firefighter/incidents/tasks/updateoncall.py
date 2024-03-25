@@ -44,9 +44,7 @@ def update_oncall_views(*_args: Any, **_kwargs: Any) -> bool:
         logger.error("Can't update on-call users without PagerDuty enabled.")
         return False
 
-    oncall_users_grouped_per_ep = (
-        PagerDutyOncall.objects.get_current_oncalls_per_escalation_policy_name_first_responder()
-    )
+    oncall_users_grouped_per_ep = PagerDutyOncall.objects.get_current_oncalls_per_escalation_policy_name_first_responder()
 
     # Check that we have Slack ID and handle for these users, if needed
     if settings.ENABLE_SLACK:

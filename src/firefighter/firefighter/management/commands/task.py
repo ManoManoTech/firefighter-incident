@@ -31,5 +31,5 @@ class Command(BaseCommand):
             self.stdout.write(self.style.SUCCESS(f"Successfully ran task {task_name}"))
         else:
             sep = "\n - "
-            err_msg = f'Task "{task_name}" does not exist. Available tasks are:\n - { sep.join(sorted(tasks))}'
+            err_msg = f'Task "{task_name}" does not exist. Available tasks are:\n - {sep.join(sorted(tasks))}'
             raise CommandError(err_msg)

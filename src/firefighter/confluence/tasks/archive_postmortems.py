@@ -3,7 +3,11 @@ from __future__ import annotations
 import logging
 
 from celery import shared_task
-from django.utils.timezone import datetime, get_current_timezone, timedelta  # type: ignore[attr-defined]
+from django.utils.timezone import (  # type: ignore[attr-defined]
+    datetime,
+    get_current_timezone,
+    timedelta,
+)
 
 from firefighter.confluence.service import confluence_service
 from firefighter.confluence.utils import (

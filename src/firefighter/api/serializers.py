@@ -76,7 +76,9 @@ class GroupedModelSerializerOpenAPI(OpenApiSerializerExtension):  # type: ignore
         return {"type": "object", "additionalProperties": child_schema_ref}
 
     def get_name(
-        self, auto_schema: AutoSchema, direction: Direction  # noqa: ARG002
+        self,
+        auto_schema: AutoSchema,  # noqa: ARG002
+        direction: Direction,  # noqa: ARG002
     ) -> str:
         return f"GroupedModelSerializer_{self.target.child_serializer.__name__}"
 

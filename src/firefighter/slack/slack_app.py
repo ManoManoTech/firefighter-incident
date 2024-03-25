@@ -60,7 +60,15 @@ class SlackApp(App):
             if isinstance(single_team_authorization, SingleTeamAuthorization):
                 res = single_team_authorization.auth_test_result
                 if settings.FF_SLACK_SKIP_CHECKS:
-                    cls.details = cls.instance.details = SlackAppDetails(url="", team="", user="", team_id="", user_id="", bot_id="", is_enterprise_install=False)  # type: ignore
+                    cls.details = cls.instance.details = SlackAppDetails(  # type: ignore
+                        url="",
+                        team="",
+                        user="",
+                        team_id="",
+                        user_id="",
+                        bot_id="",
+                        is_enterprise_install=False,
+                    )
                     return cls.instance  # type: ignore[return-value]
                 if res is None:
                     logger.critical("Could not verify Slack credentials! Exiting.")
@@ -71,7 +79,15 @@ class SlackApp(App):
                         res,
                     )
                     raise RuntimeError("Could not verify Slack credentials! Exiting.")
-                cls.details = cls.instance.details = SlackAppDetails(url=res["url"], team=res["team"], user=res["user"], team_id=res["team_id"], user_id=res["user_id"], bot_id=res["bot_id"], is_enterprise_install=res["is_enterprise_install"])  # type: ignore
+                cls.details = cls.instance.details = SlackAppDetails(  # type: ignore
+                    url=res["url"],
+                    team=res["team"],
+                    user=res["user"],
+                    team_id=res["team_id"],
+                    user_id=res["user_id"],
+                    bot_id=res["bot_id"],
+                    is_enterprise_install=res["is_enterprise_install"],
+                )
                 logger.debug("SlackAppDetails: %s", cls.details)
         return cls.instance  # type: ignore[return-value]
 

@@ -34,29 +34,25 @@ class DowngradeWorkflowModal(
     def build_modal_fn(self, incident: Incident, **kwargs: Any) -> View:
         blocks: list[Block] = []
         if hasattr(incident, "jira_ticket") and incident.jira_ticket:
-            jira_txt = f":jira_new: <{ incident.jira_ticket.url }|*Jira ticket*>"
+            jira_txt = f":jira_new: <{incident.jira_ticket.url}|*Jira ticket*>"
         else:
             jira_txt = "No Jira ticket!"
             # XXX Return error (weird state)
         if incident.status == IncidentStatus.CLOSED:
-            blocks.extend(
-                (
-                    SectionBlock(text=f"Incident #{incident.id} is already closed."),
-                    SectionBlock(text=jira_txt),
-                )
-            )
+            blocks.extend((
+                SectionBlock(text=f"Incident #{incident.id} is already closed."),
+                SectionBlock(text=jira_txt),
+            ))
             submit = None
         else:
-            blocks.extend(
-                (
-                    SectionBlock(
-                        text=f"By clicking this button you will close incident #{incident.id}."
-                    ),
-                    SectionBlock(
-                        text=f"It will:\n- Archive the Slack channel #{incident.conversation.name}\n- Ignore the critical incident\n- Keep it as a normal incident, with its {jira_txt}."
-                    ),
-                )
-            )
+            blocks.extend((
+                SectionBlock(
+                    text=f"By clicking this button you will close incident #{incident.id}."
+                ),
+                SectionBlock(
+                    text=f"It will:\n- Archive the Slack channel #{incident.conversation.name}\n- Ignore the critical incident\n- Keep it as a normal incident, with its {jira_txt}."
+                ),
+            ))
             submit = "Mark as regular incident"[:24]
 
         return View(

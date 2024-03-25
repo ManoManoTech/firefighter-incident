@@ -60,7 +60,7 @@ class IncidentUpdateKeyEventsForm(forms.Form):
                     self.initial[field_name] = key_event.data.event_ts
                 except IndexError:
                     self.initial[field_name] = ""
-            logger.debug(f"Initial {field_name} was set to { self.initial[field_name]}")
+            logger.debug(f"Initial {field_name} was set to {self.initial[field_name]}")
 
     def clean(self) -> dict[str, Any] | None:
         if self.user is None:

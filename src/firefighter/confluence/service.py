@@ -325,7 +325,7 @@ if settings.CONFLUENCE_MOCK_CREATE_POSTMORTEM:
         "status": "current",
         "title": title,
         "_links": {
-            "editui": "/pages/resumedraft.action?draftId={fake_id}",
+            "editui": f"/pages/resumedraft.action?draftId={fake_id}",
             "webui": f"/spaces/{settings.CONFLUENCE_POSTMORTEM_SPACE}/pages/{fake_id}",
             "context": "/wiki",
             "self": f"{settings.CONFLUENCE_URL}/content/{fake_id}",

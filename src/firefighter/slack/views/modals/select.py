@@ -54,7 +54,7 @@ class SelectModal(SlackModal):
         incident_options = [
             Option(
                 value=str(inc.id),
-                label=f"{inc.id}: { inc.title }"[:73],
+                label=f"{inc.id}: {inc.title}"[:73],
             )
             for inc in active_incidents
         ]

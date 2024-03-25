@@ -35,11 +35,11 @@ def trigger_oncall(
     service = oncall_service
     if incident_id:
         incident = Incident.objects.get(id=incident_id)
-        details = f"""Triggered from {APP_DISPLAY_NAME} incident #{incident.id} {f'by {triggered_by.full_name}' if triggered_by else ''}
+        details = f"""Triggered from {APP_DISPLAY_NAME} incident #{incident.id} {f"by {triggered_by.full_name}" if triggered_by else ""}
 Priority: {incident.priority}
 Environment: {incident.environment}
 Component: {incident.component}
-FireFighter page: {incident.status_page_url + '?utm_medium=FireFighter+PagerDuty&utm_source=PagerDuty+Incident&utm_campaign=OnCall+Message+In+Channel' }
+FireFighter page: {incident.status_page_url + "?utm_medium=FireFighter+PagerDuty&utm_source=PagerDuty+Incident&utm_campaign=OnCall+Message+In+Channel"}
 Slack channel #{incident.slack_channel_name}: {incident.slack_channel_url}
 
 Incident Details:
@@ -65,13 +65,11 @@ Incident Details:
     # TODO Error handling
 
     if not 200 <= res.status_code < 300:
-        logger.error(
-            {
-                "message": "Error when calling PagerDuty API",
-                "request": res.request.__dict__.get("body"),
-                "response": res.json(),
-            }
-        )
+        logger.error({
+            "message": "Error when calling PagerDuty API",
+            "request": res.request.__dict__.get("body"),
+            "response": res.json(),
+        })
         err_msg = f"Error when calling PagerDuty API. {res.json()}"
         raise ValueError(err_msg)
 

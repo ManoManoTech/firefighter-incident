@@ -36,7 +36,7 @@
     <div class="mt-8 max-w-3xl mx-auto grid grid-cols-1 gap-6 sm:px-6 lg:max-w-7xl lg:grid-flow-col-dense lg:grid-cols-12">
       <div class="space-y-6 lg:col-start-1 lg:col-span-7">
 
-        {% component_block "card" card_title="Incident Information" id="incident-information" %}
+        {% component "card" card_title="Incident Information" id="incident-information" %}
           {% fill "card_content" %}
             <dl class="grid grid-cols-1 gap-x-4 gap-y-8 sm:grid-cols-2">
               <div class="sm:col-span-2">
@@ -67,14 +67,14 @@
 
             </dl>
           {% endfill %}
-        {% endcomponent_block%}
-        {% component_block "card" card_title="Timeline" id="incident-timeline" %}
+        {% endcomponent %}
+        {% component "card" card_title="Timeline" id="incident-timeline" %}
           {% fill "card_content" %}
             {% include "../layouts/partials/incident_timeline.html" with incident_updates=incident.incidentupdate_set.all %}
           {% endfill %}
-        {% endcomponent_block %}
+        {% endcomponent %}
 
-        {% component_block "card" card_title="Metrics" id="incident-metrics" %}
+        {% component "card" card_title="Metrics" id="incident-metrics" %}
           {% fill "card_title" %}
             <div class="flex flex-row justify-between">
               <h2 id="{{ id }}-title" class="text-lg leading-6 font-medium text-neutral-900 dark:text-neutral-50">{{ card_title }}</h2>
@@ -95,12 +95,12 @@
               {% include "../layouts/partials/incident_metrics.html" with metrics=incident.metrics.all %}
             </dl>
           {% endfill %}
-        {% endcomponent_block%}
+        {% endcomponent %}
 
 
       </div>
       <div class="lg:col-start-8 lg:col-span-5 space-y-6 ">
-        {% component_block "card" card_title="External resources" id="incident-integrations" %}
+        {% component "card" card_title="External resources" id="incident-integrations" %}
           {% fill "card_content" %}
             {% if not incident.conversation and not incident.postmortem_for  and pagerduty_incident_set.count == 0%}
               <div class="px-4 py-5 sm:px-6 col-span-2">
@@ -183,9 +183,9 @@
             {% endif %}
 
           {% endfill %}
-        {% endcomponent_block%}
+        {% endcomponent %}
 
-        {% component_block "card" card_title="Key participants" id="incident-contacts" %}
+        {% component "card" card_title="Key participants" id="incident-contacts" %}
           {% fill "card_content" %}
             {% for role in incident.roles_set.all %}
               <span class="ff-tooltip">
@@ -194,8 +194,8 @@
               </span>
             {% endfor %}
           {% endfill %}
-        {% endcomponent_block%}
-        {% component_block "card" card_title="Impacts" id="incident-impacts" %}
+        {% endcomponent %}
+        {% component "card" card_title="Impacts" id="incident-impacts" %}
           {% fill "card_content" %}
             {% for impact in incident.impacts.all|dictsort:"impact_level.value" %}
                 <ul role="list" class="divide-y divide-gray-100">
@@ -209,10 +209,10 @@
               </ul>
             {% endfor %}
           {% endfill %}
-        {% endcomponent_block%}
+        {% endcomponent %}
         {% if incident.incident_cost_set.count %}
           {% load humanize %}
-          {% component_block "card" card_title="Cost Estimates" id="incident-cost-estimates" %}
+          {% component "card" card_title="Cost Estimates" id="incident-cost-estimates" %}
             {% fill "card_content" %}
               <ul class="mx-6 list-disc">
                 {% for cost in incident.incident_cost_set.all%}
@@ -220,7 +220,7 @@
                 {% endfor %}
               </ul>
             {% endfill %}
-          {% endcomponent_block%}
+          {% endcomponent %}
         {% endif %}
       </div>
     </div>

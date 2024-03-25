@@ -89,14 +89,12 @@ if settings.ENV == "dev":
         )
 
 if settings.FF_DEBUG_ERROR_PAGES:
-    firefighter_urlpatterns[0].extend(
-        (
-            path("err/403/", views.permission_denied_view),
-            path("err/404/", views.not_found_view),
-            path("err/400/", views.bad_request_view),
-            path("err/500/", views.server_error_view),
-        )
-    )
+    firefighter_urlpatterns[0].extend((
+        path("err/403/", views.permission_denied_view),
+        path("err/404/", views.not_found_view),
+        path("err/400/", views.bad_request_view),
+        path("err/500/", views.server_error_view),
+    ))
 
 if apps.is_installed("firefighter.slack") and (
     "runserver" in sys.argv

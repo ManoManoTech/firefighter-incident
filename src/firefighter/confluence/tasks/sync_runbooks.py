@@ -77,11 +77,11 @@ def sync_runbooks() -> None:
         return
     if len(missing_runbooks) > 4:
         logger.warning(
-            f"Too many runbooks not found. FireFighter will not delete them automatically, as it might be an API or implementation error. List: {[f'{x.page_id }/ {x.name}' for x in missing_runbooks]}"
+            f"Too many runbooks not found. FireFighter will not delete them automatically, as it might be an API or implementation error. List: {[f'{x.page_id}/ {x.name}' for x in missing_runbooks]}"
         )
         return
     logger.warning(
-        f"Missing runbooks that will be deleted: {[f'{x.page_id }/ {x.name}' for x in missing_runbooks]}"
+        f"Missing runbooks that will be deleted: {[f'{x.page_id}/ {x.name}' for x in missing_runbooks]}"
     )
     # Delete all runbooks that are not in the folders anymore
     missing_runbooks.delete()

@@ -59,7 +59,6 @@ def test_grouped_model_choice_field_invalid() -> None:
     assert "component" in form.errors
 
 
-@pytest.mark.django_db()
 @pytest.fixture(scope="module")
 def test_grouped_model_choice_field_grouping(  # noqa: PT004
     components: list[Component],

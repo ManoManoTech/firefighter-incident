@@ -87,7 +87,9 @@ class IncidentMembershipInline(admin.StackedInline[IncidentMembership, Incident]
     verbose_name = _("Incident Member")
 
     def has_change_permission(
-        self, request: HttpRequest, obj: Any | None = None  # noqa: ARG002
+        self,
+        request: HttpRequest,  # noqa: ARG002
+        obj: Any | None = None,  # noqa: ARG002
     ) -> bool:
         return False
 
@@ -579,21 +581,21 @@ class UserAdmin(BaseUserAdmin):
         return obj.incidents_created_by.count()
 
     def get_fieldsets(
-        self, request: HttpRequest, obj: User | None = None  # type: ignore[override]
+        self,
+        request: HttpRequest,
+        obj: User | None = None,  # type: ignore[override]
     ) -> _FieldsetSpec:
         fieldsets = list(super().get_fieldsets(request, obj))  # type: ignore[arg-type]
-        fieldsets.append(
-            (
-                _("User statistics"),
-                {
-                    "fields": (
-                        "commander_count",
-                        "communication_lead_count",
-                        "incidents_opened_count",
-                    )
-                },
-            )
-        )
+        fieldsets.append((
+            _("User statistics"),
+            {
+                "fields": (
+                    "commander_count",
+                    "communication_lead_count",
+                    "incidents_opened_count",
+                )
+            },
+        ))
         return fieldsets
 
 

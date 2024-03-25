@@ -76,9 +76,7 @@ def is_during_office_hours(dt: datetime) -> bool:
     Args:
         dt (datetime): datetime with TZ info.
     """
-    if (9 <= dt.hour <= 17) and (dt.weekday() < 5):
-        return True
-    return False
+    return (9 <= dt.hour <= 17) and (dt.weekday() < 5)
 
 
 # Typing for custom HttpRequest classes

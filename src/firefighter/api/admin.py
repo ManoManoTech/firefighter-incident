@@ -29,7 +29,12 @@ class APITokenAdmin(TokenAdmin):
     Add supports for custom permissions.
     """
 
-    def formfield_for_foreignkey(self, db_field: ForeignKey[Any, Any], request: HttpRequest, **kwargs: Any) -> ModelChoiceField:  # type: ignore[override]
+    def formfield_for_foreignkey(
+        self,
+        db_field: ForeignKey[Any, Any],
+        request: HttpRequest,  # type: ignore[override]
+        **kwargs: Any,
+    ) -> ModelChoiceField:
         """Show all or only current user depending on permissions."""
         if db_field.name == "user":
             if request.user.has_perm("api.can_add_any") or request.user.has_perm(
@@ -40,7 +45,13 @@ class APITokenAdmin(TokenAdmin):
                 kwargs["queryset"] = User.objects.filter(id=request.user.id)
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
-    def get_form(self, request: HttpRequest, obj: APITokenProxy | None = None, change: bool = False, **kwargs: Any) -> type[ModelForm[APITokenProxy]]:  # type: ignore[override] # noqa: FBT001, FBT002
+    def get_form(
+        self,
+        request: HttpRequest,  # type: ignore[override]
+        obj: APITokenProxy | None = None,
+        change: bool = False,  # noqa: FBT001, FBT002
+        **kwargs: Any,
+    ) -> type[ModelForm[APITokenProxy]]:
         """Prefill the form with the current user."""
         form: type[ModelForm[APITokenProxy]] = super().get_form(
             request, obj, change, **kwargs
@@ -65,7 +76,11 @@ class APITokenAdmin(TokenAdmin):
             )
         return super().get_sortable_by(request)
 
-    def has_view_permission(self, request: HttpRequest, obj: APITokenProxy | None = None) -> bool:  # type: ignore[override]
+    def has_view_permission(
+        self,
+        request: HttpRequest,  # type: ignore[override]
+        obj: APITokenProxy | None = None,
+    ) -> bool:
         if obj is None:
             return request.user.has_perm("api.can_view_any") or request.user.has_perm(
                 "api.can_view_own"
@@ -81,7 +96,11 @@ class APITokenAdmin(TokenAdmin):
             "api.can_add_own"
         )
 
-    def has_delete_permission(self, request: HttpRequest, obj: APITokenProxy | None = None) -> bool:  # type: ignore[override]
+    def has_delete_permission(
+        self,
+        request: HttpRequest,  # type: ignore[override]
+        obj: APITokenProxy | None = None,
+    ) -> bool:
         if obj is None:
             return request.user.has_perm("api.can_delete_any") or request.user.has_perm(
                 "api.can_delete_own"
@@ -92,12 +111,12 @@ class APITokenAdmin(TokenAdmin):
             return bool(obj.user == request.user)
         return False
 
-    def has_change_permission(self, request: HttpRequest, obj: APITokenProxy | None = None) -> bool:  # type: ignore[override]
-        if obj is None:
-            return request.user.has_perm("api.can_edit_any")
-        if request.user.has_perm("api.can_edit_any"):
-            return True
-        return False
+    def has_change_permission(
+        self,
+        request: HttpRequest,  # type: ignore[override]
+        _obj: APITokenProxy | None = None,
+    ) -> bool:
+        return request.user.has_perm("api.can_edit_any")
 
 
 # Remove the default TokenAdmin created by DRF and replace it with our custom one.

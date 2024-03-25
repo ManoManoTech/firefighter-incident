@@ -66,7 +66,7 @@ class StatusModal(
 :rotating_light: *Priority*: {incident.priority.name}
 :world_map: *Environment*: {incident.environment.value}
 :stopwatch: *Duration*: {incident_duration}
-:globe_with_meridians: *Status page*: <{incident.status_page_url + '?utm_medium=FireFighter+Slack&utm_source=Slack+Modal&utm_campaign=Status+Modal+Link'}|Link>"""
+:globe_with_meridians: *Status page*: <{incident.status_page_url + "?utm_medium=FireFighter+Slack&utm_source=Slack+Modal&utm_campaign=Status+Modal+Link"}|Link>"""
             ),
         ]
         incident_roles_text: list[str] = [
@@ -76,29 +76,25 @@ class StatusModal(
         incident_roles_text.append(
             f":speaking_head_in_silhouette: *Reporter*: {user_slack_handle_or_name(incident.created_by)}"
         )
-        blocks.extend(
-            (
-                HeaderBlock(text=":busts_in_silhouette:  Key participants"),
-                SectionBlock(text="\n".join(incident_roles_text)),
-            )
-        )
+        blocks.extend((
+            HeaderBlock(text=":busts_in_silhouette:  Key participants"),
+            SectionBlock(text="\n".join(incident_roles_text)),
+        ))
         if last_update.message:
             last_update_time = naturaltime(last_update.created_at)
 
-            blocks.extend(
-                (
-                    HeaderBlock(text=f":newspaper:  Last update ({last_update_time})"),
-                    ContextBlock(
-                        elements=[
-                            TextObject(
-                                type="mrkdwn",
-                                text=f"Posted at {date_time(last_update.created_at)} by {user_slack_handle_or_name(last_update.created_by)} ",
-                            )
-                        ]
-                    ),
-                    slack_block_quote(last_update.message),
-                )
-            )
+            blocks.extend((
+                HeaderBlock(text=f":newspaper:  Last update ({last_update_time})"),
+                ContextBlock(
+                    elements=[
+                        TextObject(
+                            type="mrkdwn",
+                            text=f"Posted at {date_time(last_update.created_at)} by {user_slack_handle_or_name(last_update.created_by)} ",
+                        )
+                    ]
+                ),
+                slack_block_quote(last_update.message),
+            ))
 
         return View(
             type="modal",

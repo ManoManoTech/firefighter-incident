@@ -128,7 +128,7 @@ class ConversationManager(Generic[T], models.Manager[T]):
 
     @staticmethod
     def parse_slack_response(
-        slack_conv: dict[str, Any] | SlackResponse
+        slack_conv: dict[str, Any] | SlackResponse,
     ) -> tuple[str, str, ConversationType, ConversationStatus]:
         status = (
             ConversationStatus.OPENED

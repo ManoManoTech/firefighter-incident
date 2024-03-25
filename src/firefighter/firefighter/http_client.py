@@ -28,12 +28,10 @@ class HttpClient:
         self._client = httpx.Client(**(client_kwargs or {}))
         self._client.timeout = httpx.Timeout(15, read=20)
         if FF_HTTP_CLIENT_ADDITIONAL_HEADERS:
-            self._client.headers = httpx.Headers(
-                {
-                    **self._client.headers,
-                    **FF_HTTP_CLIENT_ADDITIONAL_HEADERS,
-                }
-            )
+            self._client.headers = httpx.Headers({
+                **self._client.headers,
+                **FF_HTTP_CLIENT_ADDITIONAL_HEADERS,
+            })
 
     def call(self, method: str, url: str, **kwargs: Any) -> httpx.Response:
         res: httpx.Response = getattr(self._client, method)(url, **kwargs)

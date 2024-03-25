@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  PYTHON_VERSION: "3.11"
+  PYTHON_VERSION: "3.12"
 
 jobs:
   python_build:
@@ -29,7 +29,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.11"]
+        python-version: ["3.11", "3.12"]
         os: ["ubuntu-latest"]
     services:
       # Label used to access the service container
@@ -100,6 +100,7 @@ jobs:
 
       - name: Publish Python artifacts on Github artifacts
         uses: actions/upload-artifact@v4
+        if: ${{ matrix.python-version == env.PYTHON_VERSION }}
         with:
           name: python-artifacts
           path: |

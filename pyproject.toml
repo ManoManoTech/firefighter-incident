@@ -59,6 +59,7 @@ classifiers = [
   "Intended Audience :: Information Technology",
   "License :: OSI Approved :: MIT License",
   "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3 :: Only",
 ]
@@ -126,11 +127,11 @@ _cd-lint-pylint = {composite= ["_copy_env", "lint-pylint-strict"], help="Run pyl
 lint-pylint = {cmd="pylint --django-settings-module=firefighter.firefighter.settings src", help="Run pylint"}
 lint-pylint-strict = {shell="pylint --django-settings-module=firefighter.settings src --fail-under=0.99", help="Run pylint, fail if score is under 9.99"}
 lint-mypy = {shell= "mypy", help="Run mypy type checker", env={"ENABLE_PAGERDUTY"="True", "ENABLE_CONFLUENCE"="True"}}
-lint-ruff = {cmd="ruff .", help="Run ruff linter"}
+lint-ruff = {cmd="ruff check .", help="Run ruff linter"}
 lint = {composite= ["lint-ruff", "lint-pylint", "lint-mypy"], help="Run all linters (ruff, pylint, mypy)."}
 # Format
-fmt-black = {cmd="black .", help="Run black formatter"}
-fmt-ruff =  {cmd="ruff . --fix --select I001", help="Run isort-like import sorting with ruff"}
+fmt-black = {cmd="ruff format .", help="Run black-like ruff formatter"}
+fmt-ruff =  {cmd="ruff check . --fix --select I001", help="Run isort-like import sorting with ruff"}
 fmt = {composite= ["fmt-black", "fmt-ruff"], help="Run all formatters (black, isort-like ruff)"}
 # Tests
 tests = {cmd="pytest", help="Run the tests"}
@@ -171,7 +172,6 @@ dev = [
     "django-migration-linter>=5.0.0",
     "ipdb>=0.13.13",
     "ipython>=8.18.1",
-    "black>=23.11.0",
     "djhtml>=3.0.6",
     "django-extensions>=3.2.3",
     "pyparsing>=3.1.1",
@@ -180,7 +180,7 @@ dev = [
     "werkzeug>=3.0.1",
     "django-watchfiles>=0.1.0",
     "ruff>=0.1.6",
-    "mypy-to-codeclimate>=0.0.3"
+    "mypy-to-codeclimate>=0.0.3",
 ]
 tests = [
     "pytest>=7.4.3",
@@ -211,6 +211,7 @@ docs = [
     "mkdocs-redirects>=1.2.1",
     "mkdocs-minify-plugin>=0.7.2",
     "jinja2>=3.1.2",
+    "black>=24.2.0",
 ]
 types = [
     "django-stubs>=4.2.6",
@@ -236,9 +237,6 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 name = "pypi"
 include_packages = ["*"]
-
-[tool.black]
-line-length = 88
 
 ## Linting (Pylint + pylint-django)
 
@@ -481,8 +479,12 @@ exclude_lines = [
 
 [tool.ruff]
 preview = true
-line-length = 140
+line-length = 88
 respect-gitignore = true
+[tool.ruff.format]
+docstring-code-format = true
+
+[tool.ruff.lint]
 select = ["ALL"]
 
 ignore = [
@@ -531,7 +533,7 @@ external = [
   "WPS440",
 ]
 
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint.per-file-ignores]
 "**/components/**/*.py" = ["INP"]
 "__init__.py" = ["F401"]
 "_version.py" = ["Q000", "UP", "I"]
@@ -544,36 +546,37 @@ external = [
 "**/main.py" = ["INP"]
 "**/gunicorn.conf.py" = ["INP"]
 "scripts/*" = ["INP"]
+"*.pyi" = ["E301", "E302", "E305"]
 
-[tool.ruff.mccabe]
+[tool.ruff.lint.mccabe]
 max-complexity = 15
 
-[tool.ruff.pydocstyle]
+[tool.ruff.lint.pydocstyle]
 convention = "google"
 
-[tool.ruff.pycodestyle]
+[tool.ruff.lint.pycodestyle]
 ignore-overlong-task-comments = true
 
-[tool.ruff.isort]
+[tool.ruff.lint.isort]
 required-imports = ["from __future__ import annotations"]
 known-first-party = ["firefighter", ]
 
-[tool.ruff.flake8-annotations]
+[tool.ruff.lint.flake8-annotations]
 allow-star-arg-any = true
 mypy-init-return = true
 suppress-dummy-args = true
 
-[tool.ruff.flake8-tidy-imports]
+[tool.ruff.lint.flake8-tidy-imports]
 ban-relative-imports = "all"
 
-[tool.ruff.flake8-type-checking]
+[tool.ruff.lint.flake8-type-checking]
 strict = false
 exempt-modules = ["typing", "typing.Any","typing_extensions"]
 
-[tool.ruff.flake8-unused-arguments]
+[tool.ruff.lint.flake8-unused-arguments]
 ignore-variadic-names = true
 
-[tool.ruff.pylint]
+[tool.ruff.lint.pylint]
 max-args = 10
 max-branches = 15
 max-returns = 10

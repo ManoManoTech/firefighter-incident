@@ -120,8 +120,9 @@ def test_parse_date_frame_2() -> None:
 
 def test_parse_date_frame_3() -> None:
     date_range = get_date_range_from_special_date("2022/Q1 - May 2022")
-    beg, end = datetime(2022, 1, 3, 0, 0, tzinfo=TZ), datetime(
-        2022, 5, 31, 23, 59, 59, 999999, tzinfo=TZ
+    beg, end = (
+        datetime(2022, 1, 3, 0, 0, tzinfo=TZ),
+        datetime(2022, 5, 31, 23, 59, 59, 999999, tzinfo=TZ),
     )
 
     assert date_range[0] == beg

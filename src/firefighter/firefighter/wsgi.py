@@ -18,6 +18,6 @@ import os
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "firefighter.firefighter.settings")
 # pylint: disable=wrong-import-position
 # noinspection PyPep8
-from django.core.wsgi import get_wsgi_application  # noqa: E402
+from django.core.wsgi import get_wsgi_application
 
 application = get_wsgi_application()

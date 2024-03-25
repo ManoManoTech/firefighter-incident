@@ -1,4 +1,4 @@
-FROM python:3.11-slim-bullseye
+FROM python:3.12-slim-bullseye
 
 LABEL maintainer="tech-pe-pulse-team@manomano.com"
 LABEL org.opencontainers.image.title="ManoManoTech"

@@ -66,14 +66,12 @@ class OnCallModal(IncidentSelectableModalMixin, SlackModal):
                 f"- <{s.service.web_url}|{s.service.summary}>: <{s.web_url}|_{s.summary}_>\n"
                 for s in previous_pd_incidents
             ]
-            blocks.extend(
-                (
-                    DividerBlock(),
-                    SectionBlock(
-                        text=f":warning: There are already some on-call lines that have been triggered and can not be triggered again:\n {''.join(already_existing_text)}"
-                    ),
-                )
-            )
+            blocks.extend((
+                DividerBlock(),
+                SectionBlock(
+                    text=f":warning: There are already some on-call lines that have been triggered and can not be triggered again:\n {''.join(already_existing_text)}"
+                ),
+            ))
 
         return View(
             type="modal",

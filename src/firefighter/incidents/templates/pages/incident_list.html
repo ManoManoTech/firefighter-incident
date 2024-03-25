@@ -12,7 +12,7 @@
 
 {% block page_actions %}
   {{ block.super }}
-  {% component "export_button" base_url="api:incidents-list" %}
+  {% component "export_button" base_url="api:incidents-list" %}{% endcomponent %}
   <button method="get" type="submit"
     form="main-filter" formaction="{% url "incidents:incident-statistics" %}"
     class="ml-4 btn btn-primary btn-md gap-2">

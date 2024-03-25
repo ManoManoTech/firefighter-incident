@@ -95,9 +95,10 @@ def update_home_tab(
     ]
 
     if len(shown_incidents) == 0:
-        blocks.extend(
-            (DividerBlock(), SectionBlock(text="No active incidents! Enjoy :tada:"))
-        )
+        blocks.extend((
+            DividerBlock(),
+            SectionBlock(text="No active incidents! Enjoy :tada:"),
+        ))
     else:
         for incident in shown_incidents:
             blocks.extend(_home_incident_element(incident))
@@ -138,7 +139,7 @@ def _home_incident_element(
         DividerBlock(),
         SectionBlock(
             block_id=f"app_home_incident_element_{incident.id}",
-            text=f"*#{incident.slack_channel_name if incident.slack_channel_name is not None else incident.id}* - *{incident.title}* - {SLACK_APP_EMOJI} <{incident.status_page_url + '?utm_medium=FireFighter+Slack&utm_source=Slack+Home&utm_campaign=Slack+Home+Link'  }| Status Page>",
+            text=f"*#{incident.slack_channel_name if incident.slack_channel_name is not None else incident.id}* - *{incident.title}* - {SLACK_APP_EMOJI} <{incident.status_page_url + '?utm_medium=FireFighter+Slack&utm_source=Slack+Home&utm_campaign=Slack+Home+Link'}| Status Page>",
             fields=[
                 MarkdownTextObject(
                     text=f":information_source: *Status:* {incident.status.label}"
@@ -150,7 +151,7 @@ def _home_incident_element(
                     text=f":package: *Component:* {incident.component.group.name} - {incident.component.name}"
                 ),
                 MarkdownTextObject(
-                    text=f":speaking_head_in_silhouette: *Last update:* {date_time(incident.updated_at) }"
+                    text=f":speaking_head_in_silhouette: *Last update:* {date_time(incident.updated_at)}"
                 ),
             ],
             accessory=(

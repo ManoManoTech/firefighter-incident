@@ -35,28 +35,24 @@ class PostMortemModal(
     def build_modal_fn(self, incident: Incident, **kwargs: Any) -> View:
         blocks: list[Block] = []
         if hasattr(incident, "postmortem_for"):
-            blocks.extend(
-                [
-                    SectionBlock(
-                        text=f"Postmortem for incident #{incident.id} has already been created."
-                    ),
-                    SectionBlock(
-                        text=f"See the postmortem page <{incident.postmortem_for.page_url}|on Confluence>."
-                    ),
-                ]
-            )
+            blocks.extend([
+                SectionBlock(
+                    text=f"Postmortem for incident #{incident.id} has already been created."
+                ),
+                SectionBlock(
+                    text=f"See the postmortem page <{incident.postmortem_for.page_url}|on Confluence>."
+                ),
+            ])
             submit = None
         else:
-            blocks.extend(
-                [
-                    SectionBlock(
-                        text=f"Postmortem does not yet exist for incident #{incident.id}."
-                    ),
-                    SectionBlock(
-                        text="Click on the button to create the postmortem on Confluence."
-                    ),
-                ]
-            )
+            blocks.extend([
+                SectionBlock(
+                    text=f"Postmortem does not yet exist for incident #{incident.id}."
+                ),
+                SectionBlock(
+                    text="Click on the button to create the postmortem on Confluence."
+                ),
+            ])
             submit = "Create postmortem"[:24]
 
         return View(

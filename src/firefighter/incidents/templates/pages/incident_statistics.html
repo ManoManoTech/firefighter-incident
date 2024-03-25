@@ -108,7 +108,7 @@
 
 {% block page_actions %}
   {{ block.super }}
-  {% component "export_button" base_url="api:incidents-list" %}
+  {% component "export_button" base_url="api:incidents-list" %}{% endcomponent %}
   <button method="get" type="submit"
     form="main-filter" formaction="{% url "incidents:incident-list" %}"
     class="ml-4 btn btn-primary gap-2"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">

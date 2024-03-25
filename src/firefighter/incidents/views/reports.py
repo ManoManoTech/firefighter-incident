@@ -274,13 +274,13 @@ def get_incident_age_by_priority(
     date_gte_param = f"{f'&created__lte={date_lte}' if date_lte else ''}"
     # pyright: reportGeneralTypeIssues=false
     for sev in incident_age_by_priority:
-        sev.incident_0_3_label = f'<a class="{ "underline" if sev.incident_0_3 else "opacity-50" }" href="/incident/?priority={sev.id}{get_created_at_filter(j_3, None, date_gte)}{common_params}">{sev.incident_0_3}</a>'
-        sev.incident_3_5_label = f'<a class="{ "underline" if sev.incident_3_5 else "opacity-50" }" href="/incident/?priority={sev.id}{get_created_at_filter(j_5, j_3, date_gte)}{common_params}">{sev.incident_3_5}</a>'
-        sev.incident_5_7_label = f'<a class="{ "underline" if sev.incident_5_7 else "opacity-50" }" href="/incident/?priority={sev.id}{get_created_at_filter(j_7, j_15, date_gte)}{common_params}">{sev.incident_5_7}</a>'
-        sev.incident_7_15_label = f'<a class="{ "underline" if sev.incident_7_15 else "opacity-50" }" href="/incident/?priority={sev.id}{get_created_at_filter(j_15, j_7, date_gte)}{common_params}">{sev.incident_7_15}</a>'
-        sev.incident_15_30_label = f'<a class="{ "underline" if sev.incident_15_30 else "opacity-50" }" href="/incident/?priority={sev.id}{get_created_at_filter(j_30, j_15, date_gte)}{common_params}">{sev.incident_15_30}</a>'
-        sev.incident_30_90_label = f'<a class="{ "underline" if sev.incident_30_90 else "opacity-50" }" href="/incident/?priority={sev.id}{get_created_at_filter(j_90, j_30, date_gte)}{common_params}">{sev.incident_30_90}</a>'
-        sev.incident_gt_90_label = f'<a class="{ "underline" if sev.incident_gt_90 else "opacity-50" }" href="/incident/?priority={sev.id}&created_at=2000+-+{str(j_90).replace("-", "/")}{date_gte_param}{common_params}">{sev.incident_gt_90}</a>'
+        sev.incident_0_3_label = f'<a class="{"underline" if sev.incident_0_3 else "opacity-50"}" href="/incident/?priority={sev.id}{get_created_at_filter(j_3, None, date_gte)}{common_params}">{sev.incident_0_3}</a>'
+        sev.incident_3_5_label = f'<a class="{"underline" if sev.incident_3_5 else "opacity-50"}" href="/incident/?priority={sev.id}{get_created_at_filter(j_5, j_3, date_gte)}{common_params}">{sev.incident_3_5}</a>'
+        sev.incident_5_7_label = f'<a class="{"underline" if sev.incident_5_7 else "opacity-50"}" href="/incident/?priority={sev.id}{get_created_at_filter(j_7, j_15, date_gte)}{common_params}">{sev.incident_5_7}</a>'
+        sev.incident_7_15_label = f'<a class="{"underline" if sev.incident_7_15 else "opacity-50"}" href="/incident/?priority={sev.id}{get_created_at_filter(j_15, j_7, date_gte)}{common_params}">{sev.incident_7_15}</a>'
+        sev.incident_15_30_label = f'<a class="{"underline" if sev.incident_15_30 else "opacity-50"}" href="/incident/?priority={sev.id}{get_created_at_filter(j_30, j_15, date_gte)}{common_params}">{sev.incident_15_30}</a>'
+        sev.incident_30_90_label = f'<a class="{"underline" if sev.incident_30_90 else "opacity-50"}" href="/incident/?priority={sev.id}{get_created_at_filter(j_90, j_30, date_gte)}{common_params}">{sev.incident_30_90}</a>'
+        sev.incident_gt_90_label = f'<a class="{"underline" if sev.incident_gt_90 else "opacity-50"}" href="/incident/?priority={sev.id}&created_at=2000+-+{str(j_90).replace("-", "/")}{date_gte_param}{common_params}">{sev.incident_gt_90}</a>'
 
     return incident_age_by_priority
 

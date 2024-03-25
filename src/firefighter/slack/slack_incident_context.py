@@ -25,7 +25,7 @@ def incident_resolve_strategy(fn: IncidentResolveStrategy) -> IncidentResolveStr
 
 @incident_resolve_strategy
 def get_incident_from_view_action(
-    body: dict[str, Any]
+    body: dict[str, Any],
 ) -> Literal[False] | None | Incident:
     """Get incident id from select incident in modal."""
     view_type = body.get("type")
@@ -60,7 +60,7 @@ def get_incident_from_view_action(
 
 @incident_resolve_strategy
 def get_incident_from_button_value(
-    body: dict[str, Any]
+    body: dict[str, Any],
 ) -> Incident | Literal[False] | None:
     """Try to get the incident ID from button value."""
     actions = body.get("actions")
@@ -92,7 +92,7 @@ def get_incident_from_button_value(
 
 @incident_resolve_strategy
 def get_incident_from_view_submission_metadata(
-    body: dict[str, Any]
+    body: dict[str, Any],
 ) -> Incident | Literal[False] | None:
     """Get incident id from view modal metadata."""
     view_type = body.get("type")
@@ -116,7 +116,7 @@ def get_incident_from_view_submission_metadata(
 
 @incident_resolve_strategy
 def get_incident_from_view_submission_selected(
-    body: dict[str, Any]
+    body: dict[str, Any],
 ) -> Incident | Literal[False] | None:
     """Get incident id from select incident in modal."""
     view_type = body.get("type")
@@ -148,7 +148,7 @@ def get_incident_from_view_submission_selected(
 
 @incident_resolve_strategy
 def get_incident_from_body_channel_id_in_command(
-    body: dict[str, Any]
+    body: dict[str, Any],
 ) -> Incident | None:
     """Get an incident from a channel_id, found in commands."""
     channel_id = body.get("channel_id")
@@ -161,7 +161,7 @@ def get_incident_from_body_channel_id_in_command(
 
 @incident_resolve_strategy
 def get_incident_from_body_channel_id_in_message_shortcut(
-    body: dict[str, Any]
+    body: dict[str, Any],
 ) -> Incident | None:
     """Get an incident from a channel.id, found in message shortcut."""
     channel_id = get_in(body, "channel.id")

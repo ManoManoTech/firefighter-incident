@@ -336,9 +336,7 @@ class SlackForm(Generic[T]):
         ):
             slack_input_kwargs["options"].append(slack_input_kwargs["initial_option"])
 
-        field_name = (
-            f"{field_name}___{f.initial}{datetime.now().timestamp()}"  # noqa: DTZ005
-        )
+        field_name = f"{field_name}___{f.initial}{datetime.now().timestamp()}"  # noqa: DTZ005
         field_name = field_name[:254]
         return SelectElement(action_id=field_name, **slack_input_kwargs)
 
@@ -364,9 +362,7 @@ class SlackForm(Generic[T]):
             )
             slack_input_kwargs["initial_user"] = initial_user_slack_id
 
-        field_name = (
-            f"{field_name}___{f.initial}{datetime.now().timestamp()}"  # noqa: DTZ005
-        )
+        field_name = f"{field_name}___{f.initial}{datetime.now().timestamp()}"  # noqa: DTZ005
         field_name = field_name[:254]
         return UserSelectElement(action_id=field_name, **slack_input_kwargs)
 
@@ -492,7 +488,7 @@ def slack_view_submission_to_dict(
 
     # We expect only one action per input
     # The action_id must be block_id or block_id___{whatever}
-    # We support block_id and block_id___{whatever} because SLack won't update the value in the user's form if the action_id is the same
+    # We support block_id and block_id___{whatever} because Slack won't update the value in the user's form if the action_id is the same
     # Hence, we need to add a unique identifier to the action_id to force Slack to update the value, replacing the input by another one
     for block in values.values():
         if len(block) == 0:

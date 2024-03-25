@@ -97,7 +97,9 @@ class IncidentUpdate(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    event_ts: datetime.datetime = models.DateTimeField(auto_now_add=False, editable=True)  # type: ignore
+    event_ts: datetime.datetime = models.DateTimeField(
+        auto_now_add=False, editable=True
+    )  # type: ignore
     event_type = models.CharField(null=True, blank=True, max_length=64)
 
     class Meta(TypedModelMeta):

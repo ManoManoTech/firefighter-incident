@@ -197,7 +197,7 @@ plugins:
             - "os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'firefighter.firefighter.settings')"
             - "django.setup()"
           import:
-            - https://docs.python.org/3.11/objects.inv
+            - https://docs.python.org/3.12/objects.inv
             - https://docs.celeryq.dev/en/stable/objects.inv
             # - https://slack.dev/python-slack-sdk/objects.inv
             - url: https://docs.djangoproject.com/en/4.2/_objects/

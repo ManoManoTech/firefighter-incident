@@ -3,7 +3,7 @@
 # See https://pre-commit.com/hooks.html for more hooks
 
 default_language_version:
-  python: python3.11
+  python: python3.12
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.5.0
@@ -19,15 +19,12 @@ repos:
       - id: fix-byte-order-marker
   # Versions must be kept in sync with lockfile
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: 'v0.1.15'
+    rev: 'v0.3.4'
     hooks:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix]
-  - repo: https://github.com/psf/black-pre-commit-mirror
-    rev: 24.1.1
-    hooks:
-      - id: black
+
   - repo: https://github.com/adrienverge/yamllint
-    rev: v1.33.0
+    rev: v1.35.1
     hooks:
       - id: yamllint

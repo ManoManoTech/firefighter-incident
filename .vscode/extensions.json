@@ -5,7 +5,7 @@
     "charliermarsh.ruff",
     "davidanson.vscode-markdownlint",
     "mikestead.dotenv",
-    "ms-python.black-formatter",
+    "charliermarsh.ruff",
     "ms-python.python",
     "ms-python.vscode-pylance",
     "tamasfe.even-better-toml",

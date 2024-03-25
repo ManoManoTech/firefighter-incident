@@ -101,14 +101,12 @@ class SelectImpactModal(
             else:
                 err_msg = f"Invalid priority data: {priority_data}"  # type: ignore[unreachable]
                 raise TypeError(err_msg)
-            blocks.extend(
-                (
-                    DividerBlock(),
-                    SectionBlock(
-                        text=f"💡 Suggested priority: {priority} - {priority.description}\n⏱️ SLA: {priority.sla}"
-                    ),
-                )
-            )
+            blocks.extend((
+                DividerBlock(),
+                SectionBlock(
+                    text=f"💡 Suggested priority: {priority} - {priority.description}\n⏱️ SLA: {priority.sla}"
+                ),
+            ))
 
         return View(
             type="modal",

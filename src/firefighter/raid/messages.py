@@ -38,7 +38,7 @@ class SlackMessageRaidCreatedIssue(SlackMessageSurface):
     def get_blocks(self) -> list[Block]:
         blocks: list[Block] = [
             SectionBlock(
-                text=f"New { self.ticket.issue_type}: *{self.ticket.key}* _ {self.ticket.summary} _ was created."
+                text=f"New {self.ticket.issue_type}: *{self.ticket.key}* _ {self.ticket.summary} _ was created."
             ),
             # XXX Add issue type emoji from RAID
             DividerBlock(),

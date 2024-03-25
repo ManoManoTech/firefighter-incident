@@ -35,7 +35,7 @@
 
             <form action="{% url 'incidents:incident-create' %}" method="POST">
 
-              {% component_block "form" form=form %}
+              {% component "form" form=form %}
                 {% fill "form_footer" %}
                   <div class=" text-right sm:pl-6 py-8">
                     <button type="submit" class="btn btn-primary">
@@ -43,7 +43,7 @@
                     </button>
                   </div>
                 {% endfill %}
-              {% endcomponent_block %}
+              {% endcomponent %}
             </form>
           </div>
         </div>

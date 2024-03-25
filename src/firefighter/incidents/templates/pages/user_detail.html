@@ -8,7 +8,7 @@
         <div class="flex-shrink-0">
           <div class="relative h-16">
             <span class="inline-flex w-16 h-16 rounded-full" >
-              {% component "avatar" user=target_user  %}
+              {% component "avatar" user=target_user  %}{% endcomponent %}
             </span>
           </div>
         </div>
@@ -39,7 +39,7 @@
           </div>
         </div>
 
-        {% component_block "card" card_title="Responders groups" id="user-responder-groups" %}
+        {% component "card" card_title="Responders groups" id="user-responder-groups" %}
           {% fill "card_title" %}
             <h2 id="{{ id }}-title" class="text-lg leading-6 font-medium text-neutral-900 dark:text-neutral-50">{{ card_title }}</h2>
             {% if user == target_user %}<p class="mt-1 max-w-2xl text-sm text-content">You are a part of the following groups and conversations.</p>
@@ -70,14 +70,14 @@
               {% endfor %}
             </ul>
           {% endfill %}
-        {% endcomponent_block%}
+        {% endcomponent %}
 
 
 
 
       </div>
       <div class="lg:col-span-1 lg:col-start-3">
-        {% component_block "card" card_title="Contact and accounts" id="user-contact-and-accounts" %}
+        {% component "card" card_title="Contact and accounts" id="user-contact-and-accounts" %}
           {% fill "card_content" %}
             <dl class="grid grid-cols-1 gap-x-4 gap-y-8 ">
               <div class="sm:col-span-1">
@@ -102,7 +102,7 @@
               </div>
             </dl>
           {% endfill %}
-        {% endcomponent_block%}
+        {% endcomponent %}
 
       </div>
     </div>
