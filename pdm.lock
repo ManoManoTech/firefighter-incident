@@ -5,7 +5,7 @@
 groups = ["default", "dev", "docs", "tests", "types", "docs-img"]
 strategy = ["cross_platform", "static_urls"]
 lock_version = "4.4.1"
-content_hash = "sha256:a3cbc48404e7bfe3ebb0f9a0c042b899ad068e5a787826726c04517f194d5c93"
+content_hash = "sha256:dbe0e810c43ce0b5a02eadb1a26a4bf8b349ada7e39e1092f3b5801ebef6760a"
 
 [[package]]
 name = "aiohttp"
@@ -1825,7 +1825,9 @@ files = [
 
 [[package]]
 name = "mike"
-version = "2.0.0"
+version = "2.1.0.dev0"
+git = "https://github.com/jimporter/mike"
+revision = "01219bddfeea16f8d6dd6d65d0d84581cf183a3f"
 summary = "Manage multiple versions of your MkDocs-powered documentation"
 dependencies = [
     "importlib-metadata",
@@ -1835,10 +1837,6 @@ dependencies = [
     "pyparsing>=3.0",
     "pyyaml>=5.1",
     "verspec",
-]
-files = [
-    {url = "https://files.pythonhosted.org/packages/69/86/fe79ca89ad1a393a9129b3ab77649dbe542103a76c92d2d68ac9f0da496c/mike-2.0.0.tar.gz", hash = "sha256:566f1cab1a58cc50b106fb79ea2f1f56e7bfc8b25a051e95e6eaee9fba0922de"},
-    {url = "https://files.pythonhosted.org/packages/d5/cc/ba256481682f20b38d6d69150d0cfa09c8b5cc6865240764ab80516286cb/mike-2.0.0-py3-none-any.whl", hash = "sha256:87f496a65900f93ba92d72940242b65c86f3f2f82871bc60ebdcffc91fad1d9e"},
 ]
 
 [[package]]
