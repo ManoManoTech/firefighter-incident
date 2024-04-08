@@ -7,23 +7,23 @@
   resolved "https://registry.npmjs.org/@alloc/quick-lru/-/quick-lru-5.2.0.tgz#7bf68b20c0a350f936915fcae06f58e32007ce30"
   integrity sha512-UrcABB+4bUrFABwbluTIBErXwvbsU/V7TZWfmbgJfbkwiBuziS9gxdODUyuiecfdGQ85jglMW6juS3+z5TsKLw==
 
-"@alpinejs/collapse@^3.13.7":
-  version "3.13.7"
-  resolved "https://registry.yarnpkg.com/@alpinejs/collapse/-/collapse-3.13.7.tgz#e48d9f89e3238f2806b8f8227d4391a64944cd19"
-  integrity sha512-/tYSskhj1df8j9T6vTkLVurA5eMtLxlztogYq9Zp2htgR01OFWW09jizDZK0JoMAfQEBiU2c72rdeBFyn9KWEQ==
+"@alpinejs/collapse@^3.13.8":
+  version "3.13.8"
+  resolved "https://registry.yarnpkg.com/@alpinejs/collapse/-/collapse-3.13.8.tgz#f71523fe93d0fd729886134e08b30ef29a6e9a72"
+  integrity sha512-NsYiidTJ/AOFE8xUMxnXIe5LbRYcfw3UjxI6VUlDw3st4XwzaeCNyqBbZVRt9Ac7wfdrODy0qTHA+iCHSF0atQ==
 
-"@alpinejs/focus@^3.13.7":
-  version "3.13.7"
-  resolved "https://registry.yarnpkg.com/@alpinejs/focus/-/focus-3.13.7.tgz#3516c2e153d0f01a6a61f25ddf29119fcfabadf0"
-  integrity sha512-fvTXBlQlSSxJpCeRu/9MaMK6zWgvaNN+uZ8ycHBy/R7G6xhGUA1/ymTpulz69n1eIuYPTNjb8EluyTSNN6PeeA==
+"@alpinejs/focus@^3.13.8":
+  version "3.13.8"
+  resolved "https://registry.yarnpkg.com/@alpinejs/focus/-/focus-3.13.8.tgz#a254ece754f0fb50d0b2e95276fcf265582a868c"
+  integrity sha512-ioGVlcRsD/8qcMs0dHyuhcPvIFAkSjGhHNXW+0j6kaNh9RoNQHT+webmTShJEoPTyBfjmRr5BzB7lWbyfgYpNA==
   dependencies:
     focus-trap "^6.9.4"
     tabbable "^5.3.3"
 
-"@alpinejs/morph@^3.13.7":
-  version "3.13.7"
-  resolved "https://registry.yarnpkg.com/@alpinejs/morph/-/morph-3.13.7.tgz#164954ae705a9dbe8dfc65da703d7a2c42bd1976"
-  integrity sha512-lL4DP9tO7TgStQ74dl4SOIEdQQKErJ/enc8Jj3zye0BJhKzx3wlsQNOUzwAKJ/+aEU9fT/KugNTBwArb+YPrdA==
+"@alpinejs/morph@^3.13.8":
+  version "3.13.8"
+  resolved "https://registry.yarnpkg.com/@alpinejs/morph/-/morph-3.13.8.tgz#9eb192d44dd1235adcf82e6ee0be4801f3044656"
+  integrity sha512-VM8azc7UPIXupU/9T7wvKj+bTudK4ttW+AkXL9SNUyN8ysuq/RGYovetQdYNM1Vz8OfD23KTgO90CpAzDLgz8A==
 
 "@ampproject/remapping@^2.2.0":
   version "2.2.1"
@@ -1293,10 +1293,10 @@ ajv@^8.0.1:
     require-from-string "^2.0.2"
     uri-js "^4.2.2"
 
-alpinejs@^3.13.7:
-  version "3.13.7"
-  resolved "https://registry.yarnpkg.com/alpinejs/-/alpinejs-3.13.7.tgz#74ab35c69c33a0cf4c467a3339f4487ac846a04a"
-  integrity sha512-rcTyjTANbsePq1hb7eSekt3qjI94HLGeO6JaRjCssCVbIIc+qBrc7pO5S/+2JB6oojIibjM6FA+xRI3zhGPZIg==
+alpinejs@^3.13.8:
+  version "3.13.8"
+  resolved "https://registry.yarnpkg.com/alpinejs/-/alpinejs-3.13.8.tgz#23f280a886af296e16302a79e01ba51c0d86f67e"
+  integrity sha512-XolbBJryCndomtaHd/KHQjQeD/L72FJxy/YhLLFD4Lr7zzGcpcbg+UgXteMR2pYg1KhRUr6V4O3GfN1zJAmRWw==
   dependencies:
     "@vue/reactivity" "~3.1.1"
 
