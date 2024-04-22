@@ -7,23 +7,23 @@
   resolved "https://registry.npmjs.org/@alloc/quick-lru/-/quick-lru-5.2.0.tgz#7bf68b20c0a350f936915fcae06f58e32007ce30"
   integrity sha512-UrcABB+4bUrFABwbluTIBErXwvbsU/V7TZWfmbgJfbkwiBuziS9gxdODUyuiecfdGQ85jglMW6juS3+z5TsKLw==
 
-"@alpinejs/collapse@^3.13.7":
-  version "3.13.7"
-  resolved "https://registry.yarnpkg.com/@alpinejs/collapse/-/collapse-3.13.7.tgz#e48d9f89e3238f2806b8f8227d4391a64944cd19"
-  integrity sha512-/tYSskhj1df8j9T6vTkLVurA5eMtLxlztogYq9Zp2htgR01OFWW09jizDZK0JoMAfQEBiU2c72rdeBFyn9KWEQ==
+"@alpinejs/collapse@^3.13.9":
+  version "3.13.9"
+  resolved "https://registry.yarnpkg.com/@alpinejs/collapse/-/collapse-3.13.9.tgz#e4614a9aea6c20603563185a8f3e0ddae27b4e65"
+  integrity sha512-qKRu+WcamfHY3+/XVeCvojWw8FtMvAHJ+qOQZYE9YWOk1QAMpn7HD6jUWgcynJJ4Y4oiSMVxigJpfBgEDPkGnA==
 
-"@alpinejs/focus@^3.13.7":
-  version "3.13.7"
-  resolved "https://registry.yarnpkg.com/@alpinejs/focus/-/focus-3.13.7.tgz#3516c2e153d0f01a6a61f25ddf29119fcfabadf0"
-  integrity sha512-fvTXBlQlSSxJpCeRu/9MaMK6zWgvaNN+uZ8ycHBy/R7G6xhGUA1/ymTpulz69n1eIuYPTNjb8EluyTSNN6PeeA==
+"@alpinejs/focus@^3.13.9":
+  version "3.13.9"
+  resolved "https://registry.yarnpkg.com/@alpinejs/focus/-/focus-3.13.9.tgz#14b8a08359a4786a1706b7765d3a475f3e247299"
+  integrity sha512-XsiXvvudOB37LHVIevj0NTdR98TMEMxL1E+AbjHzkHube67TbdQXK17148AQJendNg5iX97GR/dpS6a8QdDZ6w==
   dependencies:
     focus-trap "^6.9.4"
     tabbable "^5.3.3"
 
-"@alpinejs/morph@^3.13.7":
-  version "3.13.7"
-  resolved "https://registry.yarnpkg.com/@alpinejs/morph/-/morph-3.13.7.tgz#164954ae705a9dbe8dfc65da703d7a2c42bd1976"
-  integrity sha512-lL4DP9tO7TgStQ74dl4SOIEdQQKErJ/enc8Jj3zye0BJhKzx3wlsQNOUzwAKJ/+aEU9fT/KugNTBwArb+YPrdA==
+"@alpinejs/morph@^3.13.9":
+  version "3.13.9"
+  resolved "https://registry.yarnpkg.com/@alpinejs/morph/-/morph-3.13.9.tgz#52da96e9f7c6a80f5837c05c68c39194f58ad73c"
+  integrity sha512-l9qhz97NVjpM39AAxMg3IWgxksLaqjb4+k0gbv8xlx3Nvd56wAoG4F0XQTod5e2sx1qqta9RRxV0Fc8KUnN1sg==
 
 "@ampproject/remapping@^2.2.0":
   version "2.2.1"
@@ -1293,10 +1293,10 @@ ajv@^8.0.1:
     require-from-string "^2.0.2"
     uri-js "^4.2.2"
 
-alpinejs@^3.13.7:
-  version "3.13.7"
-  resolved "https://registry.yarnpkg.com/alpinejs/-/alpinejs-3.13.7.tgz#74ab35c69c33a0cf4c467a3339f4487ac846a04a"
-  integrity sha512-rcTyjTANbsePq1hb7eSekt3qjI94HLGeO6JaRjCssCVbIIc+qBrc7pO5S/+2JB6oojIibjM6FA+xRI3zhGPZIg==
+alpinejs@^3.13.9:
+  version "3.13.9"
+  resolved "https://registry.yarnpkg.com/alpinejs/-/alpinejs-3.13.9.tgz#beb1309cf155ee11a08d235297fc58d4f0cfce4b"
+  integrity sha512-BTEJ3fcUpqKlB+aFYSWGVEp8IP3vA96x7wUaNSdb5SJxV5i7s+/Bduxy9D6TokcqpW5MygsnG1eBEFfr4AnQSw==
   dependencies:
     "@vue/reactivity" "~3.1.1"
 
@@ -2078,10 +2078,10 @@ html-tags@^3.3.1:
   resolved "https://registry.npmjs.org/html-tags/-/html-tags-3.3.1.tgz#a04026a18c882e4bba8a01a3d39cfe465d40b5ce"
   integrity sha512-ztqyC3kLto0e9WbNp0aeP+M3kTt+nbaIveGmUxAtZa+8iFgKLUOD4YKM5j+f3QD89bra7UeumolZHKuOXnTmeQ==
 
-htmx.org@^1.9.11:
-  version "1.9.11"
-  resolved "https://registry.yarnpkg.com/htmx.org/-/htmx.org-1.9.11.tgz#00192041ee682d6ca7146d0fbd901169ffe72d87"
-  integrity sha512-WlVuICn8dfNOOgYmdYzYG8zSnP3++AdHkMHooQAzGZObWpVXYathpz/I37ycF4zikR6YduzfCvEcxk20JkIUsw==
+htmx.org@^1.9.12:
+  version "1.9.12"
+  resolved "https://registry.yarnpkg.com/htmx.org/-/htmx.org-1.9.12.tgz#1c5bc7fb4d3eb4e8c0d72323dc774a6b9b66addc"
+  integrity sha512-VZAohXyF7xPGS52IM8d1T1283y+X4D+Owf3qY1NZ9RuBypyu9l8cGsxUMAG5fEAb/DhT7rDoJ9Hpu5/HxFD3cw==
 
 hyperscript.org@^0.9.12:
   version "0.9.12"
