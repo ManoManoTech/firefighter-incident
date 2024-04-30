@@ -27,6 +27,7 @@ from firefighter.incidents.models import (
     Severity,
     User,
 )
+from firefighter.incidents.models.feature_team import FeatureTeam
 from firefighter.incidents.models.impact import (
     Impact,
     ImpactLevel,
@@ -172,6 +173,15 @@ class EnvironmentAdmin(admin.ModelAdmin[Environment]):
         if obj:  # editing an existing object
             return *self.readonly_fields, "value"
         return self.readonly_fields
+
+
+@admin.register(FeatureTeam)
+class FeatureTeamAdmin(admin.ModelAdmin[FeatureTeam]):
+    model = FeatureTeam
+    list_display = [
+        "name",
+        "jira_project_key",
+    ]
 
 
 @admin.register(Severity)
