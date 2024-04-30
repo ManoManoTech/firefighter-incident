@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("incidents", "0001_initial_oss"),
     ]
@@ -29,6 +28,8 @@ class Migration(migrations.Migration):
             ],
             options={
                 "unique_together": {("name", "jira_project_key")},
+                "verbose_name": "Feature Team",
+                "verbose_name_plural": "Feature Teams",
             },
         ),
     ]

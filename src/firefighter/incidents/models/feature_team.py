@@ -14,6 +14,8 @@ class FeatureTeam(models.Model):
 
     class Meta(TypedModelMeta):
         unique_together = ("name", "jira_project_key")
+        verbose_name = "Feature Team"
+        verbose_name_plural = "Feature Teams"
 
     def __str__(self) -> str:
         return self.name
