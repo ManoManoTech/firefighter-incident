@@ -15,8 +15,5 @@ if ENABLE_RAID:
     RAID_JIRA_PROJECT_KEY: str = config("RAID_JIRA_PROJECT_KEY")
     "The Jira project key to use for creating issues, e.g. 'INC'"
 
-    RAID_QUALIFIER_URL: str = config("RAID_QUALIFIER_URL")
-    "Link to the board with issues to qualify"
-
     RAID_JIRA_USER_IDS: dict[str, str] = {}
     "Mapping of domain to default Jira user ID"

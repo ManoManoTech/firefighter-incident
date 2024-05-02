@@ -19,7 +19,6 @@ class RaidConfig(AppConfig):
         from firefighter.raid.signals import (
             incident_created,
             incident_updated,
-            update_qualifiers_rotation,
         )
         from firefighter.raid.views.open_normal import (
             OpeningRaidCustomerModal,

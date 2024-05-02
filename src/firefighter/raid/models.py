@@ -7,7 +7,7 @@ from django.db import models
 from django_stubs_ext.db.models import TypedModelMeta
 
 from firefighter.incidents.models.incident import Incident
-from firefighter.jira_app.models import JiraIssue, JiraUser
+from firefighter.jira_app.models import JiraIssue
 
 if TYPE_CHECKING:
     from firefighter.incidents.models.impact import Impact  # noqa: F401
@@ -56,49 +56,6 @@ class JiraTicketImpact(models.Model):
 
     def __str__(self) -> str:
         return f"{self.jira_ticket.key}: {self.impact}"
-
-
-class QualifierRotation(models.Model):
-    """Model to store the rotation of the incident qualifiers."""
-
-    id = models.AutoField(primary_key=True)
-    jira_user = models.ForeignKey[JiraUser, JiraUser](
-        JiraUser, on_delete=models.CASCADE
-    )
-    day = models.DateField(unique=True)
-    protected = models.BooleanField(
-        default=False,
-        help_text="If checked, it is because this rotation was previously modified so this date won't be deleted and it can not be unprotected again from here.",
-    )
-
-    if TYPE_CHECKING:
-        jira_user_id: str
-
-    class Meta:
-        verbose_name = "Qualifiers rotation"
-        verbose_name_plural = "Qualifiers rotation"
-
-    def __str__(self) -> str:
-        return f"{self.day}: {self.jira_user}"
-
-
-class Qualifier(models.Model):
-    """Model to store users that can be incidents qualifiers."""
-
-    id = models.AutoField(primary_key=True)
-    jira_user = models.OneToOneField[JiraUser, JiraUser](
-        JiraUser, on_delete=models.CASCADE
-    )
-
-    if TYPE_CHECKING:
-        jira_user_id: str
-
-    class Meta:
-        verbose_name = "Qualifier"
-        verbose_name_plural = "Qualifiers"
-
-    def __str__(self) -> str:
-        return f"{self.jira_user}"
 
 
 class RaidArea(models.Model):

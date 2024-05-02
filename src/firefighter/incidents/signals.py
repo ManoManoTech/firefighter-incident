@@ -71,8 +71,3 @@ create_incident_conversation = django.dispatch.Signal()
 Args:
     incident (Incident): The incident for which to create a conversation.
 """
-
-
-new_qualifier = django.dispatch.Signal()
-"""Signal sent when a new qualifier.
-"""
