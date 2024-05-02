@@ -27,7 +27,6 @@ from firefighter.incidents.models import (
     Severity,
     User,
 )
-from firefighter.incidents.models.feature_team import FeatureTeam
 from firefighter.incidents.models.impact import (
     Impact,
     ImpactLevel,
@@ -44,6 +43,7 @@ from firefighter.incidents.models.incident_role_type import IncidentRoleType
 from firefighter.incidents.models.metric_type import IncidentMetric, MetricType
 from firefighter.incidents.models.milestone_type import MilestoneType
 from firefighter.incidents.models.priority import Priority
+from firefighter.raid.models import FeatureTeam
 
 if TYPE_CHECKING:
     from collections.abc import MutableSequence

@@ -21,7 +21,7 @@ from firefighter.raid.messages import (
     SlackMessageRaidCreatedIssue,
     SlackMessageRaidModifiedIssue,
 )
-from firefighter.raid.models import JiraTicket, RaidArea
+from firefighter.raid.models import FeatureTeam, JiraTicket, RaidArea
 from firefighter.raid.service import (
     create_issue_customer,
     create_issue_documentation_request,
@@ -76,11 +76,10 @@ class CreateNormalIncidentFormBase(CreateIncidentFormBase):
         min_length=10,
         max_length=1200,
     )
-
-    suggested_team_routing = forms.ChoiceField(
-        label="Feature Team or Train to be routed",
+    suggested_team_routing = forms.ModelChoiceField(
+        queryset=FeatureTeam.objects.only("name"),
+        label="Feature Team or Train",
         required=True,
-        choices=PlatformChoices.choices,
     )
     priority = forms.ModelChoiceField(
         label="Priority",
