@@ -11,6 +11,7 @@ from jira.exceptions import JIRAError
 from firefighter.firefighter.http_client import HttpClient
 from firefighter.firefighter.utils import get_in
 from firefighter.jira_app.client import JiraClient
+from firefighter.raid.models import FeatureTeam
 
 if TYPE_CHECKING:
     from jira import Project
@@ -94,13 +95,15 @@ class RaidJiraClient(JiraClient):
             extra_args["customfield_10201"] = {"value": platform}
         if environments:
             extra_args["customfield_11049"] = [{"value": e} for e in environments]
-
         if len(description_addendum) > 0:
             description_addendum_str = "\n *Additional Information* \n" + "\n".join(
                 description_addendum
             )
             description += description_addendum_str
-        project = project if project else RAID_JIRA_PROJECT_KEY
+        feature_team = FeatureTeam.objects.filter(name=suggested_team_routing).get()
+        project = (
+            feature_team.jira_project_key if feature_team else RAID_JIRA_PROJECT_KEY
+        )
         issue = self.jira.create_issue(
             project=project,
             summary=summary,
