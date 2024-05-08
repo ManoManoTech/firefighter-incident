@@ -21,14 +21,13 @@ from firefighter.raid.messages import (
     SlackMessageRaidCreatedIssue,
     SlackMessageRaidModifiedIssue,
 )
-from firefighter.raid.models import JiraTicket, JiraUser, RaidArea
+from firefighter.raid.models import FeatureTeam, JiraTicket, RaidArea
 from firefighter.raid.service import (
     create_issue_customer,
     create_issue_documentation_request,
     create_issue_feature_request,
     create_issue_internal,
     create_issue_seller,
-    get_current_qualifier,
     get_jira_user_from_user,
 )
 from firefighter.raid.utils import get_domain_from_email
@@ -39,6 +38,7 @@ if TYPE_CHECKING:
 
     from firefighter.incidents.models.impact import ImpactLevel
     from firefighter.incidents.models.user import User
+    from firefighter.jira_app.models import JiraUser
     from firefighter.raid.types import JiraObject
     from firefighter.slack.messages.base import SlackMessageSurface
 
@@ -76,11 +76,9 @@ class CreateNormalIncidentFormBase(CreateIncidentFormBase):
         min_length=10,
         max_length=1200,
     )
-
-    suggested_team_routing = forms.CharField(
-        label="Feature Team or Train to be routed",
-        max_length=128,
-        min_length=2,
+    suggested_team_routing = forms.ModelChoiceField(
+        queryset=FeatureTeam.objects.only("name"),
+        label="Feature Team or Train",
         required=True,
     )
     priority = forms.ModelChoiceField(
@@ -283,7 +281,6 @@ def process_jira_issue(
 def set_jira_ticket_watchers_raid(jira_ticket: JiraTicket) -> None:
     issue_id = jira_ticket.id
     reporter = jira_ticket.reporter.id
-    qualifier = get_current_qualifier().id
 
     try:
         default_jira_user = jira_client.get_jira_user_from_jira_id(
@@ -299,15 +296,6 @@ def set_jira_ticket_watchers_raid(jira_ticket: JiraTicket) -> None:
         logger.exception(
             f"Could not add the watcher {jira_ticket.reporter.id} to the ticket {issue_id}"
         )
-
-    if qualifier != RAID_DEFAULT_JIRA_QRAFT_USER_ID:
-        try:
-            jira_client.jira.add_watcher(issue=issue_id, watcher=qualifier)
-
-        except JiraAPIError:
-            logger.exception(
-                f"Could not add the watcher {jira_ticket.reporter.id} to the ticket {issue_id}"
-            )
         try:
             jira_client.jira.remove_watcher(issue=issue_id, watcher=default_jira_user)
 

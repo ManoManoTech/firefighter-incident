@@ -42,7 +42,7 @@ slack_fields: SlackFormAttributesDict = {
             "post_block": ContextBlock(
                 elements=[
                     MarkdownTextObject(
-                        text="Feature Team or Train that should own the issue. Type \"I don't know\" if you don't have the information."
+                        text="Feature Team or Train that should own the issue. If you don't know access <https://manomano.atlassian.net/wiki/spaces/QRAFT/pages/3970335291/Teams+and+owners|here> for guidance."
                     ),
                 ]
             )

@@ -9,7 +9,7 @@ from django.dispatch.dispatcher import receiver
 from firefighter.jira_app.client import JiraAPIError, JiraUserNotFoundError
 from firefighter.raid.client import client
 from firefighter.raid.models import JiraTicket
-from firefighter.raid.service import get_current_qualifier, get_jira_user_from_user
+from firefighter.raid.service import get_jira_user_from_user
 from firefighter.slack.messages.slack_messages import (
     SlackMessageIncidentDeclaredAnnouncement,
 )
@@ -17,7 +17,6 @@ from firefighter.slack.signals import incident_channel_done
 
 if TYPE_CHECKING:
     from firefighter.incidents.models.incident import Incident
-    from firefighter.jira_app.models import JiraUser
     from firefighter.slack.models.incident_channel import IncidentChannel
 
 logger = logging.getLogger(__name__)
@@ -37,7 +36,6 @@ def create_ticket(
     # XXX Custom field with FireFighter ID/link?
     # XXX Set affected environment custom field
     # XXX Set custom field impacted area to group/domain?
-    qualifier: JiraUser = get_current_qualifier()
     priority: int = incident.priority.value if 1 <= incident.priority.value <= 4 else 1
     issue = client.create_issue(
         issuetype="Incident",
@@ -47,9 +45,8 @@ def create_ticket(
 🧯 This incident has been created for a critical incident. Links below to Slack and {APP_DISPLAY_NAME}.\n
 📦 Component: {incident.component.name} ({incident.component.group.name})\n
 {incident.priority.emoji} Priority: {incident.priority.name}\n""",
-        assignee=qualifier.id,
+        assignee=None,
         reporter=account_id,
-        qualifier=qualifier.id,
         priority=priority,
     )
     issue_id = issue.get("id")
@@ -71,14 +68,6 @@ def create_ticket(
         logger.exception(
             f"Could not add the watcher with account id {account_id} to the ticket {issue_id}"
         )
-    if qualifier.id != RAID_DEFAULT_JIRA_QRAFT_USER_ID:
-        # Add watcher qualifier
-        try:
-            client.jira.add_watcher(issue=issue_id, watcher=qualifier.id)
-        except JiraAPIError:
-            logger.exception(
-                f"Could not add the watcher {qualifier.id} to the ticket {issue_id}"
-            )
         # Removing default watcher TeamQraft
         try:
             client.jira.remove_watcher(issue=issue_id, watcher=default_jira_user)

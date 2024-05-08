@@ -4,7 +4,6 @@ import logging
 from typing import TYPE_CHECKING
 
 from django.conf import settings
-from django.utils import timezone
 
 from firefighter.jira_app.client import (
     JiraAPIError,
@@ -12,7 +11,6 @@ from firefighter.jira_app.client import (
 )
 from firefighter.jira_app.models import JiraUser
 from firefighter.raid.client import client as jira_client
-from firefighter.raid.models import QualifierRotation
 
 if TYPE_CHECKING:
     from firefighter.incidents.models.user import User
@@ -32,22 +30,6 @@ def check_issue_id(issue: JiraObject, title: str, reporter: str) -> int | str:
         )
         raise JiraAPIError(error_jira_ticket_creation)
     return issue_id
-
-
-def get_current_qualifier() -> JiraUser:
-    """Returns the qualifier Jira account id for today. On weekends use Qraft generic account.
-
-    Returns:
-        JiraUser: JiraUser object
-    """
-    if timezone.now().date().weekday() in {5, 6}:
-        return jira_client.get_jira_user_from_jira_id(RAID_DEFAULT_JIRA_QRAFT_USER_ID)
-    try:
-        qualifier_rotation = QualifierRotation.objects.get(day=timezone.now().date())
-    except QualifierRotation.DoesNotExist:
-        logger.warning("Qualifier rotation not found for today.")
-        return jira_client.get_jira_user_from_jira_id(RAID_DEFAULT_JIRA_QRAFT_USER_ID)
-    return qualifier_rotation.jira_user
 
 
 def get_jira_user_from_user(user: User) -> JiraUser:
@@ -96,9 +78,8 @@ def create_issue_feature_request(
         issuetype="Feature Request",
         summary=title,
         description=description,
-        assignee=get_current_qualifier().id,
+        assignee=None,
         reporter=reporter,
-        qualifier=get_current_qualifier().id,
         priority=priority,
         labels=labels,
         platform=platform,
@@ -133,9 +114,8 @@ def create_issue_documentation_request(
         issuetype="Documentation/Process Request",
         summary=title,
         description=description,
-        assignee=get_current_qualifier().id,
+        assignee=None,
         reporter=reporter,
-        qualifier=get_current_qualifier().id,
         priority=priority,
         labels=labels,
         platform=platform,
@@ -172,9 +152,8 @@ def create_issue_internal(
         issuetype="Incident",
         summary=title,
         description=description,
-        assignee=get_current_qualifier().id,
+        assignee=None,
         reporter=reporter,
-        qualifier=get_current_qualifier().id,
         priority=priority,
         labels=labels,
         platform=platform,
@@ -216,9 +195,8 @@ def create_issue_customer(
         issuetype="Incident",
         summary=title,
         description=description,
-        assignee=get_current_qualifier().id,
+        assignee=None,
         reporter=reporter,
-        qualifier=get_current_qualifier().id,
         priority=priority,
         labels=labels,
         platform=platform,
@@ -267,9 +245,8 @@ def create_issue_seller(  # noqa: PLR0913, PLR0917
         issuetype="Incident",
         summary=title,
         description=description,
-        assignee=get_current_qualifier().id,
+        assignee=None,
         reporter=reporter,
-        qualifier=get_current_qualifier().id,
         priority=priority,
         labels=labels,
         platform=platform,

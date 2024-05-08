@@ -53,14 +53,11 @@ class RaidJiraClient(JiraClient):
         area: str | None = None,
         environments: list[str] | None = None,
         project: str | None = None,
-        qualifier: str | None = None,
     ) -> JiraObject:
         description_addendum: list[str] = []
         extra_args: dict[str, Any] = {}
         if assignee:
             extra_args["assignee"] = {"id": assignee}
-        if qualifier:
-            extra_args["customfield_10892"] = {"id": qualifier}
         if labels is None:
             labels = [""]
         if priority is None:
