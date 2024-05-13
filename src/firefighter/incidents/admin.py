@@ -43,7 +43,6 @@ from firefighter.incidents.models.incident_role_type import IncidentRoleType
 from firefighter.incidents.models.metric_type import IncidentMetric, MetricType
 from firefighter.incidents.models.milestone_type import MilestoneType
 from firefighter.incidents.models.priority import Priority
-from firefighter.raid.models import FeatureTeam
 
 if TYPE_CHECKING:
     from collections.abc import MutableSequence
@@ -173,15 +172,6 @@ class EnvironmentAdmin(admin.ModelAdmin[Environment]):
         if obj:  # editing an existing object
             return *self.readonly_fields, "value"
         return self.readonly_fields
-
-
-@admin.register(FeatureTeam)
-class FeatureTeamAdmin(admin.ModelAdmin[FeatureTeam]):
-    model = FeatureTeam
-    list_display = [
-        "name",
-        "jira_project_key",
-    ]
 
 
 @admin.register(Severity)

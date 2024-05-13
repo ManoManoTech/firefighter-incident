@@ -5,7 +5,7 @@
 groups = ["default", "dev", "docs", "tests", "types", "docs-img"]
 strategy = ["cross_platform", "static_urls"]
 lock_version = "4.4.1"
-content_hash = "sha256:a3cbc48404e7bfe3ebb0f9a0c042b899ad068e5a787826726c04517f194d5c93"
+content_hash = "sha256:0ffb0798281580ff482b2732430f7dd67c6b9b6c1580163113a1938c7d979bbd"
 
 [[package]]
 name = "aiohttp"
@@ -769,6 +769,16 @@ files = [
 ]
 
 [[package]]
+name = "diff-match-patch"
+version = "20230430"
+requires_python = ">=3.7"
+summary = "Diff Match and Patch"
+files = [
+    {url = "https://files.pythonhosted.org/packages/48/40/7f0b68e3578453d1ccd3638cfd9682b515b9d22730903a88615f1ee92352/diff-match-patch-20230430.tar.gz", hash = "sha256:953019cdb9c9d2c9e47b5b12bcff3cf4746fc4598eb406076fa1fc27e6a1f15c"},
+    {url = "https://files.pythonhosted.org/packages/96/19/2654bccc833c946d94b84e4fa02d1ad1d2ff216bacad2e014a3dd820c735/diff_match_patch-20230430-py3-none-any.whl", hash = "sha256:dce43505fb7b1b317de7195579388df0746d90db07015ed47a85e5e44930ef93"},
+]
+
+[[package]]
 name = "dill"
 version = "0.3.8"
 requires_python = ">=3.8"
@@ -924,6 +934,21 @@ dependencies = [
 files = [
     {url = "https://files.pythonhosted.org/packages/68/2d/a342b5858cc3fa60b3bbdb376b430688e45c234607991992c4a97bfe79cf/django_htmx-1.17.3-py3-none-any.whl", hash = "sha256:0de964ca257eda2a4ebeeaa8181320119378fa5f95a2fc2f2bfbdd35034ed424"},
     {url = "https://files.pythonhosted.org/packages/9c/2b/bf8dff6c9b80ec2526a6275ee61106a1c35b5619230cd3e74e0ec1189ab7/django-htmx-1.17.3.tar.gz", hash = "sha256:a2069219920d7ef0883ddbf5e8d931069db145a0d4a8a032a2708f840c7a68a6"},
+]
+
+[[package]]
+name = "django-import-export"
+version = "4.0.0"
+requires_python = ">=3.8"
+summary = "Django application and library for importing and exporting data with included admin integration."
+dependencies = [
+    "Django>=3.2",
+    "diff-match-patch",
+    "tablib==3.5.0",
+]
+files = [
+    {url = "https://files.pythonhosted.org/packages/31/ce/8dc902299816986c47c83957ca082f2d4b66c04b460b2ecab43a091a0aa1/django_import_export-4.0.0.tar.gz", hash = "sha256:888bcd4385f92c27ce544fad7ca4cc4f9cf9d84b51cb89e402999a0988afd6f8"},
+    {url = "https://files.pythonhosted.org/packages/cf/75/b32b72f56d7b4eac86dbee7f0fcaf04df95d21f8c0b6b7a31073b65aa877/django_import_export-4.0.0-py3-none-any.whl", hash = "sha256:6e8c881ad8ef93ca1f302bbcc39f2b7fc0bb5b3acbdaf4563a6cf271a56c8086"},
 ]
 
 [[package]]
@@ -3113,6 +3138,16 @@ dependencies = [
 files = [
     {url = "https://files.pythonhosted.org/packages/28/e3/55dcc2cfbc3ca9c29519eb6884dd1415ecb53b0e934862d3559ddcb7e20b/stack_data-0.6.3.tar.gz", hash = "sha256:836a778de4fec4dcd1dcd89ed8abff8a221f58308462e1c4aa2a3cf30148f0b9"},
     {url = "https://files.pythonhosted.org/packages/f1/7b/ce1eafaf1a76852e2ec9b22edecf1daa58175c090266e9f6c64afcd81d91/stack_data-0.6.3-py3-none-any.whl", hash = "sha256:d5558e0c25a4cb0853cddad3d77da9891a08cb85dd9f9f91b9f8cd66e511e695"},
+]
+
+[[package]]
+name = "tablib"
+version = "3.5.0"
+requires_python = ">=3.8"
+summary = "Format agnostic tabular data library (XLS, JSON, YAML, CSV, etc.)"
+files = [
+    {url = "https://files.pythonhosted.org/packages/95/6a/d62bb27ecd6371cd10fc7f68fa9b06cf46e4771582f2aae94fb56c24add7/tablib-3.5.0.tar.gz", hash = "sha256:f6661dfc45e1d4f51fa8a6239f9c8349380859a5bfaa73280645f046d6c96e33"},
+    {url = "https://files.pythonhosted.org/packages/cf/02/404b9a79578e1a3512bf3ae5e1fb0766859ccf3b55a83ab1e7ac4aeb7bed/tablib-3.5.0-py3-none-any.whl", hash = "sha256:9821caa9eca6062ff7299fa645e737aecff982e6b2b42046928a6413c8dabfd9"},
 ]
 
 [[package]]
