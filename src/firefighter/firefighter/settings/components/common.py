@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     "django_filters",
     "taggit",
     "django_tables2",
+    "import_export",
     # SSO Auth
     "oauth2_authcodeflow",
     # Celery integration

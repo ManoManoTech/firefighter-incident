@@ -45,6 +45,7 @@ dependencies = [
     "drf-standardized-errors>=0.12.6",
     "aiohttp>=3.9.1", # Transitive dependency of slack_sdk
     "nh3>=0.2.15",
+    "django-import-export>=4.0.0",
 ]
 requires-python = ">=3.11,<4.0"
 license = {file = "LICENSE"}
