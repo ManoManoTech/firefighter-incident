@@ -8,7 +8,7 @@ updates:
     schedule:
       interval: "weekly"
 
-  # Maintain dependencies for npm (yarn is supported)
+  # Maintain dependencies for npm
   - package-ecosystem: "npm"
     directory: "/"
     schedule:

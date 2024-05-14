@@ -142,7 +142,7 @@ tests-cov ={cmd= "pytest --junitxml=pytest-report.xml --cov --cov-report xml:pyt
 docs-serve = {cmd="mkdocs serve", help="Serve the docs locally"}
 docs-build = {cmd="mkdocs build", help="Build the docs"}
 # CSS/JS Build
-build-web =  {cmd="yarn run build", help="Build the web assets (CSS/JS)"}
+build-web =  {cmd="npm run build", help="Build the web assets (CSS/JS)"}
 # Docker-compose dev stack
 dev-env-setup = {composite= ["dev-env-start", "migrate", "loaddata", "createsuperuser", "collectstatic"], help="Initialize the dev environment with Docker-compose and setup Django"}
 dev-env-start = {cmd="docker-compose -f docker-compose.yaml up -d", help="Start the dev environment with Docker-compose"}
