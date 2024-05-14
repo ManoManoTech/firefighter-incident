@@ -270,6 +270,7 @@ PLAUSIBLE_DOMAIN: str = config("PLAUSIBLE_DOMAIN", "")
 # Components
 COMPONENTS = {
     "autodiscover": False,
+    "context_behavior": "django",  # Like before django-components 0.67
     "libraries": [
         "firefighter.components.avatar.avatar",
         "firefighter.components.card.card",
