@@ -2,177 +2,177 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://manomanotech.github.io/firefighter-incident/latest/</loc>
-         <lastmod>2024-03-25</lastmod>
+         <lastmod>2024-05-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://manomanotech.github.io/firefighter-incident/latest/CHANGELOG/</loc>
-         <lastmod>2024-03-25</lastmod>
+         <lastmod>2024-05-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://manomanotech.github.io/firefighter-incident/latest/CODE_OF_CONDUCT/</loc>
-         <lastmod>2024-03-25</lastmod>
+         <lastmod>2024-05-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://manomanotech.github.io/firefighter-incident/latest/FAQ/</loc>
-         <lastmod>2024-03-25</lastmod>
+         <lastmod>2024-05-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://manomanotech.github.io/firefighter-incident/latest/credits/</loc>
-         <lastmod>2024-03-25</lastmod>
+         <lastmod>2024-05-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://manomanotech.github.io/firefighter-incident/latest/license/</loc>
-         <lastmod>2024-03-25</lastmod>
+         <lastmod>2024-05-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://manomanotech.github.io/firefighter-incident/latest/roadmap/</loc>
-         <lastmod>2024-03-25</lastmod>
+         <lastmod>2024-05-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://manomanotech.github.io/firefighter-incident/latest/contributing/0000-README/</loc>
-         <lastmod>2024-03-25</lastmod>
+         <lastmod>2024-05-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://manomanotech.github.io/firefighter-incident/latest/contributing/0000-prerequisites/</loc>
-         <lastmod>2024-03-25</lastmod>
+         <lastmod>2024-05-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://manomanotech.github.io/firefighter-incident/latest/contributing/0001-setup-environment/</loc>
-         <lastmod>2024-03-25</lastmod>
+         <lastmod>2024-05-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://manomanotech.github.io/firefighter-incident/latest/contributing/0002-setup-slack-app/</loc>
-         <lastmod>2024-03-25</lastmod>
+         <lastmod>2024-05-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://manomanotech.github.io/firefighter-incident/latest/contributing/0010-general_architecture/</loc>
-         <lastmod>2024-03-25</lastmod>
+         <lastmod>2024-05-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://manomanotech.github.io/firefighter-incident/latest/contributing/development/</loc>
-         <lastmod>2024-03-25</lastmod>
+         <lastmod>2024-05-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://manomanotech.github.io/firefighter-incident/latest/contributing/documentation/</loc>
-         <lastmod>2024-03-25</lastmod>
+         <lastmod>2024-05-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://manomanotech.github.io/firefighter-incident/latest/contributing/faq/</loc>
-         <lastmod>2024-03-25</lastmod>
+         <lastmod>2024-05-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://manomanotech.github.io/firefighter-incident/latest/contributing/ui/</loc>
-         <lastmod>2024-03-25</lastmod>
+         <lastmod>2024-05-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://manomanotech.github.io/firefighter-incident/latest/contributing/ux/</loc>
-         <lastmod>2024-03-25</lastmod>
+         <lastmod>2024-05-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://manomanotech.github.io/firefighter-incident/latest/deploy/00-intro/</loc>
-         <lastmod>2024-03-25</lastmod>
+         <lastmod>2024-05-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://manomanotech.github.io/firefighter-incident/latest/deploy/XX-auth/</loc>
-         <lastmod>2024-03-25</lastmod>
+         <lastmod>2024-05-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://manomanotech.github.io/firefighter-incident/latest/deploy/XX-custom-settings/</loc>
-         <lastmod>2024-03-25</lastmod>
+         <lastmod>2024-05-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://manomanotech.github.io/firefighter-incident/latest/deploy/XX-i18n-l10/</loc>
-         <lastmod>2024-03-25</lastmod>
+         <lastmod>2024-05-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://manomanotech.github.io/firefighter-incident/latest/deploy/XX-logs-traces/</loc>
-         <lastmod>2024-03-25</lastmod>
+         <lastmod>2024-05-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://manomanotech.github.io/firefighter-incident/latest/deploy/XX-settings/</loc>
-         <lastmod>2024-03-25</lastmod>
+         <lastmod>2024-05-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://manomanotech.github.io/firefighter-incident/latest/deploy/XX-support-policy/</loc>
-         <lastmod>2024-03-25</lastmod>
+         <lastmod>2024-05-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://manomanotech.github.io/firefighter-incident/latest/deploy/XX-tasks/</loc>
-         <lastmod>2024-03-25</lastmod>
+         <lastmod>2024-05-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://manomanotech.github.io/firefighter-incident/latest/reference/api/</loc>
-         <lastmod>2024-03-25</lastmod>
+         <lastmod>2024-05-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://manomanotech.github.io/firefighter-incident/latest/reference/confluence/</loc>
-         <lastmod>2024-03-25</lastmod>
+         <lastmod>2024-05-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://manomanotech.github.io/firefighter-incident/latest/reference/firefighter/</loc>
-         <lastmod>2024-03-25</lastmod>
+         <lastmod>2024-05-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://manomanotech.github.io/firefighter-incident/latest/reference/incidents/</loc>
-         <lastmod>2024-03-25</lastmod>
+         <lastmod>2024-05-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://manomanotech.github.io/firefighter-incident/latest/reference/jira_app/</loc>
-         <lastmod>2024-03-25</lastmod>
+         <lastmod>2024-05-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://manomanotech.github.io/firefighter-incident/latest/reference/logging/</loc>
-         <lastmod>2024-03-25</lastmod>
+         <lastmod>2024-05-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://manomanotech.github.io/firefighter-incident/latest/reference/pagerduty/</loc>
-         <lastmod>2024-03-25</lastmod>
+         <lastmod>2024-05-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://manomanotech.github.io/firefighter-incident/latest/reference/raid/</loc>
-         <lastmod>2024-03-25</lastmod>
+         <lastmod>2024-05-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://manomanotech.github.io/firefighter-incident/latest/reference/slack/</loc>
-         <lastmod>2024-03-25</lastmod>
+         <lastmod>2024-05-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://manomanotech.github.io/firefighter-incident/latest/usage/integrations/</loc>
-         <lastmod>2024-03-25</lastmod>
+         <lastmod>2024-05-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
 </urlset>
