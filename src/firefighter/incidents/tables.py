@@ -35,7 +35,7 @@ class IncidentTable(tables.Table):
 
     id = tables.Column(
         linkify=True,
-        attrs={"a": {"class": "text-primary  hover:text-primary/80"}},
+        attrs={"a": {"class": "text-primary hover:text-primary/80"}},
     )
     title = tables.Column(
         linkify=True,

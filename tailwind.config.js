@@ -56,7 +56,6 @@ module.exports = {
                     "base-300": "#E5E6E6",
                 },
             },
-            "wireframe",
             {
                 darkff: {
                     ...require("daisyui/src/theming/themes")["dark"],
