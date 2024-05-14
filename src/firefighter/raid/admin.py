@@ -3,7 +3,6 @@ from __future__ import annotations
 from django.contrib import admin
 from import_export.admin import ImportExportModelAdmin
 
-
 from firefighter.jira_app.admin import JiraIssueAdmin
 from firefighter.raid.models import (
     FeatureTeam,
@@ -12,7 +11,6 @@ from firefighter.raid.models import (
     RaidArea,
 )
 from firefighter.raid.resources import FeatureTeamResource
-
 
 
 class JiraTicketImpactInline(admin.TabularInline[JiraTicketImpact, JiraTicket]):
