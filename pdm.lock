@@ -5,7 +5,7 @@
 groups = ["default", "dev", "docs", "tests", "types", "docs-img"]
 strategy = ["cross_platform", "static_urls"]
 lock_version = "4.4.1"
-content_hash = "sha256:f8524aaec5381fcc4a3dcf46a3e6a107e9ef03aa357842f383b1ce8968d0c419"
+content_hash = "sha256:fa9689aa2c03ba9b97f380c461937fc3bcdc8f1ff55b1395fb3b33ffa58acbf8"
 
 [[package]]
 name = "aiohttp"
@@ -234,7 +234,7 @@ files = [
 
 [[package]]
 name = "black"
-version = "24.3.0"
+version = "24.4.2"
 requires_python = ">=3.8"
 summary = "The uncompromising code formatter."
 dependencies = [
@@ -245,16 +245,16 @@ dependencies = [
     "platformdirs>=2",
 ]
 files = [
-    {url = "https://files.pythonhosted.org/packages/46/5f/30398c5056cb72f883b32b6520ad00042a9d0454b693f70509867db03a80/black-24.3.0-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:aadf7a02d947936ee418777e0247ea114f78aff0d0959461057cae8a04f20597"},
-    {url = "https://files.pythonhosted.org/packages/4d/ea/31770a7e49f3eedfd8cd7b35e78b3a3aaad860400f8673994bc988318135/black-24.3.0-py3-none-any.whl", hash = "sha256:41622020d7120e01d377f74249e677039d20e6344ff5851de8a10f11f513bf93"},
-    {url = "https://files.pythonhosted.org/packages/68/df/ceea5828be9c4931cb5a75b7e8fb02971f57524da7a16dfec0d4d575327f/black-24.3.0-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:4f1373a7808a8f135b774039f61d59e4be7eb56b2513d3d2f02a8b9365b8a8a9"},
-    {url = "https://files.pythonhosted.org/packages/6b/59/498885b279e890f656ea4300a2671c964acb6d97994ea626479c2e5501b4/black-24.3.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:65c02e4ea2ae09d16314d30912a58ada9a5c4fdfedf9512d23326128ac08ac3d"},
-    {url = "https://files.pythonhosted.org/packages/71/9d/e5fa1ff4ef1940be15a64883c0bb8d2fcf626efec996eab4ae5a8c691d2c/black-24.3.0-cp312-cp312-win_amd64.whl", hash = "sha256:56f52cfbd3dabe2798d76dbdd299faa046a901041faf2cf33288bc4e6dae57b5"},
-    {url = "https://files.pythonhosted.org/packages/8f/5f/bac24a952668c7482cfdb4ebf91ba57a796c9da8829363a772040c1a3312/black-24.3.0.tar.gz", hash = "sha256:a0c9c4a0771afc6919578cec71ce82a3e31e054904e7197deacbc9382671c41f"},
-    {url = "https://files.pythonhosted.org/packages/8f/b0/4bef40c808cc615187db983b75bacdca1c110a229d41ba9887549fac529c/black-24.3.0-cp311-cp311-win_amd64.whl", hash = "sha256:bf21b7b230718a5f08bd32d5e4f1db7fc8788345c8aea1d155fc17852b3410f5"},
-    {url = "https://files.pythonhosted.org/packages/a8/05/8dd038e30caadab7120176d4bc109b7ca2f4457f12eef746b0560a583458/black-24.3.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:c7ed6668cbbfcd231fa0dc1b137d3e40c04c7f786e626b405c62bcd5db5857e4"},
-    {url = "https://files.pythonhosted.org/packages/b6/c6/1d174efa9ff02b22d0124c73fc5f4d4fb006d0d9a081aadc354d05754a13/black-24.3.0-cp312-cp312-macosx_10_9_x86_64.whl", hash = "sha256:2818cf72dfd5d289e48f37ccfa08b460bf469e67fb7c4abb07edc2e9f16fb63f"},
-    {url = "https://files.pythonhosted.org/packages/d9/ed/704731afffe460b8ff0672623b40fce9fe569f2ee617c15857e4d4440a3a/black-24.3.0-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:4acf672def7eb1725f41f38bf6bf425c8237248bb0804faa3965c036f7672d11"},
+    {url = "https://files.pythonhosted.org/packages/0f/89/294c9a6b6c75a08da55e9d05321d0707e9418735e3062b12ef0f54c33474/black-24.4.2-py3-none-any.whl", hash = "sha256:d36ed1124bb81b32f8614555b34cc4259c3fbc7eec17870e8ff8ded335b58d8c"},
+    {url = "https://files.pythonhosted.org/packages/25/6d/eb15a1b155f755f43766cc473618c6e1de6555d6a1764965643f486dcf01/black-24.4.2-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:be8bef99eb46d5021bf053114442914baeb3649a89dc5f3a555c88737e5e98fc"},
+    {url = "https://files.pythonhosted.org/packages/43/24/942b22571b0171be7c6f701cdc3e3b7221f5b522ef02cf82503a547a657b/black-24.4.2-cp312-cp312-win_amd64.whl", hash = "sha256:415e686e87dbbe6f4cd5ef0fbf764af7b89f9057b97c908742b6008cc554b9c0"},
+    {url = "https://files.pythonhosted.org/packages/74/ce/e8eec1a77edbfa982bee3b5460dcdd4fe0e4e3165fc15d8ec44d04da7776/black-24.4.2-cp311-cp311-win_amd64.whl", hash = "sha256:7e122b1c4fb252fd85df3ca93578732b4749d9be076593076ef4d07a0233c3e1"},
+    {url = "https://files.pythonhosted.org/packages/9b/f7/591d601c3046ceb65b97291dfe87fa25124cffac3d97aaaba89d0f0d7bdf/black-24.4.2-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:257d724c2c9b1660f353b36c802ccece186a30accc7742c176d29c146df6e474"},
+    {url = "https://files.pythonhosted.org/packages/a2/47/c9997eb470a7f48f7aaddd3d9a828244a2e4199569e38128715c48059ac1/black-24.4.2.tar.gz", hash = "sha256:c872b53057f000085da66a19c55d68f6f8ddcac2642392ad3a355878406fbd4d"},
+    {url = "https://files.pythonhosted.org/packages/be/b8/9c152301774fa62a265b035a8ede4d6280827904ea1af8c3be10a28d3187/black-24.4.2-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:88c57dc656038f1ab9f92b3eb5335ee9b021412feaa46330d5eba4e51fe49b04"},
+    {url = "https://files.pythonhosted.org/packages/c5/48/34176b522e8cff4620a5d96c2e323ff2413f574870eb25efa8025885e028/black-24.4.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:e151054aa00bad1f4e1f04919542885f89f5f7d086b8a59e5000e6c616896ffb"},
+    {url = "https://files.pythonhosted.org/packages/c9/17/5e0036b265bbf6bc44970d93d48febcbc03701b671db3c9603fd43ebc616/black-24.4.2-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:bdde6f877a18f24844e381d45e9947a49e97933573ac9d4345399be37621e26c"},
+    {url = "https://files.pythonhosted.org/packages/f4/75/3a29de3bda4006cc280d833b5d961cf7df3810a21f49e7a63a7e551fb351/black-24.4.2-cp312-cp312-macosx_10_9_x86_64.whl", hash = "sha256:accf49e151c8ed2c0cdc528691838afd217c50412534e876a19270fea1e28e2d"},
 ]
 
 [[package]]
@@ -1647,15 +1647,15 @@ files = [
 
 [[package]]
 name = "jinja2"
-version = "3.1.3"
+version = "3.1.4"
 requires_python = ">=3.7"
 summary = "A very fast and expressive template engine."
 dependencies = [
     "MarkupSafe>=2.0",
 ]
 files = [
-    {url = "https://files.pythonhosted.org/packages/30/6d/6de6be2d02603ab56e72997708809e8a5b0fbfee080735109b40a3564843/Jinja2-3.1.3-py3-none-any.whl", hash = "sha256:7d6d50dd97d52cbc355597bd845fabfbac3f551e1f99619e39a35ce8c370b5fa"},
-    {url = "https://files.pythonhosted.org/packages/b2/5e/3a21abf3cd467d7876045335e681d276ac32492febe6d98ad89562d1a7e1/Jinja2-3.1.3.tar.gz", hash = "sha256:ac8bd6544d4bb2c9792bf3a159e80bba8fda7f07e81bc3aed565432d5925ba90"},
+    {url = "https://files.pythonhosted.org/packages/31/80/3a54838c3fb461f6fec263ebf3a3a41771bd05190238de3486aae8540c36/jinja2-3.1.4-py3-none-any.whl", hash = "sha256:bc5dd2abb727a5319567b7a813e6a2e7318c39f4f487cfe6c89c6f9c7d25197d"},
+    {url = "https://files.pythonhosted.org/packages/ed/55/39036716d19cab0747a5020fc7e907f362fbf48c984b14e62127f7e68e5d/jinja2-3.1.4.tar.gz", hash = "sha256:4a3aee7acbbe7303aede8e9648d13b8bf88a429282aa6122a993f0ac800cb369"},
 ]
 
 [[package]]
@@ -1764,15 +1764,15 @@ files = [
 
 [[package]]
 name = "markdown-exec"
-version = "1.8.0"
+version = "1.8.1"
 requires_python = ">=3.8"
 summary = "Utilities to execute code blocks in Markdown files."
 dependencies = [
     "pymdown-extensions>=9",
 ]
 files = [
-    {url = "https://files.pythonhosted.org/packages/9a/9a/5857fa669849920c5114a76a77b71134675d0b6fdeb4920e63f4c89db9a9/markdown_exec-1.8.0.tar.gz", hash = "sha256:0a932312f0ca89b82150e1638e84febb90eadd410dfd2417f05759c06deed727"},
-    {url = "https://files.pythonhosted.org/packages/ad/69/eff6f6bfb8008d36734ab7466aca3e9e938705b1129a7bbc0763770f3865/markdown_exec-1.8.0-py3-none-any.whl", hash = "sha256:e80cb766eff8d0bcd1cdd133dba58223b42edbd1b7b9672481c2189572401bff"},
+    {url = "https://files.pythonhosted.org/packages/03/3a/931a9662ba30b932db482d10c244f7c7caf764c8ce56440000810d3f365e/markdown_exec-1.8.1.tar.gz", hash = "sha256:1fe4e344f3dc000dd7e764ab1ee21d14e4e15c91afc8c6d35f18d694693eb696"},
+    {url = "https://files.pythonhosted.org/packages/7f/8a/5bad538693fd123bc5fbd62aae70258195abc85c2acd5109e158d9e95083/markdown_exec-1.8.1-py3-none-any.whl", hash = "sha256:63c769ebf202b1c1f97822c72e4467d39e151b741aeb94758b3de20066ed3b5f"},
 ]
 
 [[package]]
@@ -1851,7 +1851,7 @@ files = [
 
 [[package]]
 name = "mike"
-version = "2.0.0"
+version = "2.1.1"
 summary = "Manage multiple versions of your MkDocs-powered documentation"
 dependencies = [
     "importlib-metadata",
@@ -1859,37 +1859,38 @@ dependencies = [
     "jinja2>=2.7",
     "mkdocs>=1.0",
     "pyparsing>=3.0",
+    "pyyaml-env-tag",
     "pyyaml>=5.1",
     "verspec",
 ]
 files = [
-    {url = "https://files.pythonhosted.org/packages/69/86/fe79ca89ad1a393a9129b3ab77649dbe542103a76c92d2d68ac9f0da496c/mike-2.0.0.tar.gz", hash = "sha256:566f1cab1a58cc50b106fb79ea2f1f56e7bfc8b25a051e95e6eaee9fba0922de"},
-    {url = "https://files.pythonhosted.org/packages/d5/cc/ba256481682f20b38d6d69150d0cfa09c8b5cc6865240764ab80516286cb/mike-2.0.0-py3-none-any.whl", hash = "sha256:87f496a65900f93ba92d72940242b65c86f3f2f82871bc60ebdcffc91fad1d9e"},
+    {url = "https://files.pythonhosted.org/packages/19/5b/c87d9cf712fe1f2b6ab96909ef7db3a7f4184d12045ef83fb9a8ebd7e824/mike-2.1.1-py3-none-any.whl", hash = "sha256:0b1d01a397a423284593eeb1b5f3194e37169488f929b860c9bfe95c0d5efb79"},
+    {url = "https://files.pythonhosted.org/packages/e8/03/73ec2553cd6c2dfc9e8a011e1a131633683ceee1d47ee57b2cfe144c6b94/mike-2.1.1.tar.gz", hash = "sha256:f39ed39f3737da83ad0adc33e9f885092ed27f8c9e7ff0523add0480352a2c22"},
 ]
 
 [[package]]
 name = "mkdocs"
-version = "1.5.3"
-requires_python = ">=3.7"
+version = "1.6.0"
+requires_python = ">=3.8"
 summary = "Project documentation with Markdown."
 dependencies = [
     "click>=7.0",
     "colorama>=0.4; platform_system == \"Windows\"",
     "ghp-import>=1.0",
     "jinja2>=2.11.1",
-    "markdown>=3.2.1",
+    "markdown>=3.3.6",
     "markupsafe>=2.0.1",
     "mergedeep>=1.3.4",
+    "mkdocs-get-deps>=0.2.0",
     "packaging>=20.5",
     "pathspec>=0.11.1",
-    "platformdirs>=2.2.0",
     "pyyaml-env-tag>=0.1",
     "pyyaml>=5.1",
     "watchdog>=2.0",
 ]
 files = [
-    {url = "https://files.pythonhosted.org/packages/89/58/aa3301b23966a71d7f8e55233f467b3cec94a651434e9cd9053811342539/mkdocs-1.5.3-py3-none-any.whl", hash = "sha256:3b3a78e736b31158d64dbb2f8ba29bd46a379d0c6e324c2246c3bc3d2189cfc1"},
-    {url = "https://files.pythonhosted.org/packages/ed/bb/24a22f8154cf79b07b45da070633613837d6e59c7d870076f693b7b1c556/mkdocs-1.5.3.tar.gz", hash = "sha256:eb7c99214dcb945313ba30426c2451b735992c73c2e10838f76d09e39ff4d0e2"},
+    {url = "https://files.pythonhosted.org/packages/b8/c0/930dcf5a3e96b9c8e7ad15502603fc61d495479699e2d2c381e3d37294d1/mkdocs-1.6.0-py3-none-any.whl", hash = "sha256:1eb5cb7676b7d89323e62b56235010216319217d4af5ddc543a91beb8d125ea7"},
+    {url = "https://files.pythonhosted.org/packages/cc/6b/26b33cc8ad54e8bc0345cddc061c2c5c23e364de0ecd97969df23f95a673/mkdocs-1.6.0.tar.gz", hash = "sha256:a73f735824ef83a4f3bcb7a231dcab23f5a838f88b7efc54a0eef5fbdbc3c512"},
 ]
 
 [[package]]
@@ -1908,21 +1909,36 @@ files = [
 ]
 
 [[package]]
+name = "mkdocs-get-deps"
+version = "0.2.0"
+requires_python = ">=3.8"
+summary = "MkDocs extension that lists all dependencies according to a mkdocs.yml file"
+dependencies = [
+    "mergedeep>=1.3.4",
+    "platformdirs>=2.2.0",
+    "pyyaml>=5.1",
+]
+files = [
+    {url = "https://files.pythonhosted.org/packages/98/f5/ed29cd50067784976f25ed0ed6fcd3c2ce9eb90650aa3b2796ddf7b6870b/mkdocs_get_deps-0.2.0.tar.gz", hash = "sha256:162b3d129c7fad9b19abfdcb9c1458a651628e4b1dea628ac68790fb3061c60c"},
+    {url = "https://files.pythonhosted.org/packages/9f/d4/029f984e8d3f3b6b726bd33cafc473b75e9e44c0f7e80a5b29abc466bdea/mkdocs_get_deps-0.2.0-py3-none-any.whl", hash = "sha256:2bf11d0b133e77a0dd036abeeb06dec8775e46efa526dc70667d8863eefc6134"},
+]
+
+[[package]]
 name = "mkdocs-git-authors-plugin"
-version = "0.8.0"
+version = "0.9.0"
 requires_python = ">=3.7"
 summary = "Mkdocs plugin to display git authors of a page"
 dependencies = [
     "mkdocs>=1.0",
 ]
 files = [
-    {url = "https://files.pythonhosted.org/packages/36/77/80816019bcd716f7f1fad9fd5a35cc4c5c80f378f3718dc6a68c98bbced0/mkdocs-git-authors-plugin-0.8.0.tar.gz", hash = "sha256:10dfc57fb10d5c3aceb0e5cdea199ac3a7588979f26484eba46d935dc1044c26"},
-    {url = "https://files.pythonhosted.org/packages/da/19/cc1eb90f5cfe91cc910f15e18376e6ac4fcd8bbe0919254c97864a7e4f9d/mkdocs_git_authors_plugin-0.8.0-py3-none-any.whl", hash = "sha256:0614f4f87d31eabd0a0d607c9e0532608fc593997ebee282ec564ee6dc1c041e"},
+    {url = "https://files.pythonhosted.org/packages/46/ad/a6e0ce34a1d9abe35844cdc3a64028d3df7bfe24b143021f7fcaa26adfdd/mkdocs_git_authors_plugin-0.9.0-py3-none-any.whl", hash = "sha256:380730a05eeb947a7e84be05fdb1c5ae2a7bc70fd9f6eda941f187c87ae37052"},
+    {url = "https://files.pythonhosted.org/packages/ac/03/99e18d62964d268eb9a866f42c9d53b43cde903a7fb436da85e396945a02/mkdocs_git_authors_plugin-0.9.0.tar.gz", hash = "sha256:6161f63b87064481a48d9ad01c23e43c3e758930c3a9cc167fe482909ceb9eac"},
 ]
 
 [[package]]
 name = "mkdocs-git-revision-date-localized-plugin"
-version = "1.2.4"
+version = "1.2.5"
 requires_python = ">=3.8"
 summary = "Mkdocs plugin that enables displaying the localized date of the last git modification of a markdown file."
 dependencies = [
@@ -1932,8 +1948,8 @@ dependencies = [
     "pytz",
 ]
 files = [
-    {url = "https://files.pythonhosted.org/packages/28/06/7d2f5c448c717e8bb4c6c14b5147a9880693b233ca6c25277a8db0defe68/mkdocs-git-revision-date-localized-plugin-1.2.4.tar.gz", hash = "sha256:08fd0c6f33c8da9e00daf40f7865943113b3879a1c621b2bbf0fa794ffe997d3"},
-    {url = "https://files.pythonhosted.org/packages/40/18/3715944cf2651031cb83f14df2c36e13113495894e064aec397f6b31f2f8/mkdocs_git_revision_date_localized_plugin-1.2.4-py3-none-any.whl", hash = "sha256:1f94eb510862ef94e982a2910404fa17a1657ecf29f45a07b0f438c00767fc85"},
+    {url = "https://files.pythonhosted.org/packages/c4/05/9ce3778a3452f1cd8ef6159d4fb290118751da74e46199357dd2ff56b071/mkdocs_git_revision_date_localized_plugin-1.2.5.tar.gz", hash = "sha256:0c439816d9d0dba48e027d9d074b2b9f1d7cd179f74ba46b51e4da7bb3dc4b9b"},
+    {url = "https://files.pythonhosted.org/packages/fe/59/d3306639a9957f8e62e789a5a0e0be36da132522a88bcabafad52b2acfcf/mkdocs_git_revision_date_localized_plugin-1.2.5-py3-none-any.whl", hash = "sha256:d796a18b07cfcdb154c133e3ec099d2bb5f38389e4fd54d3eb516a8a736815b8"},
 ]
 
 [[package]]
@@ -1952,7 +1968,7 @@ files = [
 
 [[package]]
 name = "mkdocs-include-markdown-plugin"
-version = "6.0.5"
+version = "6.0.6"
 requires_python = ">=3.8"
 summary = "Mkdocs Markdown includer plugin."
 dependencies = [
@@ -1960,13 +1976,13 @@ dependencies = [
     "wcmatch<9,>=8",
 ]
 files = [
-    {url = "https://files.pythonhosted.org/packages/1f/4f/11542432ac48b80a73cba4c7dbfe8ecd694c75fb3bfc3ee6fce6b530dc76/mkdocs_include_markdown_plugin-6.0.5-py3-none-any.whl", hash = "sha256:db41aa1937a618afa3497616f457d4e51d9123b13b2034bb15505ff9ce061f86"},
-    {url = "https://files.pythonhosted.org/packages/d7/0b/2c88605d3118ad85a184a4382d181a27f49c8e3641bc1e2a2d572b8b8116/mkdocs_include_markdown_plugin-6.0.5.tar.gz", hash = "sha256:ad10779cf0dc4ff180aaa0079163271877b3c2fd31e36d5579854fe1d4b0d1ae"},
+    {url = "https://files.pythonhosted.org/packages/17/ca/1a5c0fb22557e806b6d54672aab5a256af49e305705bb10354da4f0fcd85/mkdocs_include_markdown_plugin-6.0.6.tar.gz", hash = "sha256:7c80258b2928563c75cc057a7b9a0014701c40804b1b6aa290f3b4032518b43c"},
+    {url = "https://files.pythonhosted.org/packages/b6/36/e191c1a7e4408f280adbfb986550f2f56ba1b2859111d5229f33bb4a578e/mkdocs_include_markdown_plugin-6.0.6-py3-none-any.whl", hash = "sha256:7ccafbaa412c1e5d3510c4aff46d1fe64c7a810c01dace4c636253d1aa5bc193"},
 ]
 
 [[package]]
 name = "mkdocs-material"
-version = "9.5.15"
+version = "9.5.22"
 requires_python = ">=3.8"
 summary = "Documentation that simply works"
 dependencies = [
@@ -1975,7 +1991,7 @@ dependencies = [
     "jinja2~=3.0",
     "markdown~=3.2",
     "mkdocs-material-extensions~=1.3",
-    "mkdocs~=1.5.3",
+    "mkdocs~=1.6",
     "paginate~=0.5",
     "pygments~=2.16",
     "pymdown-extensions~=10.2",
@@ -1983,8 +1999,8 @@ dependencies = [
     "requests~=2.26",
 ]
 files = [
-    {url = "https://files.pythonhosted.org/packages/06/85/15eaba9ebe411a22bfcb88dd47e99a103b9a13f588e1aa11a68a8e7d52e9/mkdocs_material-9.5.15.tar.gz", hash = "sha256:39f03cca45e82bf54eb7456b5a18bd252eabfdd67f237a229471484a0a4d4635"},
-    {url = "https://files.pythonhosted.org/packages/7b/57/b2001b890d82214d3801a9f3728b4a7a8c61dee59cbf681e752ad63cdb0f/mkdocs_material-9.5.15-py3-none-any.whl", hash = "sha256:e5c96dec3d19491de49ca643fc1dbb92b278e43cdb816c775bc47db77d9b62fb"},
+    {url = "https://files.pythonhosted.org/packages/21/ff/49aea010a43ebbdbe97a2d8e6355264beccce2f8892d8db0a5f8880c4354/mkdocs_material-9.5.22.tar.gz", hash = "sha256:22a853a456ae8c581c4628159574d6fc7c71b2c7569dc9c3a82cc70432219599"},
+    {url = "https://files.pythonhosted.org/packages/f2/15/335fcd3181e507d1de237ebd6e5755f5fb9ce2bf2edddff67b62b8a7b86c/mkdocs_material-9.5.22-py3-none-any.whl", hash = "sha256:8c7a377d323567934e6cd46915e64dc209efceaec0dec1cf2202184f5649862c"},
 ]
 
 [[package]]
@@ -1999,18 +2015,18 @@ files = [
 
 [[package]]
 name = "mkdocs-material"
-version = "9.5.15"
+version = "9.5.22"
 extras = ["imaging"]
 requires_python = ">=3.8"
 summary = "Documentation that simply works"
 dependencies = [
     "cairosvg~=2.6",
-    "mkdocs-material==9.5.15",
+    "mkdocs-material==9.5.22",
     "pillow~=10.2",
 ]
 files = [
-    {url = "https://files.pythonhosted.org/packages/06/85/15eaba9ebe411a22bfcb88dd47e99a103b9a13f588e1aa11a68a8e7d52e9/mkdocs_material-9.5.15.tar.gz", hash = "sha256:39f03cca45e82bf54eb7456b5a18bd252eabfdd67f237a229471484a0a4d4635"},
-    {url = "https://files.pythonhosted.org/packages/7b/57/b2001b890d82214d3801a9f3728b4a7a8c61dee59cbf681e752ad63cdb0f/mkdocs_material-9.5.15-py3-none-any.whl", hash = "sha256:e5c96dec3d19491de49ca643fc1dbb92b278e43cdb816c775bc47db77d9b62fb"},
+    {url = "https://files.pythonhosted.org/packages/21/ff/49aea010a43ebbdbe97a2d8e6355264beccce2f8892d8db0a5f8880c4354/mkdocs_material-9.5.22.tar.gz", hash = "sha256:22a853a456ae8c581c4628159574d6fc7c71b2c7569dc9c3a82cc70432219599"},
+    {url = "https://files.pythonhosted.org/packages/f2/15/335fcd3181e507d1de237ebd6e5755f5fb9ce2bf2edddff67b62b8a7b86c/mkdocs_material-9.5.22-py3-none-any.whl", hash = "sha256:8c7a377d323567934e6cd46915e64dc209efceaec0dec1cf2202184f5649862c"},
 ]
 
 [[package]]
@@ -2043,20 +2059,20 @@ files = [
 
 [[package]]
 name = "mkdocs-section-index"
-version = "0.3.8"
-requires_python = ">=3.7"
+version = "0.3.9"
+requires_python = ">=3.8"
 summary = "MkDocs plugin to allow clickable sections that lead to an index page"
 dependencies = [
     "mkdocs>=1.2",
 ]
 files = [
-    {url = "https://files.pythonhosted.org/packages/8b/ce/4ec713b1c1b561b235f72e350d549b379b6df947318ffe5859355b455b7a/mkdocs_section_index-0.3.8.tar.gz", hash = "sha256:bbd209f0da79441baf136ef3a9c40665bb9681d1fb62c73ca2f116fd1388a404"},
-    {url = "https://files.pythonhosted.org/packages/b1/20/670583b3c4d5bf8538458b7dbc72f2b63ec5959e3b2924dc329d2749df2f/mkdocs_section_index-0.3.8-py3-none-any.whl", hash = "sha256:823d298d78bc1e73e23678ff60889f3c369c2167b03dba73fea88bd0e268a60d"},
+    {url = "https://files.pythonhosted.org/packages/86/09/3cfcfec56740fba157991cd098c76dd08ef9c211db292c7c7d820d16c351/mkdocs_section_index-0.3.9.tar.gz", hash = "sha256:b66128d19108beceb08b226ee1ba0981840d14baf8a652b6c59e650f3f92e4f8"},
+    {url = "https://files.pythonhosted.org/packages/d2/19/16f6368f69949ea2d0086197a86beda4d4f27f09bb8c59130922f03d335d/mkdocs_section_index-0.3.9-py3-none-any.whl", hash = "sha256:5e5eb288e8d7984d36c11ead5533f376fdf23498f44e903929d72845b24dfe34"},
 ]
 
 [[package]]
 name = "mkdocstrings"
-version = "0.24.1"
+version = "0.25.1"
 requires_python = ">=3.8"
 summary = "Automatic documentation from sources, for MkDocs."
 dependencies = [
@@ -2070,8 +2086,8 @@ dependencies = [
     "pymdown-extensions>=6.3",
 ]
 files = [
-    {url = "https://files.pythonhosted.org/packages/d3/53/941fc52aa984f6f03b4f7473d7ec787b22076794eda40701a705cab1ab01/mkdocstrings-0.24.1-py3-none-any.whl", hash = "sha256:b4206f9a2ca8a648e222d5a0ca1d36ba7dee53c88732818de183b536f9042b5d"},
-    {url = "https://files.pythonhosted.org/packages/d8/b1/ce782ff49d0fcf2ef65e9a77aa651f115a8c5e48aab6a72f2001bfcc404b/mkdocstrings-0.24.1.tar.gz", hash = "sha256:cc83f9a1c8724fc1be3c2fa071dd73d91ce902ef6a79710249ec8d0ee1064401"},
+    {url = "https://files.pythonhosted.org/packages/10/e9/c4ee344c9e77bd3eb8f0e1d5366a2c40b85d1b505447138b657c7249ab41/mkdocstrings-0.25.1-py3-none-any.whl", hash = "sha256:da01fcc2670ad61888e8fe5b60afe9fee5781017d67431996832d63e887c2e51"},
+    {url = "https://files.pythonhosted.org/packages/59/23/4bdbd280fadfe08325936358e95f4241f639fbeace2ad697e11b69c37c2a/mkdocstrings-0.25.1.tar.gz", hash = "sha256:c3a2515f31577f311a9ee58d089e4c51fc6046dbd9e9b4c3de4c3194667fe9bf"},
 ]
 
 [[package]]
@@ -2091,17 +2107,17 @@ files = [
 
 [[package]]
 name = "mkdocstrings"
-version = "0.24.1"
+version = "0.25.1"
 extras = ["python"]
 requires_python = ">=3.8"
 summary = "Automatic documentation from sources, for MkDocs."
 dependencies = [
     "mkdocstrings-python>=0.5.2",
-    "mkdocstrings==0.24.1",
+    "mkdocstrings==0.25.1",
 ]
 files = [
-    {url = "https://files.pythonhosted.org/packages/d3/53/941fc52aa984f6f03b4f7473d7ec787b22076794eda40701a705cab1ab01/mkdocstrings-0.24.1-py3-none-any.whl", hash = "sha256:b4206f9a2ca8a648e222d5a0ca1d36ba7dee53c88732818de183b536f9042b5d"},
-    {url = "https://files.pythonhosted.org/packages/d8/b1/ce782ff49d0fcf2ef65e9a77aa651f115a8c5e48aab6a72f2001bfcc404b/mkdocstrings-0.24.1.tar.gz", hash = "sha256:cc83f9a1c8724fc1be3c2fa071dd73d91ce902ef6a79710249ec8d0ee1064401"},
+    {url = "https://files.pythonhosted.org/packages/10/e9/c4ee344c9e77bd3eb8f0e1d5366a2c40b85d1b505447138b657c7249ab41/mkdocstrings-0.25.1-py3-none-any.whl", hash = "sha256:da01fcc2670ad61888e8fe5b60afe9fee5781017d67431996832d63e887c2e51"},
+    {url = "https://files.pythonhosted.org/packages/59/23/4bdbd280fadfe08325936358e95f4241f639fbeace2ad697e11b69c37c2a/mkdocstrings-0.25.1.tar.gz", hash = "sha256:c3a2515f31577f311a9ee58d089e4c51fc6046dbd9e9b4c3de4c3194667fe9bf"},
 ]
 
 [[package]]

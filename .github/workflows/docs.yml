@@ -1,7 +1,6 @@
 ---
 on:
   push:
-    branches: [main]
   workflow_dispatch:
     inputs:
       ref:
@@ -57,12 +56,6 @@ jobs:
           pdm run docs-build --strict
         # If pull request or not main branch and not a tag
         if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref != 'refs/heads/main' && !startsWith(github.ref, 'refs/tags/')) || github.event_name == 'workflow_dispatch'
-
-      - name: Patch mike 2.0.0
-        run: |
-          # In .venv/lib/python3.11/site-packages/mike/mkdocs_utils.py, replace `config = mkdocs.utils.yaml_load(f)` by `config = mkdocs.config.load_config(f).data`
-          # Issue: https://github.com/jimporter/mike/issues/199
-          sed -i 's/config = mkdocs.utils.yaml_load(f)/config = mkdocs.config.load_config(f).data/' .venv/lib/python3.11/site-packages/mike/mkdocs_utils.py
 
       - name: Configure git
         run: |
