@@ -100,7 +100,7 @@ class RaidJiraClient(JiraClient):
                 description_addendum
             )
             description += description_addendum_str
-        if project == None:
+        if project is None:
             feature_team = FeatureTeam.objects.filter(name=suggested_team_routing).get()
             project = (
                 feature_team.jira_project_key if feature_team else RAID_JIRA_PROJECT_KEY
