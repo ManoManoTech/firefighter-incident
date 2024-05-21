@@ -100,10 +100,11 @@ class RaidJiraClient(JiraClient):
                 description_addendum
             )
             description += description_addendum_str
-        feature_team = FeatureTeam.objects.filter(name=suggested_team_routing).get()
-        project = (
-            feature_team.jira_project_key if feature_team else RAID_JIRA_PROJECT_KEY
-        )
+        if project == None:
+            feature_team = FeatureTeam.objects.filter(name=suggested_team_routing).get()
+            project = (
+                feature_team.jira_project_key if feature_team else RAID_JIRA_PROJECT_KEY
+            )
         issue = self.jira.create_issue(
             project=project,
             summary=summary,
