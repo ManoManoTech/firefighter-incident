@@ -21,6 +21,6 @@ class FormField(component.Component):
         if field is None:
             raise ValueError("Field not set!")
 
-        input_class = "input-ff"
+        input_class = "input input-bordered input-md"
 
         return {"field": field, "field_input_class": input_class}
