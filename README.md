@@ -6,6 +6,8 @@ FireFighter is ManoMano's in-house Incident Management Tool.
 
 It helps manage incidents, by automatically creating a Slack channel for communication, and much more.
 
+![Slack Bot Commands](docs/assets/screenshots/bot_commands.jpeg)
+
 __What's Incident Management?__
 
 Incident Management is a set of processes and tools to help teams detect, respond to, and resolve incidents quickly and effectively.
