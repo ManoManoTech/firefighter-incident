@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import operator
 from datetime import datetime
 
 from django.utils import timezone
@@ -72,7 +73,7 @@ class IncidentFactory(DjangoModelFactory):
     id = Sequence(lambda n: n + 1)
     title = Faker("text", max_nb_chars=50)
     description = Faker("text")
-    _status = FuzzyChoice(IncidentStatus.choices, getter=lambda c: c[0])
+    _status = FuzzyChoice(IncidentStatus.choices, getter=operator.itemgetter(0))
     created_at = FuzzyDateTime(
         start_dt=datetime(2018, 1, 1, tzinfo=timezone.get_current_timezone()),
         end_dt=datetime(2022, 1, 1, tzinfo=timezone.get_current_timezone()),
