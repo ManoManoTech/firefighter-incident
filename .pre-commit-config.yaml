@@ -6,7 +6,7 @@ default_language_version:
   python: python3.12
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v4.6.0
     hooks:
       - id: check-toml
       - id: trailing-whitespace
@@ -19,7 +19,7 @@ repos:
       - id: fix-byte-order-marker
   # Versions must be kept in sync with lockfile
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: 'v0.3.4'
+    rev: 'v0.4.9'
     hooks:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix]
