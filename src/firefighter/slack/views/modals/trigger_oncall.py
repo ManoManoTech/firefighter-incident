@@ -110,9 +110,7 @@ class OnCallModal(IncidentSelectableModalMixin, SlackModal):
                 details=incident.description,
                 incident_id=incident.id,
                 conference_url=(
-                    incident.slack_channel_url
-                    if incident.slack_channel_url
-                    else incident.status_page_url
+                    incident.slack_channel_url or incident.status_page_url
                 ),
                 triggered_by=user,
             )

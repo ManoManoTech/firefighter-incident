@@ -72,7 +72,7 @@ class GroupedModelSerializerOpenAPI(OpenApiSerializerExtension):  # type: ignore
         child_schema = auto_schema.resolve_serializer(
             self.target.child_serializer, direction
         )
-        child_schema_ref = child_schema.ref if child_schema.ref else child_schema
+        child_schema_ref = child_schema.ref or child_schema
         return {"type": "object", "additionalProperties": child_schema_ref}
 
     def get_name(

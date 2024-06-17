@@ -27,7 +27,7 @@ class SlackMessageRaidCreatedIssue(SlackMessageSurface):
 
     def __init__(self, ticket: JiraTicket, reporter_user: User | None = None) -> None:
         self.ticket = ticket
-        self.reporter_user = reporter_user if reporter_user else ticket.reporter.user
+        self.reporter_user = reporter_user or ticket.reporter.user
         super().__init__()
 
     def get_text(self) -> str:
@@ -55,7 +55,7 @@ class SlackMessageRaidCreatedIssue(SlackMessageSurface):
                     ),
                     MarkdownTextObject(text=f":jira_new: *Jira:*\n{self.ticket.url}"),
                     MarkdownTextObject(
-                        text=f":warning: *Business impact*: {self.ticket.business_impact if self.ticket.business_impact else 'N/A'}"
+                        text=f":warning: *Business impact*: {self.ticket.business_impact or 'N/A'}"
                     ),
                 ]
             ),
