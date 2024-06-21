@@ -5,7 +5,7 @@
 groups = ["default", "dev", "docs", "tests", "types", "docs-img"]
 strategy = ["cross_platform", "static_urls"]
 lock_version = "4.4.1"
-content_hash = "sha256:fa9689aa2c03ba9b97f380c461937fc3bcdc8f1ff55b1395fb3b33ffa58acbf8"
+content_hash = "sha256:e31bc61f707562e9bab8cb8e2dba2d5765d955eee8c2804c907e6f15ff732c30"
 
 [[package]]
 name = "aiohttp"
@@ -1026,24 +1026,24 @@ files = [
 
 [[package]]
 name = "django-stubs"
-version = "5.0.2"
+version = "4.2.7"
 requires_python = ">=3.8"
 summary = "Mypy stubs for Django"
 dependencies = [
-    "asgiref",
     "django",
-    "django-stubs-ext>=5.0.2",
+    "django-stubs-ext>=4.2.7",
     "types-PyYAML",
-    "typing-extensions>=4.11.0",
+    "types-pytz",
+    "typing-extensions",
 ]
 files = [
-    {url = "https://files.pythonhosted.org/packages/28/c2/4dd06ac9ce7ed03b50d99a1c20cc2fd5ef6adf631545a79a935b0f62b265/django_stubs-5.0.2.tar.gz", hash = "sha256:236bc5606e5607cb968f92b648471f9edaa461a774bc013bf9e6bff8730f6bdf"},
-    {url = "https://files.pythonhosted.org/packages/92/cc/d173ba974b59e1b54000f94cbf8e1608fa42854ccec740a3d0ee1158ff93/django_stubs-5.0.2-py3-none-any.whl", hash = "sha256:cb0c506cb5c54c64612e4a2ee8d6b913c6178560ec168009fe847c09747c304b"},
+    {url = "https://files.pythonhosted.org/packages/1c/1f/1b1da357d37cbbf21496c17aad5a55416c7c37944a909c4a19ddd61994df/django-stubs-4.2.7.tar.gz", hash = "sha256:8ccd2ff4ee5adf22b9e3b7b1a516d2e1c2191e9d94e672c35cc2bc3dd61e0f6b"},
+    {url = "https://files.pythonhosted.org/packages/31/33/a4024662b31999841bc18ef845a790f6b6a9ad50f5b2aceb029896612d17/django_stubs-4.2.7-py3-none-any.whl", hash = "sha256:4cf4de258fa71adc6f2799e983091b9d46cfc67c6eebc68fe111218c9a62b3b8"},
 ]
 
 [[package]]
 name = "django-stubs-ext"
-version = "5.0.2"
+version = "4.2.7"
 requires_python = ">=3.8"
 summary = "Monkey-patching and extensions for django-stubs"
 dependencies = [
@@ -1051,8 +1051,8 @@ dependencies = [
     "typing-extensions",
 ]
 files = [
-    {url = "https://files.pythonhosted.org/packages/39/8e/ebe7a551511b4034ad4fe9c3d5333650e4d0d1d8700fd458ed64647394d9/django_stubs_ext-5.0.2.tar.gz", hash = "sha256:409c62585d7f996cef5c760e6e27ea3ff29f961c943747e67519c837422cad32"},
-    {url = "https://files.pythonhosted.org/packages/3c/bb/8846460aae8b9ae6601dc33cd7bc9d1f96baac607474a468e9f474317513/django_stubs_ext-5.0.2-py3-none-any.whl", hash = "sha256:8d8efec5a86241266bec94a528fe21258ad90d78c67307f3ae5f36e81de97f12"},
+    {url = "https://files.pythonhosted.org/packages/21/be/e87631afa766a101877758495bec4108fdaa20ba65a2e80bc02cfa874985/django_stubs_ext-4.2.7-py3-none-any.whl", hash = "sha256:45a5d102417a412e3606e3c358adb4744988a92b7b58ccf3fd64bddd5d04d14c"},
+    {url = "https://files.pythonhosted.org/packages/aa/b6/580f2d4d83afae139d8aa222687ba369c5877dc2e884b32271ccb47c2f82/django-stubs-ext-4.2.7.tar.gz", hash = "sha256:519342ac0849cda1559746c9a563f03ff99f636b0ebe7c14b75e816a00dfddc3"},
 ]
 
 [[package]]
@@ -1172,19 +1172,19 @@ files = [
 
 [[package]]
 name = "djangorestframework-stubs"
-version = "3.15.0"
+version = "3.14.5"
 requires_python = ">=3.8"
 summary = "PEP-484 stubs for django-rest-framework"
 dependencies = [
-    "django-stubs>=5.0.0",
+    "django-stubs>=4.2.7",
     "requests>=2.0.0",
     "types-PyYAML>=5.4.3",
     "types-requests>=0.1.12",
     "typing-extensions>=3.10.0",
 ]
 files = [
-    {url = "https://files.pythonhosted.org/packages/05/c5/513fcf0721663b70c881b7a3a4dc8bbc9965a227e2eab69f2ba94de36896/djangorestframework_stubs-3.15.0.tar.gz", hash = "sha256:f60ee1c80abb01a77acc0169969e07c45c2739ae64667b9a0dd4a2e32697dcab"},
-    {url = "https://files.pythonhosted.org/packages/39/86/87c9218a3ad616016d93da0f0cc1c57a7c973756cca5c7dffcc8b6be2a16/djangorestframework_stubs-3.15.0-py3-none-any.whl", hash = "sha256:6c634f16fe1f9b1654cfd921eca64cd4188ce8534ab5e3ec7e44aaa0ca969d93"},
+    {url = "https://files.pythonhosted.org/packages/13/05/c98a1e3d3824dc9a330df26827935b5d7559a5c01bcfca8e18ab645dc758/djangorestframework_stubs-3.14.5-py3-none-any.whl", hash = "sha256:43d788fd50cda49b922cd411e59c5b8cdc3f3de49c02febae12ce42139f0269b"},
+    {url = "https://files.pythonhosted.org/packages/cc/51/ef2f2196e81c261490e86c15b78f5a097d825b58f5ceb615bcece612eeb9/djangorestframework-stubs-3.14.5.tar.gz", hash = "sha256:5dd6f638aa5291fb7863e6166128a6ed20bf4986e2fc5cf334e6afc841797a09"},
 ]
 
 [[package]]
@@ -1240,7 +1240,7 @@ files = [
 [[package]]
 name = "ecdsa"
 version = "0.19.0"
-requires_python = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,>=2.6"
+requires_python = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 summary = "ECDSA cryptographic signature library (pure python)"
 dependencies = [
     "six>=1.9.0",
@@ -3285,6 +3285,16 @@ summary = "Typing stubs for python-dateutil"
 files = [
     {url = "https://files.pythonhosted.org/packages/61/c5/c3a4d72ffa8efc2e78f7897b1c69ec760553246b67d3ce8c4431fac5d4e3/types-python-dateutil-2.9.0.20240316.tar.gz", hash = "sha256:5d2f2e240b86905e40944dd787db6da9263f0deabef1076ddaed797351ec0202"},
     {url = "https://files.pythonhosted.org/packages/c7/1b/af4f4c4f3f7339a4b7eb3c0ab13416db98f8ac09de3399129ee5fdfa282b/types_python_dateutil-2.9.0.20240316-py3-none-any.whl", hash = "sha256:6b8cb66d960771ce5ff974e9dd45e38facb81718cc1e208b10b1baccbfdbee3b"},
+]
+
+[[package]]
+name = "types-pytz"
+version = "2024.1.0.20240417"
+requires_python = ">=3.8"
+summary = "Typing stubs for pytz"
+files = [
+    {url = "https://files.pythonhosted.org/packages/9b/b0/079f6f340c0051fbe03ac3a6d9fce323c9797b85380d455e1566eaf2716b/types-pytz-2024.1.0.20240417.tar.gz", hash = "sha256:6810c8a1f68f21fdf0f4f374a432487c77645a0ac0b31de4bf4690cf21ad3981"},
+    {url = "https://files.pythonhosted.org/packages/e8/8d/f5dc5239d59bb4a7b58e2b6d0dc6f2c2ba797b110f83cdda8479508c63dd/types_pytz-2024.1.0.20240417-py3-none-any.whl", hash = "sha256:8335d443310e2db7b74e007414e74c4f53b67452c0cb0d228ca359ccfba59659"},
 ]
 
 [[package]]
