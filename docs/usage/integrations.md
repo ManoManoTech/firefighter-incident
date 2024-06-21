@@ -38,6 +38,13 @@ No Back-Office configuration.
 
 ## :fontawesome-brands-slack: Slack
 
+### Features
+
+Open, manage and close incidents from Slack. The whole lifecycle.
+
+![See current incidents from Slack](../assets/screenshots/slack_bot_home.jpeg)
+_See current incidents from Slack._
+
 ### Tasks
 
 Tasks are provided to regularly sync users, conversations, usergroups and channel members from Slack.
