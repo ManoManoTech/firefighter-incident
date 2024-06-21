@@ -84,9 +84,9 @@ def _get_deps(base_deps: Mapping[str, Mapping[str, str]]) -> dict[str, dict[str,
     again = True
     while again:
         again = False
-        for pkg_name in lock_pkgs:
+        for pkg_name, pkg_lock_pkgs in lock_pkgs.items():
             if pkg_name in deps:
-                for pkg_dependency in lock_pkgs[pkg_name].get("dependencies", []):
+                for pkg_dependency in pkg_lock_pkgs.get("dependencies", []):
                     parsed = regex.match(pkg_dependency).groupdict()  # type: ignore[union-attr]
                     dep_name = parsed["dist"].lower()
                     if (
@@ -97,7 +97,7 @@ def _get_deps(base_deps: Mapping[str, Mapping[str, str]]) -> dict[str, dict[str,
                         deps[dep_name] = {
                             "license": _get_license(dep_name),
                             **parsed,
-                            **lock_pkgs[dep_name],
+                            **pkg_lock_pkgs,
                         }
                         again = True
 
