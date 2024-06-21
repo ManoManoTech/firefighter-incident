@@ -1,6 +1,6 @@
 {%
    include-markdown "../README.md"
-   rewrite-relative-urls=false
+   rewrite-relative-urls=true
    end="<!--intro-end-->"
 %}
 
@@ -14,9 +14,7 @@
 
     Don't leave Slack to manage incidents, and keep your team in the loop.
 
-    <!-- [:octicons-arrow-right-24: Slack App](#) -->
-
-    <!-- [:octicons-arrow-right-24: Getting started](#) -->
+    [:octicons-arrow-right-24: Learn more](usage/integrations.md#slack)
 
 -   :simple-pagerduty:{ .lg .middle }  __Forward to PagerDuty__ _(optional)_
 
