@@ -47,7 +47,7 @@ logger = logging.getLogger(__name__)
 T = TypeVar("T", bound="Conversation")
 
 
-class ConversationManager(Generic[T], models.Manager[T]):
+class ConversationManager(models.Manager[T], Generic[T]):
     def get_or_none(self, **kwargs: Any) -> Conversation | None:
         try:
             return self.get(**kwargs)

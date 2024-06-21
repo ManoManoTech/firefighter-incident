@@ -19,7 +19,7 @@ repos:
       - id: fix-byte-order-marker
   # Versions must be kept in sync with lockfile
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: 'v0.3.4'
+    rev: 'v0.4.10'
     hooks:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix]

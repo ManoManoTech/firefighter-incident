@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 APP_DISPLAY_NAME: str = settings.APP_DISPLAY_NAME
 
 
-class Menus(str, enum.Enum):
+class Menus(enum.StrEnum):
     main = "main"
     footer = "footer"
 
