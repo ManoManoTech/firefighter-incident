@@ -45,7 +45,7 @@ def update_usergroups_members_from_slack(
     usergroups: QuerySet[UserGroup] = queryset.filter(usergroup_id__isnull=False)
 
     fails: list[UserGroup] = []
-    fails = fails + list(queryset.filter(usergroup_id__isnull=True))
+    fails += list(queryset.filter(usergroup_id__isnull=True))
     # Get all usergroups with members
     usergroups_members: dict[str, list[str]] = {}
     usergroups_info: dict[str, dict[str, Any]] = {}

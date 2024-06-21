@@ -397,7 +397,7 @@ class Incident(models.Model):
     @property
     def total_cost(self) -> int | float | Decimal:
         qs: QuerySet[IncidentCost] = self.incident_cost_set.exclude(amount__isnull=True)
-        return sum([iu.amount for iu in qs if iu.amount is not None])
+        return sum(iu.amount for iu in qs if iu.amount is not None)
 
     def compute_metrics(self, *, purge: bool = False) -> None:
         """Compute all metrics (time to fix, ...) from events."""

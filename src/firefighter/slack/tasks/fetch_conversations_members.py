@@ -64,7 +64,7 @@ def fetch_conversations_members_from_slack(
     )
 
     fails: list[Conversation] = []
-    fails = fails + list(conversations.filter(channel_id__isnull=True))
+    fails += list(conversations.filter(channel_id__isnull=True))
 
     conversations_members: dict[str, list[str]] = {}
     conversations_info: dict[str, dict[str, Any]] = {}
