@@ -75,7 +75,7 @@ class RaidJiraClient(JiraClient):
             extra_args["customfield_10895"] = str(zendesk_ticket_id)
         if seller_contract_id:
             description_addendum.append(
-                f"Seller link to BO: https://bo.monechelle.com/provider/catalog/listproducts?provider_id={seller_contract_id}"
+                f"Seller link to TOOLBOX: https://toolbox.manomano.com/login?seller_id={seller_contract_id}"
             )
             extra_args["customfield_10908"] = str(seller_contract_id)
         if is_seller_in_golden_list:
