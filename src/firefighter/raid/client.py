@@ -24,6 +24,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 RAID_JIRA_PROJECT_KEY: Final[str] = settings.RAID_JIRA_PROJECT_KEY
+TOOLBOX_URL: Final[str] = settings.TOOLBOX_URL
 # XXX Do not hardcode this, it should be a setting or fetched from Jira
 RAID_JIRA_WORKFLOW_NAME: Final[str] = "Incident workflow - v2023.03.13"
 TARGET_STATUS_NAME: Final[str] = "Closed"
@@ -75,7 +76,7 @@ class RaidJiraClient(JiraClient):
             extra_args["customfield_10895"] = str(zendesk_ticket_id)
         if seller_contract_id:
             description_addendum.append(
-                f"Seller link to TOOLBOX: https://toolbox.manomano.com/login?seller_id={seller_contract_id}"
+                f"Seller link to TOOLBOX: {TOOLBOX_URL}?seller_id={seller_contract_id}"
             )
             extra_args["customfield_10908"] = str(seller_contract_id)
         if is_seller_in_golden_list:
