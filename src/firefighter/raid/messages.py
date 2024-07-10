@@ -3,6 +3,7 @@ from __future__ import annotations
 import textwrap
 from typing import TYPE_CHECKING
 
+from django.conf import settings
 from slack_sdk.models.blocks.basic_components import MarkdownTextObject
 from slack_sdk.models.blocks.blocks import (
     Block,
@@ -13,13 +14,10 @@ from slack_sdk.models.blocks.blocks import (
 from firefighter.slack.messages.base import SlackMessageSurface
 from firefighter.slack.slack_templating import user_slack_handle_or_name
 
-from django.conf import settings
-
 RAID_JIRA_API_URL: str = settings.RAID_JIRA_API_URL
 
-if TYPE_CHECKING
+if TYPE_CHECKING:
     from firefighter.incidents.models.user import User
-
     from firefighter.raid.models import JiraTicket
 
 
