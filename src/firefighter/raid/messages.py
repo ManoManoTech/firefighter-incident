@@ -13,12 +13,13 @@ from slack_sdk.models.blocks.blocks import (
 from firefighter.slack.messages.base import SlackMessageSurface
 from firefighter.slack.slack_templating import user_slack_handle_or_name
 
-if TYPE_CHECKING:
-    from django.conf import settings
+from django.conf import settings
 
+RAID_JIRA_API_URL: str = settings.RAID_JIRA_API_URL
+
+if TYPE_CHECKING
     from firefighter.incidents.models.user import User
 
-    RAID_JIRA_API_URL: str = settings.RAID_JIRA_API_URL
     from firefighter.raid.models import JiraTicket
 
 
