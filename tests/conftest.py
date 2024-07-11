@@ -43,7 +43,7 @@ def _debug(settings: SettingsWrapper) -> None:
 @pytest.fixture()
 def main_heading() -> str:
     """An example fixture containing some html fragment."""
-    return '<p class="mt-2 text-sm text-base-content text-opacity-80">Report, manage, escalate!</p>'
+    return '<p class="mt-2 text-sm text-base-content text-opacity-70">Report, manage, escalate!</p>'
 
 
 @pytest.fixture(scope="session")
