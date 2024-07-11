@@ -5,7 +5,7 @@
 groups = ["default", "dev", "docs", "tests", "types", "docs-img"]
 strategy = ["cross_platform", "static_urls"]
 lock_version = "4.4.1"
-content_hash = "sha256:c5dfc2093b498ae65246942e71dc670f808363ccf6c104884d8182e26093de12"
+content_hash = "sha256:5d7a7f437ebca4e53b56b09836a1d25f876f73ba6c7bb89281f997b34cfcbf5a"
 
 [[package]]
 name = "aiohttp"
