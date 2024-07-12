@@ -18,7 +18,7 @@
                     {{item.title}}
                   </a>
                 </summary>
-                <ul class="p-2 bg-base-200 rounded-md z-[15]">
+                <ul class="p-2 rounded-md z-[15]">
                   {% for child in item.children%}
                     <li><a {% if item.boost %}hx-boost="true"{% else %}hx-boost="false"{% endif %} href="{{child.url}}" class="{% if child.selected %}active{% endif %}">{{child.title}}{% if item.badge %}<span class="badge">{{child.badge}}</span>
                     {% endif %}</a></li>
@@ -48,11 +48,11 @@
                 {{item.title}}
               </a>
             </div>
-            <ul  tabindex="0" class="dropdown-content p-2 bg-base-200 rounded-md z-[15] menu  ml-0 p-2 shadow bg-base-100 rounded-box w-52">
+            <ul tabindex="0" class="dropdown-content p-2 rounded-md z-[15] menu  ml-0 p-2 shadow bg-neutral-800 rounded-box w-52">
               {% for child in item.children %}
                 <li class="py-1">
                   <a {% if item.boost %}hx-boost="true"{% else %}hx-boost="false"{% endif %} href="{{ child.url }}"
-                     class="whitespace-nowrap  {% if child.selected %}active {% endif %}">
+                     class="whitespace-nowrap  rounded-md {% if child.selected %}active{% endif %}">
                     {{ child.title }}
                   </a>
                 </li>
