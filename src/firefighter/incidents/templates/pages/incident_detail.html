@@ -189,7 +189,7 @@
           {% fill "card_content" %}
             {% for role in incident.roles_set.all %}
               <span class="ff-tooltip">
-                {% include "../layouts/partials/user_card.html" with user=role.user title=role.role.name only %}
+                {% include "../layouts/partials/user_card.html" with user=role.user title=role.role_type.name only %}
                 {% include "../layouts/partials/user_tooltip.html" with user=role.user only %}
               </span>
             {% endfor %}
