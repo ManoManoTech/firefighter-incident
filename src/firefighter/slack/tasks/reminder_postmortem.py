@@ -78,6 +78,7 @@ def publish_fixed_next_actions(
 
 
 def send_reminder(incident: Incident, to_channel) -> None:
+    prefetched_roles = getattr(incident, "roles_prefetched", [])
     if to_channel:
         # Send a message in the incident channel
         incident.conversation.send_message_and_save(
@@ -85,11 +86,11 @@ def send_reminder(incident: Incident, to_channel) -> None:
         )
     else:
         # Send a private message to commander
-        for role in incident.roles_prefetched:
+        for role in prefetched_roles:
             user = role.user
             slack_user = user.slack_user
             if slack_user:
                 private_message = SlackMessageIncidentUpdateReminderCommander(
-                    incident=incident, time_delta_fmt=incident.created_at
+                    incident=incident, time_delta_fmt=str(incident.created_at)
                 )
                 slack_user.send_private_message(private_message)
