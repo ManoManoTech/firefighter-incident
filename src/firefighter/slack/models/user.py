@@ -451,12 +451,22 @@ class SlackUser(models.Model):
         **kwargs: Any,
     ) -> None:
         """Send a private message to the user."""
-        client.chat_postMessage(
-            channel=self.slack_id,
-            text=message.get_text(),
-            metadata=message.get_metadata(),
-            blocks=message.get_blocks(),
-            **kwargs,
+        from firefighter.slack.models.conversation import (
+            Conversation,
+            ConversationStatus,
+            ConversationType,
         )
+
+        conversation_response = client.conversations_open(users=self.slack_id)
+        channel_id = get_in(conversation_response, "channel.id")
+        conversation, _created = Conversation.objects.get_or_create(
+            channel_id=channel_id,
+            defaults={
+                "name": self.username,
+                "type": ConversationType.DM,
+                "status": ConversationStatus.OPENED,
+            },
+        )
+        conversation.send_message_and_save(message)
 
     objects: SlackUserManager = SlackUserManager()
