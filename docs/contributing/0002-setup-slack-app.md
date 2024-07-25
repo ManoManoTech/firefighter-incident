@@ -149,7 +149,7 @@ Check the `.env`.
 
 Read the settings page.
 
-Once Slack is setup, you can remove FF_SKIP_SLACK_CHEKS=true from your `.env` file.
+Once Slack is setup, you can remove FF_SLACK_SKIP_CHECKS=true from your `.env` file.
 
 Using the information from the previous part, check your configuration.
 
