@@ -77,7 +77,7 @@ def publish_fixed_next_actions(
     )
 
 
-def send_reminder(incident: Incident, to_channel) -> None:
+def send_reminder(incident: Incident, *, to_channel: bool) -> None:
     prefetched_roles = getattr(incident, "roles_prefetched", [])
     if to_channel:
         # Send a message in the incident channel
