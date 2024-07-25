@@ -451,7 +451,7 @@ class SlackUser(models.Model):
         **kwargs: Any,
     ) -> None:
         """Send a private message to the user."""
-        from firefighter.slack.models.conversation import (
+        from firefighter.slack.models.conversation import (  # noqa: PLC0415
             Conversation,
             ConversationStatus,
             ConversationType,
