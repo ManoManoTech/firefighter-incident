@@ -1170,7 +1170,9 @@ class SlackMessageChannelReminderPostMortem(SlackMessageSurface):
                     TextObject(
                         type="mrkdwn",
                         text=":bulb: Please take a moment to complete the post-mortem process. "
-                        "It’s essential for continuous improvement!",
+                        """
+                            `It's essential for continuous improvement!`
+                        """,
                     )
                 ]
             ),
