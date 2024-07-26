@@ -866,6 +866,7 @@ class SlackMessageIncidentUpdateReminderCommander(SlackMessageSurface):
                 )
             ),
             SectionBlock(text=MarkdownTextObject(text=text)),
+            SectionBlockUpdateIntent(self.incident),
         ]
 
     def get_text(self) -> str:
