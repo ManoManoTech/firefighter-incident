@@ -1149,7 +1149,7 @@ class SlackMessageIncidentDowngradeHint(SlackMessageSurface):
 
 
 class SlackMessageChannelReminderPostMortem(SlackMessageSurface):
-    id = "ff_reminder_post_mortem"
+    id = "ff_incident_postmortem_late_channel_reminder"
 
     def __init__(self, incident: Incident):
         self.incident = incident
@@ -1167,12 +1167,9 @@ class SlackMessageChannelReminderPostMortem(SlackMessageSurface):
             ),
             ContextBlock(
                 elements=[
-                    TextObject(
-                        type="mrkdwn",
+                    MarkdownTextObject(
                         text=":bulb: Please take a moment to complete the post-mortem process. "
-                        """
-                            `It's essential for continuous improvement!`
-                        """,
+                        "It's essential for continuous improvement",
                     )
                 ]
             ),
@@ -1180,7 +1177,7 @@ class SlackMessageChannelReminderPostMortem(SlackMessageSurface):
 
 
 class SlackMessageIncidentUpdateReminderCommander(SlackMessageSurface):
-    id = "ff_incident_reminder_commander"
+    id = "ff_incident_postmortem_commander_late_reminder"
 
     def __init__(self, incident: Incident, time_delta_fmt: str):
         self.incident = incident
@@ -1189,9 +1186,9 @@ class SlackMessageIncidentUpdateReminderCommander(SlackMessageSurface):
 
     def get_blocks(self) -> list[Block]:
         if self.incident.priority.value >= 4:
-            text = f"Hey there ! You may want to close your this {self.incident.slack_channel_name} incident 📝"
+            text = f"Hey there ! You may want to close your this {self.incident.title} incident 📝"
         else:
-            text = f"It is a {self.incident.slack_channel_name} incident and a lot of people, customers and employees, are probably impacted. This incident has no update for {self.time_delta_fmt}. Please make sure it is done even if you are not the one doing it."
+            text = f"Hey there ! Just a reminder for this incident {self.incident.title}. He has no update since {self.time_delta_fmt}. Please make sure the postmortem is done even if you are not the one doing it."
 
         return [
             HeaderBlock(
@@ -1201,8 +1198,9 @@ class SlackMessageIncidentUpdateReminderCommander(SlackMessageSurface):
                 )
             ),
             SectionBlock(text=MarkdownTextObject(text=text)),
-            SectionBlockUpdateIntent(self.incident),
         ]
 
     def get_text(self) -> str:
-        return "👋 Hi there! Just a reminder to ensure the postmortem for this incident"
+        return (
+            "👋 Hey there! Just a reminder to ensure the postmortem for this incident"
+        )
