@@ -128,8 +128,14 @@ def send_reminders() -> None:
     group(list_fn).apply_async()
 
 
-@shared_task(name="slack.send_reminders_to_commander")
-def send_reminders_to_commander() -> None:
+@shared_task(name="slack.send_postmortem_late_reminder")
+def send_postmortem_late_reminder() -> None:
+    """Sends reminder messages for incidents requiring postmortem updates.
+
+      - For each incident, it checks:
+    a. If a reminder to the commander was sent more than two days ago and no channel message exists, sends a new reminder to the incident's channel.
+    b. If no reminder has ever been sent to the commander and the last incident update was over two days ago, sends a direct reminder to the commander.
+    """
     # Skip if it's out of office hours
     if not is_during_office_hours(timezone.localtime()):
         logger.debug("out of office hours")
@@ -149,58 +155,62 @@ def send_reminders_to_commander() -> None:
                 queryset=IncidentRole.objects.all()
                 .order_by("id")
                 .select_related("role_type", "user", "user__slack_user")
-                .filter(role_type__slug="commander"),
-                to_attr="roles_prefetched",
+                .filter(role_type__slug="commander_roles"),
+                to_attr="commander",
             ),
         )
     )
 
     for incident in opened_incidents:
+        latest_update = None
         try:
             latest_update = IncidentUpdate.objects.filter(incident=incident).latest(
                 "updated_at"
             )
-
-            existing_messages_commander = (
-                (
-                    Message.objects.filter(
-                        ff_type=SlackMessageIncidentUpdateReminderCommander.id,
-                        incident=incident,
-                        ts__gte=latest_update.updated_at - timedelta(days=2),
-                    )
-                )
-                .select_related("conversation")
-                .order_by("-ts")
-                .first()
-            )
-
-            existing_messages_channel = (
-                (
-                    Message.objects.filter(
-                        ff_type=SlackMessageChannelReminderPostMortem.id,
-                        incident=incident,
-                    )
-                )
-                .select_related("conversation")
-                .exists()
-            )
-
-            time_since_update = timezone.now() - latest_update.updated_at
-
-            if existing_messages_commander:
-                time_since_last_commander_message = (
-                    timezone.now() - existing_messages_commander.ts
-                )
-                if (
-                    time_since_last_commander_message >= timedelta(days=2)
-                    and not existing_messages_channel
-                ):
-                    send_reminder(incident=incident, to_channel=True)
-
-            if not existing_messages_commander and time_since_update >= timedelta(
-                minutes=5
-            ):
-                send_reminder(incident=incident, to_channel=False)
-
         except IncidentUpdate.DoesNotExist:
             logger.exception(f"No update found for incident: {incident.id}")
+            continue
+
+        existing_messages_commander = (
+            (
+                Message.objects.filter(
+                    ff_type=SlackMessageIncidentUpdateReminderCommander.id,
+                    incident=incident,
+                    ts__gte=latest_update.updated_at - timedelta(days=2),
+                )
+            )
+            .select_related("conversation")
+            .order_by("-ts")
+            .first()
+        )
+
+        existing_messages_channel = (
+            (
+                Message.objects.filter(
+                    ff_type=SlackMessageChannelReminderPostMortem.id,
+                    incident=incident,
+                )
+            )
+            .select_related("conversation")
+            .exists()
+        )
+
+        time_since_update = timezone.now() - latest_update.updated_at
+        commander_roles = incident.roles_set.all()
+
+        if existing_messages_commander:
+            time_since_last_commander_message = (
+                timezone.now() - existing_messages_commander.ts
+            )
+            if (
+                time_since_last_commander_message >= timedelta(days=3)
+                and not existing_messages_channel
+            ):
+                send_reminder(
+                    incident=incident, commander_role=commander_roles, to_channel=True
+                )
+
+        if not existing_messages_commander and time_since_update >= timedelta(days=3):
+            send_reminder(
+                incident=incident, commander_role=commander_roles, to_channel=False
+            )
