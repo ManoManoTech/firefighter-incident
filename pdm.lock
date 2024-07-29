@@ -5,7 +5,7 @@
 groups = ["default", "dev", "docs", "tests", "types", "docs-img"]
 strategy = ["cross_platform", "static_urls"]
 lock_version = "4.4.1"
-content_hash = "sha256:c5dfc2093b498ae65246942e71dc670f808363ccf6c104884d8182e26093de12"
+content_hash = "sha256:78d7bf38ebaa89258e7bb1b21cda0ca3f2bd8ac00b15ffe635c160be97b02890"
 
 [[package]]
 name = "aiohttp"
@@ -1661,11 +1661,10 @@ files = [
 
 [[package]]
 name = "jira"
-version = "3.8.0"
+version = "3.5.2"
 requires_python = ">=3.8"
 summary = "Python library for interacting with JIRA via REST APIs."
 dependencies = [
-    "Pillow>=2.1.0",
     "defusedxml",
     "packaging",
     "requests-oauthlib>=1.1.0",
@@ -1674,8 +1673,8 @@ dependencies = [
     "typing-extensions>=3.7.4.2",
 ]
 files = [
-    {url = "https://files.pythonhosted.org/packages/4f/52/bb617020064261ba31cc965e932943458b7facfd9691ad7f76a2b631f44f/jira-3.8.0-py3-none-any.whl", hash = "sha256:12190dc84dad00b8a6c0341f7e8a254b0f38785afdec022bd5941e1184a5a3fb"},
-    {url = "https://files.pythonhosted.org/packages/78/b4/557e4c80c0ea12164ffeec0e29372c085bfb263faad53cef5e1455523bec/jira-3.8.0.tar.gz", hash = "sha256:63719c529a570aaa01c3373dbb5a104dab70381c5be447f6c27f997302fa335a"},
+    {url = "https://files.pythonhosted.org/packages/57/e3/6e7dec954fed0a8d7f4b02d7f0a2f4628cfb9fc8ccfee699d7c1139db09b/jira-3.5.2-py3-none-any.whl", hash = "sha256:f97716cd1e35523d04cb75b742143f1f3aaf098eb0ab61ad33e91812beb9edcc"},
+    {url = "https://files.pythonhosted.org/packages/ea/40/8db893f2d1c0fa6e64f8500d54b1e756f6ff00cada962c0ea8d2daab19a8/jira-3.5.2.tar.gz", hash = "sha256:d23a0e0c62c0d6926ac37c68bc0b362065ae19106fe5c79d4ba964fad80d6cf2"},
 ]
 
 [[package]]
