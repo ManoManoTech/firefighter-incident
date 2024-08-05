@@ -21,23 +21,23 @@ from firefighter.slack.models.incident_channel import IncidentChannel
 
 
 # Fixture to create a SlackUser instance
-@pytest.fixture()
+@pytest.fixture
 def slack_user_saved() -> SlackUser:
     user = UserFactory.create()
     return SlackUserFactory.create(user=user)
 
 
-@pytest.fixture()
+@pytest.fixture
 def conversation() -> Conversation:
     return SlackConversationFactory.create()
 
 
-@pytest.fixture()
+@pytest.fixture
 def user() -> User:
     return UserFactory()
 
 
-@pytest.fixture()
+@pytest.fixture
 def slack_user(user: User) -> SlackUser:
     return SlackUserFactory.create(user=user)
 
@@ -56,11 +56,11 @@ class MockWebClient(WebClient):
         self.conversations_join = MagicMock()  # type: ignore[method-assign]
 
 
-@pytest.fixture()
+@pytest.fixture
 def mock_web_client() -> MockWebClient:
     return MockWebClient()
 
 
-@pytest.fixture()
+@pytest.fixture
 def incident_channel(incident_saved: Incident) -> IncidentChannel:
     return IncidentChannelFactory.create(incident=incident_saved)

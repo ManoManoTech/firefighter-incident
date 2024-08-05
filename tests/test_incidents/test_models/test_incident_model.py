@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from firefighter.incidents.models import Incident
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 class TestIncident(django.TestCase):
     """This is a property-based test that ensures model correctness."""
 

@@ -6,7 +6,7 @@ from firefighter.slack.models.conversation import Conversation
 from tests.test_slack.conftest import MockWebClient
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 def test_update_topic(
     conversation: Conversation, mock_web_client: MockWebClient
 ) -> None:
@@ -16,7 +16,7 @@ def test_update_topic(
     assert mock_web_client.conversations_setTopic.called
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 def test_conversations_join(
     conversation: Conversation, mock_web_client: MockWebClient
 ) -> None:
