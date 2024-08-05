@@ -30,7 +30,7 @@ mock_slack_response = {
 }
 
 
-@pytest.fixture()
+@pytest.fixture
 def valid_user_info() -> dict[str, dict[str, Any] | Any]:
     return {
         "ok": True,
@@ -64,7 +64,7 @@ def test_unpack_user_info() -> None:
     assert unpacked_user_info["deleted"] is False
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 def test_slack_user_link(slack_user_saved: SlackUser):
     link = slack_user_saved.link
 
@@ -72,7 +72,7 @@ def test_slack_user_link(slack_user_saved: SlackUser):
     assert f"&id={slack_user_saved.slack_id}" in link
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 def test_update_user_info(slack_user_saved: SlackUser, mock_web_client: MockWebClient):
     slack_user = slack_user_saved
 
@@ -103,7 +103,7 @@ def test_update_user_info(slack_user_saved: SlackUser, mock_web_client: MockWebC
     assert updated_user.email != slack_user.user.email
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 def test_update_user_info_slack_api_error(
     slack_user_saved: SlackUser, mock_web_client: MockWebClient
 ):
@@ -133,7 +133,7 @@ def test_update_user_info_slack_api_error(
     assert updated_slack_user.image == slack_user.image
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 def test_update_user_info_empty_response(
     slack_user_saved: SlackUser, mock_web_client: MockWebClient
 ):
@@ -163,7 +163,7 @@ def test_update_user_info_empty_response(
 # Add these test functions to your test file
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 def test_unpack_user_info_bot(valid_user_info: dict[str, Any]):
     valid_user_info["user"]["is_bot"] = True
     unpacked_user_info = SlackUser.objects.unpack_user_info(valid_user_info)
@@ -171,7 +171,7 @@ def test_unpack_user_info_bot(valid_user_info: dict[str, Any]):
     assert unpacked_user_info["name"] == valid_user_info["user"]["profile"]["real_name"]
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 def test_unpack_user_info_no_image(valid_user_info):
     valid_user_info["user"]["profile"]["image_512"] = None
     valid_user_info["user"]["profile"]["image_192"] = None
@@ -179,7 +179,7 @@ def test_unpack_user_info_no_image(valid_user_info):
     assert "image" not in unpacked_user_info
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 def test_link(slack_user_saved: SlackUser):
     slack_user = slack_user_saved
     expected_link = (
@@ -188,7 +188,7 @@ def test_link(slack_user_saved: SlackUser):
     assert slack_user.link == expected_link
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 def test_str_representation(slack_user_saved: SlackUser):
     slack_user = slack_user_saved
     assert str(slack_user) == slack_user.slack_id

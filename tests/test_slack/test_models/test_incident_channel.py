@@ -20,12 +20,12 @@ from firefighter.slack.utils import channel_name_from_incident
 from tests.test_slack.conftest import MockWebClient
 
 
-@pytest.fixture()
+@pytest.fixture
 def users_mapped() -> list[User]:
     return UserFactory.create_batch(5)
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 def test_get_active_slack_users(
     incident_channel: IncidentChannel, users_mapped: list[User]
 ):
@@ -45,7 +45,7 @@ def test_get_active_slack_users(
         assert all(user.is_active for user in active_users)
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 def test_get_slack_id_list(incident_channel: IncidentChannel, users_mapped: list[User]):
     slack_ids = {f"slack_id{i}" for i in range(len(users_mapped))}
     for user, slack_id in zip(users_mapped, slack_ids, strict=True):
@@ -57,7 +57,7 @@ def test_get_slack_id_list(incident_channel: IncidentChannel, users_mapped: list
     assert retrieved_slack_ids == slack_ids
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 def test_invite_users_with_slack_id(
     incident_channel: IncidentChannel,
     users_mapped: list[User],
@@ -78,7 +78,7 @@ def test_invite_users_with_slack_id(
     )
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 def test_invite_users_to_conversation_individually(
     incident_channel: IncidentChannel,
     users_mapped: list[User],
@@ -105,7 +105,7 @@ def test_invite_users_to_conversation_individually(
         assert invited_slack_ids == user_slack_ids
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 def test_invite_users_to_conversation_individually_single_failure(
     incident_channel: IncidentChannel,
     users_mapped: list[User],
@@ -141,7 +141,7 @@ def test_invite_users_to_conversation_individually_single_failure(
         )  # individual invite was called once for each user
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 def test_invite_users_to_conversation_batch_success(
     incident_channel: IncidentChannel,
     users_mapped: list[User],
@@ -168,7 +168,7 @@ def test_invite_users_to_conversation_batch_success(
         )  # batch invite was called once
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 def test_invite_users_to_conversation_batch_fail(
     incident_channel: IncidentChannel,
     users_mapped: list[User],
@@ -209,7 +209,7 @@ def test_invite_users_to_conversation_batch_fail(
 
 
 # XXX(dugab): Deduplicate tests
-@pytest.mark.django_db()
+@pytest.mark.django_db
 def test_invite_users(incident_channel: IncidentChannel, mock_web_client: WebClient):
     # Prepare test data
     incident_channel.channel_id = "test_channel"
@@ -246,7 +246,7 @@ def test_invite_users(incident_channel: IncidentChannel, mock_web_client: WebCli
         assert set(incident_channel.incident.members.all()) == set(users)
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 def test_invite_users_one(
     incident_channel: IncidentChannel, user, slack_user, mock_web_client: WebClient
 ):
@@ -258,7 +258,7 @@ def test_invite_users_one(
     assert slack_user.user in incident_channel.incident.members.all()
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 def test_invite_users_one_no_slack(
     incident_channel: IncidentChannel, mock_web_client: WebClient
 ):
@@ -298,7 +298,7 @@ def test_invite_users_one_no_slack(
         # assert
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 def test_invite_users_all_inactive(
     incident_channel: IncidentChannel, caplog: pytest.LogCaptureFixture
 ):
@@ -323,7 +323,7 @@ def test_invite_users_all_inactive(
         )
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 def test_channel_name_from_incident_no_argument(
     incident_channel: IncidentChannel, incident_saved: Incident
 ) -> None:
@@ -332,7 +332,7 @@ def test_channel_name_from_incident_no_argument(
     assert incident_channel.channel_name_from_incident() == expected_channel_name
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 def test_channel_name_from_incident_argument_matches(
     incident_channel: IncidentChannel, incident_saved: Incident
 ):
@@ -344,7 +344,7 @@ def test_channel_name_from_incident_argument_matches(
     )
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 def test_channel_name_from_incident_argument_does_not_match(
     incident_channel: IncidentChannel, incident_saved: Incident
 ):
@@ -361,7 +361,7 @@ def test_channel_name_from_incident_argument_does_not_match(
     )
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 def test_rename_if_needed_no_rename(incident_channel: IncidentChannel):
     incident_channel.channel_name_from_incident = MagicMock()
     incident_channel.channel_name_from_incident.return_value = incident_channel.name
@@ -370,7 +370,7 @@ def test_rename_if_needed_no_rename(incident_channel: IncidentChannel):
     incident_channel.save.assert_not_called()
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 def test_rename_if_needed_slack_api_error(
     incident_channel: IncidentChannel, mock_web_client: MockWebClient
 ):
@@ -387,7 +387,7 @@ def test_rename_if_needed_slack_api_error(
     incident_channel.save.assert_not_called()
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 def test_rename_if_needed_success(
     incident_channel: IncidentChannel, mock_web_client: MockWebClient
 ):
@@ -409,7 +409,7 @@ def test_rename_if_needed_success(
     incident_channel.save.assert_called_once()
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 def test_rename_if_needed(incident_channel: IncidentChannel):
     mock_client = MagicMock(spec=WebClient)
     mock_client.conversations_rename.return_value = {
@@ -464,7 +464,7 @@ def test_rename_if_needed(incident_channel: IncidentChannel):
     assert incident_channel.name == "incident-renamed"
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 def test_set_incident_channel_topic(incident_channel: IncidentChannel) -> None:
     mock_client = MagicMock(spec=WebClient)
     mock_client.conversations_setTopic.return_value = {"ok": True}
@@ -473,7 +473,7 @@ def test_set_incident_channel_topic(incident_channel: IncidentChannel) -> None:
     assert mock_client.conversations_setTopic.called
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 def test_archive_channel(incident_channel: IncidentChannel) -> None:
     mock_client = MagicMock(spec=WebClient)
     mock_client.conversations_archive.return_value = {"ok": True}
@@ -485,7 +485,7 @@ def test_archive_channel(incident_channel: IncidentChannel) -> None:
     assert mock_client.conversations_archive.called
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 def test_rename_if_needed_error(incident_channel: IncidentChannel) -> None:
     mock_client = MagicMock(spec=WebClient)
     mock_client.conversations_rename.side_effect = SlackApiError(

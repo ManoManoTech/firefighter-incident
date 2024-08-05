@@ -22,7 +22,7 @@ def test_api_schema(client: Client) -> None:
     assert response.status_code == 200
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 def test_incidents_cost_api(admin_client: Client, admin_user: User) -> None:
     """This test ensures that the incidents costs API endpoint is accessible for an admin"""
     admin_client.force_login(admin_user)
@@ -31,7 +31,7 @@ def test_incidents_cost_api(admin_client: Client, admin_user: User) -> None:
     assert response.status_code == 200
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 def test_incidents_cost_api_unauthorized(client: Client) -> None:
     """This test ensures that the incidents costs API endpoint is not accessible for a guest user"""
     user = UserFactory.create()
@@ -41,7 +41,7 @@ def test_incidents_cost_api_unauthorized(client: Client) -> None:
     assert response.status_code == 403
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 def test_incidents_cost_type_api(admin_client: Client, admin_user: User) -> None:
     """This test ensures that the incidents cost types API endpoint is accessible for an admin"""
     admin_client.force_login(admin_user)
@@ -50,7 +50,7 @@ def test_incidents_cost_type_api(admin_client: Client, admin_user: User) -> None
     assert response.status_code == 200
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 def test_incidents_cost_api_type_unauthorized(client: Client) -> None:
     """This test ensures that the incidents costs API endpoint is not accessible for a guest user"""
     user = UserFactory.create()
