@@ -38,7 +38,7 @@ class MockJiraAPI(JIRA):
         )
 
 
-@pytest.fixture()
+@pytest.fixture
 def user() -> User:
     return User.objects.create(
         name="John Doe",
@@ -47,7 +47,7 @@ def user() -> User:
     )
 
 
-@pytest.fixture()
+@pytest.fixture
 def not_user() -> User:
     return User.objects.create(
         name="John Does Not Exist",
@@ -56,12 +56,12 @@ def not_user() -> User:
     )
 
 
-@pytest.fixture()
+@pytest.fixture
 def raid_client() -> MockJiraClient:
     return MockJiraClient()
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 def test_get_jira_user_from_user(
     raid_client: MockJiraClient, user: User, mocker: MockerFixture
 ):
@@ -80,7 +80,7 @@ def test_get_jira_user_from_user(
     assert jira_user.user.email == "johndoe@example.com"
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 def test_get_jira_user_from_user_in_db(
     raid_client: MockJiraClient, user: User, mocker: MockerFixture
 ):
@@ -96,14 +96,14 @@ def test_get_jira_user_from_user_in_db(
     _search_users.assert_not_called()
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 def test_get_jira_user_from_jira_id(raid_client: MockJiraClient):
     # Test when the Jira ID is valid and exists in Jira
     jira_user = raid_client.get_jira_user_from_jira_id("123")
     assert jira_user.user.email == "johndoe@example.com"
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 def test_get_jira_user_from_jira_id_user_already_exists(
     raid_client: MockJiraClient, user: User
 ):
@@ -112,7 +112,7 @@ def test_get_jira_user_from_jira_id_user_already_exists(
     assert jira_user.user.email == "johndoe@example.com"
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 def test_get_jira_user_from_jira_id_invalid_id(raid_client: MockJiraClient, user: User):
     with pytest.raises(ValueError, match="Jira account id is empty"):
         raid_client.get_jira_user_from_jira_id(None)  # type: ignore

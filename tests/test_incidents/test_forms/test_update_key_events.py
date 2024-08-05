@@ -10,12 +10,12 @@ from firefighter.incidents.models.incident_update import IncidentUpdate
 from firefighter.incidents.models.milestone_type import MilestoneType
 
 
-@pytest.fixture()
+@pytest.fixture
 def user() -> User:
     return User.objects.create_user(username="testuser")
 
 
-@pytest.fixture()
+@pytest.fixture
 def milestone_type() -> MilestoneType:
     return MilestoneType(
         event_type="detected",
@@ -26,7 +26,7 @@ def milestone_type() -> MilestoneType:
     )
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 def test_incident_update_key_events_form(
     user: User, incident_saved: Incident, milestone_type: MilestoneType
 ):
