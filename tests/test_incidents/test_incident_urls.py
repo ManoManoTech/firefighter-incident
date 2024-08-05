@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 def test_incidents_dashboard_unauthorized(client: Client) -> None:
     """This test ensures that the incidents dashboard is not accessible, and that we are redirect to auth."""
     response = client.get(reverse("incidents:dashboard"))
@@ -24,7 +24,7 @@ def test_incidents_dashboard_unauthorized(client: Client) -> None:
     assert response.status_code == 302
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 def test_incidents_list_unauthorized(client: Client) -> None:
     """This test ensures that the incidents page list is accessible."""
     response = client.get(reverse("incidents:incident-list"))
@@ -32,7 +32,7 @@ def test_incidents_list_unauthorized(client: Client) -> None:
     assert response.status_code == 302
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 @pytest.mark.usefixtures("_debug")
 def test_incidents_statistics_unauthorized(client: Client) -> None:
     """This test ensures that the incidents statistics page is accessible."""
@@ -41,7 +41,7 @@ def test_incidents_statistics_unauthorized(client: Client) -> None:
     assert response.status_code == 302
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 @pytest.mark.usefixtures("_debug")
 def test_incidents_dashboard_authorized(admin_client: Client, admin_user: User) -> None:
     """This test ensures that the incidents dashboard is accessible for an admin."""
@@ -51,7 +51,7 @@ def test_incidents_dashboard_authorized(admin_client: Client, admin_user: User) 
     assert response.status_code == 200
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 @pytest.mark.usefixtures("_debug")
 def test_incidents_details(client: Client, admin_user: User) -> None:
     """This test ensures that the incidents dashboard is accessible for an admin."""
@@ -65,7 +65,7 @@ def test_incidents_details(client: Client, admin_user: User) -> None:
     assert response.status_code == 200
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 @pytest.mark.usefixtures("_debug")
 def test_incidents_details_unauthorized_404_redirect(client: Client) -> None:
     """This test ensures that the incidents dashboard will return a 404."""
@@ -76,7 +76,7 @@ def test_incidents_details_unauthorized_404_redirect(client: Client) -> None:
     assert response.status_code == 302
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 @pytest.mark.usefixtures("_debug")
 def test_incidents_details_authorized_404(client: Client, admin_user: User) -> None:
     """This test ensures that the incidents dashboard will return a 404."""
@@ -88,7 +88,7 @@ def test_incidents_details_authorized_404(client: Client, admin_user: User) -> N
     assert response.status_code == 404
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 @pytest.mark.usefixtures("_debug")
 def test_incident_create_unauthorized(client: Client) -> None:
     """This test ensures that the incident create page is accessible."""
@@ -98,7 +98,7 @@ def test_incident_create_unauthorized(client: Client) -> None:
     assert response.status_code == 302
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 @pytest.mark.usefixtures("_debug")
 def test_component_list(client: Client) -> None:
     """This test ensures that the component list is accessible."""
@@ -107,7 +107,7 @@ def test_component_list(client: Client) -> None:
     assert response.status_code == 302
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 @pytest.mark.usefixtures("_debug")
 def test_incident_list(client: Client) -> None:
     """This test ensures that the incident list is accessible."""

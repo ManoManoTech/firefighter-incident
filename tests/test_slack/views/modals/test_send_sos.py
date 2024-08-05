@@ -12,10 +12,10 @@ from firefighter.slack.views import SendSosModal
 logger = logging.getLogger(__name__)
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 class TestSendSosModal:
     @staticmethod
-    @pytest.fixture()
+    @pytest.fixture
     def incident() -> Incident:
         """Returns a valid incident."""
         return IncidentFactory.build()
