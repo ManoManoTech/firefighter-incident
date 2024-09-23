@@ -25,17 +25,17 @@ def build_opening_data(**kwargs: Any) -> OpeningData:
     return data
 
 
-@pytest.fixture()
+@pytest.fixture
 def open_incident_context() -> OpeningData:
     return build_opening_data()
 
 
-@pytest.fixture()
+@pytest.fixture
 def user() -> User:
     return User(username="testuser", email="testuser@example.com")
 
 
-@pytest.fixture()
+@pytest.fixture
 def ack() -> MagicMock:
     return MagicMock()
 
@@ -54,7 +54,7 @@ def test_get_done_review_blocks_can_submit_false(
     assert len(blocks) == 0
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 def test_check_impact_form_invalid(open_incident_context: OpeningData) -> None:
     open_incident_context["impact_form_data"] = {"impact": "invalid"}  # type: ignore[dict-item]
     result = OpenModal._check_impact_form(open_incident_context)
@@ -112,7 +112,7 @@ def test_build_response_type_blocks_bis(open_incident_context: OpeningData) -> N
     assert all(isinstance(element, ButtonElement) for element in first_block.elements)
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 def test_build_modal_fn_empty(user: User) -> None:
     open_incident_context = OpeningData()
     view = OpenModal().build_modal_fn(open_incident_context, user=user)

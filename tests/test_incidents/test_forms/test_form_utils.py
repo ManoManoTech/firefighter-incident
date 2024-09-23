@@ -20,12 +20,12 @@ class GroupedModelChoiceFieldForm(Form):
     )
 
 
-@pytest.fixture()
+@pytest.fixture
 def group() -> Group:
     return Group.objects.create(name="Group 1")
 
 
-@pytest.fixture()
+@pytest.fixture
 def components(group: Group):
     return [
         Component.objects.create(name="Component 1", group=group, order=1),
@@ -46,7 +46,7 @@ def test_enum_choice_field_invalid() -> None:
     assert "status" in form.errors
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 def test_grouped_model_choice_field_valid(components: list[Component]):
     form = GroupedModelChoiceFieldForm({"component": components[0].id})
     assert form.is_valid()
@@ -60,7 +60,7 @@ def test_grouped_model_choice_field_invalid() -> None:
 
 
 @pytest.fixture(scope="module")
-def test_grouped_model_choice_field_grouping(  # noqa: PT004
+def test_grouped_model_choice_field_grouping(
     components: list[Component],
 ):
     form = GroupedModelChoiceFieldForm()
