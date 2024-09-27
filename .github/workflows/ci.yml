@@ -87,6 +87,13 @@ jobs:
           pdm run collectstatic
           pdm run tests-cov
 
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: ./coverage.xml
+          flags: unittests
+
       - name: Type check with mypy
         run: |
           pdm run lint-mypy

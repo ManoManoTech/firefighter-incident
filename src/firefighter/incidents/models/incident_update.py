@@ -12,6 +12,7 @@ from django_stubs_ext.db.models import TypedModelMeta
 
 from firefighter.incidents.enums import IncidentStatus
 from firefighter.incidents.models.component import Component
+from firefighter.incidents.models.environment import Environment
 from firefighter.incidents.models.priority import Priority
 from firefighter.incidents.models.severity import Severity
 from firefighter.incidents.models.user import User
@@ -64,6 +65,12 @@ class IncidentUpdate(models.Model):
     }
     priority = models.ForeignKey[Priority | None, Priority | None](
         Priority, null=True, blank=True, on_delete=models.SET(Priority.get_default)
+    )
+    environment = models.ForeignKey[Environment | None, Environment | None](
+        Environment,
+        null=True,
+        blank=True,
+        on_delete=models.SET(Environment.get_default),
     )
     incident = models.ForeignKey["Incident", "Incident"](
         "Incident", on_delete=models.CASCADE

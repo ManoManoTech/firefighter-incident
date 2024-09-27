@@ -189,7 +189,7 @@
           {% fill "card_content" %}
             {% for role in incident.roles_set.all %}
               <span class="ff-tooltip">
-                {% include "../layouts/partials/user_card.html" with user=role.user title=role.role.name only %}
+                {% include "../layouts/partials/user_card.html" with user=role.user title=role.role_type.name only %}
                 {% include "../layouts/partials/user_tooltip.html" with user=role.user only %}
               </span>
             {% endfor %}
@@ -207,6 +207,12 @@
                   <p class="mt-2 truncate text-sm text-neutral-500 dark:text-neutral-300">{{impact.impact_level.value_label}}: {{impact.impact_level.name}}</p>
                 </li>
               </ul>
+            {% empty %}
+              <div class="px-4 py-5 sm:px-6 col-span-2">
+                <h4 class="text-center font-medium text-sm text-neutral-500 dark:text-neutral-100">
+                  No impacts defined at the moment.
+                </h4>
+              </div>
             {% endfor %}
           {% endfill %}
         {% endcomponent %}
