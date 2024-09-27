@@ -15,10 +15,10 @@ logger = logging.getLogger(__name__)
 SLACK_SEVERITY_HELP_GUIDE_URL = settings.SLACK_SEVERITY_HELP_GUIDE_URL
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 class TestUpdateStatusModal:
     @staticmethod
-    @pytest.fixture()
+    @pytest.fixture
     def incident() -> Incident:
         """Returns a valid incident."""
         return IncidentFactory.build()

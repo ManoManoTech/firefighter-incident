@@ -53,7 +53,7 @@ def incident_updated_update_status_handler(
         incident=incident,
         incident_update=incident_update,
         status_changed=bool("_status" in updated_fields),
-        old_priority=kwargs.get("old_priority", None),
+        old_priority=kwargs.get("old_priority"),
     )
 
 

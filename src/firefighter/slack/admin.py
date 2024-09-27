@@ -209,8 +209,7 @@ class UserGroupAdmin(admin.ModelAdmin[UserGroup]):
                     group_slack_id=obj.usergroup_id
                 )
             elif obj.handle:
-                if obj.handle.startswith("@"):
-                    obj.handle = obj.handle[1:]
+                obj.handle = obj.handle.removeprefix("@")
                 obj.handle.strip()
                 fetch_obj = UserGroup.objects.fetch_usergroup(group_handle=obj.handle)
             if fetch_obj:
