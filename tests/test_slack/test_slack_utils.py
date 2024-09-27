@@ -9,12 +9,12 @@ from slack_sdk.errors import SlackApiError
 from firefighter.slack.utils import respond
 
 
-@pytest.fixture()
+@pytest.fixture
 def mock_slack_client() -> MagicMock:
     return MagicMock()
 
 
-@pytest.fixture()
+@pytest.fixture
 def body_channel() -> dict[str, str]:
     return {
         "channel_id": "C12345",
@@ -22,22 +22,22 @@ def body_channel() -> dict[str, str]:
     }
 
 
-@pytest.fixture()
+@pytest.fixture
 def body_dm() -> dict[str, str]:
     return {"channel_name": "directmessage", "user_id": "U12345"}
 
 
-@pytest.fixture()
+@pytest.fixture
 def body_no_user_id() -> dict[str, str | dict[str, str]]:
     return {"channel_id": "C12345", "user": {"id": "U12345"}}
 
 
-@pytest.fixture()
+@pytest.fixture
 def body_no_channel_id() -> dict[str, str | dict[str, str]]:
     return {"channel": {"id": "C12345"}, "user_id": "U12345"}
 
 
-@pytest.fixture()
+@pytest.fixture
 def body_view_submission() -> dict[str, str]:
     return {"type": "view_submission", "channel_id": "C12345", "user_id": "U12345"}
 

@@ -540,7 +540,7 @@ class Incident(models.Model):
 
         return incident_update
 
-    def create_incident_update(  # noqa: PLR0913
+    def create_incident_update(
         self: Incident,
         message: str | None = None,
         status: int | None = None,

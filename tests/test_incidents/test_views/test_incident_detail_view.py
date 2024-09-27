@@ -8,7 +8,7 @@ from firefighter.incidents.models import Incident
 from firefighter.incidents.models.user import User
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 def test_incident_detail_view(
     client: Client, main_heading: str, incident_saved: Incident, admin_user: User
 ) -> None:
