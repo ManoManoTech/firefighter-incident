@@ -219,12 +219,12 @@ class IncidentSerializer(TaggitSerializer, serializers.ModelSerializer[Incident]
     created_by = UserSerializer(read_only=True)
     slack_channel_name = serializers.SerializerMethodField()
 
-    created_by_email = CreatableSlugRelatedField[User](  # type: ignore[misc]
+    created_by_email = CreatableSlugRelatedField[User](
         source="created_by",
         write_only=True,
         slug_field="email",
         queryset=User.objects.all(),
-        validators=[EmailValidator()],
+        validators=[EmailValidator()],  # type: ignore[list-item]
     )
 
     tags = TagListSerializerField(read_only=True)
