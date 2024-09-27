@@ -7,6 +7,7 @@ from firefighter.slack.views.modals.downgrade_workflow import (
     DowngradeWorkflowModal,
     modal_dowgrade_workflow,
 )
+from firefighter.slack.views.modals.edit import EditMetaModal, modal_edit
 from firefighter.slack.views.modals.key_event_message import (  # XXX(dugab) move and rename (not a modal but a surface...)
     KeyEvents,
 )
@@ -39,6 +40,7 @@ if TYPE_CHECKING:
 
 selectable_modals: list[type[SlackModal]] = [
     UpdateModal,
+    EditMetaModal,
     UpdateRolesModal,
     OnCallModal,
     CloseModal,

@@ -63,7 +63,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Setup PDM
-        uses: pdm-project/setup-pdm@v3
+        uses: pdm-project/setup-pdm@v4
         id: setup-pdm
         with:
           python-version: ${{ matrix.python-version }}
@@ -86,6 +86,13 @@ jobs:
 
           pdm run collectstatic
           pdm run tests-cov
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: ./coverage.xml
+          flags: unittests
 
       - name: Type check with mypy
         run: |

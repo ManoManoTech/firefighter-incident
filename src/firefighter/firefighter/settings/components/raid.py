@@ -17,3 +17,6 @@ if ENABLE_RAID:
 
     RAID_JIRA_USER_IDS: dict[str, str] = {}
     "Mapping of domain to default Jira user ID"
+
+    RAID_TOOLBOX_URL: str = config("RAID_TOOLBOX_URL")
+    "Toolbox URL"
