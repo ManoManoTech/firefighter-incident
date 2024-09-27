@@ -581,6 +581,7 @@ class Incident(models.Model):
                 incident=self,
                 status=status,  # type: ignore
                 priority_id=priority_id,
+                environment_id=environment_id,
                 component_id=component_id,
                 message=message,
                 created_by=created_by,
