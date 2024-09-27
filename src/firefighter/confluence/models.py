@@ -79,6 +79,8 @@ class PostMortemManager(models.Manager["PostMortem"]):
 class ConfluencePage(models.Model):
     """Represents a Confluence page."""
 
+    objects: ClassVar[models.Manager[ConfluencePage]]
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
     name = models.CharField(max_length=255)
