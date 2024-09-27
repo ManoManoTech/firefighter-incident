@@ -11,6 +11,7 @@ from firefighter.slack.views.modals.base_modal.base import SlackModal
 from firefighter.slack.views.modals.base_modal.mixins import (
     IncidentSelectableModalMixin,
 )
+from firefighter.slack.views.modals.edit import EditMetaModal
 from firefighter.slack.views.modals.update_roles import UpdateRolesModal
 from firefighter.slack.views.modals.update_status import UpdateStatusModal
 
@@ -45,6 +46,10 @@ class UpdateModal(
                         ButtonElement(
                             text="Update roles",
                             action_id=UpdateRolesModal.push_action,
+                        ),
+                        ButtonElement(
+                            text="Edit meta",
+                            action_id=EditMetaModal.push_action,
                         ),
                     ],
                 )

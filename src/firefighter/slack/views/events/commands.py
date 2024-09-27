@@ -16,6 +16,7 @@ from firefighter.slack.slack_templating import (
 from firefighter.slack.views.modals import (
     modal_close,
     modal_dowgrade_workflow,
+    modal_edit,
     modal_open,
     modal_postmortem,
     modal_send_sos,
@@ -106,6 +107,8 @@ def manage_incident(ack: Ack, respond: Respond, body: dict[str, Any]) -> None:
         modal_open.open_modal_aio(ack, body)
     elif command == "update":
         modal_update.open_modal_aio(ack, body)
+    elif command == "edit":
+        modal_edit.open_modal_aio(ack, body)
     elif command == "close":
         modal_close.open_modal_aio(ack=ack, body=body)
     elif command == "status":
