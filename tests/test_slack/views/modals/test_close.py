@@ -15,7 +15,7 @@ from firefighter.slack.views import CloseModal
 logger = logging.getLogger(__name__)
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 class TestCloseModal:
     @staticmethod
     def test_close_modal_build(mocker: MockerFixture) -> None:
