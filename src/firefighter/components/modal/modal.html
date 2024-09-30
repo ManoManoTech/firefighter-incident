@@ -6,11 +6,6 @@
   <div x-ref="modal1_button"
        @click="open = true">
     {% slot "modal_enabler" %}
-      <button
-        type="button"
-        class="w-full bg-primary px-4 py-2 border border-transparent rounded-md flex items-center justify-center text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:w-auto sm:inline-flex">
-        Open Modal
-      </button>
     {% endslot %}
   </div>
   <div
@@ -24,9 +19,9 @@
     @keydown.escape="open = false"
     @click.away="open = false"
     style="display: none;"
-    class="z-50 fixed top-0 left-0 w-full h-screen flex justify-center items-center" >
+    class="z-[100] fixed top-0 left-0 w-full h-screen flex justify-center items-center" >
     <div aria-hidden="true"
-         class="absolute top-0 left-0 w-full h-screen bg-black transition duration-300 z-[90]"
+         class="absolute top-0 left-0 w-full h-screen bg-black transition duration-300"
          :class="{ 'opacity-60': open, 'opacity-0': !open }"
          x-show="open"
          style="display: none;"

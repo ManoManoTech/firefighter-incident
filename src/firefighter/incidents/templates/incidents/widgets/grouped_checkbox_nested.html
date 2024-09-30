@@ -74,7 +74,7 @@
                 <label class="font-medium ml-1"> {{ group }} </label>
               </button>
               <div display="contents" class="absolute right-0 top-0 bottom-0 items-center flex pr-2 hidden-child" tooltip="Check all">
-                <input type="checkbox" class="checkbox-style" group-select x-ref="checkAll_{{ group.order }}" x-on:click="toggleAllCheckboxesGroup(); " x-model="selectAll_{{ group.order }}">
+                <input type="checkbox" class="checkbox checkbox-sm" group-select x-ref="checkAll_{{ group.order }}" x-on:click="toggleAllCheckboxesGroup(); " x-model="selectAll_{{ group.order }}">
               </div>
             </div>
           </h4>

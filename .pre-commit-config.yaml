@@ -33,7 +33,7 @@ repos:
     rev: '3.0.6'
     hooks:
       - id: djhtml
-      # djcss disabled for now
+      - id: djcss
       - id: djjs
 
   - repo: https://github.com/adamchainz/djade-pre-commit

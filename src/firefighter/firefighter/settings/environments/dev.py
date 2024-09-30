@@ -143,8 +143,6 @@ EXTRA_CHECKS = {
         "no-unique-together",
         # Require non empty `upload_to` argument:
         "field-file-upload-to",
-        # Use the indexes option instead:
-        "no-index-together",
         # Each model must be registered in admin:
         # "model-admin",
         # FileField/ImageField must have non-empty `upload_to` argument:

@@ -29,6 +29,6 @@ class FormField(component.Component[EmptyTuple, Kwargs, Data, Any]):
     def get_context_data(
         self, field: forms.BoundField | forms.Field, **kwargs: Never
     ) -> Data:
-        input_class = "input-ff"
+        input_class = "input input-bordered input-md"
 
         return {"field": field, "field_input_class": input_class}

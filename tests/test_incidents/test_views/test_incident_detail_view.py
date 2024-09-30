@@ -10,7 +10,7 @@ from firefighter.incidents.models.user import User
 
 @pytest.mark.django_db
 def test_incident_detail_view(
-    client: Client, main_heading: str, incident_saved: Incident, admin_user: User
+    client: Client, footer_text: str, incident_saved: Incident, admin_user: User
 ) -> None:
     """This test ensures that incident detail page works."""
     client.force_login(admin_user)
@@ -19,6 +19,6 @@ def test_incident_detail_view(
     )
 
     assert response.status_code == 200
-    assert main_heading in str(response.content)
+    assert footer_text in str(response.content)
 
     incident_saved.delete()
