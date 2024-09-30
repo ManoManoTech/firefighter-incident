@@ -41,15 +41,13 @@ def _debug(settings: SettingsWrapper) -> None:
 
 
 @pytest.fixture
-def main_heading() -> str:
+def footer_text() -> str:
     """An example fixture containing some html fragment."""
-    return '<p class="mt-2 text-sm text-base-content text-opacity-70">Report, manage, escalate!</p>'
+    return "Report, manage, escalate!"
 
 
 @pytest.fixture(scope="session")
-def django_db_setup(
-    django_db_setup: Any, django_db_blocker: DjangoDbBlocker
-) -> None:
+def django_db_setup(django_db_setup: Any, django_db_blocker: DjangoDbBlocker) -> None:
     # XXX Allow override of fixtures path
     try:
         fixtures_path_mp = impresources.files("firefighter_fixtures")
