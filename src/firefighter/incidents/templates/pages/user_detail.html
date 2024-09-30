@@ -8,7 +8,7 @@
         <div class="flex-shrink-0">
           <div class="relative h-16">
             <span class="inline-flex w-16 h-16 rounded-full" >
-              {% component "avatar" user=target_user  %}{% endcomponent %}
+              {% component "avatar" user=target_user %}{% endcomponent %}
             </span>
           </div>
         </div>
@@ -35,7 +35,7 @@
         <div class="stats shadow w-full bg-base-200 rounded-lg">
           <div class="stat">
             <div class="stat-title">Incidents created</div>
-            <div class="stat-value"><a class="link" href="{%url "incidents:incident-list" %}?created_by={{ target_user.id }}">{{ target_user.incidents_created_by.count }}</a></div>
+            <div class="stat-value"><a class="link" href="{% url "incidents:incident-list" %}?created_by={{ target_user.id }}">{{ target_user.incidents_created_by.count }}</a></div>
           </div>
         </div>
 
@@ -90,7 +90,7 @@
                   <dd class="mt-1 text-sm text-opacity-70"><a href="{{ target_user.slack_user.link }}" class="link">@{{ target_user.slack_user.username }}</a></dd>
                 {% else %}
                   <dd class="mt-1 text-sm text-opacity-70">Ø</dd>
-                {% endif%}
+                {% endif %}
               </div>
               <div class="sm:col-span-1">
                 <dt class="text-sm font-medium text-opacity-95">Pagerduty</dt>
@@ -107,4 +107,4 @@
       </div>
     </div>
   </main>
-{% endblock%}
+{% endblock content %}

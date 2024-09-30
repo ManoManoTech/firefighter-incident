@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 import uuid
 from itertools import groupby
-from typing import Any
+from typing import Any, ClassVar
 
 from django.db import models
 from django.db.utils import IntegrityError
@@ -33,6 +33,8 @@ class PagerDutyService(models.Model):
 
     - [Read more about Services in the PagerDuty Knowledge Base.](https://support.pagerduty.com/hc/en-us/sections/200550800-Services)
     """
+
+    objects: ClassVar[models.Manager[PagerDutyService]]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=128)
@@ -92,6 +94,7 @@ class PagerDutyIncident(models.Model):
     - [Read more about Incidents in the PagerDuty Knowledge Base.](https://support.pagerduty.com/hc/en-us/articles/202829250-What-Is-an-Incident-)
     """
 
+    objects: ClassVar[models.Manager[PagerDutyIncident]]
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(
         max_length=256,
@@ -219,6 +222,8 @@ class PagerDutyUserManager(models.Manager["PagerDutyUser"]):
 
 
 class PagerDutyTeam(models.Model):
+
+    objects: ClassVar[models.Manager[PagerDutyTeam]]
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=128, unique=True)
     description = models.CharField(max_length=1024, null=True, blank=True)
@@ -277,6 +282,7 @@ class PagerDutyEscalationPolicy(models.Model):
     - [API Schema](https://developer.pagerduty.com/api-reference/c2NoOjI3NDgwMjE-escalation-policy)
     """
 
+    objects: ClassVar[models.Manager[PagerDutyEscalationPolicy]]
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     pagerduty_id = models.CharField(max_length=128, unique=True, db_index=True)
 
@@ -313,6 +319,8 @@ class PagerDutySchedule(models.Model):
     - [Read more about On-Call Schedules in the PagerDuty Knowledge Base](https://support.pagerduty.com/hc/en-us/sections/200550790-On-Call-Schedules)
     - [API Schema](https://developer.pagerduty.com/api-reference/c2NoOjI3NDgwMzU-schedule)
     """
+
+    objects: ClassVar[models.Manager[PagerDutySchedule]]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     pagerduty_id = models.CharField(max_length=128, unique=True, db_index=True)

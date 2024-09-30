@@ -1,5 +1,4 @@
-{% load static %}
-{% load simple_menu %}
+{% load simple_menu static %}
 {% generate_menu %}
 <nav class="navbar bg-base-200 dark:bg-black font-medium shadow-md" hx-boost="true" >
   <div class="navbar-start">
@@ -14,13 +13,13 @@
             <li tabindex="0">
               <details>
                 <summary>
-                  <a {% if item.boost %}hx-boost="true"{% else %}hx-boost="false"{% endif %} {% if item.url %}href="{{item.url}}"{% endif %} class="justify-between {% if item.selected %}active{% endif %}">
-                    {{item.title}}
+                  <a {% if item.boost %}hx-boost="true"{% else %}hx-boost="false"{% endif %} {% if item.url %}href="{{ item.url }}"{% endif %} class="justify-between {% if item.selected %}active{% endif %}">
+                    {{ item.title }}
                   </a>
                 </summary>
                 <ul class="p-2 rounded-md z-[15]">
-                  {% for child in item.children%}
-                    <li><a {% if item.boost %}hx-boost="true"{% else %}hx-boost="false"{% endif %} href="{{child.url}}" class="dropdown dropdown-right {% if child.selected %}active{% endif %}">{{child.title}}{% if item.badge %}<span class="badge">{{child.badge}}</span>
+                  {% for child in item.children %}
+                    <li><a {% if item.boost %}hx-boost="true"{% else %}hx-boost="false"{% endif %} href="{{ child.url }}" class="dropdown dropdown-right {% if child.selected %}active{% endif %}">{{ child.title }}{% if item.badge %}<span class="badge">{{ child.badge }}</span>
                     {% endif %}</a></li>
                   {% endfor %}
                 </ul>
@@ -28,14 +27,14 @@
             </li>
           {% else %}
             <li>
-              <a href="{{item.url}}" class="{% if item.selected %}active {% endif %}">{{item.title}}</a>
+              <a href="{{ item.url }}" class="{% if item.selected %}active {% endif %}">{{ item.title }}</a>
             </li>
           {% endif %}
         {% endfor %}
       </ul>
     </div>
     <a class="btn btn-ghost" href="{% url 'incidents:dashboard' %}">
-      <img class="h-11" height="44" src="{% static "img/logo-firefighter.png" %}" alt="{{APP_DISPLAY_NAME}} logo"/>
+      <img class="h-11" height="44" src="{% static "img/logo-firefighter.png" %}" alt="{{ APP_DISPLAY_NAME }} logo"/>
     </a>
   </div>
   <div class="navbar-center hidden sm:flex">
@@ -44,8 +43,8 @@
         {% if item.children %}
           <li class="dropdown dropdown-hover dropdown-bottom ">
             <div tabindex="0" role="button" class="btn btn-ghost">
-              <a {% if item.boost %}hx-boost="true"{% else %}hx-boost="false"{% endif %} {% if item.url %} href="{{item.url}}"{% endif %} class=" {% if item.selected %}{% endif %}">
-                {{item.title}}
+              <a {% if item.boost %}hx-boost="true"{% else %}hx-boost="false"{% endif %} {% if item.url %} href="{{ item.url }}"{% endif %} class=" {% if item.selected %}{% endif %}">
+                {{ item.title }}
               </a>
             </div>
             <ul  tabindex="0" class="dropdown-content p-2 bg-base-200 rounded-md z-[15] menu  ml-0 p-2 shadow bg-base-100 rounded-box w-52">
@@ -81,12 +80,12 @@
           {% for item in menus.user %}
             <li>
               <a
-                href="{{item.url}}"
+                href="{{ item.url }}"
                 {% if item.boost %}hx-boost="true"{% else %}hx-boost="false"{% endif %}
                 class="justify-between">
-                {{item.title}}
+                {{ item.title }}
                 {% if item.badge %}
-                  <span class="badge">{{item.badge}}</span>
+                  <span class="badge">{{ item.badge }}</span>
                 {% endif %}
               </a>
             </li>
@@ -94,7 +93,7 @@
         </ul>
         </div>
       {% else %}
-        <a hx-boost="false" class="btn btn-primary" href="{% url "oidc_authentication"%}?next={% if request.GET.next is not None %}{{ request.GET.next | default:"/" | urlencode}}{% elif request.get_full_path %}{{request.get_full_path | urlencode}}{% else %}{{ "" | urlencode}}{% endif %}&fail=/admin/login/">Login</a>
+        <a hx-boost="false" class="btn btn-primary" href="{% url "oidc_authentication" %}?next={% if request.GET.next is not None %}{{ request.GET.next|default:"/"|urlencode }}{% elif request.get_full_path %}{{ request.get_full_path|urlencode }}{% else %}{{ ""|urlencode }}{% endif %}&fail=/admin/login/">Login</a>
       {% endif %}
     </div>
   </nav>

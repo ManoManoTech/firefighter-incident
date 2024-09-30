@@ -29,8 +29,8 @@
               <div class="min-w-0 flex-1 mt-1">
                 <div>
                   <div class="mb-1 text-sm text-neutral-500 dark:text-neutral-300 font-small ">
-                    <span>{{ incident_update.event_ts |date:'SHORT_DATETIME_FORMAT'}}</span>
-                    {% if incident_update.created_by%}
+                    <span>{{ incident_update.event_ts|date:'SHORT_DATETIME_FORMAT' }}</span>
+                    {% if incident_update.created_by %}
                       <span>|</span>
                       <span class="ff-tooltip">
                         <span>{{ incident_update.created_by }}</span>
@@ -56,7 +56,7 @@
                       class="pb-2"
                     >
                       <div class="text-sm flex flex-col border-b border-neutral-200 py-1 p-4 text-left sm:border-0 sm:border-l-4 break-words">
-                        {{ incident_update.description | urlize | linebreaksbr}}
+                        {{ incident_update.description|urlize|linebreaksbr }}
                       </div>
                     </div>
                   {% endif %}
@@ -70,7 +70,7 @@
                       class="pb-2"
                     >
                       <div class="text-sm flex flex-col border-b border-neutral-200 py-1 p-4 text-left sm:border-0 sm:border-l-4 break-words">
-                        {{ incident_update.message | urlize | linebreaksbr}}
+                        {{ incident_update.message|urlize|linebreaksbr }}
                       </div>
                     </div>
                   {% endif %}
@@ -117,7 +117,7 @@
                     </p>
                     <p class="pl-2 mt-0.5 text-sm text-neutral-500 dark:text-neutral-300">
                       Component impacted changed to:
-                      {{ incident_update.component}}
+                      {{ incident_update.component }}
                     </p>
                   {% endif %}
                   {% if incident_update.communication_lead or incident_update.commander %}

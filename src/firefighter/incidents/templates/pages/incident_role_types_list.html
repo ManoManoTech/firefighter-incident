@@ -16,7 +16,7 @@
     <div class="max-w-3xl mx-auto mt-8 grid grid-cols-1 gap-6 sm:px-6 lg:max-w-7xl lg:grid-cols-2">
       {% for incident_role_type in incident_role_types_list %}
         <div class="bg-neutral-100 dark:bg-neutral-800 shadow rounded-lg p-6">
-          <h2 class="text-xl font-semibold text-neutral-900 dark:text-neutral-50">{{incident_role_type.emoji}} {{ incident_role_type.name }}</h2>
+          <h2 class="text-xl font-semibold text-neutral-900 dark:text-neutral-50">{{ incident_role_type.emoji }} {{ incident_role_type.name }}</h2>
           <p class="text-neutral-600 dark:text-neutral-300">{{ incident_role_type.summary }}</p>
           <div class="mt-4">
             <a href="{% url 'incidents:docs-role-type-detail' pk=incident_role_type.pk %}"
@@ -29,4 +29,4 @@
       {% endfor %}
     </div>
   </main>
-{% endblock %}
+{% endblock content %}

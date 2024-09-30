@@ -8,15 +8,13 @@
     </svg>
     <span class="sr-only">Loading...</span>
   </div>
-{% endblock%}
+{% endblock page_title %}
 
 {% block page_actions %}
   {{ block.super }}
   {% component "export_button" base_url="api:components-list" %}{% endcomponent %}
-{% endblock%}
-
-
+{% endblock page_actions %}
 
 {% block page_content %}
   {% include "layouts/partials/partial_table_list_paginated.html" %}
-{% endblock%}
+{% endblock page_content %}

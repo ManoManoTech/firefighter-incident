@@ -1,4 +1,5 @@
 {% extends '../layouts/index.html' %}
+
 {% block content %}
 
   <div class="mx-auto shadow-md border-b border-neutral-300 dark:border-neutral-700 flex px-4">
@@ -6,7 +7,7 @@
       <h1 class="text-3xl font-bold text-neutral-900 dark:text-neutral-100 ">
         {% block page_title %}
           Metrics and Key Events
-        {% endblock%}
+        {% endblock page_title %}
       </h1>
     </div>
   </div>
@@ -17,7 +18,7 @@
         {% fill "card_content" %}
           {% autoescape off %}
             <pre class="mermaid w-full">
-            {{metric_graph|join:"&#10;"}}
+            {{ metric_graph|join:"&#10;" }}
           </pre>
           {% endautoescape %}
         {% endfill %}
@@ -33,11 +34,11 @@
                 These durations are computed automatically from incident's Key Events.
                 <br/>`Time To` metrics relate to a single incident, but are used for `Mean Time To` metrics, about a group of incidents.
               </p>
-              {% for metric in metrics%}
-                <h3 class="font-medium text-lg">{{metric.name|capfirst}} <abbr class="text-sm font-normal">({{ metric.code }})</abbr></h3>
+              {% for metric in metrics %}
+                <h3 class="font-medium text-lg">{{ metric.name|capfirst }} <abbr class="text-sm font-normal">({{ metric.code }})</abbr></h3>
                 <p>{{ metric.description }}</p>
                 <p class="">Metric formula:
-                  <code class="font-mono inline text-sm">{{metric.code}} = {{metric.milestone_lhs.event_type|capfirst}} - {{metric.milestone_rhs.event_type|capfirst}}</code>
+                  <code class="font-mono inline text-sm">{{ metric.code }} = {{ metric.milestone_lhs.event_type|capfirst }} - {{ metric.milestone_rhs.event_type|capfirst }}</code>
                 </p>
 
               {% endfor %}
@@ -54,13 +55,13 @@
                 They are used to derive Incident Metrics, that are useful to understand the impact of the incident.<br/>
                 Key Events can be modified by any user, either in Slack or in the Incident Page.
               </p>
-              {% for key_event in key_events%}
+              {% for key_event in key_events %}
                 {% if key_event.asked_for %}
-                  <h3 class="font-medium text-lg">{{key_event.name|capfirst}}</h3>
-                  {{key_event.description|default:key_event.summary|markdown|safe}}
-                  {% if not key_event.user_editable%}
+                  <h3 class="font-medium text-lg">{{ key_event.name|capfirst }}</h3>
+                  {{ key_event.description|default:key_event.summary|markdown|safe }}
+                  {% if not key_event.user_editable %}
                     <p class="alert alert-info">💡 This Key Event is added automatically to incidents by FireFighter, from the status you put in your `/incident update`.</p>
-                  {% endif%}
+                  {% endif %}
                 {% endif %}
               {% endfor %}
             </div>
@@ -69,7 +70,8 @@
       </div>
     </div>
   </div>
-{% endblock %}
+{% endblock content %}
+
 {% block head %}
   <script type="module">
     // XXX Serve without the CDN
@@ -81,4 +83,4 @@
       mermaid.initialize({ startOnLoad: true });
     }
   </script>
-{% endblock %}
+{% endblock head %}

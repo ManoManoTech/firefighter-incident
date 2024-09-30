@@ -93,7 +93,7 @@
       );
     };
   </script>
-{% endblock %}
+{% endblock head %}
 
 {% block page_title %}
   Incident statistics <span class="text-neutral-600 dark:text-neutral-400 text-sm">beta</span>
@@ -104,7 +104,7 @@
     </svg>
     <span class="sr-only">Loading...</span>
   </div>
-{% endblock%}
+{% endblock page_title %}
 
 {% block page_actions %}
   {{ block.super }}
@@ -117,8 +117,8 @@
 
     View list
   </button>
-{% endblock%}
+{% endblock page_actions %}
 
 {% block page_content %}
   {% include "pages/incident_statistics_partial.html" %}
-{% endblock %}
+{% endblock page_content %}
