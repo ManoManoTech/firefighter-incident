@@ -21,7 +21,7 @@
         {% if incident.updated_at != incident.created_at %}
           <p class="mt-2 text-neutral-400 dark:text-neutral-300 text-xs">Last event: {{ incident.latest_event_ts|naturaltime }}</p>
         {% endif %}
-        <p class="text-neutral-400 dark:text-neutral-300 text-xs">Opened: {{ incident.created_at | naturaltime  }}</p>
+        <p class="text-neutral-400 dark:text-neutral-300 text-xs">Opened: {{ incident.created_at|naturaltime }}</p>
       </a>
     </li>
   </div>
