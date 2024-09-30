@@ -542,7 +542,7 @@ external = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"**/components/**/*.py" = ["INP"]
+"**/components/**/*.py" = ["INP", "TCH002", "TCH003"]
 "__init__.py" = ["F401"]
 "_version.py" = ["Q000", "UP", "I"]
 "**/settings_builder.py" = ["F403"]
