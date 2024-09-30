@@ -7,7 +7,7 @@
       <h1 class="text-3xl font-bold text-neutral-900 dark:text-neutral-100 ">
         {% block page_title %}
           On-call overview
-        {% endblock%}
+        {% endblock page_title %}
       </h1>
     </div>
     <div class="py-4 ml-auto flex items-end justify-end ">
@@ -19,7 +19,7 @@
           </svg>
             Trigger on-call</a>
         {% endif %}
-      {% endblock%}
+      {% endblock page_actions %}
     </div>
   </div>
   {% if messages %}
@@ -41,7 +41,7 @@
       <div class="mt-10">
         {% for escalation_policy in oncalls %}
           <h2 class="m-8 text-2xl font-bold text-neutral-700 dark:text-neutral-100">
-            {{ escalation_policy.0.name }} <span class="font-normal text-base ">({{ escalation_policy.1 | length }})</span>
+            {{ escalation_policy.0.name }} <span class="font-normal text-base ">({{ escalation_policy.1|length }})</span>
           </h2>
           <div class="flex flex-wrap mx-8">
             <ul class="grid grid-cols-1 gap-6 sm:grid-cols-2 w-full">
@@ -59,7 +59,7 @@
                       {% if oncall.end %}
                         <p class="text-base-content text-opacity-80 text-base">
                           <span class="ff-tooltip">{{ oncall.end|timeuntil }} left
-                            <span class="tooltip_content bg-black dark:text-neutral-200 text-sm text-white rounded w-min p-2" style="width: fit-content">Until <time datetime="{{ oncall.end|date:"c"}}">{{ oncall.end|date:"SHORT_DATETIME_FORMAT" }}</time>
+                            <span class="tooltip_content bg-black dark:text-neutral-200 text-sm text-white rounded w-min p-2" style="width: fit-content">Until <time datetime="{{ oncall.end|date:"c" }}">{{ oncall.end|date:"SHORT_DATETIME_FORMAT" }}</time>
                             </span>
                           </span>
                         </p>
@@ -81,4 +81,4 @@
       </div>
     </div>
   </div>
-{% endblock%}
+{% endblock content %}
