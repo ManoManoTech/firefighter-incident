@@ -1,5 +1,5 @@
 {% extends "admin/base_site.html" %}
-{% load i18n l10n admin_urls static %}
+{% load admin_urls i18n l10n static %}
 
 {% comment %} TODO Proper form and HTML. {% endcomment %}
 
@@ -7,7 +7,7 @@
   {{ block.super }}
   {{ media }}
   <script src="{% static 'admin/js/cancel.js' %}" async></script>
-{% endblock %}
+{% endblock extrahead %}
 
 {% block bodyclass %}{{ block.super }} app-{{ opts.app_label }} model-{{ opts.model_name }} send-message-conversation send-message-selected-conversation{% endblock %}
 
@@ -18,7 +18,7 @@
     &rsaquo; <a href="{% url opts|admin_urlname:'changelist' %}">{{ opts.verbose_name_plural|capfirst }}</a>
     &rsaquo; {% translate 'Send messages on conversations' %}
   </div>
-{% endblock %}
+{% endblock breadcrumbs %}
 
 {% block content %}
   <h2>Targeted conversations</h2>
@@ -42,4 +42,4 @@
       <a href="#" class="button cancel-link">{% translate "Cancel, take me back" %}</a>
     </div>
   </form>
-{% endblock %}
+{% endblock content %}

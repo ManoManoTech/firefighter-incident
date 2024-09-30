@@ -35,3 +35,9 @@ repos:
       - id: djhtml
       # djcss disabled for now
       - id: djjs
+
+  - repo: https://github.com/adamchainz/djade-pre-commit
+    rev: "1.1.1"
+    hooks:
+      - id: djade
+        args: [--target-version, "4.2"]

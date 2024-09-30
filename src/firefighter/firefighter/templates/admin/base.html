@@ -2,7 +2,8 @@
 {% load static %}
 {% block extrahead %}{{ block.super }}
   <link rel="icon" href="{% static 'img/favicon/favicon.ico' %}" sizes="48x48" />
-{% endblock%}
+{% endblock extrahead %}
+
 {% block extrastyle %}{{ block.super }}
   <style>
     body {
@@ -103,4 +104,4 @@
       }
     }
   </style>
-{% endblock %}
+{% endblock extrastyle %}
