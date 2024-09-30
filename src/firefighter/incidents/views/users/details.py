@@ -28,10 +28,7 @@ class UserDetailView(CustomDetailView[User]):
     context_object_name: str = "target_user"
     pk_url_kwarg = "user_id"
     model = User
-    select_related = [
-        "slack_user",
-        "pagerduty_user",
-    ]
+    select_related = SELECT_RELATED
     queryset = User.objects.select_related(*select_related).prefetch_related(
         Prefetch(
             "conversation_set",
