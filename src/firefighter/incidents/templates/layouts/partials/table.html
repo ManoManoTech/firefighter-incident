@@ -12,7 +12,7 @@
       {% for body_row in table.body.objects %}
         <tr class="text-center even:bg-neutral-50 odd:bg-white dark:even:bg-neutral-900 dark:odd:bg-neutral-800 ">
           {% for body_col in table.body.format %}
-            <td>{{body_row|get_item:body_col.key|apply_filter:body_col|safe}}{{body_col|get_item:"suffix"|default_if_none:""}}</td>
+            <td>{{ body_row|get_item:body_col.key|apply_filter:body_col|safe }}{{ body_col|get_item:"suffix"|default_if_none:"" }}</td>
           {% endfor %}
         </tr>
       {% endfor %}
@@ -21,7 +21,7 @@
       <tfoot class="bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-50 ">
         <tr class="text-center">
           {% for body_col in table.body.format %}
-            <td>{{table.footer|get_item:body_col.key|apply_filter:body_col}}{{body_col|get_item:"suffix"|default_if_none:""}}</td>
+            <td>{{ table.footer|get_item:body_col.key|apply_filter:body_col }}{{ body_col|get_item:"suffix"|default_if_none:"" }}</td>
           {% endfor %}
         </tr>
       </tfoot>

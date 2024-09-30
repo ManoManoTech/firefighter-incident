@@ -29,8 +29,8 @@
               <div class="min-w-0 flex-1 mt-1">
                 <div>
                   <div class="mb-1 text-sm text-neutral-500 dark:text-neutral-300 font-small ">
-                    <span>{{ incident_update.event_ts |date:'SHORT_DATETIME_FORMAT'}}</span>
-                    {% if incident_update.created_by%}
+                    <span>{{ incident_update.event_ts|date:'SHORT_DATETIME_FORMAT' }}</span>
+                    {% if incident_update.created_by %}
                       <span>|</span>
                       <span class="ff-tooltip">
                         <span>{{ incident_update.created_by }}</span>
@@ -40,6 +40,26 @@
                   </div>
                 </div>
                 <div class="text-neutral-600 dark:text-neutral-100">
+                  {% if incident_update.title %}
+                    <p class="mt-0.5">
+                      Title update
+                    </p>
+                    <p class="pl-2 mt-0.5 text-sm text-neutral-500 dark:text-neutral-300">
+                      Title changed to: {{ incident_update.title }}
+                    </p>
+                  {% endif %}
+                  {% if incident_update.description or incident_update.description|length > 0 %}
+                    <p class="mt-0.5">
+                      Description update
+                    </p>
+                    <div
+                      class="pb-2"
+                    >
+                      <div class="text-sm flex flex-col border-b border-neutral-200 py-1 p-4 text-left sm:border-0 sm:border-l-4 break-words">
+                        {{ incident_update.description|urlize|linebreaksbr }}
+                      </div>
+                    </div>
+                  {% endif %}
                   {% if incident_update.event_type or incident_update.event_type|length > 0 %}
                     <p class="mt-0.5">
                       Key event: {{ incident_update.event_type|title }}
@@ -50,7 +70,7 @@
                       class="pb-2"
                     >
                       <div class="text-sm flex flex-col border-b border-neutral-200 py-1 p-4 text-left sm:border-0 sm:border-l-4 break-words">
-                        {{ incident_update.message | urlize | linebreaksbr}}
+                        {{ incident_update.message|urlize|linebreaksbr }}
                       </div>
                     </div>
                   {% endif %}
@@ -63,6 +83,17 @@
                     <p class="pl-2 mt-0.5 text-sm text-neutral-500 dark:text-neutral-300">
                       Status changed to:
                       {% include "./status_pill.html" with status=incident_update.status IncidentStatus=IncidentStatus only %}
+                    </p>
+                  {% endif %}
+                  {% if incident_update.environment %}
+                    <p class="mt-0.5">
+                      Environment update
+                    </p>
+                  {% endif %}
+                  {% if incident_update.environment or incident_update.environment|length > 0 %}
+                    <p class="pl-2 mt-0.5 text-sm text-neutral-500 dark:text-neutral-300">
+                      Environment changed to:
+                      {% include "./environment_pill.html" with environment=incident_update.environment only %}
                     </p>
                   {% endif %}
                   {% if incident_update.severity %}
@@ -84,11 +115,9 @@
                     <p class="mt-0.5">
                       Component update
                     </p>
-                  {% endif %}
-                  {% if incident_update.component %}
                     <p class="pl-2 mt-0.5 text-sm text-neutral-500 dark:text-neutral-300">
                       Component impacted changed to:
-                      {{ incident_update.component}}
+                      {{ incident_update.component }}
                     </p>
                   {% endif %}
                   {% if incident_update.communication_lead or incident_update.commander %}

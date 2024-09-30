@@ -40,14 +40,14 @@ def _debug(settings: SettingsWrapper) -> None:
         template["OPTIONS"]["debug"] = True
 
 
-@pytest.fixture()
+@pytest.fixture
 def main_heading() -> str:
     """An example fixture containing some html fragment."""
     return '<p class="mt-2 text-sm text-base-content text-opacity-70">Report, manage, escalate!</p>'
 
 
 @pytest.fixture(scope="session")
-def django_db_setup(  # noqa: PT004
+def django_db_setup(
     django_db_setup: Any, django_db_blocker: DjangoDbBlocker
 ) -> None:
     # XXX Allow override of fixtures path
@@ -76,13 +76,13 @@ def django_db_setup(  # noqa: PT004
     django_db_blocker.restore()
 
 
-@pytest.fixture()
+@pytest.fixture
 def incident() -> Incident:
     return IncidentFactory.build()
 
 
-@pytest.fixture()
-@pytest.mark.django_db()
+@pytest.fixture
+@pytest.mark.django_db
 def incident_saved() -> Incident:
     incident: Incident = IncidentFactory.build()
     incident.component.group.save()

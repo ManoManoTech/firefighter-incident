@@ -27,16 +27,16 @@
                 <div class="px-2">
                   {% render_field filter.form.metrics_period class="input input-bordered input-md" placeholder="e.g. 2022" %}
                 </div>
-                {%if filter.form.cleaned_data.metrics_period  %}
-                  {% with date_gte=filter.form.metrics_period.metrics_period.0 date_lte=filter.form.metrics_period.metrics_period.1%}
-                    {%if date_gte and date_lte %}
+                {% if filter.form.cleaned_data.metrics_period %}
+                  {% with date_gte=filter.form.metrics_period.metrics_period.0 date_lte=filter.form.metrics_period.metrics_period.1 %}
+                    {% if date_gte and date_lte %}
                       <div class="mt-2">
-                        <P class="my-auto text-xs "><span class="text-sm">From:</span> {{date_gte|date:"Y/m/d H:i:s e"}}</p>
-                        <P class="my-auto text-xs"><span class="text-sm">To:</span> {{date_lte|date:"Y/m/d H:i:s e"}}</p>
-                        {%if date_str %}<p class="my-auto text-xs">({{ date_str }})</p>{% endif %}
+                        <P class="my-auto text-xs "><span class="text-sm">From:</span> {{ date_gte|date:"Y/m/d H:i:s e" }}</p>
+                        <P class="my-auto text-xs"><span class="text-sm">To:</span> {{ date_lte|date:"Y/m/d H:i:s e" }}</p>
+                        {% if date_str %}<p class="my-auto text-xs">({{ date_str }})</p>{% endif %}
                       </div>
                     {% endif %}
-                  {% endwith%}
+                  {% endwith %}
                 {% endif %}
               </div>
             {% elif filter_field == "created_at" %}
@@ -50,24 +50,24 @@
                 <div class="px-2">
                   {% render_field filter.form.created_at class="input input-bordered input-md" placeholder="2021/Q4 - 2022/Q1" %}
                 </div>
-                {%if filter.form.cleaned_data.created_at  %}
-                  {% with date_gte=filter.form.cleaned_data.created_at.0 date_lte=filter.form.cleaned_data.created_at.1%}
-                    {%if date_gte and date_lte %}
+                {% if filter.form.cleaned_data.created_at %}
+                  {% with date_gte=filter.form.cleaned_data.created_at.0 date_lte=filter.form.cleaned_data.created_at.1 %}
+                    {% if date_gte and date_lte %}
                       <div class="mt-2">
-                        <P class="my-auto text-xs "><span class="text-sm">From:</span> {{date_gte|date:"Y/m/d H:i:s e"}}</p>
-                        <P class="my-auto text-xs"><span class="text-sm">To:</span> {{date_lte|date:"Y/m/d H:i:s e"}}</p>
-                        {%if date_str %}<p class="my-auto text-xs">({{ date_str }})</p>{% endif %}
+                        <P class="my-auto text-xs "><span class="text-sm">From:</span> {{ date_gte|date:"Y/m/d H:i:s e" }}</p>
+                        <P class="my-auto text-xs"><span class="text-sm">To:</span> {{ date_lte|date:"Y/m/d H:i:s e" }}</p>
+                        {% if date_str %}<p class="my-auto text-xs">({{ date_str }})</p>{% endif %}
                       </div>
                     {% endif %}
-                  {% endwith%}
+                  {% endwith %}
                 {% endif %}
               </div>
             {% else %}
-              {% include "./widgets/form_container.html" with filter_form=field%}
-            {% endif%}
-          {% endwith%}
+              {% include "./widgets/form_container.html" with filter_form=field %}
+            {% endif %}
+          {% endwith %}
         {% endif %}
-      {% endfor%}
+      {% endfor %}
 
       <div class="flex justify-center items-center">
         <div class="w-max m-auto">

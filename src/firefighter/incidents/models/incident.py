@@ -335,21 +335,27 @@ class Incident(models.Model):
             return True, []
         if self.needs_postmortem:
             if self.status.value != IncidentStatus.POST_MORTEM:
-                cant_closed_reasons.append((
-                    "STATUS_NOT_POST_MORTEM",
-                    f"Incident is not in PostMortem status, and needs one because of its priority and environment ({self.priority.name}/{self.environment.value}).",
-                ))
+                cant_closed_reasons.append(
+                    (
+                        "STATUS_NOT_POST_MORTEM",
+                        f"Incident is not in PostMortem status, and needs one because of its priority and environment ({self.priority.name}/{self.environment.value}).",
+                    )
+                )
         elif self.status.value < IncidentStatus.FIXED:
-            cant_closed_reasons.append((
-                "STATUS_NOT_MITIGATED",
-                f"Incident is not in {IncidentStatus.FIXED.label} status (currently {self.status.label}).",
-            ))
+            cant_closed_reasons.append(
+                (
+                    "STATUS_NOT_MITIGATED",
+                    f"Incident is not in {IncidentStatus.FIXED.label} status (currently {self.status.label}).",
+                )
+            )
         missing_milestones = self.missing_milestones()
         if len(missing_milestones) > 0:
-            cant_closed_reasons.append((
-                "MISSING_REQUIRED_KEY_EVENTS",
-                f"Missing key events: {', '.join(missing_milestones)}",
-            ))
+            cant_closed_reasons.append(
+                (
+                    "MISSING_REQUIRED_KEY_EVENTS",
+                    f"Missing key events: {', '.join(missing_milestones)}",
+                )
+            )
 
         if len(cant_closed_reasons) > 0:
             return False, cant_closed_reasons
@@ -544,6 +550,7 @@ class Incident(models.Model):
         event_type: str | None = None,
         title: str | None = None,
         description: str | None = None,
+        environment_id: str | None = None,
         event_ts: datetime | None = None,
     ) -> IncidentUpdate:
         updated_fields: list[str] = []
@@ -560,6 +567,7 @@ class Incident(models.Model):
         _update_incident_field(self, "component_id", component_id, updated_fields)
         _update_incident_field(self, "title", title, updated_fields)
         _update_incident_field(self, "description", description, updated_fields)
+        _update_incident_field(self, "environment_id", environment_id, updated_fields)
 
         old_priority = self.priority if priority_id is not None else None
 
@@ -573,6 +581,7 @@ class Incident(models.Model):
                 incident=self,
                 status=status,  # type: ignore
                 priority_id=priority_id,
+                environment_id=environment_id,
                 component_id=component_id,
                 message=message,
                 created_by=created_by,

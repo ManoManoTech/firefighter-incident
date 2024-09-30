@@ -6,25 +6,25 @@
     {% comment %} Hidden button to act as default button to filter. Selected because first in DOM {% endcomment %}
     <button type="submit" form="main-filter" method="get" hidden="true"
             formaction="{{ request.path }}" class="hidden" aria-hidden="true" tabindex="-1"></button>
-  {% endblock%}
+  {% endblock page_main_action_hidden %}
   <div class="mx-auto shadow-md border-b border-neutral-300 dark:border-neutral-700 flex px-4">
     <div class="py-4 flex justify-start items-center">
       <h1 class="text-3xl font-bold text-neutral">
         {% block page_title %}
-        {% endblock%}
+        {% endblock page_title %}
       </h1>
     </div>
     <div class="py-4 ml-auto flex items-end justify-end ">
       {% block page_actions %}
-      {% endblock %}
+      {% endblock page_actions %}
     </div>
   </div>
   <div class="w-full flex">
     {% if filter %}
-      {% include "incidents/filter.html"%}
-    {% endif%}
+      {% include "incidents/filter.html" %}
+    {% endif %}
 
     {% block page_content %}
-    {% endblock%}
+    {% endblock page_content %}
   </div>
-{% endblock %}
+{% endblock content %}

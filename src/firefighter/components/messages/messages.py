@@ -1,16 +1,21 @@
 from __future__ import annotations
 
 import logging
-from typing import Any
+from typing import Any, TypedDict
 
-from django_components import component
+from django.contrib.messages.storage.base import BaseStorage
+from django_components import EmptyTuple, component
 
 logger = logging.getLogger(__name__)
 
 
+class Data(TypedDict):
+    messages: BaseStorage
+
+
 @component.register("messages")
-class Messages(component.Component):
+class Messages(component.Component[EmptyTuple, Data, Data, Any]):
     template_name = "messages/messages.html"
 
-    def get_context_data(self, *args: Any, **kwargs: Any) -> dict[str, Any]:
-        return kwargs
+    def get_context_data(self, messages: BaseStorage, **kwargs: Any) -> Data:
+        return Data(messages=messages)

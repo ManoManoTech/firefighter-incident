@@ -41,7 +41,7 @@ dependencies = [
     "django-htmx>=1.17.2",
     "django-simple-menu>=2.1.3",
     "markdown>=3.5.1",
-    "jira>=3.5.2",
+    "jira>=3.5.2,<3.6.0", # 3.6.0 stop accepting user id for add_watcher, see https://github.com/pycontribs/jira/issues/1855
     "drf-standardized-errors>=0.12.6",
     "aiohttp>=3.9.1", # Transitive dependency of slack_sdk
     "nh3>=0.2.15",
@@ -183,6 +183,7 @@ dev = [
     "django-watchfiles>=0.1.0",
     "ruff>=0.1.6",
     "mypy-to-codeclimate>=0.0.3",
+    "djade>=1.1.1",
 ]
 tests = [
     "pytest>=7.4.3",
@@ -492,6 +493,7 @@ select = ["ALL"]
 
 ignore = [
   "A003",    # Class attribute is shadowing a python builtin - Too many false positive and no way to exclude (yet?)
+  "A005",    # Module `*` is shadowing a Python builtin module
   "ARG001",  # XXX Enable later - No way to specify which args to ignore
   "ANN",     # XXX Enable later - More than 400 annotations errors
   "ANN101",  # Missing type annotation for `self` in method
@@ -509,6 +511,10 @@ ignore = [
   "D107",
   "D401",    # First line of docstring should be in imperative mood
   "D205",    # 1 blank line required between summary line and description
+  "DOC201",  # `return` is not documented in docstring
+  "DOC402",  # `yield` is not documented in docstring
+  "DOC501",  # Raised exception `*` missing from docstring
+  "DOC502",  # Raised exception is not explicitly raised: `*`
   "E501",    # Line too long
   "EM101",   # Exceptions should not use a string literal but a variable
   "PLR2004", # Too aggressive, but some good points
@@ -537,7 +543,7 @@ external = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"**/components/**/*.py" = ["INP"]
+"**/components/**/*.py" = ["INP", "TCH002", "TCH003"]
 "__init__.py" = ["F401"]
 "_version.py" = ["Q000", "UP", "I"]
 "**/settings_builder.py" = ["F403"]

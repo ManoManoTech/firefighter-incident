@@ -5,7 +5,7 @@ import pytest
 from firefighter.incidents.forms.select_impact import SelectImpactForm
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 @pytest.mark.parametrize(
     ("form_data", "expected_priority"),
     [
@@ -63,7 +63,7 @@ def test_suggest_priority_from_impact(form_data, expected_priority):
     assert priority == expected_priority
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db
 @pytest.mark.parametrize(
     ("form_data", "expected_priority"),
     [
@@ -96,7 +96,7 @@ def test_suggest_priority_from_impact(form_data, expected_priority):
         ),
     ],
 )
-@pytest.mark.django_db()
+@pytest.mark.django_db
 def test_suggest_priority_from_impact_with_invalid_form(form_data, expected_priority):
     form = SelectImpactForm(data=form_data)
     assert not form.is_valid()

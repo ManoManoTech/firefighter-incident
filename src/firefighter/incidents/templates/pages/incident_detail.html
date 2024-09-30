@@ -10,10 +10,10 @@
             #{{ incident.id }} - {{ incident.title }}
           </h1>
           {% if incident.created_at is not none %}
-            <p class="text-neutral-600 dark:text-neutral-200">Reported by <a class="text-neutral-900 dark:text-neutral-100" href="{{ incident.created_by.get_absolute_url }}">{{ incident.created_by.full_name }}</a>, <time datetime="{{incident.created_at|date:"c"}}">{{incident.created_at|date:"SHORT_DATETIME_FORMAT"}}</time></p>
+            <p class="text-neutral-600 dark:text-neutral-200">Reported by <a class="text-neutral-900 dark:text-neutral-100" href="{{ incident.created_by.get_absolute_url }}">{{ incident.created_by.full_name }}</a>, <time datetime="{{ incident.created_at|date:"c" }}">{{ incident.created_at|date:"SHORT_DATETIME_FORMAT" }}</time></p>
           {% endif %}
           <p>
-            {% include "../layouts/partials/priority_pill.html" with priority=incident.priority  %}
+            {% include "../layouts/partials/priority_pill.html" with priority=incident.priority %}
             {% include "../layouts/partials/status_pill.html" with status=incident.status IncidentStatus=IncidentStatus only %}
           </p>
         </div>
@@ -41,7 +41,7 @@
             <dl class="grid grid-cols-1 gap-x-4 gap-y-8 sm:grid-cols-2">
               <div class="sm:col-span-2">
                 <dt class="text-sm font-medium text-neutral-500 dark:text-neutral-300">Description</dt>
-                <dd class="mt-1 text-sm text-neutral-900 dark:text-neutral-100 break-all"> {{ incident.description | urlize | linebreaksbr}}</dd>
+                <dd class="mt-1 text-sm text-neutral-900 dark:text-neutral-100 break-all"> {{ incident.description|urlize|linebreaksbr }}</dd>
               </div>
               <div class="sm:col-span-1">
                 <dt class="text-sm font-medium text-neutral-500 dark:text-neutral-300">Priority</dt>
@@ -102,7 +102,7 @@
       <div class="lg:col-start-8 lg:col-span-5 space-y-6 ">
         {% component "card" card_title="External resources" id="incident-integrations" %}
           {% fill "card_content" %}
-            {% if not incident.conversation and not incident.postmortem_for  and pagerduty_incident_set.count == 0%}
+            {% if not incident.conversation and not incident.postmortem_for and pagerduty_incident_set.count == 0 %}
               <div class="px-4 py-5 sm:px-6 col-span-2">
                 <h4 class="text-center font-medium text-sm text-neutral-500 dark:text-neutral-100">
                   No external resources for this incident.
@@ -153,7 +153,7 @@
                     </div>
                     <div class="ml-3">
                       <p class="text-sm font-medium text-neutral-900 dark:text-neutral-100">Post-mortem</p>
-                      <p class="text-sm text-neutral-500 dark:text-neutral-300"> <a href="{{ incident.postmortem_for.page_url }}" target="_blank" rel="noopener noreferrer" class="underline" >{{incident.postmortem_for.name |truncatechars:70}}</a></p>
+                      <p class="text-sm text-neutral-500 dark:text-neutral-300"> <a href="{{ incident.postmortem_for.page_url }}" target="_blank" rel="noopener noreferrer" class="underline" >{{ incident.postmortem_for.name|truncatechars:70 }}</a></p>
                     </div>
                   </li>
                 {% endif %}
@@ -164,7 +164,7 @@
                     </div>
                     <div class="ml-3">
                       <p class="text-sm font-medium text-neutral-900 dark:text-neutral-100">Jira Incident Ticket</p>
-                      <p class="text-sm text-neutral-500 dark:text-neutral-300"> <a href="{{ incident.jira_ticket.url }}" target="_blank" rel="noopener noreferrer" class="underline" >{{incident.jira_ticket.key |truncatechars:70}}</a></p>
+                      <p class="text-sm text-neutral-500 dark:text-neutral-300"> <a href="{{ incident.jira_ticket.url }}" target="_blank" rel="noopener noreferrer" class="underline" >{{ incident.jira_ticket.key|truncatechars:70 }}</a></p>
                     </div>
                   </li>
                 {% endif %}
@@ -175,7 +175,7 @@
                     </div>
                     <div class="ml-3">
                       <p class="text-sm font-medium text-neutral-900 dark:text-neutral-100">PagerDuty Incident</p>
-                      <p class="text-sm text-neutral-500 dark:text-neutral-300"> <a href="{{ pagerduty_incident.web_url }}" target="_blank" rel="noopener noreferrer" class="underline" >{{pagerduty_incident.summary |truncatechars:70}}</a></p>
+                      <p class="text-sm text-neutral-500 dark:text-neutral-300"> <a href="{{ pagerduty_incident.web_url }}" target="_blank" rel="noopener noreferrer" class="underline" >{{ pagerduty_incident.summary|truncatechars:70 }}</a></p>
                     </div>
                   </li>
                 {% endfor %}
@@ -189,7 +189,7 @@
           {% fill "card_content" %}
             {% for role in incident.roles_set.all %}
               <span class="ff-tooltip">
-                {% include "../layouts/partials/user_card.html" with user=role.user title=role.role.name only %}
+                {% include "../layouts/partials/user_card.html" with user=role.user title=role.role_type.name only %}
                 {% include "../layouts/partials/user_tooltip.html" with user=role.user only %}
               </span>
             {% endfor %}
@@ -201,12 +201,18 @@
               <ul role="list" class="divide-y divide-gray-100">
                 <li class="py-1">
                   <div class="flex items-center gap-x-3">
-                    <span class="h-full w-5">{{impact.impact_type.emoji}}</span>
-                    <h3 class="flex-auto truncate text-sm font-semibold leading-6 text-neutral-900 dark:text-neutral-100">    {{impact.impact_type}}</h3>
+                    <span class="h-full w-5">{{ impact.impact_type.emoji }}</span>
+                    <h3 class="flex-auto truncate text-sm font-semibold leading-6 text-neutral-900 dark:text-neutral-100">    {{ impact.impact_type }}</h3>
                   </div>
-                  <p class="mt-2 truncate text-sm text-neutral-500 dark:text-neutral-300">{{impact.impact_level.value_label}}: {{impact.impact_level.name}}</p>
+                  <p class="mt-2 truncate text-sm text-neutral-500 dark:text-neutral-300">{{ impact.impact_level.value_label }}: {{ impact.impact_level.name }}</p>
                 </li>
               </ul>
+            {% empty %}
+              <div class="px-4 py-5 sm:px-6 col-span-2">
+                <h4 class="text-center font-medium text-sm text-neutral-500 dark:text-neutral-100">
+                  No impacts defined at the moment.
+                </h4>
+              </div>
             {% endfor %}
           {% endfill %}
         {% endcomponent %}
@@ -215,8 +221,8 @@
           {% component "card" card_title="Cost Estimates" id="incident-cost-estimates" %}
             {% fill "card_content" %}
               <ul class="mx-6 list-disc">
-                {% for cost in incident.incident_cost_set.all%}
-                  <li>{{cost.cost_type.name}}: {{cost.amount|intcomma}} {{cost.currency}}</li>
+                {% for cost in incident.incident_cost_set.all %}
+                  <li>{{ cost.cost_type.name }}: {{ cost.amount|intcomma }} {{ cost.currency }}</li>
                 {% endfor %}
               </ul>
             {% endfill %}
@@ -230,4 +236,4 @@
   </main>
 
 
-{% endblock %}
+{% endblock content %}

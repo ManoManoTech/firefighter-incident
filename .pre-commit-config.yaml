@@ -19,7 +19,7 @@ repos:
       - id: fix-byte-order-marker
   # Versions must be kept in sync with lockfile
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: 'v0.4.10'
+    rev: 'v0.6.8'
     hooks:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix]
@@ -35,3 +35,9 @@ repos:
       - id: djhtml
       - id: djcss
       - id: djjs
+
+  - repo: https://github.com/adamchainz/djade-pre-commit
+    rev: "1.1.1"
+    hooks:
+      - id: djade
+        args: [--target-version, "4.2"]
