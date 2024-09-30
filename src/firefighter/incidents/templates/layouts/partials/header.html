@@ -7,7 +7,7 @@
       <label tabindex="0" class="btn btn-ghost sm:hidden">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16" /></svg>
       </label>
-      <ul tabindex="0" class="menu dropdown-content mt-3 z-[15] p-2 shadow bg-base-200 dark:bg-black rounded-box w-52">
+      <ul tabindex="0" class="menu dropdown-content mt-3 z-[20] p-2 shadow bg-base-200 dark:bg-black rounded-box w-52">
         {% for item in menus.main %}
           {% if item.children %}
             <li tabindex="0">
@@ -47,11 +47,11 @@
                 {{ item.title }}
               </a>
             </div>
-            <ul tabindex="0" class="dropdown-content p-2 rounded-md z-[15] menu  ml-0 p-2 shadow bg-neutral-800 rounded-box w-52">
+            <ul tabindex="0" class="dropdown-content p-2 rounded-md z-[15] ml-0 p-2 shadow bg-base-200 dark:bg-black rounded-box w-auto">
               {% for child in item.children %}
                 <li class="py-1">
                   <a {% if item.boost %}hx-boost="true"{% else %}hx-boost="false"{% endif %} href="{{ child.url }}"
-                     class="whitespace-nowrap  rounded-md {% if child.selected %}active{% endif %}">
+                     class="whitespace-nowrap rounded-md {% if child.selected %}active{% endif %}">
                     {{ child.title }}
                   </a>
                 </li>
@@ -73,7 +73,7 @@
             {% component "avatar" user=user size="md" %}{% endcomponent %}
           </span>
         </label>
-        <ul tabindex="0" class="mt-3 p-2 shadow menu menu-compact dropdown-content bg-base-200 dark:bg-black rounded-box w-52">
+        <ul tabindex="0" class="z-[90] mt-3 p-2 shadow menu menu-compact dropdown-content bg-base-200 dark:bg-black rounded-box w-52">
           <div class="py-3 px-4 text-sm text-neutral-900 dark:text-white">
             <div>{{ user.full_name }}</div>
           </div>
