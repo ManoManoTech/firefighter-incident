@@ -53,7 +53,7 @@ from firefighter.incidents.signals import (
 logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence  # noqa: F401
+    from collections.abc import Iterable, Sequence  # noqa: F401
     from decimal import Decimal
     from uuid import UUID
 
@@ -460,7 +460,7 @@ class Incident(models.Model):
         users_list: list[User] = []
 
         # Send signal to modules (Confluence, PagerDuty...)
-        result_users: list[tuple[Any, Exception | list[User]]] = (
+        result_users: list[tuple[Any, Exception | Iterable[User]]] = (
             signals.get_invites.send_robust(sender=None, incident=self)
         )
 

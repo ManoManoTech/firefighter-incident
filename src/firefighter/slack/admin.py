@@ -189,8 +189,45 @@ class MessageAdmin(admin.ModelAdmin[Message]):
 class UserGroupAdmin(admin.ModelAdmin[UserGroup]):
     model = UserGroup
 
+    list_display = [
+        "name",
+        "handle",
+        "usergroup_id",
+        "is_external",
+        "tag",
+    ]
+
+    list_display_links = [
+        "name",
+        "handle",
+        "usergroup_id",
+    ]
+
+    readonly_fields = (
+        "created_at",
+        "updated_at",
+    )
+
     autocomplete_fields = ["components", "members"]
-    search_fields = ["name", "handle", "usergroup_id"]
+    search_fields = ["name", "handle", "description", "usergroup_id", "tag"]
+
+    fieldsets = (
+        (
+            ("Slack attributes"),
+            {
+                "description" : ("These fields are synchronized automatically with Slack API"),
+                "fields": (
+                    "name",
+                    "handle",
+                    "usergroup_id",
+                    "description",
+                    "is_external",
+                    "members",
+                )
+            },
+        ),
+        (_("Firefighter attributes"), {"fields": ("tag", "components", "created_at", "updated_at")}),
+    )
 
     def save_model(
         self,
