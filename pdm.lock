@@ -5,7 +5,7 @@
 groups = ["default", "dev", "docs", "tests", "types", "docs-img"]
 strategy = ["cross_platform", "static_urls"]
 lock_version = "4.4.1"
-content_hash = "sha256:c8ba6bf158df102eff3f0965f68c1532639c51746ac4413d47ccda3c8f56e900"
+content_hash = "sha256:0561fdb9ea10f173e9a102ca7b1518a0bb63f2698ce58b981c0137a97a67bed7"
 
 [[package]]
 name = "aiohappyeyeballs"
@@ -882,15 +882,15 @@ files = [
 
 [[package]]
 name = "django-components"
-version = "0.101"
+version = "0.102"
 requires_python = "<4.0,>=3.8"
 summary = "A way to create simple reusable template components in Django."
 dependencies = [
     "Django>=4.2",
 ]
 files = [
-    {url = "https://files.pythonhosted.org/packages/52/fc/c72b740f1fdfdf741ca615a004a1f114ffdfc2ad223a021a484f3c98506d/django_components-0.101-py3-none-any.whl", hash = "sha256:526121f53cea9a601d10d2e8c8d715c8fea7e43196aca06448cdd26f6667fa7f"},
-    {url = "https://files.pythonhosted.org/packages/ec/ac/de6fedcebd2383ed9514e84762b9392c8cf401a44f523e3bc02c93184ba4/django_components-0.101.tar.gz", hash = "sha256:21f56eb97919f806c7b9a988ce3fb5b057de434a70e05c6d6344bc8175f39581"},
+    {url = "https://files.pythonhosted.org/packages/75/e4/f9f2d81a2477696699a019797014a354546dac54831032fd5a23cd40ae82/django_components-0.102.tar.gz", hash = "sha256:641e1ebd72030b58630efb51659b175fd2d16e09dd8a0979a52ee64acc693188"},
+    {url = "https://files.pythonhosted.org/packages/f9/fb/ecfddf02a982903387fee9f98d531924f89911a6e6b9fe08a1939ee80267/django_components-0.102-py3-none-any.whl", hash = "sha256:568ae148ec43fcfa688c0baf0c0e2af929b85d5db184ce77a54c9c817584fbab"},
 ]
 
 [[package]]
