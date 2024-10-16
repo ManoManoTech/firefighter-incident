@@ -76,48 +76,25 @@ You can **add** or **import user groups** in the back-office.
 
 ### How users are invited into an incident
 
-#### Signal Receiver for Invitations
+Users are invited to incidents through a system that listens for invitation requests. For critical incidents, specific user groups are automatically included in the invitation process.
 
-1. **Signal Receiver**:
-   - We utilize a signal receiver from the function `get_invites_from_pagerduty`, which listens for the `get_invites` signal.
+The system also checks if the incident is public or private, ensuring that only the appropriate users with Slack accounts are invited. This creates a complete list of responders from all connected platforms, making sure the right people are notified.
 
-2. **Adding Specific User Groups**:
-   - In our example, we have set up listeners to add a specific user group when an incident is classified as a P1.
+### Custom Invitation Strategy
 
-#### Handling Invitations from Slack
+For users looking to create a custom invitation strategy, here’s what you need to know:
 
-- The function `get_invites_from_slack` also listens for the `get_invites` signal.
+- **Django Signals**: We use Django signals to manage invitations. You can refer to the [Django signals documentation](https://docs.djangoproject.com/en/4.2/topics/signals/) for more information.
 
-- **Logic**:
-  - We first check if the incident is a P1 or if it is private.
-  - Then, we filter user groups tagged as `"invited_for_all_public_p1"`.
-  - The function retrieves users from these groups who have a linked Slack user account, excludes the bot user, and returns a distinct set of users to be invited.
 
-#### Aggregation of Responders
+- **Registering on the Signal**: You need to register on the `get_invites signal`, which provides the incident object and expects to receive a list of users.
 
-- The `build_invite_list` method in the `Incident` model sends the signal to `get_invites` to gather users from all integrations.
+- **Signal Example**: You can check one of our [signals][firefighter.slack.signals.get_users] for a concrete example.
 
-- **User List Aggregation**:
-  - This results in a comprehensive list that aggregates users from all providers.
+**Tips**:
+  The signal can be triggered during the creation and update of an incident.
 
-<!-- ##### Usergroups
-
-You can add or import usergroups in the back-office.
-
-First we get a signal receiver from the function `get_invites_from_pagerduty` who also listens for the `get_invites` signal.
-
-In example, we did an listeners to add a specific users group when an incident is a P1.
-
-The function `get_invites_from_slack` listen for the `get_invites`.
-
-In this one, we check if the incident is P1 or not, if the incident is private.
-We filter user groups tagged as "invited_for_all°public_p1", retrieves users from tese groups who have Slack user linked and excludes the bot user and return a distinct set of users to be invited.
-
-##### Aggregation od responders
-
-The `build_invite_list` method int the `Incident` model send the signal to `get_invites`to gather isers from all integrations.
-
-The users list aggregates the users from all providers. -->
+  Invitations will only be sent once all signals have responded. It is advisable to avoid API calls and to store data in the database beforehand.
 
 ##### SOSes
 
