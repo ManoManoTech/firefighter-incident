@@ -6,7 +6,7 @@ default_language_version:
   python: python3.12
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
+    rev: v5.0.0
     hooks:
       - id: check-toml
       - id: trailing-whitespace
@@ -19,7 +19,7 @@ repos:
       - id: fix-byte-order-marker
   # Versions must be kept in sync with lockfile
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: 'v0.6.8'
+    rev: 'v0.6.9'
     hooks:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix]
@@ -37,7 +37,7 @@ repos:
       - id: djjs
 
   - repo: https://github.com/adamchainz/djade-pre-commit
-    rev: "1.1.1"
+    rev: "1.3.0"
     hooks:
       - id: djade
         args: [--target-version, "4.2"]
