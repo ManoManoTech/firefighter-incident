@@ -87,14 +87,13 @@ For users looking to create a custom invitation strategy, here’s what you need
 - **Django Signals**: We use Django signals to manage invitations. You can refer to the [Django signals documentation](https://docs.djangoproject.com/en/4.2/topics/signals/) for more information.
 
 
-- **Registering on the Signal**: You need to register on the `get_invites signal`, which provides the incident object and expects to receive a list of users.
+- **Registering on the Signal**: You need to register on the [`get_invites`][firefighter.incidents.signals.get_invites] signal, which provides the incident object and expects to receive a list of [`users`][firefighter.slack.models.user].
 
 - **Signal Example**: You can check one of our [signals][firefighter.slack.signals.get_users] for a concrete example.
 
-**Tips**:
-  The signal can be triggered during the creation and update of an incident.
-
-  Invitations will only be sent once all signals have responded. It is advisable to avoid API calls and to store data in the database beforehand.
+!!! note "Tips"
+    The signal can be triggered during the creation and update of an incident.
+    Invitations will only be sent once all signals have responded. It is advisable to avoid API calls and to store data in the database beforehand.
 
 ##### SOSes
 
