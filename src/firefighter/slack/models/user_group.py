@@ -177,7 +177,7 @@ class UserGroup(models.Model):
     tag = models.CharField(
         max_length=80,
         blank=True,
-        help_text="Used by FireFighter internally to mark special users group (@team-secu, @team-incidents ...). Must be empty or unique.",
+        help_text="Used by FireFighter internally to mark special user groups (e.g. @team-secu, @team-incidents...). Must be empty or unique.",
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
