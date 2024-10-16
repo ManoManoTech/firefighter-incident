@@ -174,6 +174,12 @@ class UserGroup(models.Model):
         help_text="Incident created with this usergroup automatically add the group members to these components.",
     )
 
+    tag = models.CharField(
+        max_length=80,
+        blank=True,
+        help_text="Used by FireFighter internally to mark special user groups (e.g. @team-secu, @team-incidents...). Must be empty or unique.",
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
