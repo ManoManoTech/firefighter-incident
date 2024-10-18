@@ -25,6 +25,7 @@ from firefighter.incidents.enums import IncidentStatus
 from firefighter.incidents.forms.select_impact import SelectImpactForm
 from firefighter.incidents.models.incident import Incident
 from firefighter.incidents.models.priority import Priority
+from firefighter.slack.models.conversation import Conversation
 from firefighter.slack.slack_app import SlackApp
 from firefighter.slack.slack_incident_context import get_user_from_context
 from firefighter.slack.views.modals.base_modal.base import SlackModal
@@ -63,6 +64,23 @@ class OpenModal(SlackModal):
     open_action: str = "open_incident"
     open_shortcut = "open_incident"
     callback_id: str = "incident_open"
+
+    def open_modal_aio(self, ack: Ack, body: dict[str, Any], **kwargs: Any) -> None:
+        super().open_modal_aio(ack, body, **kwargs)
+        from firefighter.slack.messages.slack_messages import (  # noqa: PLC0415
+            SlackMessageIncidentCreationWarning,
+        )
+
+        warning_message = SlackMessageIncidentCreationWarning(channel=body)
+
+        channel, _ = Conversation.objects.get_or_create(
+            channel_id=body["channel_id"],
+                defaults={
+                    "name": body["channel_name"],
+                },
+        )
+
+        channel.send_message_and_save(warning_message)
 
     def build_modal_fn(
         self, open_incident_context: OpeningData | None = None, user: User | None = None
