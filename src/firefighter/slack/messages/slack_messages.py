@@ -846,7 +846,7 @@ class SlackMessageIncidentOpeningWarning(SlackMessageSurface):
         super().__init__()
 
     def get_text(self) -> str:
-        return f"<@{self.channel["user_id"]}> is opening an incident at the moment. Please wait before creating one. :ballot_box_with_ballot:"
+        return f"<@{self.channel['user_id']}> is opening an incident at the moment. Please wait before creating one. :ballot_box_with_ballot:"
 
 
 class SlackMessageIncidentCreationRedirection(SlackMessageSurface):
