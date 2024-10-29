@@ -38,7 +38,7 @@ logger = logging.getLogger(__name__)
 @receiver(signal=create_incident_conversation)
 def create_incident_slack_conversation(
     incident: Incident,
-    source_channel: IncidentChannel,
+    source_channel: Any,
     *_args: Any,
     **_kwargs: Any,
 ) -> None | int:
@@ -46,7 +46,7 @@ def create_incident_slack_conversation(
 
     Args:
         incident (Incident): The incident to open. It should be saved before calling this function, and have its first incident update created.
-        source_channel (IncidentChannel): The channel from which the incident was opened, used for sending notifications and updates.
+        source_channel (Any): The channel from which the incident was opened, used for sending notifications and updates.
 
     """
     channel: IncidentChannel | None = IncidentChannel.objects.create_incident_channel(
