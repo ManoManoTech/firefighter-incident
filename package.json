@@ -22,10 +22,10 @@
     "hyperscript.org": "^0.9.12"
   },
   "devDependencies": {
-    "@babel/core": "^7.25.8",
-    "@babel/preset-env": "^7.25.8",
+    "@babel/core": "^7.26.0",
+    "@babel/preset-env": "^7.26.0",
     "@rollup/plugin-babel": "^6.0.4",
-    "@rollup/plugin-commonjs": "^28.0.0",
+    "@rollup/plugin-commonjs": "^28.0.1",
     "@rollup/plugin-inject": "^5.0.5",
     "@rollup/plugin-node-resolve": "^15.3.0",
     "@rollup/plugin-terser": "^0.4.4",
@@ -36,14 +36,14 @@
     "autoprefixer": "^10.4.20",
     "clean-css-cli": "^5.6.3",
     "cross-env": "^7.0.3",
-    "daisyui": "^4.12.13",
+    "daisyui": "^4.12.14",
     "postcss": "^8.4.47",
     "postcss-import": "^16.1.0",
-    "rollup": "^4.24.0",
+    "rollup": "^4.24.3",
     "rollup-plugin-postcss": "^4.0.2",
     "rollup-plugin-string": "^3.0.0",
     "stylelint": "^16.10.0",
     "stylelint-config-standard": "^36.0.1",
-    "tailwindcss": "^3.4.13"
+    "tailwindcss": "^3.4.14"
   }
 }
