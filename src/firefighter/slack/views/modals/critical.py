@@ -8,9 +8,7 @@ from slack_sdk.models.blocks.blocks import SectionBlock
 from slack_sdk.models.views import View
 
 from firefighter.incidents.forms.create_incident import CreateIncidentForm
-from firefighter.incidents.models.incident_membership import IncidentMembership
 from firefighter.slack.slack_app import SlackApp
-from firefighter.slack.utils import respond
 from firefighter.slack.views.modals.base_modal.base import ModalForm
 
 if TYPE_CHECKING:
@@ -78,7 +76,12 @@ class CriticalModal(ModalForm[CriticalFormSlack]):
 
     def build_modal_fn(self, **kwargs: Any) -> View:
         form_instance = self.get_form_class()()
-        blocks = form_instance.slack_blocks()
+        blocks = [
+        SectionBlock(
+            text="*Warning:* The use of `/critical` is reserved for experienced users."
+        ),
+            *form_instance.slack_blocks(),
+        ]
 
         return View(
             type="modal",
@@ -93,10 +96,6 @@ class CriticalModal(ModalForm[CriticalFormSlack]):
     def handle_modal_fn(  # type: ignore
         self, ack: Ack, body: dict[str, Any], user: User
     ) -> None :
-        if not self.is_user_member_of_incident(user):
-            ack()
-            respond(body, text=":x: You must be linked to an incident to use this command.")
-            return
 
         slack_form = self.handle_form_errors(
             ack, body, forms_kwargs={},
@@ -122,9 +121,6 @@ class CriticalModal(ModalForm[CriticalFormSlack]):
         if len(form.cleaned_data) == 0:
             logger.warning("Form is empty, no data captured.")
             return
-
-    def is_user_member_of_incident(self, user: User) -> bool:
-        return IncidentMembership.objects.filter(user=user).exists()
 
 
 modal_critical = CriticalModal()
