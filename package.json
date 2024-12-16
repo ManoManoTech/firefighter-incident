@@ -14,12 +14,12 @@
   "keywords": [],
   "author": "",
   "dependencies": {
-    "@alpinejs/collapse": "^3.14.1",
-    "@alpinejs/focus": "^3.14.1",
-    "@alpinejs/morph": "^3.14.1",
-    "alpinejs": "^3.14.1",
-    "htmx.org": "^2.0.3",
-    "hyperscript.org": "^0.9.12"
+    "@alpinejs/collapse": "^3.14.7",
+    "@alpinejs/focus": "^3.14.7",
+    "@alpinejs/morph": "^3.14.7",
+    "alpinejs": "^3.14.7",
+    "htmx.org": "^2.0.4",
+    "hyperscript.org": "^0.9.13"
   },
   "devDependencies": {
     "@babel/core": "^7.25.8",
