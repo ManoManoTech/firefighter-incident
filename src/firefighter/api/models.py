@@ -26,7 +26,7 @@ class APITokenProxy(APIToken):
 
     @property
     def pk(self: Self) -> uuid.UUID:
-        return cast(uuid.UUID, self.user_id)  # pyright: ignore[reportGeneralTypeIssues]
+        return cast("uuid.UUID", self.user_id)  # pyright: ignore[reportGeneralTypeIssues]
 
     class Meta(TypedModelMeta):
         permissions = [
