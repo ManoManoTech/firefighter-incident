@@ -83,6 +83,7 @@ include = [
   "main.py",
   "manage.py",
   "firefighter",
+  "scripts",
 ]
 artifacts = [
   "src/**/*.min.js",
