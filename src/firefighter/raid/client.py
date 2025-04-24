@@ -102,7 +102,10 @@ class RaidJiraClient(JiraClient):
             )
             description += description_addendum_str
         if project is None:
-            feature_team = FeatureTeam.objects.filter(name=suggested_team_routing).get()
+            try:
+                feature_team = FeatureTeam.objects.get(name=suggested_team_routing)
+            except FeatureTeam.DoesNotExist:
+                feature_team = None
             project = (
                 feature_team.jira_project_key if feature_team else RAID_JIRA_PROJECT_KEY
             )
