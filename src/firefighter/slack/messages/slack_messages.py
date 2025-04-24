@@ -836,3 +836,25 @@ class SlackMessageIncidentDowngradeHint(SlackMessageSurface):
 
     def get_text(self) -> str:
         return f"Incident #{self.incident.id} might not need an incident channel, as it is {self.incident.priority.name}."
+
+
+class SlackMessageIncidentOpeningWarning(SlackMessageSurface):
+    id = "ff_incident_opening_warning"
+
+    def __init__(self, channel: Any):
+        self.channel = channel
+        super().__init__()
+
+    def get_text(self) -> str:
+        return f"<@{self.channel['user_id']}> is opening an incident at the moment. Please wait before creating one. :ballot_box_with_ballot:"
+
+
+class SlackMessageIncidentCreationRedirection(SlackMessageSurface):
+    id = "ff_incident_creation_redirection"
+
+    def __init__(self, channel: Any):
+        self.channel = channel
+        super().__init__()
+
+    def get_text(self) -> str:
+        return f"A new incident has just been created in #{self.channel.name}. You can go there to follow the incident."
