@@ -129,7 +129,6 @@ nav:
           - slack: reference/slack.md
           - jira_app: reference/jira_app.md
           - raid: reference/raid.md
-      - logging: reference/logging.md
 
 
 markdown_extensions:
@@ -203,6 +202,7 @@ plugins:
             - url: https://docs.djangoproject.com/en/4.2/_objects/
               base_url: https://docs.djangoproject.com/en/4.2/
               domains: [std, py]
+            - https://manomanotech.github.io/loggia/latest/objects.inv
           paths: [src]  # search packages in the src folder
           options:
             docstring_options:
