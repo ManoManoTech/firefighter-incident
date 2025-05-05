@@ -1,0 +1,89 @@
+from django.db import migrations
+
+
+def get_component_mappings() -> list:
+    """
+    Returns a list of tuples for updating existing component names and their attributes.
+
+    Each tuple contains:
+        - old_name (str): The current name of the component.
+        - new_name (str): The new name to assign to the component.
+        - slack_channel (str): The associated Slack channel for the component.
+        - group_name (str): The name of the group to which the component belongs.
+
+    Returns:
+        list: A list of tuples, each representing the details for a component update.
+    """
+    return [
+        ("Commercial Animation (Mabaya cat. integration & ad request, ...)", "Commercial Animation", "impact-commercial-animation", "Marketplace"),
+        ("Mobile Apps", "Mobile Apps", "impact-mobile-apps", "Marketplace"),
+        ("Spartacux Foundations", "Spartacux Foundations", "impact-spartacux-foundations", "Marketplace"),
+        ("Tracking", "Tracking", "impact-tracking", "Marketplace"),
+        ("HUB Integrators", "HUB Integrators", "impact-hub-integrators", "Seller"),
+        ("Seller Account and Feeds", "Seller Catalog and Offer Management", "impact-seller-catalog-offer-management", "Seller"),
+        ("Toolbox", "Seller Admin and Experience", "impact-seller-admin-experience", "Seller"),
+        ("Seller Services (Mabaya BO, Subscriptions, MF)", "Seller Services", "impact-seller-services", "Seller"),
+        ("Catalog Performance", "Catalog Performance", "impact-catalog-performance", "Catalog"),
+        ("Offer (Price, Stock)", "Offer (Price & Stock)", "impact-offer-price-stock", "Catalog"),
+        ("Back Office", "BO Catalog - Master Experience", "impact-bo-catalog-master-experience", "Catalog"),
+        ("Order Lifecycle", "Order management", "impact-order-management", "Operations"),
+        ("Delivery Experience", "Delivery experience", "impact-delivery-experience", "Operations"),
+        ("Cloud Infrastructure", "Cloud Infrastructure", "impact-cloud-infrastructure", "Platform"),
+        ("Spinak", "Spinak", "impact-spinak", "Platform"),
+        ("CDN", "CDN", "impact-cdn", "Platform"),
+        ("Gitlab", "Gitlab", "impact-gitlab", "Platform"),
+    ]
+
+
+def update_component_names(apps, schema_editor):
+    Component = apps.get_model("incidents", "Component")
+    Group = apps.get_model("incidents", "Group")
+    component_mappings = get_component_mappings()
+
+    updated_count = 0
+
+    for old_name, new_name, slack_channel, group_name in component_mappings:
+        try:
+            component = Component.objects.get(name=old_name)
+            print(f"Updating: '{old_name}' to '{new_name}'")
+            component.name = new_name
+
+            # WARN: this operaration is impossible to revert
+            try:
+                group_instance = Group.objects.get(name=group_name)
+                component.group = group_instance
+            except Group.DoesNotExist:
+                print(f"Group '{group_name}' does not exist, skipping group assignment for '{new_name}'.")
+
+            component.save()
+            updated_count += 1
+        except Component.DoesNotExist:
+            raise ValueError(f"Component '{old_name}' does not exist, cannot proceed with updates.")
+
+
+def revert_component_names(apps, schema_editor):
+    Component = apps.get_model("incidents", "Component")
+    reverse_mappings = {new_name: old_name for old_name, new_name, _, _ in get_component_mappings()}
+
+    updated_count = 0
+
+    for new_name, old_name in reverse_mappings.items():
+        try:
+            component = Component.objects.get(name=new_name)
+            print(f"Restoring '{new_name}' back to '{old_name}'")
+            component.name = old_name
+            component.save()
+            updated_count += 1
+        except Component.DoesNotExist:
+            print(f"Component '{new_name}' does not exist, skipping restoration.")
+
+
+class Migration(migrations.Migration):
+
+    dependencies = [
+        ("incidents", "0006_update_group_names"),  # Replace with your last migration
+    ]
+
+    operations = [
+        migrations.RunPython(update_component_names, revert_component_names),
+    ]
