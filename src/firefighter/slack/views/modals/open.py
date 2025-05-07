@@ -377,6 +377,9 @@ class OpenModal(SlackModal):
         elements: list[ButtonElement] = []
 
         for response_type in response_types:
+            if response_type != selected_response_type:
+                continue
+
             is_selected = (
                 open_incident_context.get("response_type") == response_type
                 or len(INCIDENT_TYPES) == 1
