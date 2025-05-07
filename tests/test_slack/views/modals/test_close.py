@@ -221,7 +221,7 @@ valid_submission = {
             {
                 "type": "input",
                 "block_id": "component",
-                "label": {"type": "plain_text", "text": "Component", "emoji": True},
+                "label": {"type": "plain_text", "text": "Issue category", "emoji": True},
                 "optional": False,
                 "dispatch_action": False,
                 "element": {

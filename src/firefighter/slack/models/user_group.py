@@ -171,7 +171,7 @@ class UserGroup(models.Model):
         Component,
         related_name="usergroups",
         blank=True,
-        help_text="Incident created with this usergroup automatically add the group members to these components.",
+        help_text="Incident created with this usergroup automatically add the group members to these issue categories.",
     )
 
     tag = models.CharField(
