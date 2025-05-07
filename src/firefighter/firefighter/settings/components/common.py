@@ -97,7 +97,7 @@ DATABASES: dict[str, dict[str, Any]] = {
         "HOST": config("POSTGRES_HOST"),
         "PORT": config("POSTGRES_PORT"),
         "OPTIONS": {
-            "options": "-c statement_timeout=30000",
+            "options": "-c statement_timeout=30000 -c search_path=infra_firefighter",
         },
     }
 }
