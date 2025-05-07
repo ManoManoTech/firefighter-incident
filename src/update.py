@@ -1,15 +1,15 @@
+from __future__ import annotations
+
+import csv
 import os
-from turtle import pos
-import django
-from django.db.models import F, Count
 import traceback
 
-from firefighter.incidents.models.group import Group
-from firefighter.incidents.models.component import Component
-from firefighter.incidents.models.incident import Incident
-from firefighter.slack.models.user_group import UserGroup
-import csv
+import django
+from django.db.models import Count, F
 
+from firefighter.incidents.models.component import Component
+from firefighter.incidents.models.group import Group
+from firefighter.incidents.models.incident import Incident
 
 # Ensure Django is set up before importing models
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "firefighter.firefighter.settings")
@@ -25,6 +25,7 @@ def export_groups_to_csv(file_path="data/group_name_mapping.csv"):
             writer.writerow({"old_name": group.name, "new_name": ""})
     print(f"Exported {len(groups)} groups to {file_path}")
 
+
 def export_components_to_csv(file_path="data/component_name_mapping.csv"):
     components = Component.objects.all()
     with open(file_path, mode="w", newline="", encoding="utf-8") as csv_file:
@@ -34,39 +35,39 @@ def export_components_to_csv(file_path="data/component_name_mapping.csv"):
             writer.writerow({"old_name": component.name, "new_name": ""})
     print(f"Exported {len(components)} components to {file_path}")
 
+
 def update_group_names(file_path="data/mapping_groups.csv"):
-    """
-    Reads group name mappings from a CSV file and updates groups accordingly.
+    """Reads group name mappings from a CSV file and updates groups accordingly.
     If a group with old_name exists, it updates its name to new_name.
     If a group with old_name doesn't exist but new_name is provided, creates a new group.
-    
+
     Args:
         file_path (str): Path to the CSV file containing the mappings
     """
     import csv
-    
-    with open(file_path, mode="r", newline="", encoding="utf-8") as csv_file:
+
+    with open(file_path, newline="", encoding="utf-8") as csv_file:
         reader = csv.DictReader(csv_file)
-        
+
         updated_count = 0
         skipped_count = 0
         created_count = 0
-        
+
         # Increment the position of all existing groups to avoid conflicts
-        Group.objects.update(order=F('order') + 10000000)
-        
+        Group.objects.update(order=F("order") + 10000000)
+
         for row in reader:
             old_name = row.get("old_name", "").strip()
             new_name = row.get("new_name", "").strip()
             position = row.get("position", "").strip()
-            
+
             if not new_name:
                 print(f"Skip '{old_name}' : empty new_name")
                 skipped_count += 1
                 continue
 
             try:
-                group = Group.objects.get(name=old_name if old_name else new_name)
+                group = Group.objects.get(name=old_name or new_name)
                 if old_name and group.name != new_name:
                     print(f"Update: '{old_name}' to '{new_name}'")
                 else:
@@ -91,18 +92,17 @@ def update_group_names(file_path="data/mapping_groups.csv"):
     print(f"Groups updated: {updated_count}")
     print(f"Groups created: {created_count}")
     print(f"Entries skipped: {skipped_count}")
-  
+
+
 def update_component_names(file_path="data/mapping_components.csv"):
-    """
-    Reads component name mappings from a CSV file and updates components accordingly.
+    """Reads component name mappings from a CSV file and updates components accordingly.
     If a component with old_name exists, it updates its name to new_name.
     If a component with old_name doesn't exist but new_name is provided, it logs a message about creating a new component.
-    
+
     Args:
         file_path (str): Path to the CSV file containing the mappings
     """
-
-    with open(file_path, mode="r", newline="", encoding="utf-8") as csv_file:
+    with open(file_path, newline="", encoding="utf-8") as csv_file:
         reader = csv.DictReader(csv_file)
 
         updated_count = 0
@@ -114,7 +114,7 @@ def update_component_names(file_path="data/mapping_components.csv"):
             new_name = row["new_name"]
             group = row["group"]
             # slack = row["slack"]
-            
+
             if not group:
                 print(f"Skip '{old_name}', no group")
                 skipped_count += 1
@@ -126,7 +126,7 @@ def update_component_names(file_path="data/mapping_components.csv"):
 
             try:
                 group_instance = Group.objects.get(name=group)
-                component = Component.objects.get(name=old_name if old_name else new_name)
+                component = Component.objects.get(name=old_name or new_name)
                 if old_name and component.name != new_name:
                     print(f"Update: '{old_name}' to '{new_name}'")
                 else:
@@ -150,12 +150,12 @@ def update_component_names(file_path="data/mapping_components.csv"):
                 else:
                     component = Component.objects.get(name=new_name)
                     print(f"Create: '{new_name}'")
-                    max_order = Component.objects.aggregate(max_order=Count('order'))['max_order'] or 0
+                    max_order = Component.objects.aggregate(max_order=Count("order"))["max_order"] or 0
                     new_component = Component(name=new_name, group=group_instance, order=max_order + 1)
                     new_component.save()
                     created_count += 1
             except Exception as e:
-                print(f"Erreur : {str(e)}")
+                print(f"Erreur : {e!s}")
                 print("Traceback complet :")
                 traceback.print_exc()
                 skipped_count += 1
@@ -163,13 +163,12 @@ def update_component_names(file_path="data/mapping_components.csv"):
 
     print(f"Finished processing {file_path}")
 
-def export_unmapped_components():
-    """
-    Exports components that are present in the database but not in the mapping file's new_name column to a CSV file.
-    """
 
+def export_unmapped_components():
+    """Exports components that are present in the database but not in the mapping file's new_name column to a CSV file.
+    """
     mapped_new_names = set()
-    with open("data/mapping_components.csv", mode="r", newline="", encoding="utf-8") as csv_file:
+    with open("data/mapping_components.csv", newline="", encoding="utf-8") as csv_file:
         reader = csv.DictReader(csv_file)
         for row in reader:
             if row["new_name"]:
@@ -189,13 +188,12 @@ def export_unmapped_components():
 
     print(f"Exported {len(unmapped_components)}")
 
-def export_unmapped_groups():
-    """
-    Exports groups that are present in the database but not in the mapping file's new_name column to a CSV file.
-    """
 
+def export_unmapped_groups():
+    """Exports groups that are present in the database but not in the mapping file's new_name column to a CSV file.
+    """
     mapped_new_names = set()
-    with open("data/mapping_groups.csv", mode="r", newline="", encoding="utf-8") as csv_file:
+    with open("data/mapping_groups.csv", newline="", encoding="utf-8") as csv_file:
         reader = csv.DictReader(csv_file)
         for row in reader:
             if row.get("new_name", "").strip():
@@ -214,9 +212,9 @@ def export_unmapped_groups():
 
     print(f"Exported {len(unmapped_groups)} unmapped groups to old_groups_unmapped.csv")
 
+
 def export_duplicates():
-    """
-    Exports duplicate groups and components based on their names to separate CSV files.
+    """Exports duplicate groups and components based on their names to separate CSV files.
     For components, also includes the number of incidents associated with each duplicate.
     """
     duplicate_groups = (
@@ -259,9 +257,9 @@ def export_duplicates():
 
     print(f"Exported {len(duplicate_components)} duplicated components to duplicated_components.csv")
 
+
 def remove_duplicate_components():
-    """
-    Removes duplicate components by keeping only one instance of each name.
+    """Removes duplicate components by keeping only one instance of each name.
     Prefers to keep components with incidents, and deletes duplicates without incidents.
     """
     duplicate_components = (
@@ -274,26 +272,22 @@ def remove_duplicate_components():
         duplicates = Component.objects.filter(name=component["name"]).order_by("-id")
         keep = None
         for duplicate in duplicates:
-            if keep is None:
+            if keep is None or Incident.objects.filter(component=duplicate).exists():
                 keep = duplicate
             else:
-                if Incident.objects.filter(component=duplicate).exists():
-                    keep = duplicate
-                else:
-                    duplicate.delete()
+                duplicate.delete()
 
     print("Removed duplicate components, keeping one instance of each.")
-    
+
+
 def update_incident_components(file_path="data/mapping_incidents.csv"):
-    """
-    Reads incident component mappings from a CSV file and updates incidents accordingly.
+    """Reads incident component mappings from a CSV file and updates incidents accordingly.
     If an incident's component matches old_name, it updates it to the component matching new_name.
 
     Args:
         file_path (str): Path to the CSV file containing the mappings
     """
-
-    with open(file_path, mode="r", newline="", encoding="utf-8") as csv_file:
+    with open(file_path, newline="", encoding="utf-8") as csv_file:
         reader = csv.DictReader(csv_file)
 
         updated_count = 0
@@ -315,7 +309,7 @@ def update_incident_components(file_path="data/mapping_incidents.csv"):
                 updated_count += incidents_updated
 
                 print(f"Updated {incidents_updated} incidents from '{old_component}' to '{new_component}'")
-            except Component.DoesNotExist as e:
+            except Component.DoesNotExist:
                 print(f"Skipping row due to missing component: {old_component}")
                 skipped_count += 1
 
@@ -333,31 +327,33 @@ def update_incident_components(file_path="data/mapping_incidents.csv"):
     print(f"Entries skipped: {skipped_count}")
     print(f"Old components deleted: {deleted_count}")
 
+
 def main() -> None:
-    print(f"------ export_groups_to_csv ------")
+    print("------ export_groups_to_csv ------")
     export_groups_to_csv()
-    print(f"------ export_components_to_csv ------")
+    print("------ export_components_to_csv ------")
     export_components_to_csv()
-    print(f"------ update_group_names ------")
+    print("------ update_group_names ------")
     update_group_names()
-    print(f"------ update_component_names ------")
+    print("------ update_component_names ------")
     update_component_names()
-    print(f"------ export_unmapped_groups ------")
+    print("------ export_unmapped_groups ------")
     export_unmapped_groups()
-    print(f"------ export_unmapped_components ------")
+    print("------ export_unmapped_components ------")
     export_unmapped_components()
-    print(f"------ export_unmapped_components ------")
+    print("------ export_unmapped_components ------")
     export_duplicates()
-    print(f"------ update_incident_components ------")
+    print("------ update_incident_components ------")
     update_incident_components()
-    print(f"------ remove_duplicate_components ------")
+    print("------ remove_duplicate_components ------")
     remove_duplicate_components()
 
+
 def pdm_ff_update():
-    """
-    Entry point for the `pdm ff-update` command.
+    """Entry point for the `pdm ff-update` command.
     """
     main()
+
 
 if __name__ == "__main__":
     main()
