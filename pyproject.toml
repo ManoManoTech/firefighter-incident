@@ -423,7 +423,6 @@ timeout = 15
 filterwarnings = [
   "ignore::DeprecationWarning:ddtrace.internal*:",
   "ignore:.*taggit.TaggedItem.*:django.utils.deprecation.RemovedInDjango51Warning",
-  "ignore::django_filters.RemovedInDjangoFilter25Warning",
   'ignore:SelectableGroups dict interface is deprecated. Use select:DeprecationWarning',
   'ignore::DeprecationWarning:ddtrace.*',
   'ignore::DeprecationWarning:pkg_resources.*',
