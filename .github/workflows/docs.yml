@@ -17,51 +17,37 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref_name }}-${{ github.event.pull_request.number || github.sha }}
   cancel-in-progress: true
 
-env:
-  PYTHON_VERSION: "3.12"
-
 jobs:
   docs:
     name: Test, build and deploy docs
     env:
       PYTHONDEVMODE: 1
-
     runs-on: "ubuntu-latest"
-
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: ["3.11"]
-
     permissions:
       contents: write
-
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Setup PDM
-        uses: pdm-project/setup-pdm@main
-        id: setup-pdm
-        with:
-          python-version: ${{ matrix.python-version }}
-          cache: true
-          allow-python-prereleases: true
-
+      - name: Configure git
+        run: |
+          git config --global user.email "firefighter@manomano.com"
+          git config --global user.name "FireFighter Release CI"
+      - name: Fake .git for act
+        if: ${{ env.ACT }}
+        run: |
+          git init
+          git add .
+          git commit -a -m "chore(act): fake commit"
+          git log
+      - uses: jdx/mise-action@v2
       - name: Install dependencies
         run: pdm install -v && pdm info
-
       - name: "Check for mkdocs build --strict"
         run: |
           pdm run docs-build --strict
         # If pull request or not main branch and not a tag
         if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref != 'refs/heads/main' && !startsWith(github.ref, 'refs/tags/')) || github.event_name == 'workflow_dispatch'
-
-      - name: Configure git
-        run: |
-          git config user.email "firefighter@manomano.com"
-          git config user.name "FireFighter Release CI"
-
       - name: Deploy docs (dev)
         if: github.event_name == 'push' && github.ref_name == 'main' && github.ref_type == 'branch'
         run: |

@@ -23,14 +23,7 @@ jobs:
       FF_SLACK_SKIP_CHECKS: true
       ENABLE_JIRA: true
       ENABLE_RAID: true
-
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: ["3.11", "3.12"]
-        os: ["ubuntu-latest"]
+    runs-on: "ubuntu-latest"
     services:
       # Label used to access the service container
       postgres:
@@ -62,21 +55,7 @@ jobs:
           - 6379:6379
     steps:
       - uses: actions/checkout@v4
-      - name: Setup PDM
-        uses: pdm-project/setup-pdm@v4
-        id: setup-pdm
-        with:
-          python-version: ${{ matrix.python-version }}
-          version: "2.12.4"
-          cache: true
-          allow-python-prereleases: true
-
-      # Needed for CSS and JS minification
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 18
-          cache: npm
-
+      - uses: jdx/mise-action@v2
       - name: Install dependencies
         run: pdm install -v && pdm info
 
