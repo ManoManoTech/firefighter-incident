@@ -81,9 +81,11 @@ jobs:
         run: |
           pdm run lint-ruff --output-format=github --exit-non-zero-on-fix
 
-      - name: Build with pdm
-        run: |
-          pdm build
+      - name: "Build wheel"
+        run: pdm build --no-sdist --no-clean
+
+      - name: "Build sdist"
+        run: pdm build --no-wheel --no-clean
 
       - name: Publish Python artifacts on Github artifacts
         uses: actions/upload-artifact@v4
