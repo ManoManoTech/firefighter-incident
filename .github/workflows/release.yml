@@ -30,8 +30,6 @@ jobs:
         if: ${{ inputs.tag }}
         run: |
           git tag -m "v${{ inputs.tag }}" "v${{ inputs.tag }}"
-      - name: "Build wheel and sdist"
-        run: pdm build
       - name: Fake .git for act
         if: ${{ env.ACT }}
         run: |
@@ -40,6 +38,10 @@ jobs:
           git commit -a -m "chore(act): fake commit"
           git log
       - uses: jdx/mise-action@v2
+      - name: "Build wheel"
+        run: pdm build --no-sdist --no-clean
+      - name: "Build sdist"
+        run: pdm build --no-wheel --no-clean
       - name: "Upload wheel and sdist"
         uses: actions/upload-artifact@v4
         if: ${{ !env.ACT }}
