@@ -16,42 +16,33 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-env:
-  PYTHON_VERSION: "3.12"
-
 jobs:
   sdist_wheels:
     name: Build Python sdist and wheel
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ inputs.sha }}
-
+      - name: Configure git
+        run: |
+          git config --global user.email "firefighter@manomano.com"
+          git config --global user.name "FireFighter Release CI"
       - name: Set local tag for version
         if: ${{ inputs.tag }}
         run: |
-          git config user.email "firefighter@manomano.com"
-          git config user.name "FireFighter Release CI"
           git tag -m "v${{ inputs.tag }}" "v${{ inputs.tag }}"
-
-      - name: Setup Python & PDM
-        uses: pdm-project/setup-pdm@main
-        id: setup-pdm
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-          cache: true
-          allow-python-prereleases: true
-
-      # Needed for CSS and JS minification
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 18
-          cache: npm
       - name: "Build wheel and sdist"
         run: pdm build
+      - name: Fake .git for act
+        if: ${{ env.ACT }}
+        run: |
+          git init
+          git add .
+          git commit -a -m "chore(act): fake commit"
+          git log
+      - uses: jdx/mise-action@v2
       - name: "Upload wheel and sdist"
         uses: actions/upload-artifact@v4
+        if: ${{ !env.ACT }}
         with:
           name: dist
           path: dist
@@ -61,6 +52,7 @@ jobs:
           pdm export --prod -f requirements -o requirements.txt
 
       - name: Publish frozen requirements.txt
+        if: ${{ !env.ACT }}
         uses: actions/upload-artifact@v4
         with:
           name: requirements
