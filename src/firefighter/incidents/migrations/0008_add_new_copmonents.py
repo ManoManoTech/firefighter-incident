@@ -1,5 +1,6 @@
 from django.db import migrations
 
+
 def get_new_components() -> dict:
     """
     Returns a dictionary of new components to be created.
@@ -68,9 +69,10 @@ def get_new_components() -> dict:
         "Other": ("Other", "impact-other"),
     }
 
+
 def add_new_components(apps, schema_editor):
-    Component = apps.get_model('incidents', 'Component')
-    Group = apps.get_model('incidents', 'Group')
+    Component = apps.get_model("incidents", "Component")
+    Group = apps.get_model("incidents", "Group")
     new_components = get_new_components()
 
     for name, (group_name, slack) in new_components.items():
@@ -88,8 +90,9 @@ def add_new_components(apps, schema_editor):
         else:
             raise ValueError(f"Component '{name}' already exists in database.")
 
+
 def remove_new_components(apps, schema_editor):
-    Component = apps.get_model('incidents', 'Component')
+    Component = apps.get_model("incidents", "Component")
     new_component_names = get_new_components().keys()
 
     for name in new_component_names:
@@ -100,10 +103,11 @@ def remove_new_components(apps, schema_editor):
         except Component.DoesNotExist:
             print(f"Component '{name}' does not exist, skipping removal.")
 
+
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('incidents', '0007_update_component_name'),
+        ("incidents", "0007_update_component_name"),
     ]
 
     operations = [

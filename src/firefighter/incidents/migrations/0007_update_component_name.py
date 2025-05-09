@@ -1,5 +1,6 @@
 from django.db import migrations
 
+
 def get_component_mappings() -> list:
     """
     Returns a list of tuples for updating existing component names and their attributes.
@@ -34,9 +35,10 @@ def get_component_mappings() -> list:
         # ("Stolen account(s) or IT materials", "Stolen account(s) or IT materials", "impact-stolen-accounts-it-materials", "Security"),
     ]
 
+
 def update_component_names(apps, schema_editor):
-    Component = apps.get_model('incidents', 'Component')
-    Group = apps.get_model('incidents', 'Group')
+    Component = apps.get_model("incidents", "Component")
+    Group = apps.get_model("incidents", "Group")
     component_mappings = get_component_mappings()
 
     updated_count = 0
@@ -59,8 +61,9 @@ def update_component_names(apps, schema_editor):
         except Component.DoesNotExist:
             raise ValueError(f"Component '{old_name}' does not exist, cannot proceed with updates.")
 
+
 def revert_component_names(apps, schema_editor):
-    Component = apps.get_model('incidents', 'Component')
+    Component = apps.get_model("incidents", "Component")
     reverse_mappings = {new_name: old_name for old_name, new_name, _, _ in get_component_mappings()}
 
     updated_count = 0
@@ -75,10 +78,11 @@ def revert_component_names(apps, schema_editor):
         except Component.DoesNotExist:
             print(f"Component '{new_name}' does not exist, skipping restoration.")
 
+
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('incidents', '0006_update_group_names'),  # Replace with your last migration
+        ("incidents", "0006_update_group_names"),  # Replace with your last migration
     ]
 
     operations = [

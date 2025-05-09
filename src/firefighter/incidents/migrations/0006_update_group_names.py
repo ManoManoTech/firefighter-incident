@@ -1,5 +1,6 @@
 from django.db import migrations
 
+
 def get_group_mappings() -> dict:
     """Returns the mapping table for updating existing groups."""
     return {
@@ -14,6 +15,7 @@ def get_group_mappings() -> dict:
         "Other": ("Other", 12),
     }
 
+
 def get_new_groups() -> dict:
     """Returns a dictionary of new groups to be created."""
     return {
@@ -22,8 +24,9 @@ def get_new_groups() -> dict:
         "Finance": 7,
     }
 
+
 def add_new_groups(apps, schema_editor):
-    Group = apps.get_model('incidents', 'Group')
+    Group = apps.get_model("incidents", "Group")
     new_groups = get_new_groups()
 
     for name, position in new_groups.items():
@@ -32,8 +35,9 @@ def add_new_groups(apps, schema_editor):
             new_group = Group(name=name, order=position)
             new_group.save()
 
+
 def remove_new_groups(apps, schema_editor):
-    Group = apps.get_model('incidents', 'Group')
+    Group = apps.get_model("incidents", "Group")
     new_group_names = get_new_groups().keys()
 
     for name in new_group_names:
@@ -44,8 +48,9 @@ def remove_new_groups(apps, schema_editor):
         except Group.DoesNotExist:
             print(f"Group '{name}' does not exist, skipping removal.")
 
+
 def update_groups(apps, schema_editor):
-    Group = apps.get_model('incidents', 'Group')
+    Group = apps.get_model("incidents", "Group")
     group_mappings = get_group_mappings()
 
     updated_count = 0
@@ -61,8 +66,9 @@ def update_groups(apps, schema_editor):
         except Group.DoesNotExist:
             raise ValueError(f"Group '{old_name}' does not exist, cannot proceed with updates.")
 
+
 def revert_group_names(apps, schema_editor):
-    Group = apps.get_model('incidents', 'Group')
+    Group = apps.get_model("incidents", "Group")
     reverse_mappings = {new_name: old_name for old_name, (new_name, _) in get_group_mappings().items()}
 
     updated_count = 0
@@ -77,10 +83,11 @@ def revert_group_names(apps, schema_editor):
         except Group.DoesNotExist:
             print(f"Group '{new_name}' does not exist, skipping restoration.")
 
+
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('incidents', '0005_enable_from_p1_to_p5_priority'),
+        ("incidents", "0005_enable_from_p1_to_p5_priority"),
     ]
 
     operations = [
