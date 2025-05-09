@@ -42,7 +42,7 @@ jobs:
           git log
       - uses: jdx/mise-action@v2
       - name: Install dependencies
-        run: pdm install -v && pdm info
+        run: pdm install --dev -v && pdm info
       - name: "Check for mkdocs build --strict"
         run: |
           pdm run docs-build --strict
