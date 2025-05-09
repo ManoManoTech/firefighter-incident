@@ -188,14 +188,6 @@ plugins:
   - mkdocstrings:
       handlers:
         python:
-          setup_commands:
-            - "import os"
-            - "import sys"
-            - "import django"
-            - "sys.path.insert(0, os.path.abspath('.'))"
-            - "sys.path.insert(0, os.path.abspath('src'))"
-            - "os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'firefighter.firefighter.settings')"
-            - "django.setup()"
           import:
             - https://docs.python.org/3.12/objects.inv
             - https://docs.celeryq.dev/en/stable/objects.inv
