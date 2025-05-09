@@ -83,6 +83,9 @@ include = [
   "main.py",
   "manage.py",
   "firefighter",
+  "package.json",
+  "package-lock.json",
+  "scripts",
 ]
 artifacts = [
   "src/**/*.min.js",
@@ -217,6 +220,7 @@ docs = [
     "black>=24.2.0",
     "griffe>=0.44,<0.46.0", # XXX(GabDug): breaking changes
 ]
+
 types = [
     "django-stubs~=4.2.6",
     "djangorestframework-stubs>=3.14.4",
@@ -231,9 +235,6 @@ types = [
     "types-six>=1.16.21.9",
     "types-markdown>=3.5.0.3",
     "celery-types>=0.20.0",
-]
-docs-img = [
-    "mkdocs-material[imaging]>=9.5.5",
 ]
 
 [[tool.pdm.source]]
