@@ -372,7 +372,7 @@ class OpenModal(SlackModal):
             return []
 
         response_types: list[ResponseType] = cast(
-            list[ResponseType], INCIDENT_TYPES.keys()
+            "list[ResponseType]", INCIDENT_TYPES.keys()
         )
         elements: list[ButtonElement] = []
 
@@ -512,7 +512,7 @@ class OpenModal(SlackModal):
         action_name: str = body.get("actions", [{}])[0].get("action_id", "")
         action_name = action_name.replace("incident_open_set_res_type_", "")
         opening_data = cast(
-            OpeningData, json.loads(body.get("actions", [{}])[0].get("value", {})) or {}
+            "OpeningData", json.loads(body.get("actions", [{}])[0].get("value", {})) or {}
         )
 
         OpenModal._update_incident_modal(

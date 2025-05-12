@@ -13,7 +13,7 @@ from django.template.defaulttags import register as register_base
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-register_global: template.Library = cast(template.Library, register_base)
+register_global: template.Library = cast("template.Library", register_base)
 V = TypeVar("V")
 
 

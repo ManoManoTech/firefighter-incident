@@ -146,7 +146,7 @@ class SelectImpactModal(
     ) -> None:
         body = request.body
         data = cast(
-            OpeningData, json.loads(body.get("actions", [{}])[0].get("value", {})) or {}
+            "OpeningData", json.loads(body.get("actions", [{}])[0].get("value", {})) or {}
         )
         view = self.build_modal_fn(body, open_incident_context=data)
         request.context.ack()
@@ -192,7 +192,7 @@ class SelectImpactModal(
                 and not isinstance(form.form.data[field_name], Model)
                 and field.queryset is not None
             ):
-                queryset = cast(QuerySet[ImpactLevel], field.queryset)
+                queryset = cast("QuerySet[ImpactLevel]", field.queryset)
                 try:
                     form.form.data[field_name] = queryset.get(  # type: ignore
                         pk=form.form.data[field_name]
@@ -206,7 +206,7 @@ class SelectImpactModal(
             response_type=SelectImpactModal._calculate_proposed_incident_type(
                 form.form.suggest_priority_from_impact()
             ),
-            impact_form_data=cast(dict[str, Any], form.form.data),
+            impact_form_data=cast("dict[str, Any]", form.form.data),
             details_form_data=private_metadata_raw.get("details_form_data", {}),
             incident_type=private_metadata_raw.get("incident_type"),
         )
