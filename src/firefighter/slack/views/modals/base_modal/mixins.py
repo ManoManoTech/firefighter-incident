@@ -41,8 +41,7 @@ class IncidentSelectableModalMixin(IncidentSelectableModalMixinBase):
         if "incident" in self.builder_fn_args and kwargs.get("incident") is None:
             if kwargs.get("callback_id") is None:
                 kwargs["callback_id"] = self.callback_id
-            if "body" in kwargs:
-                del kwargs["body"]
+            kwargs.pop("body", None)
             return modal_select.build_modal_fn(**kwargs, select_class=self)
 
         return self.build_modal_fn(**kwargs)  # type: ignore

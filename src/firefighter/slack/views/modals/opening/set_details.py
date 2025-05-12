@@ -127,7 +127,7 @@ class SetIncidentDetails(ModalForm[T], Generic[T]):
                 pk=private_metadata["priority"]
             )
         data = OpeningData(
-            details_form_data=cast(dict[str, Any], form.data),
+            details_form_data=cast("dict[str, Any]", form.data),
             impact_form_data=private_metadata.get("impact_form_data"),
             incident_type=private_metadata.get("incident_type"),
             response_type=private_metadata.get("response_type"),

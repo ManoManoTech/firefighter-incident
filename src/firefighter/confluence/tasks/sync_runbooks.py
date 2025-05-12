@@ -47,7 +47,7 @@ def sync_runbooks() -> None:
             all_fetched_ids.add(page_id)
             data["name"] = data["name"].removesuffix("[RUNBOOK]").strip()
 
-            data_editable = cast(dict[str, str], data)
+            data_editable = cast("dict[str, str]", data)
             data_editable["title"] = (
                 data_editable["name"].removesuffix("[RUNBOOK]").strip()
             )
