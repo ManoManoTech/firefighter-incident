@@ -32,7 +32,6 @@ def get_component_mappings() -> list:
         ("Spinak", "Spinak", "impact-spinak", "Platform"),
         ("CDN", "CDN", "impact-cdn", "Platform"),
         ("Gitlab", "Gitlab", "impact-gitlab", "Platform"),
-        # ("Stolen account(s) or IT materials", "Stolen account(s) or IT materials", "impact-stolen-accounts-it-materials", "Security"),
     ]
 
 
