@@ -79,7 +79,7 @@ class SelectImpactModal(
                     and hasattr(field.queryset.model, "DoesNotExist")
                 ):
                     try:
-                        initial_form_values_impact[field_name] = field.queryset.get(  # type: ignore[assignment]
+                        initial_form_values_impact[field_name] = field.queryset.get(
                             pk=initial_form_values_impact[field_name]
                         )
                     except field.queryset.model.DoesNotExist:

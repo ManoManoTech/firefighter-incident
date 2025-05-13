@@ -34,7 +34,7 @@ def link_auth_user(user: User, claim: dict[str, str | list[str]]) -> None:
     for group_name in group_names:
         try:
             group = Group.objects.get(name=group_name)
-            group.user_set.add(  # type: ignore[attr-defined]
+            group.user_set.add(
                 user
             )  # pyright: ignore[reportGeneralTypeIssues]
         except Group.DoesNotExist:
