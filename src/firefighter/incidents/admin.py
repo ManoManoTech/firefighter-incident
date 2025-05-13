@@ -550,7 +550,7 @@ class GroupAdmin(admin.ModelAdmin[Group]):
 
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
-    model = User  # type: ignore[assignment]
+    model = User
     list_max_show_all = 500
     inlines = user_inlines
     readonly_fields = [
@@ -564,7 +564,7 @@ class UserAdmin(BaseUserAdmin):
     list_filter = ("is_staff", "is_superuser", "is_active", "groups", "bot")
 
     def __init__(self, model: type[User], admin_site: AdminSite) -> None:
-        super().__init__(model, admin_site)  # type: ignore[arg-type]
+        super().__init__(model, admin_site)
         self.fieldsets[2][1]["fields"] = ("bot", *self.fieldsets[2][1]["fields"])  # type: ignore
         self.fieldsets[1][1]["fields"] = (*self.fieldsets[1][1]["fields"], "avatar")  # type: ignore
 
@@ -583,9 +583,9 @@ class UserAdmin(BaseUserAdmin):
     def get_fieldsets(
         self,
         request: HttpRequest,
-        obj: User | None = None,  # type: ignore[override]
+        obj: User | None = None,
     ) -> _FieldsetSpec:
-        fieldsets = list(super().get_fieldsets(request, obj))  # type: ignore[arg-type]
+        fieldsets = list(super().get_fieldsets(request, obj))
         fieldsets.append(
             (
                 _("User statistics"),

@@ -48,7 +48,7 @@ class CustomJsonFormatter(JsonFormatter):
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         self.FF_USER_ID_HEADER: str = settings.FF_USER_ID_HEADER
-        super().__init__(*args, **kwargs)  # type: ignore[no-untyped-call]
+        super().__init__(*args, **kwargs)
 
     def add_fields(
         self,
