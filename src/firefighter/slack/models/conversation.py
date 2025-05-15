@@ -165,7 +165,7 @@ class Conversation(models.Model):
     Reference: https://api.slack.com/types/conversation.
     """
 
-    objects: ConversationManager[Conversation] = ConversationManager() # type: ignore[assignment]
+    objects: ConversationManager[Conversation] = ConversationManager()  # type: ignore[assignment]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 

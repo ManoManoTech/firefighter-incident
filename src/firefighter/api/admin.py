@@ -34,7 +34,7 @@ class APITokenAdmin(TokenAdmin):
         db_field: ForeignKey[Any, Any],
         request: HttpRequest,  # type: ignore[override]
         **kwargs: Any,
-    ) -> ModelChoiceField: # type: ignore[type-arg]
+    ) -> ModelChoiceField:  # type: ignore[type-arg]
         """Show all or only current user depending on permissions."""
         if db_field.name == "user":
             if request.user.has_perm("api.can_add_any") or request.user.has_perm(
@@ -43,7 +43,7 @@ class APITokenAdmin(TokenAdmin):
                 kwargs["queryset"] = User.objects.all()
             elif request.user.has_perm("api.can_add_own"):
                 kwargs["queryset"] = User.objects.filter(id=request.user.id)
-        return super().formfield_for_foreignkey(db_field, request, **kwargs) # type: ignore[return-value]
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)  # type: ignore[return-value]
 
     def get_form(
         self,

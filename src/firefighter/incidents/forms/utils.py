@@ -24,7 +24,7 @@ T = TypeVar("T", bound=models.Choices)
 class GroupedModelChoiceIterator(ModelChoiceIterator):
     def __init__(
         self,
-        field: ModelChoiceField, # type: ignore[type-arg]
+        field: ModelChoiceField,  # type: ignore[type-arg]
         group_by: operator.attrgetter[Any] | Callable[[Any], Any],
     ):
         self.groupby = group_by
@@ -52,7 +52,7 @@ class GroupedModelChoiceIterator(ModelChoiceIterator):
             yield group, [self.choice(obj) for obj in objs]
 
 
-class GroupedModelChoiceField(ModelChoiceField): # type: ignore[type-arg]
+class GroupedModelChoiceField(ModelChoiceField):  # type: ignore[type-arg]
     iterator: partial[GroupedModelChoiceIterator]  # type: ignore[assignment]
 
     def __init__(
