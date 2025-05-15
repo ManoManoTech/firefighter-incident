@@ -295,7 +295,7 @@ class IncidentAdmin(admin.ModelAdmin[Incident]):
     )
     def send_message(
         self, request: HttpRequest, queryset: QuerySet[Incident]
-    ) -> None | TemplateResponse:
+    ) -> TemplateResponse | None:
         """Action to send a message in selected channels.
         This action first displays a confirmation page to enter the message.
         Next, it sends the message on all selected objects and redirects back to the change list (other fn).

@@ -56,7 +56,7 @@ def sync_postmortems() -> None:
         if not Incident.objects.filter(id=incident_id).exists():
             pm_missing_incident.append(data["name"])
             continue
-        data_editable = cast(dict[str, str], data)
+        data_editable = cast("dict[str, str]", data)
         try:
             PostMortem.objects.update_or_create(
                 page_id=int(data_editable.pop("page_id")),

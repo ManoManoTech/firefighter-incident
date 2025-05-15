@@ -105,7 +105,7 @@ class TestCloseModal:
         incident.status = IncidentStatus.OPEN
 
         modal = CloseModal()
-        _trigger_incident_workflow = mocker.patch.object(
+        trigger_incident_workflow = mocker.patch.object(
             modal, "_trigger_incident_workflow"
         )
         respond = mocker.patch(
@@ -122,7 +122,7 @@ class TestCloseModal:
 
         # Assert
         ack.assert_called_once_with()
-        _trigger_incident_workflow.assert_not_called()
+        trigger_incident_workflow.assert_not_called()
         respond.assert_called_once()
 
     @staticmethod
@@ -136,7 +136,7 @@ class TestCloseModal:
             new_callable=mocker.PropertyMock,
         )
         incident.status = IncidentStatus.POST_MORTEM
-        _trigger_incident_workflow = mocker.patch.object(
+        trigger_incident_workflow = mocker.patch.object(
             modal, "_trigger_incident_workflow"
         )
 
@@ -150,7 +150,7 @@ class TestCloseModal:
 
         # Assert
         ack.assert_called_once_with()
-        _trigger_incident_workflow.assert_called_once()
+        trigger_incident_workflow.assert_called_once()
 
 
 valid_submission = {

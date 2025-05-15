@@ -39,7 +39,7 @@ class GroupedModelChoiceIterator(ModelChoiceIterator):
     ]:
         if self.field.empty_label is not None:
             yield "", str(self.field.empty_label)
-        queryset: QuerySet[Any] | None | Iterator[Any] = self.queryset
+        queryset: QuerySet[Any] | Iterator[Any] | None = self.queryset
         if queryset is None:
             raise AttributeError(
                 "Iterator has no queryset. Did you pass "

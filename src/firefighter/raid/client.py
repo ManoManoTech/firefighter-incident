@@ -178,7 +178,7 @@ class RaidJiraClient(JiraClient):
     @staticmethod
     def _jira_object(issue: dict[str, Any]) -> JiraObject:
         if issue_id := issue.get("id"):
-            jira_id = int(cast(str, issue_id))
+            jira_id = int(cast("str", issue_id))
         else:
             raise TypeError("Jira ID not found")
 

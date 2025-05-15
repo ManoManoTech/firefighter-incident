@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 INCIDENT_RESOLVING_STRATEGIES: list[IncidentResolveStrategy] = []
 
-IncidentResolveStrategy = Callable[[dict[str, Any]], Literal[False] | None | Incident]
+IncidentResolveStrategy = Callable[[dict[str, Any]], Literal[False] | Incident | None]
 
 
 def incident_resolve_strategy(fn: IncidentResolveStrategy) -> IncidentResolveStrategy:
@@ -26,7 +26,7 @@ def incident_resolve_strategy(fn: IncidentResolveStrategy) -> IncidentResolveStr
 @incident_resolve_strategy
 def get_incident_from_view_action(
     body: dict[str, Any],
-) -> Literal[False] | None | Incident:
+) -> Literal[False] | Incident | None:
     """Get incident id from select incident in modal."""
     view_type = body.get("type")
 

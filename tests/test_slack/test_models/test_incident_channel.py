@@ -352,7 +352,7 @@ def test_channel_name_from_incident_argument_does_not_match(
     incident_channel.incident = incident_saved
     with pytest.raises(
         ValueError,
-        match="The incident passed as argument does not match the incident of the channel.",
+        match=r"The incident passed as argument does not match the incident of the channel.",
     ) as exc_info:
         incident_channel.channel_name_from_incident(different_incident)
     assert (

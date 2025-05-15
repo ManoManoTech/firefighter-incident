@@ -64,8 +64,8 @@ class SlackModal:
     """[Slack shortcut](https://api.slack.com/interactivity/shortcuts) to open the modal."""
 
     open_action: str | list[str] | None = None
-    update_action: str | None | list[str] = None
-    push_action: str | None | list[str] = None
+    update_action: str | list[str] | None = None
+    push_action: str | list[str] | None = None
 
     build_modal_fn: Callable[..., View | list[Block]]
     handle_modal_fn: Callable[[Any], Any] | None

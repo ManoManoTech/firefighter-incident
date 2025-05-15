@@ -53,12 +53,12 @@ def _get_license(pkg_name: str) -> str:
         data = metadata(pkg_name)
     except PackageNotFoundError:
         return "?"
-    license_name = cast(dict, data).get("License", "").strip()
+    license_name = cast("dict", data).get("License", "").strip()
     multiple_lines = bool(license_name.count("\n"))
     # TODO: Remove author logic once all my packages licenses are fixed.
     author = ""
     if multiple_lines or not license_name or license_name == "UNKNOWN":
-        for header, value in cast(dict, data).items():
+        for header, value in cast("dict", data).items():
             if header == "Classifier" and value.startswith("License ::"):
                 license_name = value.rsplit("::", 1)[1].strip()
             elif header == "Author-email":

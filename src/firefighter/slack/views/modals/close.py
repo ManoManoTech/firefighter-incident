@@ -218,7 +218,7 @@ class CloseModal(
 
     def handle_modal_fn(  # type: ignore[override]
         self, ack: Ack, body: dict[str, Any], incident: Incident, user: User
-    ) -> None | bool:
+    ) ->  bool | None:
         """Handle response from /incident close modal."""
         slack_form = self.handle_form_errors(
             ack, body, forms_kwargs={"initial": self._get_initial_form_values(incident)}

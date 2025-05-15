@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import uuid
 from typing import TYPE_CHECKING, ClassVar, Self, cast
 
 from django.conf import settings
@@ -9,6 +8,7 @@ from django_stubs_ext.db.models import TypedModelMeta
 from rest_framework.authtoken.models import Token
 
 if TYPE_CHECKING:
+    import uuid
     from collections.abc import Sequence
 
 
@@ -26,7 +26,7 @@ class APITokenProxy(APIToken):
 
     @property
     def pk(self: Self) -> uuid.UUID:
-        return cast(uuid.UUID, self.user_id)  # pyright: ignore[reportGeneralTypeIssues]
+        return cast("uuid.UUID", self.user_id)  # pyright: ignore[reportGeneralTypeIssues]
 
     class Meta(TypedModelMeta):
         permissions = [
