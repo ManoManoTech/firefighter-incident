@@ -14,7 +14,7 @@ class Data(TypedDict, total=False):
 
 
 @component.register("card")
-class Card(component.Component[EmptyTuple, Data, Data, Any]):
+class Card(component.Component[EmptyTuple, Data, Data, Any]): # type: ignore[type-var]
     template_name = "card/card.html"
 
     def get_context_data(self, *args: Any, **kwargs: Unpack[Data]) -> Data:

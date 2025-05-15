@@ -549,7 +549,7 @@ class GroupAdmin(admin.ModelAdmin[Group]):
 
 
 @admin.register(User)
-class UserAdmin(BaseUserAdmin):
+class UserAdmin(BaseUserAdmin): # type: ignore[type-arg]
     model = User
     list_max_show_all = 500
     inlines = user_inlines

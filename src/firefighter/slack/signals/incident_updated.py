@@ -142,7 +142,7 @@ def incident_updated_reinvite_handler(
     full_invite_list: set[User] = set(incident.build_invite_list())
 
     # Check if users from the invite list are not in the channel
-    members_manager: ManyRelatedManager[User] = incident.conversation.members
+    members_manager: ManyRelatedManager[User] = incident.conversation.members #type: ignore [assignment]
     already_invited_users = members_manager.all()
     missing_users = full_invite_list.difference(already_invited_users)
 
