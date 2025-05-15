@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from django.utils.translation import ngettext as _
@@ -39,7 +39,7 @@ class CheckCurrentIncidentsModal(
         incidents = list(
             Incident.objects.filter(
 
-                created_at__gte=datetime.now(timezone.utc) - timedelta(hours=1)
+                created_at__gte=datetime.now(UTC) - timedelta(hours=1)
             )
             .order_by("-created_at")
             .select_related(
