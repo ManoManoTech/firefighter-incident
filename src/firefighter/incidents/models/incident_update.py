@@ -51,7 +51,7 @@ class IncidentUpdate(models.Model):
         blank=True,
         verbose_name="Status",
     )
-    severity = models.ForeignKey[Severity | None, Severity | None](
+    severity = models.ForeignKey(
         Severity,
         null=True,
         blank=True,
@@ -63,22 +63,22 @@ class IncidentUpdate(models.Model):
         "hint": "Use IncidentUpdate.priority instead.",
         "id": "fields.W920",
     }
-    priority = models.ForeignKey[Priority | None, Priority | None](
+    priority = models.ForeignKey(
         Priority, null=True, blank=True, on_delete=models.SET(Priority.get_default)
     )
-    environment = models.ForeignKey[Environment | None, Environment | None](
+    environment = models.ForeignKey(
         Environment,
         null=True,
         blank=True,
         on_delete=models.SET(Environment.get_default),
     )
-    incident = models.ForeignKey["Incident", "Incident"](
+    incident = models.ForeignKey(
         "Incident", on_delete=models.CASCADE
     )
     component = models.ForeignKey(
         Component, null=True, blank=True, on_delete=models.SET_NULL
     )
-    created_by = models.ForeignKey[User | None, User | None](
+    created_by = models.ForeignKey(
         User, null=True, blank=True, on_delete=models.SET_NULL
     )
     commander = models.ForeignKey(

@@ -20,7 +20,7 @@ from firefighter.incidents.models import (
 )
 
 
-class UserFactory(DjangoModelFactory):
+class UserFactory(DjangoModelFactory[User]):
     class Meta:
         model = User
 
@@ -29,7 +29,7 @@ class UserFactory(DjangoModelFactory):
     username = Faker("user_name")
 
 
-class GroupFactory(DjangoModelFactory):
+class GroupFactory(DjangoModelFactory[Group]):
     class Meta:
         model = Group
 
@@ -38,7 +38,7 @@ class GroupFactory(DjangoModelFactory):
     order = FuzzyInteger(100, 1000)
 
 
-class SeverityFactory(DjangoModelFactory):
+class SeverityFactory(DjangoModelFactory[Priority]):
     class Meta:
         model = Priority
 
@@ -47,7 +47,7 @@ class SeverityFactory(DjangoModelFactory):
     order = FuzzyInteger(100, 1000)
 
 
-class EnvironmentFactory(DjangoModelFactory):
+class EnvironmentFactory(DjangoModelFactory[Environment]):
     class Meta:
         model = Environment
 
@@ -56,7 +56,7 @@ class EnvironmentFactory(DjangoModelFactory):
     order = FuzzyInteger(100, 1000)
 
 
-class ComponentFactory(DjangoModelFactory):
+class ComponentFactory(DjangoModelFactory[Component]):
     class Meta:
         model = Component
 
@@ -66,7 +66,7 @@ class ComponentFactory(DjangoModelFactory):
     group = SubFactory(GroupFactory)
 
 
-class IncidentFactory(DjangoModelFactory):
+class IncidentFactory(DjangoModelFactory[Incident]):
     class Meta:
         model = Incident
 

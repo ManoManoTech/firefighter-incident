@@ -145,7 +145,7 @@ class Component(models.Model):
         default=0,
         help_text="Order of the component in the list. Should be unique per `Group`.",
     )
-    group = models.ForeignKey[Group, Group](Group, on_delete=models.PROTECT)
+    group = models.ForeignKey(Group, on_delete=models.PROTECT)
     private = models.BooleanField(
         default=False,
         help_text="If true, incident created with this component won't be communicated, and conversations will be made private. This is useful for sensitive components. In the future, private incidents may be visible only to its members.",

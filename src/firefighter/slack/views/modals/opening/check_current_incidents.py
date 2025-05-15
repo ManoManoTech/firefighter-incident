@@ -3,7 +3,6 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
-from django.utils import timezone
 from django.utils.translation import ngettext as _
 from slack_sdk.models.blocks.basic_components import MarkdownTextObject
 from slack_sdk.models.blocks.blocks import (

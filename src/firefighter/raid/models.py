@@ -47,10 +47,10 @@ class JiraTicket(JiraIssue):
 
 
 class JiraTicketImpact(models.Model):
-    jira_ticket = models.ForeignKey[JiraTicket, JiraTicket](
+    jira_ticket = models.ForeignKey(
         "JiraTicket", on_delete=models.CASCADE
     )
-    impact = models.ForeignKey["Impact", "Impact"](
+    impact = models.ForeignKey(
         "incidents.Impact", on_delete=models.CASCADE
     )
 

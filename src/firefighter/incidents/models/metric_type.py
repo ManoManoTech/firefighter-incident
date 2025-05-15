@@ -21,13 +21,13 @@ class MetricType(models.Model):
         max_length=10, unique=True, help_text="Short code (e.g. TTD)"
     )
     description = models.TextField()
-    milestone_lhs = models.ForeignKey[MilestoneType, MilestoneType](
+    milestone_lhs = models.ForeignKey(
         MilestoneType,
         on_delete=models.CASCADE,
         related_name="metric_type_lhs",
         help_text="The milestone that ends the metric (duration = milestone_lhs - milestone_rhs)",
     )
-    milestone_rhs = models.ForeignKey[MilestoneType, MilestoneType](
+    milestone_rhs = models.ForeignKey(
         MilestoneType,
         on_delete=models.CASCADE,
         related_name="metric_type_rhs",

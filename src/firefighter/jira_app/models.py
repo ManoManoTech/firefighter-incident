@@ -27,14 +27,14 @@ class JiraIssue(models.Model):
 
     id = models.BigIntegerField(primary_key=True, editable=True)
     key = models.CharField[str, str](max_length=128)
-    assignee = models.ForeignKey[JiraUser, JiraUser](
+    assignee = models.ForeignKey(
         JiraUser,
         on_delete=models.CASCADE,
         related_name="jira_ticket_assigned_set",
         null=True,
         blank=True,
     )
-    reporter = models.ForeignKey[JiraUser, JiraUser](
+    reporter = models.ForeignKey(
         JiraUser, on_delete=models.CASCADE, related_name="jira_ticket_reporter_set"
     )
     issue_type = models.CharField(

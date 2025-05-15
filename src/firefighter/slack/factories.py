@@ -44,7 +44,7 @@ class SlackProvider(providers.BaseProvider):
 Faker.add_provider(SlackProvider)
 
 
-class SlackUserFactory(DjangoModelFactory):
+class SlackUserFactory(DjangoModelFactory[SlackUser]):
     class Meta:
         model = SlackUser
 
@@ -55,7 +55,7 @@ class SlackUserFactory(DjangoModelFactory):
     image = Faker("image_url")
 
 
-class SlackConversationFactory(DjangoModelFactory):
+class SlackConversationFactory(DjangoModelFactory[Conversation]):
     class Meta:
         model = Conversation
         skip_postgeneration_save = True
