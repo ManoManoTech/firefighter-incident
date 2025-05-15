@@ -294,7 +294,7 @@ class SlackForm(Generic[T]):
     def _process_slack_choice_field(
         cls,
         field_name: str,
-        f: forms.ModelChoiceField | forms.ChoiceField, # type: ignore[type-arg]
+        f: forms.ModelChoiceField | forms.ChoiceField,  # type: ignore[type-arg]
         slack_input_kwargs: dict[str, Any],
     ) -> InputInteractiveElement:
         if not isinstance(f, forms.ModelChoiceField | forms.ChoiceField):
@@ -344,7 +344,7 @@ class SlackForm(Generic[T]):
     def _process_model_user_field(
         cls,
         field_name: str,
-        f: forms.ModelChoiceField, # type: ignore[type-arg]
+        f: forms.ModelChoiceField,  # type: ignore[type-arg]
         slack_input_kwargs: dict[str, Any],
     ) -> InputInteractiveElement:
         if not isinstance(f, forms.ModelChoiceField):
@@ -460,7 +460,7 @@ class SlackForm(Generic[T]):
                 int(f.initial.timestamp()) if isinstance(f.initial, datetime) else None
             )
             field_name = (
-                field_name + "___" + str(datetime.now(timezone.utc).timestamp()) # type: ignore[attr-defined]
+                field_name + "___" + str(datetime.now(timezone.utc).timestamp())  # type: ignore[attr-defined]
             )
             field_name = field_name[:254]
         return DateTimePickerElement(

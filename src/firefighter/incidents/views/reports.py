@@ -349,11 +349,12 @@ def get_incident_by_priority(
         incident_by_priority_total_row["incident_closed_percentage"] = (
             closed / total * 100
         )
-    return incident_by_priority, incident_by_priority_total_row # type: ignore[return-value]
+    return incident_by_priority, incident_by_priority_total_row  # type: ignore[return-value]
 
 
 class _IncidentByDomainAnnotation(TypedDict):
     incidents_nb: int | float
+
 
 def get_incidents_by_domain(
     incidents: QuerySet[Incident],

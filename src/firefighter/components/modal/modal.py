@@ -28,7 +28,7 @@ class Slots(TypedDict):
 
 
 @component.register("modal")
-class Modal(component.Component[EmptyTuple, Kwargs, Data, Any]): # type: ignore[type-var]
+class Modal(component.Component[EmptyTuple, Kwargs, Data, Any]):  # type: ignore[type-var]
     template_name = "modal/modal.html"
 
     def get_context_data(self, *args: Any, **kwargs: Unpack[Kwargs]) -> Data:
