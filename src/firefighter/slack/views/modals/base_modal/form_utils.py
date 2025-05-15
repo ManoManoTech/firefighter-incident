@@ -460,7 +460,7 @@ class SlackForm(Generic[T]):
                 int(f.initial.timestamp()) if isinstance(f.initial, datetime) else None
             )
             field_name = (
-                field_name + "___" + str(datetime.now(tz=timezone.utc).timestamp())
+                field_name + "___" + str(datetime.now(timezone.utc).timestamp())
             )
             field_name = field_name[:254]
         return DateTimePickerElement(

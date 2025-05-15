@@ -18,9 +18,9 @@ if TYPE_CHECKING:
 
 class ImpactType(models.Model):
     emoji = models.CharField(max_length=5, default="ℹ️")  # noqa: RUF001
-    name = models.CharField[str, str](max_length=64)
-    help_text = models.CharField[str, str](max_length=128)
-    value = models.SlugField[str, str](unique=True)
+    name = models.CharField(max_length=64)
+    help_text = models.CharField(max_length=128)
+    value = models.SlugField(unique=True)
     order = models.PositiveSmallIntegerField(default=10)
 
     class Meta(TypedModelMeta):
@@ -73,14 +73,14 @@ class ImpactLevel(models.Model):
 
 
 class Impact(models.Model):
-    impact_type = models.ForeignKey[ImpactType, ImpactType](
+    impact_type = models.ForeignKey(
         "ImpactType", on_delete=models.CASCADE
     )
-    impact_level = models.ForeignKey[ImpactLevel, ImpactLevel](
+    impact_level = models.ForeignKey(
         ImpactLevel, on_delete=models.PROTECT
     )
 
-    details = models.TextField[str, str](null=True, blank=True)
+    details = models.TextField(null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -107,10 +107,10 @@ def validate_impact(sender: Any, instance: Impact, **kwargs: Any) -> None:
 
 
 class IncidentImpact(models.Model):
-    incident = models.ForeignKey["Incident", "Incident"](
+    incident = models.ForeignKey(
         "Incident", on_delete=models.CASCADE
     )
-    impact = models.ForeignKey[Impact, Impact]("Impact", on_delete=models.CASCADE)
+    impact = models.ForeignKey("Impact", on_delete=models.CASCADE)
 
     class Meta(TypedModelMeta):
         verbose_name = "Incident impact"

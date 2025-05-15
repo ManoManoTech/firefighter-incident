@@ -31,7 +31,7 @@ class APITokenAdmin(TokenAdmin):
 
     def formfield_for_foreignkey(
         self,
-        db_field: ForeignKey[Any, Any],
+        db_field: ForeignKey,
         request: HttpRequest,  # type: ignore[override]
         **kwargs: Any,
     ) -> ModelChoiceField:

@@ -15,10 +15,10 @@ if TYPE_CHECKING:
 
 
 class IncidentMembership(models.Model):
-    incident = models.ForeignKey["Incident", "Incident"](
+    incident = models.ForeignKey(
         "Incident", on_delete=models.CASCADE, db_index=True
     )
-    user = models.ForeignKey[User, User](User, on_delete=models.CASCADE, db_index=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, db_index=True)
 
     class Meta(TypedModelMeta):
         constraints = [
@@ -32,13 +32,13 @@ class IncidentMembership(models.Model):
 
 
 class IncidentRole(models.Model):
-    incident = models.ForeignKey["Incident", "Incident"](
+    incident = models.ForeignKey(
         "Incident", on_delete=models.CASCADE, related_name="roles_set", db_index=True
     )
-    user = models.ForeignKey["User", "User"](
+    user = models.ForeignKey(
         "User", on_delete=models.CASCADE, related_name="roles_set", db_index=True
     )
-    role_type = models.ForeignKey["IncidentRoleType", "IncidentRoleType"](
+    role_type = models.ForeignKey(
         "IncidentRoleType",
         on_delete=models.CASCADE,
         related_name="roles_set",

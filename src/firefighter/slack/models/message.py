@@ -74,7 +74,7 @@ class Message(models.Model):
         primary_key=False, help_text="UTC Timestamp of the message"
     )
 
-    user = models.ForeignKey[SlackUser, SlackUser](SlackUser, on_delete=models.CASCADE)
+    user = models.ForeignKey(SlackUser, on_delete=models.CASCADE)
 
     thread_ts = models.DateTimeField(null=True, blank=True)
 

@@ -20,10 +20,10 @@ class Sos(models.Model):
     # XXX We need a relation to `Gear` or `Group` here, but current data is not good enough.
     id = models.UUIDField(primary_key=True, editable=False, default=uuid.uuid4)
     name = models.CharField(max_length=255)
-    user_group = models.ForeignKey[UserGroup | None, UserGroup | None](
+    user_group = models.ForeignKey(
         UserGroup, blank=True, null=True, on_delete=models.CASCADE
     )
-    conversation = models.ForeignKey[Conversation, Conversation](
+    conversation = models.ForeignKey(
         Conversation, blank=True, on_delete=models.CASCADE
     )
 

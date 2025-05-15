@@ -195,7 +195,7 @@ class Incident(models.Model):
         default=IncidentStatus.OPEN,
         verbose_name="Status",
     )
-    severity = models.ForeignKey[Severity | None, Severity | None](
+    severity = models.ForeignKey(
         Severity,
         on_delete=models.PROTECT,
         help_text="Severity (legacy, superseded by priority)",
@@ -207,18 +207,18 @@ class Incident(models.Model):
         "hint": "Use Incident.priority instead.",
         "id": "fields.W921",
     }
-    priority = models.ForeignKey[Priority, Priority](
+    priority = models.ForeignKey(
         Priority,
         on_delete=models.PROTECT,
         help_text="Priority",
     )
-    component = models.ForeignKey[Component, Component](
+    component = models.ForeignKey(
         Component, on_delete=models.PROTECT
     )
-    environment = models.ForeignKey[Environment, Environment](
+    environment = models.ForeignKey(
         Environment, on_delete=models.PROTECT
     )
-    created_by = models.ForeignKey[User, User](
+    created_by = models.ForeignKey(
         User,
         on_delete=models.PROTECT,
         related_name="incidents_created_by",

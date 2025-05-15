@@ -26,10 +26,10 @@ class IncidentCost(models.Model):
     )
     details = models.TextField(null=True, blank=True)
 
-    cost_type = models.ForeignKey["IncidentCostType", "IncidentCostType"](
+    cost_type = models.ForeignKey(
         "IncidentCostType", on_delete=models.CASCADE, related_name="incident_cost_set"
     )
-    incident = models.ForeignKey["Incident", "Incident"](
+    incident = models.ForeignKey(
         "Incident", on_delete=models.CASCADE, related_name="incident_cost_set"
     )
 
