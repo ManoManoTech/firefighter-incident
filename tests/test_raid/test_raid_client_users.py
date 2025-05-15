@@ -71,8 +71,8 @@ def test_get_jira_user_from_user(
             Mock(raw={"accountId": "123", "emailAddress": "johndoe@example.com"})
         ]
     )
-    _search_users = mocker.patch.object(raid_client.jira, "search_users")
-    _search_users.return_value = [
+    search_users = mocker.patch.object(raid_client.jira, "search_users")
+    search_users.return_value = [
         Mock(raw={"accountId": "123", "emailAddress": "johndoe@example.com"})
     ]
     # Test when the user is valid and exists in Jira
@@ -87,13 +87,13 @@ def test_get_jira_user_from_user_in_db(
     # Test when the user is valid and exists in Jira
     user.jira_user = JiraUser.objects.create(id="123", user=user)
     # Prepare no call jira.search_users(query=email_query)
-    _search_users = mocker.patch.object(raid_client.jira, "search_users")
+    search_users = mocker.patch.object(raid_client.jira, "search_users")
 
     jira_user = raid_client.get_jira_user_from_user(user)
     assert jira_user.user.email == "johndoe@example.com"
 
     # Assert no call jira.search_users(query=email_query)
-    _search_users.assert_not_called()
+    search_users.assert_not_called()
 
 
 @pytest.mark.django_db

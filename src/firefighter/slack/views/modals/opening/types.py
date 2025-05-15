@@ -17,4 +17,4 @@ class OpeningData(TypedDict, total=False):
     response_type: ResponseType | None
     impact_form_data: dict[str, ImpactLevel] | None
     details_form_data: dict[str, Any] | None
-    priority: uuid.UUID | None | Priority | str
+    priority: uuid.UUID | Priority | str | None

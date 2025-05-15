@@ -315,7 +315,7 @@ class JiraClient:
         # XXX Try catch
         # XXX Override Jira Class / split client and service
         return cast(
-            dict[str, Any],
+            "dict[str, Any]",
             self.jira._session.get(  # noqa: SLF001
                 url,
                 headers=self.jira._options["headers"],  # noqa: SLF001
@@ -372,8 +372,8 @@ class JiraClient:
                 del status["y"]
 
         return WorkflowBuilderResponse(
-            statuses=cast(list[Status], statuses),
-            transitions=cast(list[Transition], transitions),
+            statuses=cast("list[Status]", statuses),
+            transitions=cast("list[Transition]", transitions),
         )
 
     @staticmethod

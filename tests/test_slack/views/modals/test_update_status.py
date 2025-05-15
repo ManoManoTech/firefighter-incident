@@ -49,7 +49,7 @@ class TestUpdateStatusModal:
     @staticmethod
     def test_submit_valid_form(mocker: MockerFixture, incident: Incident) -> None:
         modal = UpdateStatusModal()
-        _trigger_incident_workflow = mocker.patch.object(
+        trigger_incident_workflow = mocker.patch.object(
             modal, "_trigger_incident_workflow"
         )
 
@@ -62,7 +62,7 @@ class TestUpdateStatusModal:
 
         # Assert
         ack.assert_called_once_with()
-        _trigger_incident_workflow.assert_called_once()
+        trigger_incident_workflow.assert_called_once()
 
 
 valid_submission = {

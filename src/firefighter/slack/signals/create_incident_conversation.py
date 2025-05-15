@@ -39,7 +39,7 @@ def create_incident_slack_conversation(
     incident: Incident,
     *_args: Any,
     **_kwargs: Any,
-) -> None | int:
+) -> int | None:
     """Main process to open an incident channel, set it up and invite responders. It MUST be called when an incident is created.
 
     Args:

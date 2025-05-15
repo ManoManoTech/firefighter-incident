@@ -113,11 +113,11 @@ class Message(models.Model):
     def __str__(self) -> str:
         return f"{self.ts}@{self.conversation.name}: {self.text} {self!r}"
 
-    def get_absolute_url(self) -> str:
-        return self.get_permalink
-
     def __repr__(self) -> str:
         return f"{self.ts}@{self.conversation_id}: {self.text}"
+
+    def get_absolute_url(self) -> str:
+        return self.get_permalink
 
     @property
     def get_permalink(self) -> str:

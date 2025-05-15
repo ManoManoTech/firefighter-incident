@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 DD_TRACE_ENABLED = os.environ.get("DD_TRACE_ENABLED")
 if DD_TRACE_ENABLED:
     from ddtrace import tracer
-GUNICORN_KEY_RE = re.compile("{([^}]+)}")
+GUNICORN_KEY_RE = re.compile(r"{([^}]+)}")
 
 
 def del_if_possible(obj: dict[str, Any], key: str) -> None:

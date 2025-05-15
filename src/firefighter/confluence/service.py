@@ -149,7 +149,7 @@ class ConfluenceService:
         logger.info("Confluence OnCall page is up to date, and was not updated.")
         return False
 
-    def create_postmortem(self, title: str) -> None | ConfluencePage:
+    def create_postmortem(self, title: str) -> ConfluencePage | None:
         """Create a PostMortem page.
 
         Args:
@@ -258,7 +258,7 @@ class ConfluenceService:
         position: Literal["before", "after", "append"] = "append",
         *,
         dry_run: bool = False,
-    ) -> None | ConfluencePage:
+    ) -> ConfluencePage | None:
         """Args:
             page_id (ConfluencePageId): ID of the page to move.
             target_page_id (ConfluencePageId): ID of the parent page to move the page in relation to.

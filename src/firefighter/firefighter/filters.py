@@ -7,13 +7,14 @@ from typing import TYPE_CHECKING, Any, Literal, TypeVar, cast
 
 import markdown as md
 import nh3
-from django import template
 from django.template.defaulttags import register as register_base
 
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-register_global: template.Library = cast(template.Library, register_base)
+    from django import template
+
+register_global: template.Library = cast("template.Library", register_base)
 V = TypeVar("V")
 
 

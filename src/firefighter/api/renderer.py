@@ -71,7 +71,7 @@ class CSVRenderer(BaseCSVRenderer):
             pass
 
     def _get_headers(
-        self, data: Iterable[Any], header: None | list[str]
+        self, data: Iterable[Any], header: list[str] | None
     ) -> tuple[Iterable[Any], list[str]]:
         # If we already have a header, and it does not contain any wildcards,
         # we can use it as-is.
