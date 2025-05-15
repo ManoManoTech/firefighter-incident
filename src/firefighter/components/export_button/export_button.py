@@ -27,7 +27,7 @@ class Kwargs(TypedDict, total=False):
 
 
 @component.register("export_button")
-class ExportButton(component.Component[EmptyTuple, Kwargs, Data, Any]):
+class ExportButton(component.Component[EmptyTuple, Kwargs, Data, Any]): # type: ignore[type-var]
     template_name = "export_button/export_button.html"
 
     def get_context_data(
