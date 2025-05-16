@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import uuid
 from functools import cached_property
 from typing import TYPE_CHECKING, Any, Protocol
 
@@ -31,18 +32,46 @@ class ImpactType(models.Model):
 
 
 class LevelChoices(models.TextChoices):
+    HIGHEST = "HT", _("Highest")
     HIGH = "HI", _("High")
     MEDIUM = "MD", _("Medium")
     LOW = "LO", _("Low")
+    LOWEST = "LT", _("Lowest")
     NONE = "NO", _("N/A")
+
+    @property
+    def priority(self) -> int:
+        """Renvoie la priorité associée au niveau en tant qu'entier."""
+        priority_mapping = {
+            self.HIGHEST: 1,
+            self.HIGH: 2,
+            self.MEDIUM: 3,
+            self.LOW: 4,
+            self.LOWEST: 5,
+            self.NONE: 5,
+        }
+        return priority_mapping.get(self, 5)
+
+    @property
+    def emoji(self) -> str:
+        """Send emoji un function of priority."""
+        emoji_mapping = {
+            self.HIGHEST: "⏫",
+            self.HIGH: "🔼",
+            self.MEDIUM: "➡️",
+            self.LOW: "🔽",
+            self.LOWEST: "⏬",
+            self.NONE: "❓",
+        }
+        return emoji_mapping.get(self, "❓")
 
 
 class ImpactLevel(models.Model):
-    id = models.UUIDField(primary_key=True, editable=False)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     impact_type = models.ForeignKey(
         ImpactType, related_name="levels", on_delete=models.CASCADE, db_index=True
     )
-    emoji = models.CharField(max_length=5, default="ℹ️")  # noqa: RUF001
+    emoji = models.CharField(max_length=5, default="▶")
     name = models.CharField(
         max_length=75,
         blank=True,
@@ -66,6 +95,10 @@ class ImpactLevel(models.Model):
 
     def __str__(self) -> str:
         return self.name or self.value
+
+    def set_emoji_from_impact_type(self):
+        """Set emoji based on the related ImpactType."""
+        self.emoji = self.impact_type.emoji()
 
     @cached_property
     def value_label(self) -> str:
