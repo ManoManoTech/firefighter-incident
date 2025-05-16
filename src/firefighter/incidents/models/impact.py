@@ -1,8 +1,8 @@
 from __future__ import annotations
 
+import uuid
 from functools import cached_property
 from typing import TYPE_CHECKING, Any, Protocol
-import uuid
 
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -10,8 +10,6 @@ from django.db.models.signals import pre_save
 from django.dispatch import receiver
 from django.utils.translation import gettext_lazy as _
 from django_stubs_ext.db.models import TypedModelMeta
-
-from firefighter.incidents.models.priority import Priority
 
 if TYPE_CHECKING:
     from django.db.models.fields.related import ManyToManyField
@@ -40,6 +38,7 @@ class LevelChoices(models.TextChoices):
     LOW = "LO", _("Low")
     LOWEST = "LT", _("Lowest")
     NONE = "NO", _("N/A")
+
     @property
     def priority(self) -> int:
         """Renvoie la priorité associée au niveau en tant qu'entier."""
@@ -66,12 +65,13 @@ class LevelChoices(models.TextChoices):
         }
         return emoji_mapping.get(self, "❓")
 
+
 class ImpactLevel(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     impact_type = models.ForeignKey(
         ImpactType, related_name="levels", on_delete=models.CASCADE, db_index=True
     )
-    emoji = models.CharField(max_length=5, default="▶")  # noqa: RUF001
+    emoji = models.CharField(max_length=5, default="▶")
     name = models.CharField(
         max_length=75,
         blank=True,
@@ -98,13 +98,11 @@ class ImpactLevel(models.Model):
 
     def set_emoji_from_impact_type(self):
         """Set emoji based on the related ImpactType."""
-
         self.emoji = self.impact_type.emoji()
 
     @cached_property
     def value_label(self) -> str:
         return LevelChoices(self.value).label
-
 
 
 class Impact(models.Model):

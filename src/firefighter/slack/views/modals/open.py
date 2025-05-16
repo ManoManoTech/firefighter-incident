@@ -391,9 +391,9 @@ class OpenModal(SlackModal):
                 else ":jira_new:"
             )
             text = (
-                f":slack: Slack :jira_new: Jira ticket"
+                ":slack: Slack :jira_new: Jira ticket"
                 if response_type == "critical"
-                else f":jira_new: Jira ticket"
+                else ":jira_new: Jira ticket"
             )
             button = ButtonElement(
                 text=text,

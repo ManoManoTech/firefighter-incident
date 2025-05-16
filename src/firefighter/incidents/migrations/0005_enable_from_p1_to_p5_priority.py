@@ -1,5 +1,4 @@
-from django.db import models, migrations
-from datetime import timedelta
+from django.db import migrations
 
 
 def update_priority_settings(apps, schema_editor):
@@ -18,6 +17,7 @@ def update_priority_settings(apps, schema_editor):
             enabled_create=enabled_create,
             enabled_update=enabled_update,
         )
+
 
 class Migration(migrations.Migration):
 

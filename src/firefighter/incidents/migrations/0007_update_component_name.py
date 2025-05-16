@@ -1,5 +1,6 @@
 from django.db import migrations
 
+
 def get_component_mappings() -> list:
     """
     Returns a list of tuples for updating existing component names and their attributes.
@@ -32,6 +33,7 @@ def get_component_mappings() -> list:
         ("CDN", "CDN", "impact-cdn", "Platform"),
         ("Gitlab", "Gitlab", "impact-gitlab", "Platform"),
     ]
+
 
 def get_new_components() -> dict:
     """
@@ -94,6 +96,7 @@ def remove_new_components(apps, schema_editor):
             component.delete()
         except Component.DoesNotExist:
             print(f"Component '{name}' does not exist, skipping removal.")
+
 
 def update_component_names(apps, schema_editor):
     Component = apps.get_model("incidents", "Component")

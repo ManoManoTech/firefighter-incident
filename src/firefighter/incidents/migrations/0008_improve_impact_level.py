@@ -1,8 +1,10 @@
 import uuid
+
 from django.db import migrations, models
 from django.db.models import Q
 
 from firefighter.incidents.models.impact import LevelChoices
+
 
 def remap_incidents(apps, schema_editor):
     ImpactLevel = apps.get_model("incidents", "ImpactLevel")
@@ -26,6 +28,7 @@ def remap_incidents(apps, schema_editor):
         impact.save()
 
     impactlevel_to_delete.delete()
+
 
 def update_impact_levels(apps, schema_editor):
     ImpactLevel = apps.get_model("incidents", "ImpactLevel")
@@ -165,7 +168,7 @@ def update_impact_levels(apps, schema_editor):
             except Exception as e:
                 print(f"Error saving ImpactLevel {impact_level.name}: {e}")
     for add in adds:
-        new_impact_level= ImpactLevel(
+        new_impact_level = ImpactLevel(
             name=add["name"],
             value=add["value"],
             order=add["order"],
@@ -198,8 +201,8 @@ class Migration(migrations.Migration):
           ),
         ),
         migrations.AlterField(
-            model_name='impactlevel',
-            name='id',
+            model_name="impactlevel",
+            name="id",
             field=models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False),
         ),
         migrations.RunPython(remap_incidents),
