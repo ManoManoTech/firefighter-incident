@@ -10,7 +10,6 @@ def get_group_mappings() -> dict:
         "Operations": ("Operations", 6),
         "Money": ("Payment Operations", 5),
         "Security": ("Security", 10),
-        # "Data Platform": ("Data", 9), WARN: this one does not exists in dump
         "Corporate IT": ("Corporate IT", 11),
         "Other": ("Other", 12),
     }
@@ -19,6 +18,7 @@ def get_group_mappings() -> dict:
 def get_new_groups() -> dict:
     """Returns a dictionary of new groups to be created."""
     return {
+        "Data": 9,
         "Marketing & Communication": 2,
         "Seller": 3,
         "Finance": 7,
