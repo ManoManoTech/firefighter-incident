@@ -1,4 +1,8 @@
+import logging
+
 from django.db import migrations
+
+logger = logging.getLogger(__name__)
 
 
 def get_component_mappings() -> list:
@@ -42,10 +46,10 @@ def update_component_names(apps, schema_editor):
 
     updated_count = 0
 
-    for old_name, new_name, slack_channel, group_name in component_mappings:
+    for old_name, new_name, _slack_channel, group_name in component_mappings:
         try:
             component = Component.objects.get(name=old_name)
-            print(f"Updating: '{old_name}' to '{new_name}'")
+            logger.info(f"Updating: '{old_name}' to '{new_name}'")
             component.name = new_name
 
             # WARN: this operaration is impossible to revert
@@ -53,12 +57,12 @@ def update_component_names(apps, schema_editor):
                 group_instance = Group.objects.get(name=group_name)
                 component.group = group_instance
             except Group.DoesNotExist:
-                print(f"Group '{group_name}' does not exist, skipping group assignment for '{new_name}'.")
+                logger.warning(f"Group '{group_name}' does not exist, skipping group assignment for '{new_name}'.")
 
             component.save()
             updated_count += 1
         except Component.DoesNotExist:
-            raise ValueError(f"Component '{old_name}' does not exist, cannot proceed with updates.")
+            logger.warning(f"Component '{old_name}' does not exist, cannot proceed with updates.")
 
 
 def revert_component_names(apps, schema_editor):
@@ -70,12 +74,12 @@ def revert_component_names(apps, schema_editor):
     for new_name, old_name in reverse_mappings.items():
         try:
             component = Component.objects.get(name=new_name)
-            print(f"Restoring '{new_name}' back to '{old_name}'")
+            logger.info(f"Restoring '{new_name}' back to '{old_name}'")
             component.name = old_name
             component.save()
             updated_count += 1
         except Component.DoesNotExist:
-            print(f"Component '{new_name}' does not exist, skipping restoration.")
+            logger.warning(f"Component '{new_name}' does not exist, skipping restoration.")
 
 
 class Migration(migrations.Migration):

@@ -108,7 +108,7 @@ def test_build_response_type_blocks_bis(open_incident_context: OpeningData) -> N
     assert len(blocks) == 1
     first_block = blocks[0]
     assert isinstance(first_block, ActionsBlock)
-    assert len(first_block.elements) == 2
+    assert len(first_block.elements) == 1
     assert all(isinstance(element, ButtonElement) for element in first_block.elements)
 
 
