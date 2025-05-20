@@ -1,4 +1,8 @@
+import logging
+
 from django.db import migrations
+
+logger = logging.getLogger(__name__)
 
 
 def get_new_components() -> dict:
@@ -35,20 +39,20 @@ def add_new_components(apps, schema_editor):
     Group = apps.get_model("incidents", "Group")
     new_components = get_new_components()
 
-    for name, (group_name, slack) in new_components.items():
+    for name, (group_name, _slack) in new_components.items():
         if not Component.objects.filter(name=name).exists():
-            print(f"Creating new component: '{name}' belonging to group '{group_name}'")
+            logger.info(f"Creating new component: '{name}' belonging to group '{group_name}'")
             group_instance = None
             try:
                 group_instance = Group.objects.get(name=group_name)
+                # TODO: we have define component order here
+                # TODO: should we had new migration that define order in function of alphabetical order ?
+                new_component = Component(name=name, group=group_instance)
+                new_component.save()
             except Group.DoesNotExist:
-                raise ValueError(f"Group '{group_name}' does not exist. Skipping creation for '{name}'.")
-            # TODO: we have define component order here
-            # TODO: should we had new migration that define order in function of alphabetical order ?
-            new_component = Component(name=name, group=group_instance)
-            new_component.save()
+                logger.warning(f"Group '{group_name}' does not exist. Skipping creation for '{name}'.")
         else:
-            raise ValueError(f"Component '{name}' already exists in database.")
+            logger.warning(f"Component '{name}' already exists in database.")
 
 
 def remove_new_components(apps, schema_editor):
@@ -58,10 +62,10 @@ def remove_new_components(apps, schema_editor):
     for name in new_component_names:
         try:
             component = Component.objects.get(name=name)
-            print(f"Removing component: '{name}'")
+            logger.info(f"Removing component: '{name}'")
             component.delete()
         except Component.DoesNotExist:
-            print(f"Component '{name}' does not exist, skipping removal.")
+            logger.warning(f"Component '{name}' does not exist, skipping removal.")
 
 
 class Migration(migrations.Migration):
