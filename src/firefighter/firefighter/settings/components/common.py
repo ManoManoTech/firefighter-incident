@@ -88,6 +88,11 @@ WSGI_APPLICATION = "firefighter.firefighter.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
+db_schema = config("POSTGRES_SCHEMA", default="")
+db_options = {"options": "-c statement_timeout=30000"}
+if db_schema:
+    db_options["options"] += f" -c search_path={db_schema}"
+
 DATABASES: dict[str, dict[str, Any]] = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
@@ -96,9 +101,7 @@ DATABASES: dict[str, dict[str, Any]] = {
         "PASSWORD": config("POSTGRES_PASSWORD"),
         "HOST": config("POSTGRES_HOST"),
         "PORT": config("POSTGRES_PORT"),
-        "OPTIONS": {
-            "options": "-c statement_timeout=30000",
-        },
+        "OPTIONS": db_options,
     }
 }
 
