@@ -12,28 +12,6 @@
     },
     {
         "model": "incidents.impactlevel",
-        "pk": "38ccbce8-d781-4fea-94cc-74cc64e706f6",
-        "fields": {
-            "impact_type": 2,
-            "emoji": "🔽",
-            "name": "Few sellers with minor issues",
-            "value": "LO",
-            "order": 5
-        }
-    },
-    {
-        "model": "incidents.impactlevel",
-        "pk": "39acd223-2ef5-40e5-9f59-cafe6736d16e",
-        "fields": {
-            "impact_type": 2,
-            "emoji": "0️⃣",
-            "name": "No impact on sellers",
-            "value": "NO",
-            "order": 0
-        }
-    },
-    {
-        "model": "incidents.impactlevel",
         "pk": "3f10fadb-1fab-42cc-b141-c8acc8055e6d",
         "fields": {
             "impact_type": 1,
@@ -129,50 +107,6 @@
             "name": "Few customers with minor issues",
             "value": "LO",
             "order": 5
-        }
-    },
-    {
-        "model": "incidents.impactlevel",
-        "pk": "d883acbb-b42a-43ac-a6c1-60600f75ca96",
-        "fields": {
-            "impact_type": 1,
-            "emoji": "0️⃣",
-            "name": "No impact on business or revenue",
-            "value": "NO",
-            "order": 0
-        }
-    },
-    {
-        "model": "incidents.impactlevel",
-        "pk": "dec9311f-0c26-4791-b878-48143f65061c",
-        "fields": {
-            "impact_type": 4,
-            "emoji": "0️⃣",
-            "name": "No impact on employees",
-            "value": "NO",
-            "order": 0
-        }
-    },
-    {
-        "model": "incidents.impactlevel",
-        "pk": "e058c0ee-a5bb-4fdb-bcd1-4b4bfa98a0df",
-        "fields": {
-            "impact_type": 4,
-            "emoji": "➡️",
-            "name": "Significant issues for some employees",
-            "value": "MD",
-            "order": 10
-        }
-    },
-    {
-        "model": "incidents.impactlevel",
-        "pk": "fefc492f-d077-4548-9b69-1d5ba0252a8a",
-        "fields": {
-            "impact_type": 3,
-            "emoji": "0️⃣",
-            "name": "No impact on customers",
-            "value": "NO",
-            "order": 0
         }
     }
 ]

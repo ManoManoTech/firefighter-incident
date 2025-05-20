@@ -16,6 +16,7 @@ from slack_sdk.models.views import View
 
 from firefighter.firefighter.utils import get_in
 from firefighter.incidents.forms.select_impact import SelectImpactForm
+from firefighter.incidents.models.impact import ImpactLevel, LevelChoices
 from firefighter.incidents.models.priority import Priority
 from firefighter.slack.slack_app import SlackApp
 from firefighter.slack.views.modals import modal_open
@@ -173,7 +174,7 @@ class SelectImpactModal(
     def _calculate_proposed_incident_type(
         suggested_priority_value: int,
     ) -> ResponseType:
-        return "critical" if suggested_priority_value <= 2 else "normal"
+        return "critical" if suggested_priority_value <= LevelChoices.MEDIUM.priority else "normal"
 
     @staticmethod
     def _update_private_metadata(

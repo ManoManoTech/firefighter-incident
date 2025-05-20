@@ -14,7 +14,6 @@ def get_group_mappings() -> dict:
         "Operations": ("Operations", 6),
         "Money": ("Payment Operations", 5),
         "Security": ("Security", 10),
-        # "Data Platform": ("Data", 9), WARN: this one does not exists in dump
         "Corporate IT": ("Corporate IT", 11),
         "Other": ("Other", 12),
     }
@@ -23,6 +22,7 @@ def get_group_mappings() -> dict:
 def get_new_groups() -> dict:
     """Returns a dictionary of new groups to be created."""
     return {
+        "Data": 9,
         "Marketing & Communication": 2,
         "Seller": 3,
         "Finance": 7,
@@ -34,10 +34,12 @@ def add_new_groups(apps, schema_editor):
     new_groups = get_new_groups()
 
     for name, position in new_groups.items():
-        if not Group.objects.filter(name=name).exists():
+        try:
             logger.warning(f"Creating new group: '{name}' with order {position}")
             new_group = Group(name=name, order=position)
             new_group.save()
+        except Exception:
+            logger.warning(f"Failed to create new group '{name}'.")
 
 
 def remove_new_groups(apps, schema_editor):
@@ -46,10 +48,10 @@ def remove_new_groups(apps, schema_editor):
 
     for name in new_group_names:
         try:
+            logger.info(f"Removing group: '{name}'")
             group = Group.objects.get(name=name)
-            logger.warning(f"Removing group: '{name}'")
             group.delete()
-        except Group.DoesNotExist:
+        except Exception:
             logger.warning(f"Group '{name}' does not exist, skipping removal.")
 
 
@@ -61,13 +63,13 @@ def update_groups(apps, schema_editor):
 
     for old_name, (new_name, position) in group_mappings.items():
         try:
-            group = Group.objects.get(name=old_name)
             logger.info(f"Updating: '{old_name}' to '{new_name}'")
+            group = Group.objects.get(name=old_name)
             group.name = new_name
             group.order = position
             group.save()
             updated_count += 1
-        except Group.DoesNotExist:
+        except Exception:
             logger.warning(f"Group '{old_name}' does not exist, cannot proceed with updates.")
 
 
@@ -84,7 +86,7 @@ def revert_group_names(apps, schema_editor):
             group.name = old_name
             group.save()
             updated_count += 1
-        except Group.DoesNotExist:
+        except Exception:
             logger.warning(f"Group '{new_name}' does not exist, skipping restoration.")
 
 
