@@ -30,12 +30,12 @@ def remap_incidents(apps, schema_editor):
         try:
             impact.impact_level = impactlevel
             impact.save()
-        except Exception as e:  # noqa: BLE001
+        except Exception as e:
             logger.warning(f"Failed to find ImpactLevel {name} {e}.")
 
     try:
         impactlevel_to_delete.delete()
-    except Exception as e:  # noqa: BLE001
+    except Exception as e:
         logger.warning(f"Failed to delete impact level {to_delete_name} {e}.")
 
 
@@ -178,14 +178,14 @@ def update_impact_levels(apps, schema_editor):
                 impact_level.order = update["new_order"]
                 impact_level.emoji = emoji_mapping.get(update["new_value"], impact_level.emoji)
                 impact_level.save()
-        except Exception as e:  # noqa: BLE001
+        except Exception as e:
             logger.warning(f"Failed to update ImpactLevel '{old_name}' {e}.")
 
     for add in adds:
         name = add["name"]
         try:
             impact_level = ImpactLevel.objects.filter(name=name).first()
-            if impact_level:
+            if not impact_level:
                 new_impact_level = ImpactLevel(
                     name=name,
                     value=add["value"],
@@ -194,7 +194,7 @@ def update_impact_levels(apps, schema_editor):
                     impact_type_id=add["impact_type_id"],
                 )
                 new_impact_level.save()
-        except Exception as e:  # noqa: BLE001
+        except Exception as e:
             logger.warning(f"Failed to create new ImpactLevel {name} {e}.")
 
 

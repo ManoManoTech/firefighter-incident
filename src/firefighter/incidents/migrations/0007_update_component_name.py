@@ -79,7 +79,7 @@ def add_new_components(apps, schema_editor):
             group_instance = Group.objects.get(name=group_name)
             new_component = Component(name=name, group=group_instance)
             new_component.save()
-        except Exception as e:  # noqa: BLE001
+        except Exception as e:
             logger.warning(f"Failed to creante new group: '{group_name}' {e}.")
 
 
@@ -92,7 +92,7 @@ def remove_new_components(apps, schema_editor):
             component = Component.objects.get(name=name)
             logger.info(f"Removing component: '{name}'")
             component.delete()
-        except Exception as e:  # noqa: BLE001
+        except Exception as e:
             logger.warning(f"Component '{name}' does not exist, skipping removal {e}.")
 
 
@@ -114,7 +114,7 @@ def update_component_names(apps, schema_editor):
             component.group = group_instance
             component.save()
             updated_count += 1
-        except Exception as e:  # noqa: BLE001
+        except Exception as e:
             logger.warning(f"Component '{old_name}' does not exist, cannot proceed with updates {e}.")
 
 
@@ -132,7 +132,7 @@ def revert_component_names(apps, schema_editor):
             component.name = old_name
             component.save()
             updated_count += 1
-        except Exception as e:  # noqa: BLE001
+        except Exception as e:
             logger.warning(f"Component '{new_name}' does not exist, skipping restoration {e}.")
 
 
