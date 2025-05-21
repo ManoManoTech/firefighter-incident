@@ -16,13 +16,13 @@ def get_group_mappings() -> dict:
         "Security": ("Security", 10),
         "Corporate IT": ("Corporate IT", 11),
         "Other": ("Other", 12),
+        "Data": ("Data", 9),
     }
 
 
 def get_new_groups() -> dict:
     """Returns a dictionary of new groups to be created."""
     return {
-        "Data": 9,
         "Marketing & Communication": 2,
         "Seller": 3,
         "Finance": 7,
@@ -38,8 +38,8 @@ def add_new_groups(apps, schema_editor):
             logger.warning(f"Creating new group: '{name}' with order {position}")
             new_group = Group(name=name, order=position)
             new_group.save()
-        except Exception:
-            logger.warning(f"Failed to create new group '{name}'.")
+        except Exception as e:  # noqa: BLE001
+            logger.warning(f"Failed to create new group '{name}' {e}.")
 
 
 def remove_new_groups(apps, schema_editor):
@@ -51,8 +51,8 @@ def remove_new_groups(apps, schema_editor):
             logger.info(f"Removing group: '{name}'")
             group = Group.objects.get(name=name)
             group.delete()
-        except Exception:
-            logger.warning(f"Group '{name}' does not exist, skipping removal.")
+        except Exception as e:  # noqa: BLE001
+            logger.warning(f"Group '{name}' does not exist, skipping removal {e}.")
 
 
 def update_groups(apps, schema_editor):
@@ -69,8 +69,8 @@ def update_groups(apps, schema_editor):
             group.order = position
             group.save()
             updated_count += 1
-        except Exception:
-            logger.warning(f"Group '{old_name}' does not exist, cannot proceed with updates.")
+        except Exception as e:  # noqa: BLE001
+            logger.warning(f"Group '{old_name}' does not exist, cannot proceed with updates {e}.")
 
 
 def revert_group_names(apps, schema_editor):
@@ -86,8 +86,8 @@ def revert_group_names(apps, schema_editor):
             group.name = old_name
             group.save()
             updated_count += 1
-        except Exception:
-            logger.warning(f"Group '{new_name}' does not exist, skipping restoration.")
+        except Exception as e:  # noqa: BLE001
+            logger.warning(f"Group '{new_name}' does not exist, skipping restoration {e}.")
 
 
 class Migration(migrations.Migration):

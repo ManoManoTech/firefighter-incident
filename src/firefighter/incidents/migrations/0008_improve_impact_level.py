@@ -3,6 +3,7 @@ import uuid
 
 from django.db import migrations, models
 from django.db.models import Q
+
 from firefighter.incidents.models.impact import LevelChoices
 
 logger = logging.getLogger(__name__)
@@ -29,14 +30,13 @@ def remap_incidents(apps, schema_editor):
         try:
             impact.impact_level = impactlevel
             impact.save()
-        except Exception:
-            logger.warning(f"Failed to find ImpactLevel {name}.")
-
+        except Exception as e:  # noqa: BLE001
+            logger.warning(f"Failed to find ImpactLevel {name} {e}.")
 
     try:
         impactlevel_to_delete.delete()
-    except Exception:
-        logger.warning(f"Failed to delete impact level {to_delete_name}.")
+    except Exception as e:  # noqa: BLE001
+        logger.warning(f"Failed to delete impact level {to_delete_name} {e}.")
 
 
 def update_impact_levels(apps, schema_editor):
@@ -168,30 +168,32 @@ def update_impact_levels(apps, schema_editor):
     ]
 
     for update in updates:
+        old_name = update["old_name"]
         try:
-            impact_level = ImpactLevel.objects.filter(name=update["old_name"]).first()
+            impact_level = ImpactLevel.objects.filter(name=old_name).first()
             if impact_level:
                 if update["new_name"] is not None:
-                    impact_level.name = update["new_name"]
+                    impact_level.name = old_name
                 impact_level.value = update["new_value"]
                 impact_level.order = update["new_order"]
                 impact_level.emoji = emoji_mapping.get(update["new_value"], impact_level.emoji)
                 impact_level.save()
-        except Exception:
-            logger.warning(f"Failed to update ImpactLevel '{update["old_name"]}'.")
+        except Exception as e:  # noqa: BLE001
+            logger.warning(f"Failed to update ImpactLevel '{old_name}' {e}.")
 
     for add in adds:
+        name = add["name"]
         try:
             new_impact_level = ImpactLevel(
-                name=add["name"],
+                name=name,
                 value=add["value"],
                 order=add["order"],
                 emoji=add["emoji"],
                 impact_type_id=add["impact_type_id"],
             )
-            # new_impact_level.save()
-        except Exception:
-            logger.warning(f"Failed to create new ImpactLevel '{add["name"]}'.")
+            new_impact_level.save()
+        except Exception as e:  # noqa: BLE001
+            logger.warning(f"Failed to create new ImpactLevel {name} {e}.")
 
 
 class Migration(migrations.Migration):
@@ -218,8 +220,8 @@ class Migration(migrations.Migration):
           ),
         ),
         migrations.AlterField(
-            model_name='impactlevel',
-            name='id',
+            model_name="impactlevel",
+            name="id",
             field=models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False),
         ),
         migrations.RunPython(remap_incidents),
