@@ -12,34 +12,12 @@
     },
     {
         "model": "incidents.impactlevel",
-        "pk": "38ccbce8-d781-4fea-94cc-74cc64e706f6",
-        "fields": {
-            "impact_type": 2,
-            "emoji": "🔽",
-            "name": "Few sellers with minor issues",
-            "value": "LO",
-            "order": 5
-        }
-    },
-    {
-        "model": "incidents.impactlevel",
-        "pk": "39acd223-2ef5-40e5-9f59-cafe6736d16e",
-        "fields": {
-            "impact_type": 2,
-            "emoji": "0️⃣",
-            "name": "No impact on sellers",
-            "value": "NO",
-            "order": 0
-        }
-    },
-    {
-        "model": "incidents.impactlevel",
         "pk": "3f10fadb-1fab-42cc-b141-c8acc8055e6d",
         "fields": {
             "impact_type": 1,
             "emoji": "🔼",
             "name": "Whole business or revenue at risk",
-            "value": "HI",
+            "value": "HT",
             "order": 15
         }
     },
@@ -138,7 +116,7 @@
             "impact_type": 1,
             "emoji": "0️⃣",
             "name": "No impact on business or revenue",
-            "value": "NO",
+            "value": "LT",
             "order": 0
         }
     },
@@ -149,7 +127,7 @@
             "impact_type": 4,
             "emoji": "0️⃣",
             "name": "No impact on employees",
-            "value": "NO",
+            "value": "LT",
             "order": 0
         }
     },
@@ -171,7 +149,29 @@
             "impact_type": 3,
             "emoji": "0️⃣",
             "name": "No impact on customers",
-            "value": "NO",
+            "value": "LT",
+            "order": 0
+        }
+    },
+    {
+        "model": "incidents.impactlevel",
+        "pk": "38ccbce8-d781-4fea-94cc-74cc64e706f6",
+        "fields": {
+            "impact_type": 2,
+            "emoji": "🔽",
+            "name": "Few sellers with minor issues",
+            "value": "LO",
+            "order": 5
+        }
+    },
+    {
+        "model": "incidents.impactlevel",
+        "pk": "39acd223-2ef5-40e5-9f59-cafe6736d16e",
+        "fields": {
+            "impact_type": 2,
+            "emoji": "0️⃣",
+            "name": "No impact on sellers",
+            "value": "LT",
             "order": 0
         }
     }

@@ -386,12 +386,14 @@ class OpenModal(SlackModal):
             )
             style: str | None = "primary" if is_selected else None
             icon = (
-                ":firefighter_incident:"
+                ":slack: :jira_new:"
                 if response_type == "critical"
-                else ":raid_logo:"
+                else ":jira_new:"
             )
             text = (
-                f"{response_type.capitalize()} incident {icon if is_selected else ''}"
+                ":slack: Slack :jira_new: Jira ticket"
+                if response_type == "critical"
+                else ":jira_new: Jira ticket"
             )
             button = ButtonElement(
                 text=text,
