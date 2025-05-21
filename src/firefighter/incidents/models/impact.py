@@ -50,7 +50,7 @@ class LevelChoices(models.TextChoices):
             self.LOWEST.value: 5,
             self.NONE.value: 6,
         }
-        return priority_mapping.get(self.value, 5) # ruff: ignore call-overload
+        return priority_mapping.get(self.value, 5)  # ruff: ignore call-overload
 
     @property
     def emoji(self) -> str:
@@ -64,7 +64,7 @@ class LevelChoices(models.TextChoices):
             self.LOWEST.value: "⏬",
             self.NONE.value: none_emoji,
         }
-        return emoji_mapping.get(self.value, none_emoji) # ruff: ignore call-overload
+        return emoji_mapping.get(self.value, none_emoji)  # ruff: ignore call-overload
 
 
 class ImpactLevel(models.Model):
