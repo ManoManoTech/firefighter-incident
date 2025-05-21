@@ -385,11 +385,6 @@ class OpenModal(SlackModal):
                 or len(INCIDENT_TYPES) == 1
             )
             style: str | None = "primary" if is_selected else None
-            icon = (
-                ":slack: :jira_new:"
-                if response_type == "critical"
-                else ":jira_new:"
-            )
             text = (
                 ":slack: Slack :jira_new: Jira ticket"
                 if response_type == "critical"
