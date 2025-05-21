@@ -184,14 +184,16 @@ def update_impact_levels(apps, schema_editor):
     for add in adds:
         name = add["name"]
         try:
-            new_impact_level = ImpactLevel(
-                name=name,
-                value=add["value"],
-                order=add["order"],
-                emoji=add["emoji"],
-                impact_type_id=add["impact_type_id"],
-            )
-            new_impact_level.save()
+            impact_level = ImpactLevel.objects.filter(name=name).first()
+            if impact_level:
+                new_impact_level = ImpactLevel(
+                    name=name,
+                    value=add["value"],
+                    order=add["order"],
+                    emoji=add["emoji"],
+                    impact_type_id=add["impact_type_id"],
+                )
+                new_impact_level.save()
         except Exception as e:  # noqa: BLE001
             logger.warning(f"Failed to create new ImpactLevel {name} {e}.")
 
