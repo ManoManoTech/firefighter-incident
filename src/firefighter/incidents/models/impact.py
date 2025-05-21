@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 
 
 class ImpactType(models.Model):
-    emoji = models.CharField(max_length=5, default="▶")  # noqa: RUF001
+    emoji = models.CharField(max_length=5, default="▶")
     name = models.CharField(max_length=64)
     help_text = models.CharField(max_length=128)
     value = models.SlugField(unique=True)
@@ -41,7 +41,7 @@ class LevelChoices(models.TextChoices):
 
     @property
     def priority(self) -> int:
-        """Renvoie la priorité associée au niveau en tant qu'entier."""
+        """Send level choice priority ."""
         priority_mapping = {
             self.HIGHEST: 1,
             self.HIGH: 2,
@@ -50,20 +50,21 @@ class LevelChoices(models.TextChoices):
             self.LOWEST: 5,
             self.NONE: 6,
         }
-        return priority_mapping.get(self, 5)
+        return priority_mapping.get(self, 5)  # noqa: call-overload
 
     @property
     def emoji(self) -> str:
         """Send emoji un function of priority."""
+        none_emoji = "❓"
         emoji_mapping = {
             self.HIGHEST: "⏫",
             self.HIGH: "🔼",
             self.MEDIUM: "➡️",
             self.LOW: "🔽",
             self.LOWEST: "⏬",
-            self.NONE: "❓",
+            self.NONE: none_emoji,
         }
-        return emoji_mapping.get(self, "❓")
+        return emoji_mapping.get(self, none_emoji)  # noqa: call-overload
 
 
 class ImpactLevel(models.Model):
@@ -95,10 +96,6 @@ class ImpactLevel(models.Model):
 
     def __str__(self) -> str:
         return self.name or self.value
-
-    def set_emoji_from_impact_type(self):
-        """Set emoji based on the related ImpactType."""
-        self.emoji = self.impact_type.emoji()
 
     @cached_property
     def value_label(self) -> str:

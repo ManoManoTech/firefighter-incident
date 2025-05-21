@@ -11,7 +11,7 @@ from firefighter.incidents.forms.select_impact import SelectImpactForm
     [
         (
             {
-                "set_impact_type_business_impact": "HI",
+                "set_impact_type_business_impact": "HT",
                 "set_impact_type_sellers_impact": "LT",
                 "set_impact_type_customers_impact": "LT",
                 "set_impact_type_employees_impact": "LT",
@@ -20,28 +20,28 @@ from firefighter.incidents.forms.select_impact import SelectImpactForm
         ),
         (
             {
-                "set_impact_type_business_impact": "LO",
-                "set_impact_type_sellers_impact": "LO",
-                "set_impact_type_customers_impact": "MD",
+                "set_impact_type_business_impact": "LT",
+                "set_impact_type_sellers_impact": "LT",
+                "set_impact_type_customers_impact": "HI",
                 "set_impact_type_employees_impact": "LT",
             },
             2,
         ),
         (
             {
-                "set_impact_type_business_impact": "LO",
-                "set_impact_type_sellers_impact": "LO",
-                "set_impact_type_customers_impact": "LO",
+                "set_impact_type_business_impact": "LT",
+                "set_impact_type_sellers_impact": "LT",
+                "set_impact_type_customers_impact": "MD",
                 "set_impact_type_employees_impact": "LT",
             },
             3,
         ),
         (
             {
-                "set_impact_type_business_impact": "LO",
+                "set_impact_type_business_impact": "LT",
                 "set_impact_type_sellers_impact": "LT",
                 "set_impact_type_customers_impact": "LT",
-                "set_impact_type_employees_impact": "LT",
+                "set_impact_type_employees_impact": "LO",
             },
             4,
         ),
@@ -52,13 +52,13 @@ from firefighter.incidents.forms.select_impact import SelectImpactForm
                 "set_impact_type_customers_impact": "LT",
                 "set_impact_type_employees_impact": "LT",
             },
-            4,
+            5,
         ),
     ],
 )
 def test_suggest_priority_from_impact(form_data, expected_priority):
     form = SelectImpactForm(data=form_data)
-    assert form.is_valid()
+    assert form.is_valid(), f"Form with expected priority {expected_priority} is not valid.\n  errors: {form.errors}."
     priority = form.suggest_priority_from_impact()
     assert priority == expected_priority
 
@@ -74,7 +74,7 @@ def test_suggest_priority_from_impact(form_data, expected_priority):
                 "set_impact_type_customers_impact": "LT",
                 "set_impact_type_employees_impact": "LT",
             },
-            4,
+            5,
         ),
         (
             {
@@ -83,7 +83,7 @@ def test_suggest_priority_from_impact(form_data, expected_priority):
                 "set_impact_type_customers_impact": "MD",
                 "set_impact_type_employees_impact": "LT",
             },
-            4,
+            5,
         ),
         (
             {
@@ -92,7 +92,7 @@ def test_suggest_priority_from_impact(form_data, expected_priority):
                 "set_impact_type_customers_impact": "INVALID",
                 "set_impact_type_employees_impact": "LT",
             },
-            4,
+            5,
         ),
     ],
 )
