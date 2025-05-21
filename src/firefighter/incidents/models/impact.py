@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import uuid
 from functools import cached_property
 from typing import TYPE_CHECKING, Any, Protocol
 
@@ -17,7 +18,7 @@ if TYPE_CHECKING:
 
 
 class ImpactType(models.Model):
-    emoji = models.CharField(max_length=5, default="ℹ️")  # noqa: RUF001
+    emoji = models.CharField(max_length=5, default="▶")
     name = models.CharField(max_length=64)
     help_text = models.CharField(max_length=128)
     value = models.SlugField(unique=True)
@@ -31,18 +32,47 @@ class ImpactType(models.Model):
 
 
 class LevelChoices(models.TextChoices):
+    HIGHEST = "HT", _("Highest")
     HIGH = "HI", _("High")
     MEDIUM = "MD", _("Medium")
     LOW = "LO", _("Low")
+    LOWEST = "LT", _("Lowest")
     NONE = "NO", _("N/A")
+
+    @property
+    def priority(self) -> int:
+        """Send level choice priority ."""
+        priority_mapping = {
+            self.HIGHEST: 1,
+            self.HIGH: 2,
+            self.MEDIUM: 3,
+            self.LOW: 4,
+            self.LOWEST: 5,
+            self.NONE: 6,
+        }
+        return priority_mapping.get(self, 5)  # type: ignore [call-overload]
+
+    @property
+    def emoji(self) -> str:
+        """Send emoji un function of priority."""
+        none_emoji = "❓"
+        emoji_mapping = {
+            self.HIGHEST: "⏫",
+            self.HIGH: "🔼",
+            self.MEDIUM: "➡️",
+            self.LOW: "🔽",
+            self.LOWEST: "⏬",
+            self.NONE: none_emoji,
+        }
+        return emoji_mapping.get(self, none_emoji)  # type: ignore [call-overload]
 
 
 class ImpactLevel(models.Model):
-    id = models.UUIDField(primary_key=True, editable=False)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     impact_type = models.ForeignKey(
         ImpactType, related_name="levels", on_delete=models.CASCADE, db_index=True
     )
-    emoji = models.CharField(max_length=5, default="ℹ️")  # noqa: RUF001
+    emoji = models.CharField(max_length=5, default="▶")
     name = models.CharField(
         max_length=75,
         blank=True,
@@ -50,7 +80,7 @@ class ImpactLevel(models.Model):
         default="",
         help_text="Description for the impact level for this impact type.",
     )
-    value = models.CharField(choices=LevelChoices.choices, max_length=2, default="NO")
+    value = models.CharField(choices=LevelChoices.choices, max_length=2, default="LT")
     order = models.PositiveSmallIntegerField(default=10)
 
     class Meta(TypedModelMeta):
