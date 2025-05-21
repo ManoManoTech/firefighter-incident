@@ -39,6 +39,63 @@ def get_component_mappings() -> list:
     ]
 
 
+def get_new_components() -> dict:
+    """
+    Returns a dictionary of new components to be created.
+
+    Each entry in the dictionary maps a component name to a tuple containing:
+    - group_name: The name of the group the component belongs to.
+    - slack_channel: The associated Slack channel for the component.
+
+    Returns:
+        dict: A mapping of component names to (group name, slack channel) tuples.
+    """
+    return {
+        "Traffic acquisition": ("Marketing & Communication", "impact-traffic-acquisition"),
+        "Company reputation": ("Marketing & Communication", "impact-company-reputation"),
+        "Loyalty and coupons": ("Payment Operations", "impact-loyalty-coupons"),
+        "Payouts to seller": ("Payment Operations", "impact-payouts-to-seller"),
+        "Refunds": ("Payment Operations", "impact-refunds"),
+        "Returns": ("Operations", "impact-returns"),
+        "Customer service": ("Operations", "impact-customer-service"),
+        "Inventory": ("Operations", "impact-inventory"),
+        "VAT": ("Finance", "impact-vat"),
+        "Seller's invoices": ("Finance", "impact-sellers-invoices"),
+        "Customer's invoices": ("Finance", "impact-customers-invoices"),
+        "Accounting": ("Finance", "impact-accounting"),
+        "Revenue": ("Finance", "impact-revenue"),
+        "Compromised laptop / server": ("Security", "impact-compromised-laptop-server"),
+    }
+
+
+def add_new_components(apps, schema_editor):
+    Component = apps.get_model("incidents", "Component")
+    Group = apps.get_model("incidents", "Group")
+    new_components = get_new_components()
+
+    for name, (group_name, _slack) in new_components.items():
+        logger.info(f"Creating new component: '{name}' belonging to group '{group_name}'")
+        try:
+            group_instance = Group.objects.get(name=group_name)
+            new_component = Component(name=name, group=group_instance)
+            new_component.save()
+        except Exception as e:
+            logger.warning(f"Failed to creante new group: '{group_name}' {e}.")
+
+
+def remove_new_components(apps, schema_editor):
+    Component = apps.get_model("incidents", "Component")
+    new_component_names = get_new_components().keys()
+
+    for name in new_component_names:
+        try:
+            component = Component.objects.get(name=name)
+            logger.info(f"Removing component: '{name}'")
+            component.delete()
+        except Exception as e:
+            logger.warning(f"Component '{name}' does not exist, skipping removal {e}.")
+
+
 def update_component_names(apps, schema_editor):
     Component = apps.get_model("incidents", "Component")
     Group = apps.get_model("incidents", "Group")
@@ -53,16 +110,12 @@ def update_component_names(apps, schema_editor):
             component.name = new_name
 
             # WARN: this operaration is impossible to revert
-            try:
-                group_instance = Group.objects.get(name=group_name)
-                component.group = group_instance
-            except Group.DoesNotExist:
-                logger.warning(f"Group '{group_name}' does not exist, skipping group assignment for '{new_name}'.")
-
+            group_instance = Group.objects.get(name=group_name)
+            component.group = group_instance
             component.save()
             updated_count += 1
-        except Component.DoesNotExist:
-            logger.warning(f"Component '{old_name}' does not exist, cannot proceed with updates.")
+        except Exception as e:
+            logger.warning(f"Component '{old_name}' does not exist, cannot proceed with updates {e}.")
 
 
 def revert_component_names(apps, schema_editor):
@@ -72,22 +125,24 @@ def revert_component_names(apps, schema_editor):
     updated_count = 0
 
     for new_name, old_name in reverse_mappings.items():
+
         try:
             component = Component.objects.get(name=new_name)
             logger.info(f"Restoring '{new_name}' back to '{old_name}'")
             component.name = old_name
             component.save()
             updated_count += 1
-        except Component.DoesNotExist:
-            logger.warning(f"Component '{new_name}' does not exist, skipping restoration.")
+        except Exception as e:
+            logger.warning(f"Component '{new_name}' does not exist, skipping restoration {e}.")
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("incidents", "0006_update_group_names"),  # Replace with your last migration
+        ("incidents", "0006_update_group_names"),
     ]
 
     operations = [
         migrations.RunPython(update_component_names, revert_component_names),
+        migrations.RunPython(add_new_components, remove_new_components),
     ]
