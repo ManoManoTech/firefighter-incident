@@ -50,7 +50,7 @@ class LevelChoices(models.TextChoices):
             self.LOWEST.value: 5,
             self.NONE.value: 6,
         }
-        return priority_mapping.get(self.value, 5) 
+        return priority_mapping.get(self.value, 5)
 
     @property
     def emoji(self) -> str:
