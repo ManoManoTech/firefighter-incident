@@ -80,7 +80,7 @@ def add_new_components(apps, schema_editor):
             new_component = Component(name=name, group=group_instance)
             new_component.save()
         except Exception:
-            logger.exception(f"Failed to creante new group: '{group_name}'.")
+            logger.exception(f"Failed to create new group: '{group_name}'.")
 
 
 def remove_new_components(apps, schema_editor):

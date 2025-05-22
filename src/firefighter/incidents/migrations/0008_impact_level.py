@@ -5,7 +5,6 @@ import logging
 import uuid
 
 from django.db import migrations, models
-from django.db.models import Q
 
 from firefighter.incidents.models.impact import LevelChoices
 
@@ -17,15 +16,18 @@ def remap_incidents(apps, schema_editor):
     Impact = apps.get_model("incidents", "Impact")
 
     to_delete_name = "Few employees with minor issues"
+    to_delete_value = LevelChoices.LOW.value
     impactlevel_to_delete = ImpactLevel.objects.filter(name=to_delete_name).first()
-    name = "Significant issues for some employees"
-    impactlevel = ImpactLevel.objects.filter(name=name).first()
+
+    new_name = "Significant issues for some employees"
+    new_value = LevelChoices.MEDIUM.value # before remapping of impact level because after remapping "Significant issues for some employees" will refer to "LO"
+    impactlevel = ImpactLevel.objects.filter(name=new_name).first()
 
     if impactlevel_to_delete is None:
-        logger.error(f"Failed to find ImpactLevel to delete {to_delete_name}.")
+        logger.error(f"Failed to find ImpactLevel to delete {to_delete_value} {to_delete_name}.")
         return
     if impactlevel is None:
-        logger.error(f"Failed to find ImpactLevel {name}.")
+        logger.error(f"Failed to find ImpactLevel {new_value} {new_name}.")
         return
     impacts = Impact.objects.filter(impact_level=impactlevel_to_delete)
 
@@ -34,12 +36,12 @@ def remap_incidents(apps, schema_editor):
             impact.impact_level = impactlevel
             impact.save()
         except Exception:
-            logger.exception(f"Failed to find ImpactLevel {name}.")
+            logger.exception(f"Failed to find ImpactLevel {new_value} {new_name}.")
 
     try:
         impactlevel_to_delete.delete()
     except Exception:
-        logger.exception(f"Failed to delete impact level {to_delete_name}.")
+        logger.exception(f"Failed to delete impact level {to_delete_value} {to_delete_name}.")
 
 
 def update_impact_levels(apps, schema_editor):
@@ -56,90 +58,105 @@ def update_impact_levels(apps, schema_editor):
     updates = [
         {
             "old_name": "Critical issue for many customers",
+            "old_value": "HI",
             "new_name": None,
             "new_value": "HT",
             "new_order": 20,
         },
         {
             "old_name": "Some customers have issues",
+            "old_value": "MD",
             "new_name": "Some customers with major issues",
             "new_value": "HI",
             "new_order": 15,
         },
         {
             "old_name": "Few customers with minor issues",
+            "old_value": "LO",
             "new_name": "Some customers with significant issues",
             "new_value": "MD",
             "new_order": 10,
         },
         {
             "old_name": "No impact on customers",
+            "old_value": "N/A",
             "new_name": None,
             "new_value": "LT",
             "new_order": 0,
         },
         {
             "old_name": "Key services inaccessible for most",
+            "old_value": "HI",
             "new_name": "Critical issues for many sellers",
             "new_value": "HT",
             "new_order": 20,
         },
         {
             "old_name": "Some sellers have significant issues",
+            "old_value": "MD",
             "new_name": "Some sellers with major issues",
             "new_value": "HI",
             "new_order": 15,
         },
         {
             "old_name": "Few sellers with minor issues",
+            "old_value": "LO",
             "new_name": "Some sellers with significant issues",
             "new_value": "MD",
             "new_order": 10,
         },
         {
             "old_name": "No impact on sellers",
+            "old_value": "N/A",
             "new_name": None,
             "new_value": "LT",
             "new_order": 0,
         },
         {
             "old_name": "Significant issues for some employees",
+            "old_value": "MD",
             "new_name": "Major issues for internal users",
             "new_value": "LO",
             "new_order": 10,
         },
         {
             "old_name": "Critical internal tools down",
+            "old_value": "HI",
             "new_name": "Critical issues for internal users",
             "new_value": "MD",
             "new_order": 15,
         },
         {
             "old_name": "No impact on employees",
+            "old_value": "N/A",
             "new_name": "Minor issues for internal users",
             "new_value": "LT",
             "new_order": 0,
         },
         {
             "old_name": "Whole business or revenue at risk",
+            "old_value": "HI",
             "new_name": "Critical business impact",
             "new_value": "HT",
             "new_order": 20,
         },
         {
             "old_name": "Significant business or revenue loss",
+            "old_value": "MD",
             "new_name": "Major business impact",
             "new_value": "HI",
             "new_order": 15,
         },
         {
             "old_name": "Minor impact on business or revenue",
+            "old_value": "LO",
             "new_name": "Significant business impact",
             "new_value": "MD",
             "new_order": 10,
         },
         {
             "old_name": "No impact on business or revenue",
+            "old_value": "N/A",
             "new_name": None,
             "new_value": "LT",
             "new_order": 0,
@@ -151,7 +168,7 @@ def update_impact_levels(apps, schema_editor):
         try:
             impact_level = ImpactLevel.objects.filter(name=old_name).first()
             if not impact_level:
-                logger.error(f"Failed to found ImpactLevel with old name:'{old_name}'.")
+                logger.error(f"Failed to find ImpactLevel with old name:'{old_name}'.")
                 continue
             if update["new_name"] is not None:
                 impact_level.name = old_name
@@ -203,7 +220,7 @@ def add_impact_levels(apps, schema_editor):
             impact_type_id = add["impact_type_id"]
             impact_type = ImpactType.objects.filter(id=impact_type_id).first()
             if not impact_type:
-                logger.error(f"There is not impact type id:'{impact_type_id}'.")
+                logger.error(f"There is no impact type id:'{impact_type_id}'.")
                 continue
             if impact_level:
                 logger.error(f"There is already an impact level with name:'{name}'.")
@@ -239,11 +256,11 @@ class Migration(migrations.Migration):
           name="incidents_impactlevel_value_valid",
         ),
         migrations.AddConstraint(
-          model_name="impactlevel",
-          constraint=models.CheckConstraint(
-            name="incidents_impactlevel_value_valid",
-            check=Q(value__in=LevelChoices.values),
-          ),
+            model_name="impactlevel",
+            constraint=models.CheckConstraint(
+                check=models.Q(("value__in", ["HT", "HI", "MD", "LO", "LT", "NO"])),
+                name="incidents_impactlevel_value_valid",
+            ),
         ),
         migrations.AlterField(
             model_name="impactlevel",
