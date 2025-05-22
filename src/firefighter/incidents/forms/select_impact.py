@@ -45,7 +45,7 @@ class SelectImpactForm(forms.Form):
                 label=impact_type.emoji + " " + impact_type.name,
                 queryset=impact_type.levels.all().order_by("-order"),
                 help_text=impact_type.help_text,
-                initial=impact_type.levels.get(value=LevelChoices.NONE.value),
+                initial=impact_type.levels.get(value=LevelChoices.LOWEST.value),
             )
             self.fields[field_name].label_from_instance = (  # type: ignore[attr-defined]
                 lambda obj: obj.emoji + " " + obj.name
@@ -57,16 +57,9 @@ class SelectImpactForm(forms.Form):
             impact: dict[str, ImpactLevel] = self.cleaned_data
 
             impact_values = [impact_type.value for impact_type in impact.values()]
-            if "HI" in impact_values:
-                return 1
-            if "MD" in impact_values:
-                return 2
-            if impact_values.count("LO") > 2:
-                return 3
-            if "LO" in impact_values or "NO" in impact_values:
-                return 4
-            return 4
-        return 4
+            priorities = [level.priority for level in LevelChoices if level in impact_values]
+            return min(priorities) if priorities else LevelChoices.LOWEST.priority
+        return LevelChoices.LOWEST.priority
 
     @property
     def business_impact_new(self) -> str | None:
