@@ -79,8 +79,8 @@ def add_new_components(apps, schema_editor):
             group_instance = Group.objects.get(name=group_name)
             new_component = Component(name=name, group=group_instance)
             new_component.save()
-        except Exception as e:
-            logger.exception(f"Failed to creante new group: '{group_name}' {e}.")
+        except Exception:
+            logger.exception(f"Failed to creante new group: '{group_name}'.")
 
 
 def remove_new_components(apps, schema_editor):
@@ -92,8 +92,8 @@ def remove_new_components(apps, schema_editor):
             component = Component.objects.get(name=name)
             logger.info(f"Removing component: '{name}'")
             component.delete()
-        except Exception as e:
-            logger.exception(f"Component '{name}' does not exist, skipping removal {e}.")
+        except Exception:
+            logger.exception(f"Component '{name}' does not exist, skipping removal.")
 
 
 def update_component_names(apps, schema_editor):
@@ -114,8 +114,8 @@ def update_component_names(apps, schema_editor):
             component.group = group_instance
             component.save()
             updated_count += 1
-        except Exception as e:
-            logger.exception(f"Component '{old_name}' does not exist, cannot proceed with updates {e}.")
+        except Exception:
+            logger.exception(f"Component '{old_name}' does not exist, cannot proceed with updates.")
 
 
 def revert_component_names(apps, schema_editor):
@@ -132,8 +132,8 @@ def revert_component_names(apps, schema_editor):
             component.name = old_name
             component.save()
             updated_count += 1
-        except Exception as e:
-            logger.exception(f"Component '{new_name}' does not exist, skipping restoration {e}.")
+        except Exception:
+            logger.exception(f"Component '{new_name}' does not exist, skipping restoration.")
 
 
 class Migration(migrations.Migration):

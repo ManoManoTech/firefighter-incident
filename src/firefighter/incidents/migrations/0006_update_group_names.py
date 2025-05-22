@@ -38,8 +38,8 @@ def add_new_groups(apps, _schema_editor):
             logger.info(f"Creating new group: '{name}' with order {position}")
             new_group = Group(name=name, order=position)
             new_group.save()
-        except Exception as e:
-            logger.exception(f"Failed to create new group '{name}' {e}.")
+        except Exception:
+            logger.exception(f"Failed to create new group '{name}'.")
 
 
 def remove_new_groups(apps, _schema_editor):
@@ -51,8 +51,8 @@ def remove_new_groups(apps, _schema_editor):
             logger.info(f"Removing group: '{name}'")
             group = Group.objects.get(name=name)
             group.delete()
-        except Exception as e:
-            logger.exception(f"Group '{name}' does not exist, skipping removal {e}.")
+        except Exception:
+            logger.exception(f"Group '{name}' does not exist, skipping removal.")
 
 
 def update_groups(apps, _schema_editor):
@@ -69,8 +69,8 @@ def update_groups(apps, _schema_editor):
             group.order = position
             group.save()
             updated_count += 1
-        except Exception as e:
-            logger.exception(f"Group '{old_name}' does not exist, cannot proceed with updates {e}.")
+        except Exception:
+            logger.exception(f"Group '{old_name}' does not exist, cannot proceed with updates.")
 
 
 def revert_group_names(apps, _schema_editor):
@@ -86,8 +86,8 @@ def revert_group_names(apps, _schema_editor):
             group.name = old_name
             group.save()
             updated_count += 1
-        except Exception as e:
-            logger.exception(f"Group '{new_name}' does not exist, skipping restoration {e}.")
+        except Exception:
+            logger.exception(f"Group '{new_name}' does not exist, skipping restoration.")
 
 
 class Migration(migrations.Migration):

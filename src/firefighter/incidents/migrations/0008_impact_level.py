@@ -22,10 +22,10 @@ def remap_incidents(apps, schema_editor):
     impactlevel = ImpactLevel.objects.filter(name=name).first()
 
     if impactlevel_to_delete is None:
-        logger.exception(f"Failed to find ImpactLevel to delete {to_delete_name}.")
+        logger.error(f"Failed to find ImpactLevel to delete {to_delete_name}.")
         return
     if impactlevel is None:
-        logger.exception(f"Failed to find ImpactLevel {name}.")
+        logger.error(f"Failed to find ImpactLevel {name}.")
         return
     impacts = Impact.objects.filter(impact_level=impactlevel_to_delete)
 
@@ -33,13 +33,13 @@ def remap_incidents(apps, schema_editor):
         try:
             impact.impact_level = impactlevel
             impact.save()
-        except Exception as e:
-            logger.exception(f"Failed to find ImpactLevel {name} {e}.")
+        except Exception:
+            logger.exception(f"Failed to find ImpactLevel {name}.")
 
     try:
         impactlevel_to_delete.delete()
-    except Exception as e:
-        logger.exception(f"Failed to delete impact level {to_delete_name} {e}.")
+    except Exception:
+        logger.exception(f"Failed to delete impact level {to_delete_name}.")
 
 
 def update_impact_levels(apps, schema_editor):
@@ -151,7 +151,7 @@ def update_impact_levels(apps, schema_editor):
         try:
             impact_level = ImpactLevel.objects.filter(name=old_name).first()
             if not impact_level:
-                logger.exception(f"Failed to found ImpactLevel with old name:'{old_name}'.")
+                logger.error(f"Failed to found ImpactLevel with old name:'{old_name}'.")
                 continue
             if update["new_name"] is not None:
                 impact_level.name = old_name
@@ -159,8 +159,8 @@ def update_impact_levels(apps, schema_editor):
             impact_level.order = update["new_order"]
             impact_level.emoji = emoji_mapping.get(update["new_value"], impact_level.emoji)
             impact_level.save()
-        except Exception as e:
-            logger.exception(f"Failed to update ImpactLevel '{old_name}' {e}.")
+        except Exception:
+            logger.exception(f"Failed to update ImpactLevel '{old_name}'.")
 
     logger.info("Successfully updated new ImpactLevels.")
 
@@ -203,10 +203,10 @@ def add_impact_levels(apps, schema_editor):
             impact_type_id = add["impact_type_id"]
             impact_type = ImpactType.objects.filter(id=impact_type_id).first()
             if not impact_type:
-                logger.exception(f"There is not impact type id:'{impact_type_id}'.")
+                logger.error(f"There is not impact type id:'{impact_type_id}'.")
                 continue
             if impact_level:
-                logger.exception(f"There is already an impact level with name:'{name}'.")
+                logger.error(f"There is already an impact level with name:'{name}'.")
                 continue
             new_impact_level = ImpactLevel(
                 name=name,
@@ -216,8 +216,8 @@ def add_impact_levels(apps, schema_editor):
                 impact_type=impact_type,
             )
             new_impact_level.save()
-        except Exception as e:
-            logger.exception(f"Failed to create new ImpactLevel {name} {e}.")
+        except Exception:
+            logger.exception(f"Failed to create new ImpactLevel {name}.")
 
     logger.info("Successfully created new ImpactLevels.")
 
