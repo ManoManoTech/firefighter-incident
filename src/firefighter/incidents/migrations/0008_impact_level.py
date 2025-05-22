@@ -20,7 +20,7 @@ def remap_incidents(apps, schema_editor):
     impactlevel_to_delete = ImpactLevel.objects.filter(name=to_delete_name).first()
 
     new_name = "Significant issues for some employees"
-    new_value = LevelChoices.MEDIUM.value # before remapping of impact level because after remapping "Significant issues for some employees" will refer to "LO"
+    new_value = LevelChoices.MEDIUM.value  # before remapping of impact level because after remapping "Significant issues for some employees" will refer to "LO"
     impactlevel = ImpactLevel.objects.filter(name=new_name).first()
 
     if impactlevel_to_delete is None:

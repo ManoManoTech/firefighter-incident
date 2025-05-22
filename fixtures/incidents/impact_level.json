@@ -174,7 +174,7 @@
             "value": "LO",
             "order": 5
         }
-    },    
+    },
     {
         "model": "incidents.impactlevel",
         "pk": "b8e1a3c2-5d4f-4e7a-9c3b-2f1e8d7c6a5b",
@@ -207,7 +207,7 @@
             "value": "HI",
             "order": 15
         }
-    },    
+    },
     {
         "model": "incidents.impactlevel",
         "pk": "e058c0ee-a5bb-4fdb-bcd1-4b4bfa98a0df",
