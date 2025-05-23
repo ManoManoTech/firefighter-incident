@@ -63,7 +63,7 @@ class SelectImpactForm(forms.Form):
 
     @property
     def business_impact_new(self) -> str | None:
-        """Get business impact. Will return N/A, Low, Medium or High."""
+        """Get business impact. Will return N/A, Lowest, Low, Medium, High or Highest."""
         impact_value = ""
         if self.is_valid():
             impact: dict[str, ImpactLevel] = self.cleaned_data

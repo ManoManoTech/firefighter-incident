@@ -100,10 +100,11 @@ class SelectImpactModal(
             else:
                 err_msg = f"Invalid priority data: {priority_data}"  # type: ignore[unreachable]
                 raise TypeError(err_msg)
+            process = ":slack: Slack :jira_new: Jira ticket" if open_incident_context.get("response_type") == "critical" else ":jira_new: Jira ticket"
             blocks.extend((
                 DividerBlock(),
                 SectionBlock(
-                    text=f"💡 Suggested priority: {priority} - {priority.description}\n⏱️ SLA: {priority.sla}"
+                    text=f"💡 Selected priority: {priority} - {priority.description}\n⏱️ SLA: {priority.sla}\n{process}"
                 ),
             ))
 
@@ -173,7 +174,7 @@ class SelectImpactModal(
     def _calculate_proposed_incident_type(
         suggested_priority_value: int,
     ) -> ResponseType:
-        return "critical" if suggested_priority_value <= 2 else "normal"
+        return "critical" if suggested_priority_value <= 3 else "normal"
 
     @staticmethod
     def _update_private_metadata(
