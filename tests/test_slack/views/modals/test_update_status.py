@@ -251,7 +251,7 @@ valid_submission = {
             {
                 "type": "input",
                 "block_id": "component",
-                "label": {"type": "plain_text", "text": "Component", "emoji": True},
+                "label": {"type": "plain_text", "text": "Issue category", "emoji": True},
                 "optional": False,
                 "dispatch_action": False,
                 "element": {
@@ -259,7 +259,7 @@ valid_submission = {
                     "action_id": "component",
                     "placeholder": {
                         "type": "plain_text",
-                        "text": "Select affected component",
+                        "text": "Select affected issue category",
                         "emoji": True,
                     },
                     "initial_option": {

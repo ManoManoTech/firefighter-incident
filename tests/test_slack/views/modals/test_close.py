@@ -229,7 +229,7 @@ valid_submission = {
                     "action_id": "component",
                     "placeholder": {
                         "type": "plain_text",
-                        "text": "Select affected component",
+                        "text": "Select affected issue category",
                         "emoji": True,
                     },
                     "option_groups": [

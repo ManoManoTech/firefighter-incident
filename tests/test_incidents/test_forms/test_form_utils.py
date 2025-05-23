@@ -28,8 +28,8 @@ def group() -> Group:
 @pytest.fixture
 def components(group: Group):
     return [
-        Component.objects.create(name="Component 1", group=group, order=1),
-        Component.objects.create(name="Component 2", group=group, order=2),
+        Component.objects.create(name="Issue category 1", group=group, order=1),
+        Component.objects.create(name="Issue category 2", group=group, order=2),
     ]
 
 

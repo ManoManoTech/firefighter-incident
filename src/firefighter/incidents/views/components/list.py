@@ -59,5 +59,5 @@ class ComponentsViewList(SingleTableMixin, FilterView):
             "metrics_period",
             "group",
         ]
-        context["page_title"] = "Components List"
+        context["page_title"] = "Issue categories list"
         return context

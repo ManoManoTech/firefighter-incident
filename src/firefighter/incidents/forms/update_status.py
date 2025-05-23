@@ -26,7 +26,7 @@ class UpdateStatusForm(forms.Form):
     )
     component = GroupedModelChoiceField(
         choices_groupby="group",
-        label="Component",
+        label="Issue category",
         queryset=Component.objects.all()
         .select_related("group")
         .order_by(
