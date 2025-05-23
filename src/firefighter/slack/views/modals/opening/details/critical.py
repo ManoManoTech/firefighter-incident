@@ -60,7 +60,7 @@ class CreateIncidentFormSlack(CreateIncidentForm):
         },
         "component": {
             "input": {
-                "placeholder": "Select affected component",
+                "placeholder": "Select affected issue category",
             },
         },
     }
