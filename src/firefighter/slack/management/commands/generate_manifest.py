@@ -118,7 +118,7 @@ def get_manifest(
                     "command": command,
                     "url": f"{public_base_url}/api/v2/firefighter/slack/incident/",
                     "description": "Manage Incidents 🚨",
-                    "usage_hint": "[open|update|close|status|help]",
+                    "usage_hint": "[open|critical|update|close|status|help]",
                     "should_escape": False,
                 }
                 for command in [main_command, *command_aliases]
