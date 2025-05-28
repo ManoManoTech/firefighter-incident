@@ -15,6 +15,7 @@ from slack_sdk.errors import SlackApiError
 from firefighter.incidents.signals import create_incident_conversation
 from firefighter.slack.messages.slack_messages import (
     SlackMessageDeployWarning,
+    SlackMessageIncidentCreationRedirection,
     SlackMessageIncidentDeclaredAnnouncement,
     SlackMessageIncidentDeclaredAnnouncementGeneral,
 )
@@ -37,6 +38,7 @@ logger = logging.getLogger(__name__)
 @receiver(signal=create_incident_conversation)
 def create_incident_slack_conversation(
     incident: Incident,
+    source_channel: Any,
     *_args: Any,
     **_kwargs: Any,
 ) -> int | None:
@@ -44,6 +46,7 @@ def create_incident_slack_conversation(
 
     Args:
         incident (Incident): The incident to open. It should be saved before calling this function, and have its first incident update created.
+        source_channel (Any): The channel from which the incident was opened, used for sending notifications and updates.
 
     """
     channel: IncidentChannel | None = IncidentChannel.objects.create_incident_channel(
@@ -132,4 +135,14 @@ def create_incident_slack_conversation(
         incident=incident,
         channel=channel,
     )
+
+    notify_incident_created(channel=channel, source_channel=source_channel)
+
     return None
+
+
+def notify_incident_created(channel: IncidentChannel, source_channel: IncidentChannel) -> None:
+    """Notify the Slack channel that the incident has been created."""
+    message = SlackMessageIncidentCreationRedirection(channel)
+
+    source_channel.send_message_and_save(message)
