@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import logging
 from typing import (
-    Any,
     Never,
     TypedDict,
 )
@@ -23,7 +22,7 @@ class Kwargs(TypedDict, total=True):
 
 
 @component.register("form_field")
-class FormField(component.Component[tuple[()], Kwargs, Data, Any]):  # type: ignore[type-var]
+class FormField(component.Component):  # type: ignore[type-var]
     template_name = "form_field/form_field.html"
 
     def get_context_data(
