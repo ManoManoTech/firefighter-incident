@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 from typing import Any, NotRequired, Required, TypedDict
 
-from django_components import EmptyTuple, component
+from django_components import component
 
 from firefighter.incidents.models.user import User
 
@@ -25,7 +25,7 @@ class Kwargs(TypedDict, total=False):
 
 
 @component.register("avatar")
-class Avatar(component.Component[EmptyTuple, Kwargs, Data, Any]):  # type: ignore[type-var]
+class Avatar(component.Component[tuple[()], Kwargs, Data, Any]):  # type: ignore[type-var]
     template_name = "avatar/avatar.html"
 
     def get_context_data(self, user: User, **kwargs: Any) -> Data:

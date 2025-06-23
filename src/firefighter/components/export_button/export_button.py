@@ -4,7 +4,7 @@ from collections.abc import Mapping, Sequence
 from typing import Any, NotRequired, Required, TypedDict
 
 from django.urls import reverse
-from django_components import EmptyTuple, component
+from django_components import component
 
 
 class _Format(TypedDict):
@@ -27,7 +27,7 @@ class Kwargs(TypedDict, total=False):
 
 
 @component.register("export_button")
-class ExportButton(component.Component[EmptyTuple, Kwargs, Data, Any]):  # type: ignore[type-var]
+class ExportButton(component.Component[tuple[()], Kwargs, Data, Any]):  # type: ignore[type-var]
     template_name = "export_button/export_button.html"
 
     def get_context_data(
