@@ -53,6 +53,7 @@ def update_impact_levels(apps, schema_editor):
         "MD": "▶️",
         "LO": "🔽",
         "LT": "⏬",
+        "NO": "",
     }
 
     updates = [
@@ -61,105 +62,105 @@ def update_impact_levels(apps, schema_editor):
             "old_value": "HI",
             "new_name": None,
             "new_value": "HT",
-            "new_order": 20,
+            "new_order": 5,
         },
         {
             "old_name": "Some customers have issues",
             "old_value": "MD",
             "new_name": "Some customers with major issues",
             "new_value": "HI",
-            "new_order": 15,
+            "new_order": 4,
         },
         {
             "old_name": "Few customers with minor issues",
             "old_value": "LO",
             "new_name": "Some customers with significant issues",
             "new_value": "MD",
-            "new_order": 10,
+            "new_order": 3,
         },
         {
             "old_name": "No impact on customers",
             "old_value": "N/A",
             "new_name": None,
             "new_value": "LT",
-            "new_order": 0,
+            "new_order": 1,
         },
         {
             "old_name": "Key services inaccessible for most",
             "old_value": "HI",
             "new_name": "Critical issues for many sellers",
             "new_value": "HT",
-            "new_order": 20,
+            "new_order": 5,
         },
         {
             "old_name": "Some sellers have significant issues",
             "old_value": "MD",
             "new_name": "Some sellers with major issues",
             "new_value": "HI",
-            "new_order": 15,
+            "new_order": 4,
         },
         {
             "old_name": "Few sellers with minor issues",
             "old_value": "LO",
             "new_name": "Some sellers with significant issues",
             "new_value": "MD",
-            "new_order": 10,
+            "new_order": 3,
         },
         {
             "old_name": "No impact on sellers",
             "old_value": "N/A",
             "new_name": None,
             "new_value": "LT",
-            "new_order": 0,
+            "new_order": 1,
         },
         {
             "old_name": "Significant issues for some employees",
             "old_value": "MD",
             "new_name": "Major issues for internal users",
             "new_value": "LO",
-            "new_order": 10,
+            "new_order": 2,
         },
         {
             "old_name": "Critical internal tools down",
             "old_value": "HI",
             "new_name": "Critical issues for internal users",
             "new_value": "MD",
-            "new_order": 15,
+            "new_order": 3,
         },
         {
             "old_name": "No impact on employees",
             "old_value": "N/A",
             "new_name": "Minor issues for internal users",
             "new_value": "LT",
-            "new_order": 0,
+            "new_order": 1,
         },
         {
             "old_name": "Whole business or revenue at risk",
             "old_value": "HI",
             "new_name": "Critical business impact",
             "new_value": "HT",
-            "new_order": 20,
+            "new_order": 5,
         },
         {
             "old_name": "Significant business or revenue loss",
             "old_value": "MD",
             "new_name": "Major business impact",
             "new_value": "HI",
-            "new_order": 15,
+            "new_order": 4,
         },
         {
             "old_name": "Minor impact on business or revenue",
             "old_value": "LO",
             "new_name": "Significant business impact",
             "new_value": "MD",
-            "new_order": 10,
+            "new_order": 3,
         },
         {
             "old_name": "No impact on business or revenue",
             "old_value": "N/A",
             "new_name": None,
             "new_value": "LT",
-            "new_order": 0,
+            "new_order": 1,
         },
     ]
 
@@ -192,38 +193,69 @@ def add_impact_levels(apps, schema_editor):
 
             "name": "Some customers with minor issues",
             "value": LevelChoices.LOW.value,
-            "order": 5,
+            "order": 2,
             "impact_type_id": 3,
             "emoji": LevelChoices.LOW.emoji
         },
         {
             "name": "Some sellers with minor issues",
             "value": LevelChoices.LOW.value,
-            "order": 5,
+            "order": 2,
             "impact_type_id": 2,
             "emoji": LevelChoices.LOW.emoji
         },
         {
             "name": "Minor business impact",
             "value": LevelChoices.LOW.value,
-            "order": 5,
+            "order": 2,
             "impact_type_id": 1,
             "emoji": LevelChoices.LOW.emoji
+        },
+        {
+
+            "name": "N/A",
+            "value": LevelChoices.NONE.value,
+            "order": 0,
+            "impact_type_id": 1,
+            "emoji": LevelChoices.NONE.emoji
+        },
+        {
+
+            "name": "N/A",
+            "value": LevelChoices.NONE.value,
+            "order": 0,
+            "impact_type_id": 2,
+            "emoji": LevelChoices.NONE.emoji
+        },
+        {
+
+            "name": "N/A",
+            "value": LevelChoices.NONE.value,
+            "order": 0,
+            "impact_type_id": 3,
+            "emoji": LevelChoices.NONE.emoji
+        },
+        {
+
+            "name": "N/A",
+            "value": LevelChoices.NONE.value,
+            "order": 0,
+            "impact_type_id": 4,
+            "emoji": LevelChoices.NONE.emoji
         },
     ]
 
     for add in adds:
         name = add["name"]
         try:
-            impact_level = ImpactLevel.objects.filter(name=name).first()
-
             impact_type_id = add["impact_type_id"]
+            impact_level = ImpactLevel.objects.filter(name=name, impact_type_id=impact_type_id).first()
             impact_type = ImpactType.objects.filter(id=impact_type_id).first()
             if not impact_type:
                 logger.error(f"There is no impact type id:'{impact_type_id}'.")
                 continue
             if impact_level:
-                logger.error(f"There is already an impact level with name:'{name}'.")
+                logger.error(f"There is already an impact level with name:'{name}' and type:'{impact_type_id}'.")
                 continue
             new_impact_level = ImpactLevel(
                 name=name,
@@ -249,7 +281,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="impactlevel",
             name="emoji",
-            field=models.CharField(default="▶", max_length=5),
+            field=models.CharField(default="", max_length=5),
         ),
         migrations.RemoveConstraint(
           model_name="impactlevel",

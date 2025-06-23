@@ -50,7 +50,7 @@ def setup_navbar_menu() -> None:
             reverse("incidents:incident-statistics"),
         ),
         MenuItem(
-            "Components",
+            "Issue categories",
             reverse("incidents:component-list"),
         ),
     ]

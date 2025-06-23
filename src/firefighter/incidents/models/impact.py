@@ -50,12 +50,12 @@ class LevelChoices(models.TextChoices):
             self.LOWEST: 5,
             self.NONE: 6,
         }
-        return priority_mapping.get(self, 5)  # type: ignore [call-overload]
+        return priority_mapping.get(self, 6)  # type: ignore [call-overload]
 
     @property
     def emoji(self) -> str:
         """Send emoji un function of priority."""
-        none_emoji = "❓"
+        none_emoji = ""
         emoji_mapping = {
             self.HIGHEST: "⏫",
             self.HIGH: "🔼",
@@ -80,9 +80,13 @@ class ImpactLevel(models.Model):
         default="",
         help_text="Description for the impact level for this impact type.",
     )
-    value = models.CharField(choices=LevelChoices.choices, max_length=2, default="LT")
+    value = models.CharField(choices=LevelChoices.choices, max_length=2, default="NO")
     order = models.PositiveSmallIntegerField(default=10)
-
+    description = models.TextField(
+        blank=True,
+        null=True,
+        help_text="Detailed multi-line description for this impact level.",
+    )
     class Meta(TypedModelMeta):
         constraints = [
             models.UniqueConstraint(
