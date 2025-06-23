@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 from typing import Any, NotRequired, Required, TypedDict, Unpack
 
-from django_components import EmptyTuple, component
+from django_components import component
 
 logger = logging.getLogger(__name__)
 
@@ -14,7 +14,7 @@ class Data(TypedDict, total=False):
 
 
 @component.register("card")
-class Card(component.Component[EmptyTuple, Data, Data, Any]):  # type: ignore[type-var]
+class Card(component.Component[tuple[()], Data, Data, Any]):  # type: ignore[type-var]
     template_name = "card/card.html"
 
     def get_context_data(self, *args: Any, **kwargs: Unpack[Data]) -> Data:

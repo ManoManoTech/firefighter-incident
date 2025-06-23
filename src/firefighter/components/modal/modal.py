@@ -4,7 +4,7 @@ import logging
 from typing import Any, NotRequired, Required, TypedDict, Unpack
 
 from django.utils.safestring import SafeString
-from django_components import EmptyTuple, component
+from django_components import component
 from django_components.slots import SlotFunc
 
 logger = logging.getLogger(__name__)
@@ -28,7 +28,7 @@ class Slots(TypedDict):
 
 
 @component.register("modal")
-class Modal(component.Component[EmptyTuple, Kwargs, Data, Any]):  # type: ignore[type-var]
+class Modal(component.Component[tuple[()], Kwargs, Data, Any]):  # type: ignore[type-var]
     template_name = "modal/modal.html"
 
     def get_context_data(self, *args: Any, **kwargs: Unpack[Kwargs]) -> Data:
