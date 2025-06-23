@@ -14,7 +14,7 @@ class Data(TypedDict):
 
 
 @component.register("messages")
-class Messages(component.Component[tuple[()], Data, Data, Any]):  # type: ignore[type-var]
+class Messages(component.Component):  # type: ignore[type-var]
     template_name = "messages/messages.html"
 
     def get_context_data(self, messages: BaseStorage, **kwargs: Any) -> Data:

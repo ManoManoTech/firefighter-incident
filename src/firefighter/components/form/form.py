@@ -19,7 +19,7 @@ class Data(TypedDict):
 
 
 @component.register("form")
-class Form(component.Component[tuple[()], Data, Data, Slots]):  # type: ignore[type-var]  # type: ignore[override]
+class Form(component.Component):  # type: ignore[type-var]  # type: ignore[override]
     template_name = "form/form.html"
 
     def get_context_data(self, form: forms.Form, **kwargs: Any) -> Data:  # type: ignore[override]
