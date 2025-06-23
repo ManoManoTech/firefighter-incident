@@ -30,13 +30,13 @@ class Migration(migrations.Migration):
                     ("LT", "Lowest"),
                     ("NO", "N/A"),
                 ],
-                default="LT",
+                default="NO",
                 max_length=2,
             ),
         ),
         migrations.AlterField(
             model_name="impacttype",
             name="emoji",
-            field=models.CharField(default="▶", max_length=5),
+            field=models.CharField(default="", max_length=5),
         ),
     ]

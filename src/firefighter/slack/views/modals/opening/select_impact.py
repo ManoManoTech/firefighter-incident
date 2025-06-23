@@ -8,7 +8,9 @@ from typing import TYPE_CHECKING, Any, Never, cast
 from django import forms
 from django.conf import settings
 from django.db.models import Model, QuerySet
+from slack_sdk.models.blocks.basic_components import MarkdownTextObject
 from slack_sdk.models.blocks.blocks import (
+    ContextBlock,
     DividerBlock,
     SectionBlock,
 )
@@ -16,6 +18,7 @@ from slack_sdk.models.views import View
 
 from firefighter.firefighter.utils import get_in
 from firefighter.incidents.forms.select_impact import SelectImpactForm
+from firefighter.incidents.models.impact import ImpactType
 from firefighter.incidents.models.priority import Priority
 from firefighter.slack.slack_app import SlackApp
 from firefighter.slack.views.modals import modal_open
@@ -85,13 +88,14 @@ class SelectImpactModal(
                         initial_form_values_impact[field_name] = None  # type: ignore
         blocks = [
             SectionBlock(
-                text=f"{SLACK_APP_EMOJI} Define the following impact to find the incident's priority:"
+                text=f"{SLACK_APP_EMOJI} Define the impact(s) to find the incident priority (<https://manomano.atlassian.net/wiki/spaces/TC/pages/4024500413/Priority+levels|documentation>):"
             ),
             *self.get_form_class()(initial=initial_form_values_impact).slack_blocks(
                 "section_accessory"
             ),
         ]
         priority_data = open_incident_context.get("priority")
+
         if open_incident_context and priority_data:
             if not isinstance(priority_data, Priority):
                 priority = Priority.objects.get(pk=priority_data)
@@ -101,11 +105,24 @@ class SelectImpactModal(
                 err_msg = f"Invalid priority data: {priority_data}"  # type: ignore[unreachable]
                 raise TypeError(err_msg)
             process = ":slack: Slack :jira_new: Jira ticket" if open_incident_context.get("response_type") == "critical" else ":jira_new: Jira ticket"
+
+            impact_descriptions = self.extract_descriptions(open_incident_context)
+
             blocks.extend((
                 DividerBlock(),
-                SectionBlock(
-                    text=f"💡 Selected priority: {priority} - {priority.description}\n⏱️ SLA: {priority.sla}\n{process}"
-                ),
+                ContextBlock(
+                    elements=[
+                        MarkdownTextObject(
+                            text=(
+                                f":dart: Selected priority: *{priority} - {priority.description}*\n"
+                                f"⏱️ SLA: {priority.sla}\n"
+                                f":gear: Process: {process}\n"
+                                f":pushpin: Selected impacts:\n"
+                                f"{impact_descriptions}\n"
+                            )
+                        )
+                    ]
+                )
             ))
 
         return View(
@@ -116,6 +133,20 @@ class SelectImpactModal(
             blocks=blocks,
             submit="Save impacts",
         )
+
+    def extract_descriptions(self, open_incident_context: OpeningData) -> str:
+        impact_form_data = open_incident_context.get("impact_form_data", {})
+        impact_descriptions = ""
+        if impact_form_data:
+            for value in impact_form_data.values():
+                if value.name != "NO" and value.description:
+                    if hasattr(value, "impact_type_id") and value.impact_type_id:
+                        impact_type = ImpactType.objects.get(pk=value.impact_type_id)
+                        if impact_type:
+                            impact_descriptions += f"\u00A0\u00A0 :exclamation: {impact_type} - {value}\n"
+                    for line in str(value.description).splitlines():
+                        impact_descriptions += f"\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0 • {line}\n"
+        return impact_descriptions
 
     def handle_modal_fn(  # type: ignore
         self,

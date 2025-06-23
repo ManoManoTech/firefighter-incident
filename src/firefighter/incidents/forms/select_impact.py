@@ -45,21 +45,21 @@ class SelectImpactForm(forms.Form):
                 label=impact_type.emoji + " " + impact_type.name,
                 queryset=impact_type.levels.all().order_by("-order"),
                 help_text=impact_type.help_text,
-                initial=impact_type.levels.get(value=LevelChoices.LOWEST.value),
+                initial=impact_type.levels.get(value=LevelChoices.NONE.value),
             )
             self.fields[field_name].label_from_instance = (  # type: ignore[attr-defined]
                 lambda obj: obj.emoji + " " + obj.name
             )
 
     def suggest_priority_from_impact(self) -> int:
-        """Suggest a priority from 1 (highest) to 4 (lowest) based on the impact choices."""
+        """Suggest a priority from 1 (highest) to 5 (lowest) based on the impact choices."""
         if self.is_valid():
             impact: dict[str, ImpactLevel] = self.cleaned_data
 
             impact_values = [impact_type.value for impact_type in impact.values()]
             priorities = [level.priority for level in LevelChoices if level in impact_values]
-            return min(priorities) if priorities else LevelChoices.LOWEST.priority
-        return LevelChoices.LOWEST.priority
+            return min(priorities) if priorities else LevelChoices.NONE.priority
+        return LevelChoices.NONE.priority
 
     @property
     def business_impact_new(self) -> str | None:

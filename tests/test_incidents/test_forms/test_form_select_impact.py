@@ -74,7 +74,7 @@ def test_suggest_priority_from_impact(form_data, expected_priority):
                 "set_impact_type_customers_impact": "LT",
                 "set_impact_type_employees_impact": "LT",
             },
-            5,
+            6,
         ),
         (
             {
@@ -83,7 +83,7 @@ def test_suggest_priority_from_impact(form_data, expected_priority):
                 "set_impact_type_customers_impact": "MD",
                 "set_impact_type_employees_impact": "LT",
             },
-            5,
+            6,
         ),
         (
             {
@@ -92,7 +92,7 @@ def test_suggest_priority_from_impact(form_data, expected_priority):
                 "set_impact_type_customers_impact": "INVALID",
                 "set_impact_type_employees_impact": "LT",
             },
-            5,
+            6,
         ),
     ],
 )

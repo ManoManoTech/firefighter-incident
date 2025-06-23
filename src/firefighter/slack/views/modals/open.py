@@ -153,7 +153,12 @@ class OpenModal(SlackModal):
     def get_intro_blocks() -> list[Block]:
         blocks: list[Block] = [
             SectionBlock(
-                text="Hello and thanks for reporting a new incident! :beetle:\n\nPlease report as much information as you can!"
+            text=(
+                "Hello and thanks for reporting a new incident! :beetle:\n\n"
+                "Please report as much information as you can!\n\n"
+                "More information about the incident process in this "
+                "<https://manomano.atlassian.net/wiki/spaces/TC/pages/3928261283/IMPACT+-+Incident+Management+Platform|documentation>."
+            )
             )
         ]
 

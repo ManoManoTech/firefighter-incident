@@ -487,6 +487,8 @@ line-length = 88
 respect-gitignore = true
 [tool.ruff.format]
 docstring-code-format = true
+[tool.ruff.per-file-ignores]
+"src/firefighter/slack/models/message.py" = ["DJ012"]
 
 [tool.ruff.lint]
 select = ["ALL"]
