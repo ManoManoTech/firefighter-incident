@@ -22,7 +22,7 @@ class Kwargs(TypedDict, total=True):
 
 
 @component.register("form_field")
-class FormField(component.Component):  # type: ignore[type-var]
+class FormField(component.Component):
     template_name = "form_field/form_field.html"
 
     def get_context_data(

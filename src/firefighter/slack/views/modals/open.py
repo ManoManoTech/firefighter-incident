@@ -25,6 +25,7 @@ from firefighter.incidents.enums import IncidentStatus
 from firefighter.incidents.forms.select_impact import SelectImpactForm
 from firefighter.incidents.models.incident import Incident
 from firefighter.incidents.models.priority import Priority
+from firefighter.incidents.models.impact import ImpactType
 from firefighter.slack.slack_app import SlackApp
 from firefighter.slack.slack_incident_context import get_user_from_context
 from firefighter.slack.views.modals.base_modal.base import SlackModal
@@ -410,18 +411,25 @@ class OpenModal(SlackModal):
                 priority: Priority = Priority.objects.get(
                     value=impact_form.suggest_priority_from_impact()
                 )
+                process = ":slack: Slack :jira_new: Jira ticket" if open_incident_context.get("response_type") == "critical" else ":jira_new: Jira ticket"
+
+                impact_descriptions = OpenModal._get_impact_descriptions(open_incident_context)
                 blocks.append(
                     ContextBlock(
                         elements=[
                             MarkdownTextObject(
-                                text=f"> {priority.emoji} Selected priority: {priority}"
+                                text=f"> {priority.emoji} Selected priority: *{priority} - {priority.description}*\n"
+                                f"> ⏱️ SLA: {priority.sla}\n"
+                                f"> :gear: Process: {process}\n"
+                                f"> :pushpin: Selected impacts:\n"
+                                f"{impact_descriptions}\n"
                                 + (
                                     (
                                         "\n> Critical incidents are for *emergency* only"
                                         + (
-                                            f"<{SLACK_SEVERITY_HELP_GUIDE_URL}|learn more>"
+                                            f" <{SLACK_SEVERITY_HELP_GUIDE_URL}|learn more>"
                                             if SLACK_SEVERITY_HELP_GUIDE_URL
-                                            else "" + "."
+                                            else "."
                                         )
                                     )
                                     if selected_response_type == "critical"
@@ -447,6 +455,21 @@ class OpenModal(SlackModal):
                     )
 
         return blocks
+
+    @staticmethod
+    def _get_impact_descriptions(open_incident_context: OpeningData) -> str:
+        impact_form_data = open_incident_context.get("impact_form_data", {})
+        impact_descriptions = ""
+        if impact_form_data:
+            for value in impact_form_data.values():
+                if value.name != "NO" and value.description:
+                    if hasattr(value, "impact_type_id") and value.impact_type_id:
+                        impact_type = ImpactType.objects.get(pk=value.impact_type_id)
+                        if impact_type:
+                            impact_descriptions += f"> \u00A0\u00A0 :exclamation: {impact_type} - {value}\n"
+                    for line in str(value.description).splitlines():
+                        impact_descriptions += f"> \u00A0\u00A0\u00A0\u00A0\u00A0\u00A0 • {line}\n"
+        return impact_descriptions
 
     @staticmethod
     def get_details_modal_form_class(
