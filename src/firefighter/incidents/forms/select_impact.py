@@ -39,7 +39,7 @@ class SelectImpactForm(forms.Form):
 
         super().__init__(*args, **kwargs)
 
-        for impact_type in ImpactType.objects.all().order_by("-order"):
+        for impact_type in ImpactType.objects.all().order_by("order"):
             field_name = f"set_impact_type_{impact_type.value}"
             self.fields[field_name] = forms.ModelChoiceField(
                 label=impact_type.emoji + " " + impact_type.name,

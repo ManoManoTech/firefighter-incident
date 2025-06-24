@@ -25,7 +25,7 @@ class Kwargs(TypedDict, total=False):
 
 
 @component.register("avatar")
-class Avatar(component.Component):  # type: ignore[type-var]
+class Avatar(component.Component):
     template_name = "avatar/avatar.html"
 
     def get_context_data(self, user: User, **kwargs: Any) -> Data:
