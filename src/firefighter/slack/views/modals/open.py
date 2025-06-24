@@ -23,9 +23,9 @@ from slack_sdk.models.views import View
 from firefighter.firefighter.utils import is_during_office_hours
 from firefighter.incidents.enums import IncidentStatus
 from firefighter.incidents.forms.select_impact import SelectImpactForm
+from firefighter.incidents.models.impact import ImpactType
 from firefighter.incidents.models.incident import Incident
 from firefighter.incidents.models.priority import Priority
-from firefighter.incidents.models.impact import ImpactType
 from firefighter.slack.slack_app import SlackApp
 from firefighter.slack.slack_incident_context import get_user_from_context
 from firefighter.slack.views.modals.base_modal.base import SlackModal
