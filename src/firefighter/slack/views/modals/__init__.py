@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from firefighter.slack.views.modals.close import CloseModal, modal_close
+from firefighter.slack.views.modals.critical import CriticalModal, modal_critical
 from firefighter.slack.views.modals.downgrade_workflow import (
     DowngradeWorkflowModal,
     modal_dowgrade_workflow,
@@ -48,4 +49,5 @@ selectable_modals: list[type[SlackModal]] = [
     StatusModal,
     SendSosModal,
     DowngradeWorkflowModal,
+    CriticalModal
 ]
