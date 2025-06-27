@@ -1,4 +1,3 @@
-
 import logging
 
 from django.db import migrations
@@ -21,19 +20,49 @@ def get_component_mappings() -> list:
     """
     return [
         # Marketplace
-        ("Product Discovery", "Navigation & Product discovery", "impact-nav-product-discovery", "Marketplace"),
+        (
+            "Product Discovery",
+            "Navigation & Product discovery",
+            "impact-nav-product-discovery",
+            "Marketplace",
+        ),
         ("User & Purchase", "Cart & funnel", "impact-cart-funnel", "Marketplace"),
-        ("Customer Management", "Customer login & signup", "impact-customer-login-signup", "Marketplace"),
+        (
+            "Customer Management",
+            "Customer login & signup",
+            "impact-customer-login-signup",
+            "Marketplace",
+        ),
         ("Performance", "Web performance", "impact-web-performance", "Marketplace"),
         # Catalog
-        ("Product Information", "Product Management", "impact-product-management", "Catalog"),
+        (
+            "Product Information",
+            "Product Management",
+            "impact-product-management",
+            "Catalog",
+        ),
         ("Taxonomy", "Product Structure", "impact-product-structure", "Catalog"),
-        ("Publication on website", "Catalog Exposition", "impact-catalog-exposition", "Catalog"),
+        (
+            "Publication on website",
+            "Catalog Exposition",
+            "impact-catalog-exposition",
+            "Catalog",
+        ),
         # Payment Operations
         ("Payment", "Payment", "impact-payment", "Payment Operations"),
         # Operations
-        ("ManoFulfillment OPS", "MM Fulfillment", "impact-mm-fulfillment", "Operations"),
-        ("Helpcenter", "Helpcenter after sales", "impact-helpcenter-after-sales", "Operations"),
+        (
+            "ManoFulfillment OPS",
+            "MM Fulfillment",
+            "impact-mm-fulfillment",
+            "Operations",
+        ),
+        (
+            "Helpcenter",
+            "Helpcenter after sales",
+            "impact-helpcenter-after-sales",
+            "Operations",
+        ),
         # Finance
         ("Finance Operations", "Controlling", "impact-controlling", "Finance"),
         # Platform
@@ -45,10 +74,25 @@ def get_component_mappings() -> list:
         ("data-specialist-offer", "Data Warehouse", "impact-data-warehouse", "Data"),
         ("data-wbr", "Data Analytics", "impact-data-analytics", "Data"),
         # Security
-        ("Security Misc", "Bot management & rate limiting & WAF", "impact-bot-management-rate-limiting-waf", "Security"),
+        (
+            "Security Misc",
+            "Bot management & rate limiting & WAF",
+            "impact-bot-management-rate-limiting-waf",
+            "Security",
+        ),
         ("Attack", "Data leak", "impact-data-leak", "Security"),
-        ("System Compromise", "Exploited vulnerability", "impact-exploited-vulnerability", "Security"),
-        ("Personal Data Breach", "Stolen account(s) or IT materials", "impact-stolen-accounts-it-materials", "Security"),
+        (
+            "System Compromise",
+            "Exploited vulnerability",
+            "impact-exploited-vulnerability",
+            "Security",
+        ),
+        (
+            "Personal Data Breach",
+            "Stolen account(s) or IT materials",
+            "impact-stolen-accounts-it-materials",
+            "Security",
+        ),
     ]
 
 
@@ -70,17 +114,20 @@ def update_component_names(apps, schema_editor):
             component.save()
             updated_count += 1
         except Exception:
-            logger.exception(f"Component '{old_name}' does not exist, cannot proceed with updates.")
+            logger.exception(
+                f"Component '{old_name}' does not exist, cannot proceed with updates."
+            )
 
 
 def revert_component_names(apps, schema_editor):
     Component = apps.get_model("incidents", "Component")
-    reverse_mappings = {new_name: old_name for old_name, new_name, _, _ in get_component_mappings()}
+    reverse_mappings = {
+        new_name: old_name for old_name, new_name, _, _ in get_component_mappings()
+    }
 
     updated_count = 0
 
     for new_name, old_name in reverse_mappings.items():
-
         try:
             component = Component.objects.get(name=new_name)
             logger.info(f"Restoring '{new_name}' back to '{old_name}'")
@@ -88,11 +135,12 @@ def revert_component_names(apps, schema_editor):
             component.save()
             updated_count += 1
         except Exception:
-            logger.exception(f"Component '{new_name}' does not exist, skipping restoration.")
+            logger.exception(
+                f"Component '{new_name}' does not exist, skipping restoration."
+            )
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("incidents", "0009_update_sla"),
     ]

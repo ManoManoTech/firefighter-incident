@@ -47,12 +47,8 @@ class JiraTicket(JiraIssue):
 
 
 class JiraTicketImpact(models.Model):
-    jira_ticket = models.ForeignKey(
-        "JiraTicket", on_delete=models.CASCADE
-    )
-    impact = models.ForeignKey(
-        "incidents.Impact", on_delete=models.CASCADE
-    )
+    jira_ticket = models.ForeignKey("JiraTicket", on_delete=models.CASCADE)
+    impact = models.ForeignKey("incidents.Impact", on_delete=models.CASCADE)
 
     def __str__(self) -> str:
         return f"{self.jira_ticket.key}: {self.impact}"

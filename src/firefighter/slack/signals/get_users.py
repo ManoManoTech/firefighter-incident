@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import os
 from typing import TYPE_CHECKING, Any
 
 from django.db.models import Q
@@ -25,6 +26,14 @@ logger = logging.getLogger(__name__)
 @receiver(signal=signals.get_invites)
 def get_invites_from_slack(incident: Incident, **_kwargs: Any) -> Iterable[User]:
     """New version using cached users instead of querying Slack API."""
+    # In test mode, skip usergroup invitations if disabled
+    test_mode = os.getenv("TEST_MODE", "False").lower() == "true"
+    usergroups_enabled = os.getenv("ENABLE_SLACK_USERGROUPS", "True").lower() == "true"
+
+    if test_mode and not usergroups_enabled:
+        logger.info("Test mode: Skipping Slack usergroup invitations")
+        return []
+
     # Prepare sub-queries
     slack_usergroups: QuerySet[UserGroup] = incident.component.usergroups.all()
     slack_conversations: QuerySet[Conversation] = incident.component.conversations.all()
@@ -46,6 +55,13 @@ def get_invites_from_slack(incident: Incident, **_kwargs: Any) -> Iterable[User]
 
 @receiver(signal=signals.get_invites)
 def get_invites_from_slack_for_p1(incident: Incident, **kwargs: Any) -> Iterable[User]:
+    # In test mode, skip usergroup invitations if disabled
+    test_mode = os.getenv("TEST_MODE", "False").lower() == "true"
+    usergroups_enabled = os.getenv("ENABLE_SLACK_USERGROUPS", "True").lower() == "true"
+
+    if test_mode and not usergroups_enabled:
+        logger.info("Test mode: Skipping P1 Slack usergroup invitations")
+        return []
 
     if incident.priority.value > 1:
         return []

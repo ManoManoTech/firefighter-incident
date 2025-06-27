@@ -33,7 +33,9 @@ def update_impactlevel_names(apps, schema_editor):
         impact_type = ImpactType.objects.filter(value=impact_type_value).first()
         if not impact_type:
             continue
-        impact_level = ImpactLevel.objects.filter(impact_type=impact_type, value=level_value).first()
+        impact_level = ImpactLevel.objects.filter(
+            impact_type=impact_type, value=level_value
+        ).first()
         if impact_level:
             impact_level.name = new_name
             impact_level.save(update_fields=["name"])

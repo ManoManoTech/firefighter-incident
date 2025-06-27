@@ -115,9 +115,9 @@ def test_ignore_empty_string_list_field() -> None:
     input_data = ["", "", ""]
     expected_output_data = []
     output_data = serializer_field.to_internal_value(input_data)
-    assert (
-        output_data == expected_output_data
-    ), "Should return empty list if all strings are empty"
+    assert output_data == expected_output_data, (
+        "Should return empty list if all strings are empty"
+    )
 
     # Test with non-list input
     input_data_str = "test"

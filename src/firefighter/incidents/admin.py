@@ -586,18 +586,16 @@ class UserAdmin(BaseUserAdmin):  # type: ignore[type-arg]
         obj: User | None = None,
     ) -> _FieldsetSpec:
         fieldsets = list(super().get_fieldsets(request, obj))
-        fieldsets.append(
-            (
-                _("User statistics"),
-                {
-                    "fields": (
-                        "commander_count",
-                        "communication_lead_count",
-                        "incidents_opened_count",
-                    )
-                },
-            )
-        )
+        fieldsets.append((
+            _("User statistics"),
+            {
+                "fields": (
+                    "commander_count",
+                    "communication_lead_count",
+                    "incidents_opened_count",
+                )
+            },
+        ))
         return fieldsets
 
 

@@ -211,7 +211,9 @@ def sort_postmortems_in_bins(
             if date_ and fmt:
                 quarter_children.append((page_id, date_, page))
 
-        sorted_children = sorted(quarter_children, key=operator.itemgetter(1), reverse=True)
+        sorted_children = sorted(
+            quarter_children, key=operator.itemgetter(1), reverse=True
+        )
         # Check if already sorted
         if sorted_children == quarter_children:
             logger.debug(f"Quarter {quarter} is already sorted. Skipping")

@@ -215,7 +215,9 @@ class UserGroupAdmin(admin.ModelAdmin[UserGroup]):
         (
             ("Slack attributes"),
             {
-                "description" : ("These fields are synchronized automatically with Slack API"),
+                "description": (
+                    "These fields are synchronized automatically with Slack API"
+                ),
                 "fields": (
                     "name",
                     "handle",
@@ -223,10 +225,13 @@ class UserGroupAdmin(admin.ModelAdmin[UserGroup]):
                     "description",
                     "is_external",
                     "members",
-                )
+                ),
             },
         ),
-        (_("Firefighter attributes"), {"fields": ("tag", "components", "created_at", "updated_at")}),
+        (
+            _("Firefighter attributes"),
+            {"fields": ("tag", "components", "created_at", "updated_at")},
+        ),
     )
 
     def save_model(

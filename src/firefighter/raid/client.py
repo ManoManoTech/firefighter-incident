@@ -89,7 +89,9 @@ class RaidJiraClient(JiraClient):
             )
         if business_impact and business_impact != "N/A":
             if business_impact not in {"Lowest", "Low", "Medium", "High", "Highest"}:
-                raise ValueError("Business impact must be Lowest, Low, Medium, High or Highest")
+                raise ValueError(
+                    "Business impact must be Lowest, Low, Medium, High or Highest"
+                )
             extra_args["customfield_10936"] = {"value": business_impact}
         if platform:
             platform = platform.replace("platform-", "")

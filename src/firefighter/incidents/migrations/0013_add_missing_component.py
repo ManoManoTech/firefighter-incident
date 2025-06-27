@@ -28,7 +28,9 @@ def add_new_components(apps, schema_editor):
     new_components = get_new_components()
 
     for name, (group_name, _slack) in new_components.items():
-        logger.info(f"Creating new component: '{name}' belonging to group '{group_name}'")
+        logger.info(
+            f"Creating new component: '{name}' belonging to group '{group_name}'"
+        )
         try:
             group_instance = Group.objects.get(name=group_name)
             new_component = Component(name=name, group=group_instance)
@@ -51,7 +53,6 @@ def remove_new_components(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("incidents", "0012_alter_impactlevel"),
     ]

@@ -15,9 +15,7 @@ if TYPE_CHECKING:
 
 
 class IncidentMembership(models.Model):
-    incident = models.ForeignKey(
-        "Incident", on_delete=models.CASCADE, db_index=True
-    )
+    incident = models.ForeignKey("Incident", on_delete=models.CASCADE, db_index=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, db_index=True)
 
     class Meta(TypedModelMeta):
