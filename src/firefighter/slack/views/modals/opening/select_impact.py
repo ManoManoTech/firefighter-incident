@@ -104,7 +104,11 @@ class SelectImpactModal(
             else:
                 err_msg = f"Invalid priority data: {priority_data}"  # type: ignore[unreachable]
                 raise TypeError(err_msg)
-            process = ":slack: Slack :jira_new: Jira ticket" if open_incident_context.get("response_type") == "critical" else ":jira_new: Jira ticket"
+            process = (
+                ":slack: Slack :jira_new: Jira ticket"
+                if open_incident_context.get("response_type") == "critical"
+                else ":jira_new: Jira ticket"
+            )
 
             impact_descriptions = self.extract_descriptions(open_incident_context)
 
@@ -122,7 +126,7 @@ class SelectImpactModal(
                             )
                         )
                     ]
-                )
+                ),
             ))
 
         return View(
@@ -135,6 +139,8 @@ class SelectImpactModal(
         )
 
     def extract_descriptions(self, open_incident_context: OpeningData) -> str:
+        from firefighter.incidents.models.impact import ImpactLevel  # noqa: PLC0415
+
         impact_form_data = open_incident_context.get("impact_form_data", {})
         impact_descriptions = ""
         if impact_form_data:
@@ -180,7 +186,8 @@ class SelectImpactModal(
     ) -> None:
         body = request.body
         data = cast(
-            "OpeningData", json.loads(body.get("actions", [{}])[0].get("value", {})) or {}
+            "OpeningData",
+            json.loads(body.get("actions", [{}])[0].get("value", {})) or {},
         )
         view = self.build_modal_fn(body, open_incident_context=data)
         request.context.ack()

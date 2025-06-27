@@ -4,7 +4,7 @@ import inspect
 import json
 import logging
 from datetime import timedelta
-from typing import TYPE_CHECKING, Any, Literal, cast
+from typing import TYPE_CHECKING, Any, Literal
 
 from django.conf import settings
 from django.utils import timezone
@@ -25,7 +25,6 @@ from firefighter.incidents.enums import IncidentStatus
 from firefighter.incidents.forms.select_impact import SelectImpactForm
 from firefighter.incidents.models.impact import ImpactType
 from firefighter.incidents.models.incident import Incident
-from firefighter.incidents.models.priority import Priority
 from firefighter.slack.slack_app import SlackApp
 from firefighter.slack.slack_incident_context import get_user_from_context
 from firefighter.slack.views.modals.base_modal.base import SlackModal
@@ -162,12 +161,12 @@ class OpenModal(SlackModal):
     def get_intro_blocks() -> list[Block]:
         blocks: list[Block] = [
             SectionBlock(
-            text=(
-                "Hello and thanks for reporting a new incident! :beetle:\n\n"
-                "Please report as much information as you can!\n\n"
-                "More information about the incident process in this "
-                "<https://manomano.atlassian.net/wiki/spaces/TC/pages/3928261283/IMPACT+-+Incident+Management+Platform|documentation>."
-            )
+                text=(
+                    "Hello and thanks for reporting a new incident! :beetle:\n\n"
+                    "Please report as much information as you can!\n\n"
+                    "More information about the incident process in this "
+                    "<https://manomano.atlassian.net/wiki/spaces/TC/pages/3928261283/IMPACT+-+Incident+Management+Platform|documentation>."
+                )
             )
         ]
 
@@ -472,8 +471,22 @@ class OpenModal(SlackModal):
 
     @staticmethod
     def _build_response_type_blocks(open_incident_context: OpeningData) -> list[Block]:
+        from firefighter.incidents.models.priority import Priority  # noqa: PLC0415
+
         selected_response_type = open_incident_context.get("response_type")
-        if selected_response_type not in {"critical", "normal"}:
+        priority_data = open_incident_context.get("priority")
+
+        # Ensure priority is a Priority object
+        priority: Priority | None = None
+        if isinstance(priority_data, str):
+            priority = Priority.objects.get(pk=priority_data)
+        elif hasattr(priority_data, "emoji"):  # It's already a Priority object
+            priority = priority_data  # type: ignore[assignment]
+        else:
+            priority = priority_data  # type: ignore[assignment]
+
+        # If no response_type or priority is set (no impacts selected), don't show summary
+        if selected_response_type not in {"critical", "normal"} or priority is None:
             return []
 
         blocks: list[Block] = []
@@ -481,10 +494,11 @@ class OpenModal(SlackModal):
         if impact_form_data := open_incident_context.get("impact_form_data"):
             impact_form = SelectImpactForm(impact_form_data)
             if impact_form.is_valid():
-                priority: Priority = Priority.objects.get(
-                    value=impact_form.suggest_priority_from_impact()
+                process = (
+                    ":slack: Slack :jira_new: Jira ticket"
+                    if selected_response_type == "critical"
+                    else ":jira_new: Jira ticket"
                 )
-                process = ":slack: Slack :jira_new: Jira ticket" if open_incident_context.get("response_type") == "critical" else ":jira_new: Jira ticket"
 
                 impact_descriptions = OpenModal._get_impact_descriptions(open_incident_context)
 
@@ -532,6 +546,8 @@ class OpenModal(SlackModal):
 
     @staticmethod
     def _get_impact_descriptions(open_incident_context: OpeningData) -> str:
+        from firefighter.incidents.models.impact import ImpactLevel  # noqa: PLC0415
+
         impact_form_data = open_incident_context.get("impact_form_data", {})
         if not impact_form_data:
             return ""
