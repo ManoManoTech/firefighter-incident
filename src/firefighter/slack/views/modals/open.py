@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import logging
 from datetime import timedelta
-from typing import TYPE_CHECKING, Any, Literal, cast
+from typing import TYPE_CHECKING, Any, Literal
 
 from django.conf import settings
 from django.utils import timezone
@@ -12,7 +12,6 @@ from django.utils.translation import ngettext
 from slack_sdk.models.blocks.basic_components import MarkdownTextObject, Option
 from slack_sdk.models.blocks.block_elements import ButtonElement, StaticSelectElement
 from slack_sdk.models.blocks.blocks import (
-    ActionsBlock,
     Block,
     ContextBlock,
     DividerBlock,
@@ -25,7 +24,6 @@ from firefighter.incidents.enums import IncidentStatus
 from firefighter.incidents.forms.select_impact import SelectImpactForm
 from firefighter.incidents.models.impact import ImpactType
 from firefighter.incidents.models.incident import Incident
-from firefighter.incidents.models.priority import Priority
 from firefighter.slack.slack_app import SlackApp
 from firefighter.slack.slack_incident_context import get_user_from_context
 from firefighter.slack.views.modals.base_modal.base import SlackModal
@@ -154,12 +152,12 @@ class OpenModal(SlackModal):
     def get_intro_blocks() -> list[Block]:
         blocks: list[Block] = [
             SectionBlock(
-            text=(
-                "Hello and thanks for reporting a new incident! :beetle:\n\n"
-                "Please report as much information as you can!\n\n"
-                "More information about the incident process in this "
-                "<https://manomano.atlassian.net/wiki/spaces/TC/pages/3928261283/IMPACT+-+Incident+Management+Platform|documentation>."
-            )
+                text=(
+                    "Hello and thanks for reporting a new incident! :beetle:\n\n"
+                    "Please report as much information as you can!\n\n"
+                    "More information about the incident process in this "
+                    "<https://manomano.atlassian.net/wiki/spaces/TC/pages/3928261283/IMPACT+-+Incident+Management+Platform|documentation>."
+                )
             )
         ]
 
@@ -373,47 +371,37 @@ class OpenModal(SlackModal):
 
     @staticmethod
     def _build_response_type_blocks(open_incident_context: OpeningData) -> list[Block]:
+        from firefighter.incidents.models.priority import Priority  # noqa: PLC0415
+
         selected_response_type = open_incident_context.get("response_type")
-        if selected_response_type not in {"critical", "normal"}:
+        priority_data = open_incident_context.get("priority")
+
+        # Ensure priority is a Priority object
+        priority: Priority | None = None
+        if isinstance(priority_data, str):
+            priority = Priority.objects.get(pk=priority_data)
+        elif hasattr(priority_data, "emoji"):  # It's already a Priority object
+            priority = priority_data  # type: ignore[assignment]
+        else:
+            priority = priority_data  # type: ignore[assignment]
+
+        # If no response_type or priority is set (no impacts selected), don't show summary
+        if selected_response_type not in {"critical", "normal"} or priority is None:
             return []
 
-        response_types: list[ResponseType] = cast(
-            "list[ResponseType]", INCIDENT_TYPES.keys()
-        )
-        elements: list[ButtonElement] = []
-
-        for response_type in response_types:
-            if response_type != selected_response_type:
-                continue
-
-            is_selected = (
-                open_incident_context.get("response_type") == response_type
-                or len(INCIDENT_TYPES) == 1
-            )
-            style: str | None = "primary" if is_selected else None
-            text = (
-                ":slack: Slack :jira_new: Jira ticket"
-                if response_type == "critical"
-                else ":jira_new: Jira ticket"
-            )
-            button = ButtonElement(
-                text=text,
-                action_id=f"incident_open_set_res_type_{response_type}",
-                value=json.dumps(open_incident_context, cls=SlackFormJSONEncoder),
-                style=style,
-            )
-            elements.append(button)
-
-        blocks: list[Block] = [ActionsBlock(elements=elements)]
+        blocks: list[Block] = []
         if impact_form_data := open_incident_context.get("impact_form_data"):
             impact_form = SelectImpactForm(impact_form_data)
             if impact_form.is_valid():
-                priority: Priority = Priority.objects.get(
-                    value=impact_form.suggest_priority_from_impact()
+                process = (
+                    ":slack: Slack :jira_new: Jira ticket"
+                    if selected_response_type == "critical"
+                    else ":jira_new: Jira ticket"
                 )
-                process = ":slack: Slack :jira_new: Jira ticket" if open_incident_context.get("response_type") == "critical" else ":jira_new: Jira ticket"
 
-                impact_descriptions = OpenModal._get_impact_descriptions(open_incident_context)
+                impact_descriptions = OpenModal._get_impact_descriptions(
+                    open_incident_context
+                )
                 blocks.append(
                     ContextBlock(
                         elements=[
@@ -458,17 +446,40 @@ class OpenModal(SlackModal):
 
     @staticmethod
     def _get_impact_descriptions(open_incident_context: OpeningData) -> str:
+        from firefighter.incidents.models.impact import ImpactLevel  # noqa: PLC0415
+
         impact_form_data = open_incident_context.get("impact_form_data", {})
         impact_descriptions = ""
         if impact_form_data:
-            for value in impact_form_data.values():
-                if value.name != "NO" and value.description:
-                    if hasattr(value, "impact_type_id") and value.impact_type_id:
-                        impact_type = ImpactType.objects.get(pk=value.impact_type_id)
+            for form_value in impact_form_data.values():
+                # Handle case where form_value might be a string (ID) instead of ImpactLevel object
+                impact_level = form_value
+                if isinstance(form_value, str):
+                    try:
+                        impact_level = ImpactLevel.objects.get(pk=form_value)
+                    except ImpactLevel.DoesNotExist:
+                        continue
+
+                # Now impact_level should be an ImpactLevel object
+                if (
+                    hasattr(impact_level, "name")
+                    and impact_level.name != "NO"
+                    and hasattr(impact_level, "description")
+                    and impact_level.description
+                ):
+                    if (
+                        hasattr(impact_level, "impact_type_id")
+                        and impact_level.impact_type_id
+                    ):
+                        impact_type = ImpactType.objects.get(
+                            pk=impact_level.impact_type_id
+                        )
                         if impact_type:
-                            impact_descriptions += f"> \u00A0\u00A0 :exclamation: {impact_type} - {value}\n"
-                    for line in str(value.description).splitlines():
-                        impact_descriptions += f"> \u00A0\u00A0\u00A0\u00A0\u00A0\u00A0 • {line}\n"
+                            impact_descriptions += f"> \u00a0\u00a0 :exclamation: {impact_type} - {impact_level}\n"
+                    for line in str(impact_level.description).splitlines():
+                        impact_descriptions += (
+                            f"> \u00a0\u00a0\u00a0\u00a0\u00a0\u00a0 • {line}\n"
+                        )
         return impact_descriptions
 
     @staticmethod
@@ -530,22 +541,6 @@ class OpenModal(SlackModal):
                 except:  # noqa: E722
                     logger.exception("Error triggering incident workflow")
                     # XXX warn the user via DM!
-
-    @app.action("incident_open_set_res_type_normal")
-    @app.action("incident_open_set_res_type_critical")
-    @staticmethod
-    def handle_set_incident_response_type_action(
-        ack: Ack, body: dict[str, Any]
-    ) -> None:
-        action_name: str = body.get("actions", [{}])[0].get("action_id", "")
-        action_name = action_name.replace("incident_open_set_res_type_", "")
-        opening_data = cast(
-            "OpeningData", json.loads(body.get("actions", [{}])[0].get("value", {})) or {}
-        )
-
-        OpenModal._update_incident_modal(
-            action_name, "response_type", ack, body, opening_data
-        )
 
     @app.action("set_type")
     @staticmethod

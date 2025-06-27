@@ -104,7 +104,11 @@ class SelectImpactModal(
             else:
                 err_msg = f"Invalid priority data: {priority_data}"  # type: ignore[unreachable]
                 raise TypeError(err_msg)
-            process = ":slack: Slack :jira_new: Jira ticket" if open_incident_context.get("response_type") == "critical" else ":jira_new: Jira ticket"
+            process = (
+                ":slack: Slack :jira_new: Jira ticket"
+                if open_incident_context.get("response_type") == "critical"
+                else ":jira_new: Jira ticket"
+            )
 
             impact_descriptions = self.extract_descriptions(open_incident_context)
 
@@ -122,7 +126,7 @@ class SelectImpactModal(
                             )
                         )
                     ]
-                )
+                ),
             ))
 
         return View(
@@ -135,17 +139,40 @@ class SelectImpactModal(
         )
 
     def extract_descriptions(self, open_incident_context: OpeningData) -> str:
+        from firefighter.incidents.models.impact import ImpactLevel  # noqa: PLC0415
+
         impact_form_data = open_incident_context.get("impact_form_data", {})
         impact_descriptions = ""
         if impact_form_data:
-            for value in impact_form_data.values():
-                if value.name != "NO" and value.description:
-                    if hasattr(value, "impact_type_id") and value.impact_type_id:
-                        impact_type = ImpactType.objects.get(pk=value.impact_type_id)
+            for form_value in impact_form_data.values():
+                # Handle case where form_value might be a string (ID) instead of ImpactLevel object
+                impact_level = form_value
+                if isinstance(form_value, str):
+                    try:
+                        impact_level = ImpactLevel.objects.get(pk=form_value)
+                    except ImpactLevel.DoesNotExist:
+                        continue
+
+                # Now impact_level should be an ImpactLevel object
+                if (
+                    hasattr(impact_level, "name")
+                    and impact_level.name != "NO"
+                    and hasattr(impact_level, "description")
+                    and impact_level.description
+                ):
+                    if (
+                        hasattr(impact_level, "impact_type_id")
+                        and impact_level.impact_type_id
+                    ):
+                        impact_type = ImpactType.objects.get(
+                            pk=impact_level.impact_type_id
+                        )
                         if impact_type:
-                            impact_descriptions += f"\u00A0\u00A0 :exclamation: {impact_type} - {value}\n"
-                    for line in str(value.description).splitlines():
-                        impact_descriptions += f"\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0 • {line}\n"
+                            impact_descriptions += f"\u00a0\u00a0 :exclamation: {impact_type} - {impact_level}\n"
+                    for line in str(impact_level.description).splitlines():
+                        impact_descriptions += (
+                            f"\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0 • {line}\n"
+                        )
         return impact_descriptions
 
     def handle_modal_fn(  # type: ignore
@@ -177,7 +204,8 @@ class SelectImpactModal(
     ) -> None:
         body = request.body
         data = cast(
-            "OpeningData", json.loads(body.get("actions", [{}])[0].get("value", {})) or {}
+            "OpeningData",
+            json.loads(body.get("actions", [{}])[0].get("value", {})) or {},
         )
         view = self.build_modal_fn(body, open_incident_context=data)
         request.context.ack()
@@ -230,12 +258,36 @@ class SelectImpactModal(
                     )
                 except queryset.model.DoesNotExist:
                     form.form.data[field_name] = None  # type: ignore
+        suggested_priority_value = form.form.suggest_priority_from_impact()
+
+        # If no impacts are selected (all set to "NO"), don't set priority/response_type
+        if suggested_priority_value == 6:  # LevelChoices.NONE.priority
+            return OpeningData(
+                priority=None,
+                response_type=None,
+                impact_form_data=cast("dict[str, Any]", form.form.data),
+                details_form_data=private_metadata_raw.get("details_form_data", {}),
+                incident_type=private_metadata_raw.get("incident_type"),
+            )
+
+        try:
+            priority = Priority.objects.get(value=suggested_priority_value)
+        except Priority.DoesNotExist as err:
+            logger.exception(
+                f"Priority with value {suggested_priority_value} does not exist"
+            )
+            # Fallback to default priority (assuming P3 exists)
+            fallback_priority = Priority.objects.filter(value__gte=3).first()
+            if not fallback_priority:
+                # If no priority exists, create a minimal fallback
+                logger.exception("No priority found in database")
+                raise ValueError("No priority configuration found in database") from err
+            priority = fallback_priority
+
         return OpeningData(
-            priority=Priority.objects.get(
-                value=form.form.suggest_priority_from_impact()
-            ),
+            priority=priority,
             response_type=SelectImpactModal._calculate_proposed_incident_type(
-                form.form.suggest_priority_from_impact()
+                suggested_priority_value
             ),
             impact_form_data=cast("dict[str, Any]", form.form.data),
             details_form_data=private_metadata_raw.get("details_form_data", {}),
