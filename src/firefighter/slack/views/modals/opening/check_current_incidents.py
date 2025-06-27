@@ -37,7 +37,6 @@ class CheckCurrentIncidentsModal(
 
         incidents = list(
             Incident.objects.filter(
-
                 created_at__gte=datetime.now(UTC) - timedelta(hours=1)
             )
             .order_by("-created_at")

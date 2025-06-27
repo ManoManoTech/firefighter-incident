@@ -57,7 +57,9 @@ class SelectImpactForm(forms.Form):
             impact: dict[str, ImpactLevel] = self.cleaned_data
 
             impact_values = [impact_type.value for impact_type in impact.values()]
-            priorities = [level.priority for level in LevelChoices if level in impact_values]
+            priorities = [
+                level.priority for level in LevelChoices if level in impact_values
+            ]
             return min(priorities) if priorities else LevelChoices.NONE.priority
         return LevelChoices.NONE.priority
 

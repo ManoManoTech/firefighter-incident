@@ -22,7 +22,6 @@ def update_priority_settings(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("incidents", "0004_incidentupdate_environment"),
     ]

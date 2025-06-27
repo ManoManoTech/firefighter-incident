@@ -15,18 +15,28 @@ def update_incidents(apps, _schema_editor):
 
     business_impact_type = ImpactType.objects.filter(value="business_impact").first()
     if not business_impact_type:
-        logger.error("ImpactType 'business_impact' does not exist. Skipping incident update.")
+        logger.error(
+            "ImpactType 'business_impact' does not exist. Skipping incident update."
+        )
         return
 
-    md_impact_level = ImpactLevel.objects.filter(value="MD", impact_type=business_impact_type.id).first()
+    md_impact_level = ImpactLevel.objects.filter(
+        value="MD", impact_type=business_impact_type.id
+    ).first()
     if not md_impact_level:
-        logger.error("ImpactLevel 'MD' for business_impact does not exist. Skipping incident update.")
+        logger.error(
+            "ImpactLevel 'MD' for business_impact does not exist. Skipping incident update."
+        )
         return
 
     for level_value in ["LT", "LO"]:
-        old_impact_level = ImpactLevel.objects.filter(value=level_value, impact_type=business_impact_type.id).first()
+        old_impact_level = ImpactLevel.objects.filter(
+            value=level_value, impact_type=business_impact_type.id
+        ).first()
         if not old_impact_level:
-            logger.error(f"ImpactLevel '{level_value}' for business_impact does not exist. Skipping.")
+            logger.error(
+                f"ImpactLevel '{level_value}' for business_impact does not exist. Skipping."
+            )
             continue
 
         # Find incidents that have the old impact level through the impacts relationship
@@ -40,7 +50,9 @@ def update_incidents(apps, _schema_editor):
                 incident.impacts.add(md_impact_level)
             updated_count += 1
 
-        logger.info(f"Updated {updated_count} incidents from impact_level '{level_value}' to 'MD' for business_impact.")
+        logger.info(
+            f"Updated {updated_count} incidents from impact_level '{level_value}' to 'MD' for business_impact."
+        )
 
 
 def remove_old_impact_levels(apps, _schema_editor):
@@ -50,21 +62,31 @@ def remove_old_impact_levels(apps, _schema_editor):
 
     business_impact_type = ImpactType.objects.filter(value="business_impact").first()
     if not business_impact_type:
-        logger.error("ImpactType 'business_impact' does not exist. Skipping impact level removal.")
+        logger.error(
+            "ImpactType 'business_impact' does not exist. Skipping impact level removal."
+        )
         return
 
-    md_impact_level = ImpactLevel.objects.filter(value="MD", impact_type=business_impact_type.id).first()
+    md_impact_level = ImpactLevel.objects.filter(
+        value="MD", impact_type=business_impact_type.id
+    ).first()
     if not md_impact_level:
-        logger.error("ImpactLevel 'MD' for business_impact does not exist. Cannot update Impact objects.")
+        logger.error(
+            "ImpactLevel 'MD' for business_impact does not exist. Cannot update Impact objects."
+        )
         return
 
     for level_value in ["LT", "LO"]:
-        impact_level = ImpactLevel.objects.filter(value=level_value, impact_type=business_impact_type.id).first()
+        impact_level = ImpactLevel.objects.filter(
+            value=level_value, impact_type=business_impact_type.id
+        ).first()
         if impact_level:
             # Update all Impact objects that reference this impact level
             impacts_to_update = Impact.objects.filter(impact_level=impact_level)
             updated_count = impacts_to_update.update(impact_level=md_impact_level)
-            logger.info(f"Updated {updated_count} Impact objects from '{level_value}' to 'MD' for business_impact.")
+            logger.info(
+                f"Updated {updated_count} Impact objects from '{level_value}' to 'MD' for business_impact."
+            )
 
             # Now safe to delete the impact level
             impact_level.delete()
@@ -74,7 +96,6 @@ def remove_old_impact_levels(apps, _schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("incidents", "0015_update_impact_level"),
     ]

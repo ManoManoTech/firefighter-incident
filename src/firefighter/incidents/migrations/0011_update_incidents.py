@@ -35,7 +35,9 @@ def forwards_func(apps, _schema_editor):
             ids = list(incidents.values_list("id", flat=True))
             if ids:
                 INCIDENTS_BACKUP[old_component_name] = ids
-                new_component = Component.objects.filter(name=new_component_name).first()
+                new_component = Component.objects.filter(
+                    name=new_component_name
+                ).first()
                 if not new_component:
                     logger.error(f"Failed to find component {new_component_name}.")
                     continue
@@ -73,7 +75,6 @@ def recreate_old_components(apps, _schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("incidents", "0010_update_components"),
     ]

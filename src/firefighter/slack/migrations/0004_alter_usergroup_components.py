@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("incidents", "0014_update_components_slack_groups"),
         ("slack", "0003_alter_usergroup_tag"),

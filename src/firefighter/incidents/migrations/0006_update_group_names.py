@@ -70,12 +70,16 @@ def update_groups(apps, _schema_editor):
             group.save()
             updated_count += 1
         except Exception:
-            logger.exception(f"Group '{old_name}' does not exist, cannot proceed with updates.")
+            logger.exception(
+                f"Group '{old_name}' does not exist, cannot proceed with updates."
+            )
 
 
 def revert_group_names(apps, _schema_editor):
     Group = apps.get_model("incidents", "Group")
-    reverse_mappings = {new_name: old_name for old_name, (new_name, _) in get_group_mappings().items()}
+    reverse_mappings = {
+        new_name: old_name for old_name, (new_name, _) in get_group_mappings().items()
+    }
 
     updated_count = 0
 
@@ -87,11 +91,12 @@ def revert_group_names(apps, _schema_editor):
             group.save()
             updated_count += 1
         except Exception:
-            logger.exception(f"Group '{new_name}' does not exist, skipping restoration.")
+            logger.exception(
+                f"Group '{new_name}' does not exist, skipping restoration."
+            )
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("incidents", "0005_enable_from_p1_to_p5_priority"),
     ]

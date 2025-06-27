@@ -445,20 +445,18 @@ class SlackMessageIncidentRolesUpdated(SlackMessageSurface):
         if len(fields) == 0:
             fields.append("_No changes detected._")
 
-        blocks.extend(
-            [
-                DividerBlock(),
-                SectionBlock(
-                    block_id="message_role_update",
-                    fields=fields,
-                    accessory=ButtonElement(
-                        text="Update",
-                        value=str(self.incident.id),
-                        action_id=UpdateRolesModal.open_action,
-                    ),
+        blocks.extend([
+            DividerBlock(),
+            SectionBlock(
+                block_id="message_role_update",
+                fields=fields,
+                accessory=ButtonElement(
+                    text="Update",
+                    value=str(self.incident.id),
+                    action_id=UpdateRolesModal.open_action,
                 ),
-            ]
-        )
+            ),
+        ])
         if not self.first_update:
             blocks.append(
                 ContextBlock(
@@ -600,8 +598,8 @@ class SlackMessageIncidentStatusUpdated(SlackMessageSurface):
                             else None
                         ),
                     ),
-                ]
-            )
+                ),
+            ])
 
         if self.incident_update.created_by:
             blocks.append(
@@ -1020,8 +1018,8 @@ class SlackMessageDeployWarning(SlackMessageSurface):
                             text=f":white_check_mark: *UPDATE*: Incident #{self.incident.conversation.name} has been mitigated, you can resume your deployments."
                         )
                     )
-                ]
-            )
+                )
+            ])
         return blocks
 
     def get_text(self) -> str:

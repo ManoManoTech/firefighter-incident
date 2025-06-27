@@ -51,7 +51,8 @@ def slack_save_reminder_message(
         channel_id=message_response_data["channel"]
     )
     ts = datetime.fromtimestamp(
-        float(message_response_data["message"]["ts"]), tz=timezone.utc  # type: ignore [attr-defined]
+        float(message_response_data["message"]["ts"]),
+        tz=timezone.utc,  # type: ignore [attr-defined]
     )
     if user is None or not hasattr(user, "slack_user") or user.slack_user is None:
         msg = f"User not found for slack_id {message_response_data['message']['user']}"
