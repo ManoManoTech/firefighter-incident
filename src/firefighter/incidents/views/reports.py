@@ -288,7 +288,7 @@ def get_incident_age_by_priority(
 def get_created_at_filter(
     date_gte: datetime, date_lt: datetime | None, date_gte_global: datetime | None
 ) -> str:
-    return f'&created_at={str(get_biggest_date(date_gte_global, date_gte).isoformat()).replace("-", "/").replace("+", "%2B")}+-+{str(date_lt.isoformat()).replace("-", "/").replace("+", "%2B") if date_lt else "now"}'
+    return f"&created_at={str(get_biggest_date(date_gte_global, date_gte).isoformat()).replace('-', '/').replace('+', '%2B')}+-+{str(date_lt.isoformat()).replace('-', '/').replace('+', '%2B') if date_lt else 'now'}"
 
 
 class _IncidentPriorityAnnotation(TypedDict):

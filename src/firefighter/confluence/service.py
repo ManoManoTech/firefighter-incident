@@ -82,8 +82,8 @@ class ConfluenceService:
         Raises:
             TypeError: If one of page_id, page_title, page_url or page_edit_url are not strings.
         """
-        page_url = f'{self.base_url}{get_in(pm, "_links.webui")}'
-        page_edit_url = f'{self.base_url}{get_in(pm, "_links.editui")}'
+        page_url = f"{self.base_url}{get_in(pm, '_links.webui')}"
+        page_edit_url = f"{self.base_url}{get_in(pm, '_links.editui')}"
 
         page_id = str(pm.get("id"))
         page_title = pm.get("title")

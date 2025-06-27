@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("incidents", "0002_alter_severity_name_alter_user_password_featureteam"),
     ]

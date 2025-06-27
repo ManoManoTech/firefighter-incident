@@ -87,6 +87,7 @@ class ImpactLevel(models.Model):
         null=True,
         help_text="Detailed multi-line description for this impact level.",
     )
+
     class Meta(TypedModelMeta):
         constraints = [
             models.UniqueConstraint(
@@ -107,12 +108,8 @@ class ImpactLevel(models.Model):
 
 
 class Impact(models.Model):
-    impact_type = models.ForeignKey(
-        "ImpactType", on_delete=models.CASCADE
-    )
-    impact_level = models.ForeignKey(
-        ImpactLevel, on_delete=models.PROTECT
-    )
+    impact_type = models.ForeignKey("ImpactType", on_delete=models.CASCADE)
+    impact_level = models.ForeignKey(ImpactLevel, on_delete=models.PROTECT)
 
     details = models.TextField(null=True, blank=True)
 
@@ -141,9 +138,7 @@ def validate_impact(sender: Any, instance: Impact, **kwargs: Any) -> None:
 
 
 class IncidentImpact(models.Model):
-    incident = models.ForeignKey(
-        "Incident", on_delete=models.CASCADE
-    )
+    incident = models.ForeignKey("Incident", on_delete=models.CASCADE)
     impact = models.ForeignKey("Impact", on_delete=models.CASCADE)
 
     class Meta(TypedModelMeta):

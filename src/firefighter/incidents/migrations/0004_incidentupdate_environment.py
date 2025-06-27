@@ -6,7 +6,6 @@ import firefighter.incidents.models.environment
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("incidents", "0003_delete_featureteam"),
     ]

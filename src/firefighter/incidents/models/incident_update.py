@@ -72,9 +72,7 @@ class IncidentUpdate(models.Model):
         blank=True,
         on_delete=models.SET(Environment.get_default),
     )
-    incident = models.ForeignKey(
-        "Incident", on_delete=models.CASCADE
-    )
+    incident = models.ForeignKey("Incident", on_delete=models.CASCADE)
     component = models.ForeignKey(
         Component, null=True, blank=True, on_delete=models.SET_NULL
     )

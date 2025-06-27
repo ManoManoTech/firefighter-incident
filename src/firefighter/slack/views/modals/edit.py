@@ -77,7 +77,6 @@ class EditMetaModal(ModalForm[EditMetaFormSlack]):
     def handle_modal_fn(  # type: ignore
         self, ack: Ack, body: dict[str, Any], incident: Incident, user: User
     ):
-
         slack_form = self.handle_form_errors(
             ack,
             body,

@@ -212,12 +212,8 @@ class Incident(models.Model):
         on_delete=models.PROTECT,
         help_text="Priority",
     )
-    component = models.ForeignKey(
-        Component, on_delete=models.PROTECT
-    )
-    environment = models.ForeignKey(
-        Environment, on_delete=models.PROTECT
-    )
+    component = models.ForeignKey(Component, on_delete=models.PROTECT)
+    environment = models.ForeignKey(Environment, on_delete=models.PROTECT)
     created_by = models.ForeignKey(
         User,
         on_delete=models.PROTECT,
@@ -335,27 +331,21 @@ class Incident(models.Model):
             return True, []
         if self.needs_postmortem:
             if self.status.value != IncidentStatus.POST_MORTEM:
-                cant_closed_reasons.append(
-                    (
-                        "STATUS_NOT_POST_MORTEM",
-                        f"Incident is not in PostMortem status, and needs one because of its priority and environment ({self.priority.name}/{self.environment.value}).",
-                    )
-                )
+                cant_closed_reasons.append((
+                    "STATUS_NOT_POST_MORTEM",
+                    f"Incident is not in PostMortem status, and needs one because of its priority and environment ({self.priority.name}/{self.environment.value}).",
+                ))
         elif self.status.value < IncidentStatus.FIXED:
-            cant_closed_reasons.append(
-                (
-                    "STATUS_NOT_MITIGATED",
-                    f"Incident is not in {IncidentStatus.FIXED.label} status (currently {self.status.label}).",
-                )
-            )
+            cant_closed_reasons.append((
+                "STATUS_NOT_MITIGATED",
+                f"Incident is not in {IncidentStatus.FIXED.label} status (currently {self.status.label}).",
+            ))
         missing_milestones = self.missing_milestones()
         if len(missing_milestones) > 0:
-            cant_closed_reasons.append(
-                (
-                    "MISSING_REQUIRED_KEY_EVENTS",
-                    f"Missing key events: {', '.join(missing_milestones)}",
-                )
-            )
+            cant_closed_reasons.append((
+                "MISSING_REQUIRED_KEY_EVENTS",
+                f"Missing key events: {', '.join(missing_milestones)}",
+            ))
 
         if len(cant_closed_reasons) > 0:
             return False, cant_closed_reasons

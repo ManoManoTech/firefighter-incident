@@ -34,9 +34,7 @@ def link_auth_user(user: User, claim: dict[str, str | list[str]]) -> None:
     for group_name in group_names:
         try:
             group = Group.objects.get(name=group_name)
-            group.user_set.add(
-                user
-            )  # pyright: ignore[reportGeneralTypeIssues]
+            group.user_set.add(user)  # pyright: ignore[reportGeneralTypeIssues]
         except Group.DoesNotExist:
             logger.warning(
                 "Group %s from SSO does not exist in the application Groups!",

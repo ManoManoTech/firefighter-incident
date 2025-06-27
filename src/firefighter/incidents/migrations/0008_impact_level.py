@@ -24,7 +24,9 @@ def remap_incidents(apps, schema_editor):
     impactlevel = ImpactLevel.objects.filter(name=new_name).first()
 
     if impactlevel_to_delete is None:
-        logger.error(f"Failed to find ImpactLevel to delete {to_delete_value} {to_delete_name}.")
+        logger.error(
+            f"Failed to find ImpactLevel to delete {to_delete_value} {to_delete_name}."
+        )
         return
     if impactlevel is None:
         logger.error(f"Failed to find ImpactLevel {new_value} {new_name}.")
@@ -41,7 +43,9 @@ def remap_incidents(apps, schema_editor):
     try:
         impactlevel_to_delete.delete()
     except Exception:
-        logger.exception(f"Failed to delete impact level {to_delete_value} {to_delete_name}.")
+        logger.exception(
+            f"Failed to delete impact level {to_delete_value} {to_delete_name}."
+        )
 
 
 def update_impact_levels(apps, schema_editor):
@@ -175,7 +179,9 @@ def update_impact_levels(apps, schema_editor):
                 impact_level.name = old_name
             impact_level.value = update["new_value"]
             impact_level.order = update["new_order"]
-            impact_level.emoji = emoji_mapping.get(update["new_value"], impact_level.emoji)
+            impact_level.emoji = emoji_mapping.get(
+                update["new_value"], impact_level.emoji
+            )
             impact_level.save()
         except Exception:
             logger.exception(f"Failed to update ImpactLevel '{old_name}'.")
@@ -184,64 +190,58 @@ def update_impact_levels(apps, schema_editor):
 
 
 def add_impact_levels(apps, schema_editor):
-
     ImpactLevel = apps.get_model("incidents", "ImpactLevel")
     ImpactType = apps.get_model("incidents", "ImpactType")
 
     adds = [
         {
-
             "name": "Some customers with minor issues",
             "value": LevelChoices.LOW.value,
             "order": 2,
             "impact_type_id": 3,
-            "emoji": LevelChoices.LOW.emoji
+            "emoji": LevelChoices.LOW.emoji,
         },
         {
             "name": "Some sellers with minor issues",
             "value": LevelChoices.LOW.value,
             "order": 2,
             "impact_type_id": 2,
-            "emoji": LevelChoices.LOW.emoji
+            "emoji": LevelChoices.LOW.emoji,
         },
         {
             "name": "Minor business impact",
             "value": LevelChoices.LOW.value,
             "order": 2,
             "impact_type_id": 1,
-            "emoji": LevelChoices.LOW.emoji
+            "emoji": LevelChoices.LOW.emoji,
         },
         {
-
             "name": "N/A",
             "value": LevelChoices.NONE.value,
             "order": 0,
             "impact_type_id": 1,
-            "emoji": LevelChoices.NONE.emoji
+            "emoji": LevelChoices.NONE.emoji,
         },
         {
-
             "name": "N/A",
             "value": LevelChoices.NONE.value,
             "order": 0,
             "impact_type_id": 2,
-            "emoji": LevelChoices.NONE.emoji
+            "emoji": LevelChoices.NONE.emoji,
         },
         {
-
             "name": "N/A",
             "value": LevelChoices.NONE.value,
             "order": 0,
             "impact_type_id": 3,
-            "emoji": LevelChoices.NONE.emoji
+            "emoji": LevelChoices.NONE.emoji,
         },
         {
-
             "name": "N/A",
             "value": LevelChoices.NONE.value,
             "order": 0,
             "impact_type_id": 4,
-            "emoji": LevelChoices.NONE.emoji
+            "emoji": LevelChoices.NONE.emoji,
         },
     ]
 
@@ -249,13 +249,17 @@ def add_impact_levels(apps, schema_editor):
         name = add["name"]
         try:
             impact_type_id = add["impact_type_id"]
-            impact_level = ImpactLevel.objects.filter(name=name, impact_type_id=impact_type_id).first()
+            impact_level = ImpactLevel.objects.filter(
+                name=name, impact_type_id=impact_type_id
+            ).first()
             impact_type = ImpactType.objects.filter(id=impact_type_id).first()
             if not impact_type:
                 logger.error(f"There is no impact type id:'{impact_type_id}'.")
                 continue
             if impact_level:
-                logger.error(f"There is already an impact level with name:'{name}' and type:'{impact_type_id}'.")
+                logger.error(
+                    f"There is already an impact level with name:'{name}' and type:'{impact_type_id}'."
+                )
                 continue
             new_impact_level = ImpactLevel(
                 name=name,
@@ -272,7 +276,6 @@ def add_impact_levels(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("incidents", "0007_update_component_name"),
     ]
@@ -284,8 +287,8 @@ class Migration(migrations.Migration):
             field=models.CharField(default="", max_length=5),
         ),
         migrations.RemoveConstraint(
-          model_name="impactlevel",
-          name="incidents_impactlevel_value_valid",
+            model_name="impactlevel",
+            name="incidents_impactlevel_value_valid",
         ),
         migrations.AddConstraint(
             model_name="impactlevel",
@@ -297,7 +300,9 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="impactlevel",
             name="id",
-            field=models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False),
+            field=models.UUIDField(
+                primary_key=True, default=uuid.uuid4, editable=False
+            ),
         ),
         migrations.RunPython(remap_incidents),
         migrations.RunPython(update_impact_levels),

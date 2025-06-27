@@ -19,20 +19,75 @@ def get_component_mappings() -> list:
         list: A list of tuples, each representing the details for a component update.
     """
     return [
-        ("Commercial Animation (Mabaya cat. integration & ad request, ...)", "Commercial Animation", "impact-commercial-animation", "Marketplace"),
+        (
+            "Commercial Animation (Mabaya cat. integration & ad request, ...)",
+            "Commercial Animation",
+            "impact-commercial-animation",
+            "Marketplace",
+        ),
         ("Mobile Apps", "Mobile Apps", "impact-mobile-apps", "Marketplace"),
-        ("Spartacux Foundations", "Spartacux Foundations", "impact-spartacux-foundations", "Marketplace"),
+        (
+            "Spartacux Foundations",
+            "Spartacux Foundations",
+            "impact-spartacux-foundations",
+            "Marketplace",
+        ),
         ("Tracking", "Tracking", "impact-tracking", "Marketplace"),
         ("HUB Integrators", "HUB Integrators", "impact-hub-integrators", "Seller"),
-        ("Seller Account and Feeds", "Seller Catalog and Offer Management", "impact-seller-catalog-offer-management", "Seller"),
-        ("Toolbox", "Seller Admin and Experience", "impact-seller-admin-experience", "Seller"),
-        ("Seller Services (Mabaya BO, Subscriptions, MF)", "Seller Services", "impact-seller-services", "Seller"),
-        ("Catalog Performance", "Catalog Performance", "impact-catalog-performance", "Catalog"),
-        ("Offer (Price, Stock)", "Offer (Price & Stock)", "impact-offer-price-stock", "Catalog"),
-        ("Back Office", "BO Catalog - Master Experience", "impact-bo-catalog-master-experience", "Catalog"),
-        ("Order Lifecycle", "Order management", "impact-order-management", "Operations"),
-        ("Delivery Experience", "Delivery experience", "impact-delivery-experience", "Operations"),
-        ("Cloud Infrastructure", "Cloud Infrastructure", "impact-cloud-infrastructure", "Platform"),
+        (
+            "Seller Account and Feeds",
+            "Seller Catalog and Offer Management",
+            "impact-seller-catalog-offer-management",
+            "Seller",
+        ),
+        (
+            "Toolbox",
+            "Seller Admin and Experience",
+            "impact-seller-admin-experience",
+            "Seller",
+        ),
+        (
+            "Seller Services (Mabaya BO, Subscriptions, MF)",
+            "Seller Services",
+            "impact-seller-services",
+            "Seller",
+        ),
+        (
+            "Catalog Performance",
+            "Catalog Performance",
+            "impact-catalog-performance",
+            "Catalog",
+        ),
+        (
+            "Offer (Price, Stock)",
+            "Offer (Price & Stock)",
+            "impact-offer-price-stock",
+            "Catalog",
+        ),
+        (
+            "Back Office",
+            "BO Catalog - Master Experience",
+            "impact-bo-catalog-master-experience",
+            "Catalog",
+        ),
+        (
+            "Order Lifecycle",
+            "Order management",
+            "impact-order-management",
+            "Operations",
+        ),
+        (
+            "Delivery Experience",
+            "Delivery experience",
+            "impact-delivery-experience",
+            "Operations",
+        ),
+        (
+            "Cloud Infrastructure",
+            "Cloud Infrastructure",
+            "impact-cloud-infrastructure",
+            "Platform",
+        ),
         ("Spinak", "Spinak", "impact-spinak", "Platform"),
         ("CDN", "CDN", "impact-cdn", "Platform"),
         ("Gitlab", "Gitlab", "impact-gitlab", "Platform"),
@@ -51,8 +106,14 @@ def get_new_components() -> dict:
         dict: A mapping of component names to (group name, slack channel) tuples.
     """
     return {
-        "Traffic acquisition": ("Marketing & Communication", "impact-traffic-acquisition"),
-        "Company reputation": ("Marketing & Communication", "impact-company-reputation"),
+        "Traffic acquisition": (
+            "Marketing & Communication",
+            "impact-traffic-acquisition",
+        ),
+        "Company reputation": (
+            "Marketing & Communication",
+            "impact-company-reputation",
+        ),
         "Loyalty and coupons": ("Payment Operations", "impact-loyalty-coupons"),
         "Payouts to seller": ("Payment Operations", "impact-payouts-to-seller"),
         "Refunds": ("Payment Operations", "impact-refunds"),
@@ -74,7 +135,9 @@ def add_new_components(apps, schema_editor):
     new_components = get_new_components()
 
     for name, (group_name, _slack) in new_components.items():
-        logger.info(f"Creating new component: '{name}' belonging to group '{group_name}'")
+        logger.info(
+            f"Creating new component: '{name}' belonging to group '{group_name}'"
+        )
         try:
             group_instance = Group.objects.get(name=group_name)
             new_component = Component(name=name, group=group_instance)
@@ -115,17 +178,20 @@ def update_component_names(apps, schema_editor):
             component.save()
             updated_count += 1
         except Exception:
-            logger.exception(f"Component '{old_name}' does not exist, cannot proceed with updates.")
+            logger.exception(
+                f"Component '{old_name}' does not exist, cannot proceed with updates."
+            )
 
 
 def revert_component_names(apps, schema_editor):
     Component = apps.get_model("incidents", "Component")
-    reverse_mappings = {new_name: old_name for old_name, new_name, _, _ in get_component_mappings()}
+    reverse_mappings = {
+        new_name: old_name for old_name, new_name, _, _ in get_component_mappings()
+    }
 
     updated_count = 0
 
     for new_name, old_name in reverse_mappings.items():
-
         try:
             component = Component.objects.get(name=new_name)
             logger.info(f"Restoring '{new_name}' back to '{old_name}'")
@@ -133,11 +199,12 @@ def revert_component_names(apps, schema_editor):
             component.save()
             updated_count += 1
         except Exception:
-            logger.exception(f"Component '{new_name}' does not exist, skipping restoration.")
+            logger.exception(
+                f"Component '{new_name}' does not exist, skipping restoration."
+            )
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("incidents", "0006_update_group_names"),
     ]

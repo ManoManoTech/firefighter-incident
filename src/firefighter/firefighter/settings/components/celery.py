@@ -11,7 +11,7 @@ timezone = "UTC"
 if USE_TZ:
     timezone = TIME_ZONE
 
-_CELERY_BROKER_URL = f'redis://{config("REDIS_HOST")}:{config("REDIS_PORT")}/10'
+_CELERY_BROKER_URL = f"redis://{config('REDIS_HOST')}:{config('REDIS_PORT')}/10"
 
 CELERY_SETTINGS = {
     # http://docs.celeryproject.org/en/latest/userguide/configuration.html#std:setting-timezone

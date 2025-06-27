@@ -23,9 +23,7 @@ class Sos(models.Model):
     user_group = models.ForeignKey(
         UserGroup, blank=True, null=True, on_delete=models.CASCADE
     )
-    conversation = models.ForeignKey(
-        Conversation, blank=True, on_delete=models.CASCADE
-    )
+    conversation = models.ForeignKey(Conversation, blank=True, on_delete=models.CASCADE)
 
     class Meta(TypedModelMeta):
         verbose_name = "SOS"
