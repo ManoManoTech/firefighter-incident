@@ -41,7 +41,7 @@ Automatic mapping between components and Slack usergroups:
 # Component → Slack usergroup mapping
 component_slack_mapping = {
     "payments": "@payments-team",
-    "catalog": "@catalog-team", 
+    "catalog": "@catalog-team",
     "infrastructure": "@sre-team",
     # Automatically synced with Slack workspace
 }
@@ -57,10 +57,10 @@ New impact levels provide better incident classification:
 class ImpactLevel(models.Model):
     NONE = "NO"  # No impact
     LOW = "LOW"
-    MEDIUM = "MED" 
+    MEDIUM = "MED"
     HIGH = "HIGH"
     CRITICAL = "CRIT"
-    
+
     # Business-specific impact categories
     CUSTOMER_FACING = "CUSTOMER"
     INTERNAL_TOOLS = "INTERNAL"
@@ -75,7 +75,7 @@ Impact levels automatically determine incident priority:
 def calculate_priority_from_impacts(impacts: List[ImpactLevel]) -> Priority:
     """Calculate priority based on highest impact level."""
     max_impact = max(impacts, key=lambda x: x.severity_weight)
-    
+
     if max_impact.severity_weight >= 4:
         return Priority.P1  # Critical
     elif max_impact.severity_weight >= 3:
@@ -97,7 +97,7 @@ The incident creation workflow has been streamlined:
 
 **After:**
 1. Select impacts → Auto-calculate priority & process
-2. Fill details  
+2. Fill details
 3. Create incident
 
 ### Automatic Process Determination
@@ -142,10 +142,10 @@ Updated to modern Django components without deprecated generics:
 class IncidentCard(Component[IncidentDict]):
     template_name = "components/incident_card.html"
 
-# After: Modern syntax  
+# After: Modern syntax
 class IncidentCard(Component):
     template_name = "components/incident_card.html"
-    
+
     def get_context_data(self, incident: Incident) -> dict:
         return {"incident": incident}
 ```
@@ -169,7 +169,7 @@ The system includes extensive migrations for the overhaul:
 # Key migrations since v0.0.2
 migrations = [
     "0005_enable_from_p1_to_p5_priority.py",
-    "0006_update_group_names.py", 
+    "0006_update_group_names.py",
     "0007_update_component_name.py",
     "0008_impact_level.py",
     "0015_update_impact_level.py",
@@ -255,7 +255,7 @@ Improved incident metrics:
 class IncidentMetrics:
     def calculate_mttr(self, component: Component) -> timedelta:
         """Calculate MTTR for component with trend analysis."""
-        
+
     def business_impact_score(self, incident: Incident) -> float:
         """Calculate business impact based on affected systems."""
 ```

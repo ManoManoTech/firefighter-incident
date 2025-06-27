@@ -49,7 +49,7 @@ The `mise.toml` configuration includes:
 
 If you prefer not to use Mise, ensure you have the correct versions:
 - Python 3.12
-- Node 18+  
+- Node 18+
 - PDM 2.24+
 
 ## Install dependencies with PDM
@@ -150,7 +150,7 @@ If you prefer to run each step manually or need to troubleshoot:
 # 1. Start Docker services
 pdm run dev-env-start
 
-# 2. Apply database migrations  
+# 2. Apply database migrations
 pdm run migrate
 
 # 3. Load fixture data (priorities, components, groups, etc.)
@@ -173,7 +173,7 @@ Since the system overhaul, we've added many new PDM scripts:
 **Environment Management:**
 - `dev-env-setup` - Complete environment initialization
 - `dev-env-start` - Start Docker services only
-- `dev-env-stop` - Stop Docker services  
+- `dev-env-stop` - Stop Docker services
 - `dev-env-destroy` - ⚠️ Destroy environment (including database!)
 
 **Development:**
@@ -243,5 +243,5 @@ You can login at http://127.0.0.1:8000/admin/ with the superuser you created.
 
 !!! warning
     If you run the server at this stage, you can expect some warnings/errors.
-    
+
     At the moment, we have no PagerDuty or Confluence accounts to test the integration. Nevertheless, the integrations can be disabled by setting `ENABLE_PAGERDUTY=False` and `ENABLE_CONFLUENCE=False` in your `.env` file.

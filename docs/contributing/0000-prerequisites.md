@@ -33,7 +33,7 @@ SLACK_INCIDENT_COMMAND=/your-test-incident
 ### Benefits of Test Mode
 
 - ✅ **Works with any user ID**: Automatic creator invitation to incident channels
-- ✅ **No usergroup errors**: Skips Slack usergroup invitations when not available  
+- ✅ **No usergroup errors**: Skips Slack usergroup invitations when not available
 - ✅ **Realistic testing**: Maintains all core functionality while adapting to test environment limitations
 
 This configuration allows you to test the full incident creation workflow without requiring Slack usergroups to be set up in your test workspace.

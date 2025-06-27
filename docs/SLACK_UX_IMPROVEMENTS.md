@@ -41,7 +41,7 @@ def _calculate_proposed_incident_type(suggested_priority_value: int) -> Response
 
 1. **User selects impacts** → System calculates priority AND response type
 2. **System displays summary** → Priority, SLA, process, and impacts shown
-3. **User fills details** → Additional incident information  
+3. **User fills details** → Additional incident information
 4. **Incident created** → Final step
 
 ## Technical Implementation
