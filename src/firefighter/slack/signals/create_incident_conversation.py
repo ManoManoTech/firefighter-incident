@@ -19,16 +19,15 @@ from firefighter.slack.messages.slack_messages import (
     SlackMessageIncidentDeclaredAnnouncement,
     SlackMessageIncidentDeclaredAnnouncementGeneral,
 )
-from firefighter.slack.models.conversation import Conversation
 from firefighter.slack.models.incident_channel import IncidentChannel
 from firefighter.slack.models.user import SlackUser
-from firefighter.slack.utils.test_channels import get_or_create_test_conversation
-from firefighter.slack.slack_app import DefaultWebClient
 from firefighter.slack.rules import (
     should_publish_in_general_channel,
     should_publish_in_it_deploy_channel,
 )
 from firefighter.slack.signals import incident_channel_done
+from firefighter.slack.slack_app import DefaultWebClient
+from firefighter.slack.utils.test_channels import get_or_create_test_conversation
 
 if TYPE_CHECKING:
     from firefighter.incidents.models.incident import Incident
@@ -117,10 +116,11 @@ def create_incident_slack_conversation(  # noqa: PLR0912, PLR0915
         try:
             # Invite directly using the Slack user ID from the event
             from firefighter.slack.slack_app import slack_client
+
             @slack_client
             def invite_test_user(channel_instance, user_id, client=DefaultWebClient):
                 return channel_instance._invite_users_to_conversation({user_id}, client)
-            
+
             invite_test_user(channel, slack_user_id)
             logger.info(f"Test mode: Successfully invited creator via Slack ID {slack_user_id}")
         except SlackApiError:

@@ -352,7 +352,9 @@ class SlackForm(Generic[T]):
             raise TypeError(err_msg)
 
         if f.initial:
-            from firefighter.firefighter.settings.settings_utils import config  # noqa: PLC0415
+            from firefighter.firefighter.settings.settings_utils import (
+                config,
+            )
 
             initial_user: User | None = SlackUser.objects.add_slack_id_to_user(
                 user=f.initial

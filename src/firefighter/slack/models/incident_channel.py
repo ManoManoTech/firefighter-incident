@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-import os
 import textwrap
 from typing import TYPE_CHECKING, Any
 
@@ -163,43 +162,46 @@ class IncidentChannel(Conversation):
 
     @staticmethod
     def _get_slack_id_list(users_with_slack: list[User], slack_user_id: str | None = None) -> set[str]:
-        from firefighter.firefighter.settings.settings_utils import config  # noqa: PLC0415
-        
+        from firefighter.firefighter.settings.settings_utils import (
+            config,
+        )
+
         test_mode = config("TEST_MODE", default="False", cast=str).lower() == "true"
         slack_ids = set()
-        
+
         for user in users_with_slack:
             if not user:
                 continue
-            
+
             # In test mode, handle user ID mapping more carefully
-            if test_mode and hasattr(user, 'slack_user') and user.slack_user and user.slack_user.slack_id:
+            if test_mode and hasattr(user, "slack_user") and user.slack_user and user.slack_user.slack_id:
                 stored_slack_id = user.slack_user.slack_id
-                
+
                 # Skip users with old production IDs that don't exist in test workspace
                 # Old production IDs are alphabetic only, while test IDs contain numbers
-                if stored_slack_id.startswith('U') and not any(c.isdigit() for c in stored_slack_id):
+                if stored_slack_id.startswith("U") and not any(c.isdigit() for c in stored_slack_id):
                     logger.info(f"Test mode: Skipping user {user.id} with production slack_id {stored_slack_id}")
                     continue
-                else:
-                    # Valid test ID, use it
-                    slack_ids.add(stored_slack_id)
-            elif hasattr(user, 'slack_user') and user.slack_user and user.slack_user.slack_id:
+                # Valid test ID, use it
+                slack_ids.add(stored_slack_id)
+            elif hasattr(user, "slack_user") and user.slack_user and user.slack_user.slack_id:
                 # Non-test mode: use stored slack_id
                 slack_ids.add(user.slack_user.slack_id)
-        
+
         # In test mode, ensure the current user (from the event) is included if provided
         if test_mode and slack_user_id and slack_user_id not in slack_ids:
             logger.info(f"Test mode: Adding current user's Slack ID {slack_user_id} to invitation list")
             slack_ids.add(slack_user_id)
-        
+
         return slack_ids
 
     def _invite_users_to_conversation(
         self, user_id_list: set[str], client: WebClient
     ) -> set[str]:
         # In test mode, filter out invalid user IDs to prevent errors
-        from firefighter.firefighter.settings.settings_utils import config  # noqa: PLC0415
+        from firefighter.firefighter.settings.settings_utils import (
+            config,
+        )
         test_mode = config("TEST_MODE", default="False", cast=str).lower() == "true"
 
         if test_mode:
@@ -242,7 +244,9 @@ class IncidentChannel(Conversation):
     def _invite_users_to_conversation_individually(
         self, slack_user_ids: set[str], client: WebClient
     ) -> set[str]:
-        from firefighter.firefighter.settings.settings_utils import config  # noqa: PLC0415
+        from firefighter.firefighter.settings.settings_utils import (
+            config,
+        )
         test_mode = config("TEST_MODE", default="False", cast=str).lower() == "true"
 
         done = set()
