@@ -352,14 +352,29 @@ class SlackForm(Generic[T]):
             raise TypeError(err_msg)
 
         if f.initial:
+            from firefighter.firefighter.settings.settings_utils import config  # noqa: PLC0415
+
             initial_user: User | None = SlackUser.objects.add_slack_id_to_user(
                 user=f.initial
             )
-            initial_user_slack_id = (
-                initial_user.slack_user.slack_id
-                if initial_user and initial_user.slack_user
-                else None
-            )
+            initial_user_slack_id = None
+
+            if initial_user and initial_user.slack_user:
+                test_mode = config("TEST_MODE", default="False", cast=str).lower() == "true"
+
+                # In test mode: skip production IDs that don't exist in test workspace
+                if test_mode and initial_user.slack_user.slack_id:
+                    # Skip production IDs that start with 'U' and are 11 characters long
+                    if initial_user.slack_user.slack_id.startswith("U") and len(initial_user.slack_user.slack_id) == 11:
+                        logger.info(f"Test mode: Skipping production slack_id {initial_user.slack_user.slack_id} for user field {field_name}")
+                        initial_user_slack_id = None
+                    else:
+                        # Valid test environment slack_id
+                        initial_user_slack_id = initial_user.slack_user.slack_id
+                else:
+                    # Production mode: use stored slack_id
+                    initial_user_slack_id = initial_user.slack_user.slack_id
+
             slack_input_kwargs["initial_user"] = initial_user_slack_id
 
         field_name = f"{field_name}___{f.initial}{datetime.now().timestamp()}"  # noqa: DTZ005
