@@ -434,6 +434,14 @@ class OpenModal(SlackModal):
                 process = ":slack: Slack :jira_new: Jira ticket" if open_incident_context.get("response_type") == "critical" else ":jira_new: Jira ticket"
 
                 impact_descriptions = OpenModal._get_impact_descriptions(open_incident_context)
+                
+                # Add incident type if selected for normal incidents
+                incident_type_text = ""
+                if selected_response_type == "normal":
+                    incident_type_value = open_incident_context.get("incident_type")
+                    if incident_type_value:
+                        incident_type_text = f"> :gear: Type: {incident_type_value}\n"
+                
                 blocks.append(
                     ContextBlock(
                         elements=[
@@ -442,12 +450,13 @@ class OpenModal(SlackModal):
                                 f"> ⏱️ SLA: {priority.sla}\n"
                                 f"> :gear: Process: {process}\n"
                                 f"> :pushpin: Selected impacts:\n"
-                                f"{impact_descriptions}\n"
+                                f"{impact_descriptions}"
+                                f"{incident_type_text}"
                                 + (
                                     (
-                                        "\n> Critical incidents are for *emergency* only"
+                                        "> :warning: Critical incidents are for *emergency* only"
                                         + (
-                                            f" <{SLACK_SEVERITY_HELP_GUIDE_URL}|learn more>"
+                                            f" <{SLACK_SEVERITY_HELP_GUIDE_URL}|more info>"
                                             if SLACK_SEVERITY_HELP_GUIDE_URL
                                             else "."
                                         )
@@ -479,23 +488,41 @@ class OpenModal(SlackModal):
     @staticmethod
     def _get_impact_descriptions(open_incident_context: OpeningData) -> str:
         impact_form_data = open_incident_context.get("impact_form_data", {})
+        if not impact_form_data:
+            return ""
+        
         impact_descriptions = ""
-        if impact_form_data:
-            for value in impact_form_data.values():
-                # Handle both object and string values
-                if hasattr(value, "name") and hasattr(value, "description"):
-                    # Object with name and description attributes
-                    if value.name != "NO" and value.description:
-                        if hasattr(value, "impact_type_id") and value.impact_type_id:
-                            impact_type = ImpactType.objects.get(pk=value.impact_type_id)
-                            if impact_type:
-                                impact_descriptions += f"> \u00A0\u00A0 :exclamation: {impact_type} - {value}\n"
-                        for line in str(value.description).splitlines():
-                            impact_descriptions += f"> \u00A0\u00A0\u00A0\u00A0\u00A0\u00A0 • {line}\n"
-                elif isinstance(value, str) and value != "NO":
-                    # String value (like incident type selection)
-                    impact_descriptions += f"> \u00A0\u00A0 :gear: Type: {value}\n"
+        for value in impact_form_data.values():
+            description = OpenModal._format_single_impact_description(value)
+            if description:
+                impact_descriptions += description
         return impact_descriptions
+    
+    @staticmethod
+    def _format_single_impact_description(value: Any) -> str:
+        """Format a single impact value into description text."""
+        # Handle object with name and description attributes (impact levels)
+        if hasattr(value, "name") and hasattr(value, "description"):
+            if value.name == "NO" or not value.description:
+                return ""
+            
+            description = ""
+            # Add impact type header if available
+            if hasattr(value, "impact_type_id") and value.impact_type_id:
+                try:
+                    impact_type = ImpactType.objects.get(pk=value.impact_type_id)
+                    # Use value.name instead of value to avoid showing IDs
+                    description += f"> \u00A0\u00A0 :exclamation: {impact_type} - {value.name}\n"
+                except ImpactType.DoesNotExist:
+                    description += f"> \u00A0\u00A0 :exclamation: {value.name}\n"
+            
+            # Add description lines
+            for line in str(value.description).splitlines():
+                description += f"> \u00A0\u00A0\u00A0\u00A0\u00A0\u00A0 • {line}\n"
+            return description
+        
+        # Skip string values - incident_type is handled separately, not in impact descriptions
+        return ""
 
     @staticmethod
     def get_details_modal_form_class(
