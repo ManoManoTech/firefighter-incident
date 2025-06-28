@@ -434,14 +434,13 @@ class OpenModal(SlackModal):
                 process = ":slack: Slack :jira_new: Jira ticket" if open_incident_context.get("response_type") == "critical" else ":jira_new: Jira ticket"
 
                 impact_descriptions = OpenModal._get_impact_descriptions(open_incident_context)
-
+                
                 # Add incident type if selected for normal incidents
                 incident_type_text = ""
                 if selected_response_type == "normal":
                     incident_type_value = open_incident_context.get("incident_type")
                     if incident_type_value:
-                        incident_type_text = f"> :gear: Type: {incident_type_value}\n"
-
+                        incident_type_text = f"> :busts_in_silhouette: Affected users: {incident_type_value}\n"
                 blocks.append(
                     ContextBlock(
                         elements=[
@@ -449,9 +448,9 @@ class OpenModal(SlackModal):
                                 text=f"> {priority.emoji} Selected priority: *{priority} - {priority.description}*\n"
                                 f"> ⏱️ SLA: {priority.sla}\n"
                                 f"> :gear: Process: {process}\n"
+                                f"{incident_type_text}"
                                 f"> :pushpin: Selected impacts:\n"
                                 f"{impact_descriptions}"
-                                f"{incident_type_text}"
                                 + (
                                     (
                                         "> :warning: Critical incidents are for *emergency* only"
@@ -490,14 +489,14 @@ class OpenModal(SlackModal):
         impact_form_data = open_incident_context.get("impact_form_data", {})
         if not impact_form_data:
             return ""
-
+        
         impact_descriptions = ""
         for value in impact_form_data.values():
             description = OpenModal._format_single_impact_description(value)
             if description:
                 impact_descriptions += description
         return impact_descriptions
-
+    
     @staticmethod
     def _format_single_impact_description(value: Any) -> str:
         """Format a single impact value into description text."""
@@ -606,7 +605,11 @@ class OpenModal(SlackModal):
         body: dict[str, Any],
         opening_data: OpeningData,
     ) -> None:
-        data: OpeningData = {**opening_data, metadata_key: action_value}  # type: ignore
+        # Ensure we preserve all existing data, especially impact_form_data
+        data: OpeningData = OpeningData()
+        data.update(opening_data)
+        data[metadata_key] = action_value  # type: ignore
+        
         user = get_user_from_context(body)
         view = cls().build_modal_fn(open_incident_context=data, user=user)
 
