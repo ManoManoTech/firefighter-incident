@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-import os
 from functools import cache
 from textwrap import TextWrapper
 from typing import TYPE_CHECKING, Any, TypeVar
@@ -86,12 +85,11 @@ def user_slack_handle_or_name(user: User | None, slack_user_id: str | None = Non
     # In test mode: check if the user has a valid slack_id (not production ID)
     if test_mode and hasattr(user, "slack_user") and user.slack_user and user.slack_user.slack_id:
         # Skip production IDs that don't exist in test workspace - fallback to user name
-        if user.slack_user.slack_id.startswith('U') and len(user.slack_user.slack_id) >= 9:
+        if user.slack_user.slack_id.startswith("U") and len(user.slack_user.slack_id) >= 9:
             # This looks like a production ID, fallback to user name in test mode
             return user.full_name
-        else:
-            # Valid test environment slack_id
-            return f"<@{user.slack_user.slack_id}>"
+        # Valid test environment slack_id
+        return f"<@{user.slack_user.slack_id}>"
 
     # In production: use the stored user.slack_user.slack_id from database
     if hasattr(user, "slack_user") and user.slack_user and user.slack_user.slack_id:
