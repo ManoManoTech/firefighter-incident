@@ -435,12 +435,6 @@ class OpenModal(SlackModal):
 
                 impact_descriptions = OpenModal._get_impact_descriptions(open_incident_context)
                 
-                # Add incident type if selected for normal incidents
-                incident_type_text = ""
-                if selected_response_type == "normal":
-                    incident_type_value = open_incident_context.get("incident_type")
-                    if incident_type_value:
-                        incident_type_text = f"> :busts_in_silhouette: Affected users: {incident_type_value}\n"
                 blocks.append(
                     ContextBlock(
                         elements=[
@@ -448,7 +442,6 @@ class OpenModal(SlackModal):
                                 text=f"> {priority.emoji} Selected priority: *{priority} - {priority.description}*\n"
                                 f"> ⏱️ SLA: {priority.sla}\n"
                                 f"> :gear: Process: {process}\n"
-                                f"{incident_type_text}"
                                 f"> :pushpin: Selected impacts:\n"
                                 f"{impact_descriptions}"
                                 + (
@@ -491,7 +484,21 @@ class OpenModal(SlackModal):
             return ""
         
         impact_descriptions = ""
-        for value in impact_form_data.values():
+        for field_name, original_value in impact_form_data.items():
+            value = original_value
+            # Handle case where value might be an ID instead of an object
+            if isinstance(value, int | str) and not hasattr(value, "name"):
+                # Try to get the object from the database
+                form = SelectImpactForm()
+                if field_name in form.fields:
+                    field = form.fields[field_name]
+                    if hasattr(field, 'queryset') and field.queryset is not None:
+                        try:
+                            value = field.queryset.get(pk=value)
+                        except field.queryset.model.DoesNotExist:
+                            logger.warning(f"Could not find impact object with pk={value} for field {field_name}")
+                            continue
+            
             description = OpenModal._format_single_impact_description(value)
             if description:
                 impact_descriptions += description
