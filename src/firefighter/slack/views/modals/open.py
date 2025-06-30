@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import logging
 from datetime import timedelta
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Any, Literal, cast
 
 from django.conf import settings
 from django.utils import timezone
@@ -412,10 +412,11 @@ class OpenModal(SlackModal):
 
         # Set response type based on priority recommendation
         if priority.recommended_response_type:
-            open_incident_context["response_type"] = priority.recommended_response_type
+            open_incident_context["response_type"] = cast("ResponseType | None", priority.recommended_response_type)
         else:
             # Default fallback: P1/P2/P3 = critical, P4/P5 = normal
-            open_incident_context["response_type"] = "critical" if priority_value < 4 else "normal"
+            response_type = cast("ResponseType", "critical" if priority_value < 4 else "normal")
+            open_incident_context["response_type"] = response_type
 
     @staticmethod
     def _build_response_type_blocks(open_incident_context: OpeningData) -> list[Block]:
@@ -615,7 +616,7 @@ class OpenModal(SlackModal):
         # Ensure we preserve all existing data, especially impact_form_data
         data: OpeningData = OpeningData()
         data.update(opening_data)
-        data[metadata_key] = action_value  # type: ignore
+        data[metadata_key] = action_value
         
         user = get_user_from_context(body)
         view = cls().build_modal_fn(open_incident_context=data, user=user)

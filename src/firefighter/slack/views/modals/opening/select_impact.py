@@ -209,12 +209,12 @@ class SelectImpactModal(
             priority = Priority.objects.get(value=suggested_priority_value)
             # Use priority recommendation if available
             if priority.recommended_response_type:
-                return priority.recommended_response_type
+                return cast("ResponseType", priority.recommended_response_type)
         except Priority.DoesNotExist:
             logger.warning(f"Priority with value {suggested_priority_value} does not exist")
 
         # Fallback logic: P1/P2/P3 = critical, P4/P5 = normal
-        return "critical" if suggested_priority_value < 4 else "normal"
+        return cast("ResponseType", "critical" if suggested_priority_value < 4 else "normal")
 
     @staticmethod
     def _update_private_metadata(
