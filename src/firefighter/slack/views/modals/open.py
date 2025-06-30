@@ -435,7 +435,7 @@ class OpenModal(SlackModal):
                 process = ":slack: Slack :jira_new: Jira ticket" if open_incident_context.get("response_type") == "critical" else ":jira_new: Jira ticket"
 
                 impact_descriptions = OpenModal._get_impact_descriptions(open_incident_context)
-                
+
                 blocks.append(
                     ContextBlock(
                         elements=[
@@ -483,7 +483,7 @@ class OpenModal(SlackModal):
         impact_form_data = open_incident_context.get("impact_form_data", {})
         if not impact_form_data:
             return ""
-        
+
         impact_descriptions = ""
         for field_name, original_value in impact_form_data.items():
             value = original_value
@@ -493,18 +493,18 @@ class OpenModal(SlackModal):
                 form = SelectImpactForm()
                 if field_name in form.fields:
                     field = form.fields[field_name]
-                    if hasattr(field, 'queryset') and field.queryset is not None:
+                    if hasattr(field, "queryset") and field.queryset is not None:
                         try:
                             value = field.queryset.get(pk=value)
                         except field.queryset.model.DoesNotExist:
                             logger.warning(f"Could not find impact object with pk={value} for field {field_name}")
                             continue
-            
+
             description = OpenModal._format_single_impact_description(value)
             if description:
                 impact_descriptions += description
         return impact_descriptions
-    
+
     @staticmethod
     def _format_single_impact_description(value: Any) -> str:
         """Format a single impact value into description text."""
@@ -617,7 +617,7 @@ class OpenModal(SlackModal):
         data: OpeningData = OpeningData()
         data.update(opening_data)
         data[metadata_key] = action_value
-        
+
         user = get_user_from_context(body)
         view = cls().build_modal_fn(open_incident_context=data, user=user)
 

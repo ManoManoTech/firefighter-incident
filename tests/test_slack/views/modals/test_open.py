@@ -4,9 +4,7 @@ from typing import Any
 from unittest.mock import MagicMock, Mock, patch
 
 import pytest
-from slack_sdk.models.blocks.block_elements import ButtonElement
 from slack_sdk.models.blocks.blocks import (
-    ActionsBlock,
     ContextBlock,
 )
 
@@ -107,24 +105,24 @@ def test_build_response_type_blocks_bis(open_incident_context: OpeningData) -> N
     open_incident_context["response_type"] = "critical"
     blocks = OpenModal._build_response_type_blocks(open_incident_context)
     assert len(blocks) == 0
-    
+
     # With valid impact_form_data, should return context blocks
     mock_impact_form = Mock()
     mock_impact_form.is_valid.return_value = True
     mock_impact_form.suggest_priority_from_impact.return_value = 1
-    
+
     # Mock Priority object
     mock_priority = Mock()
     mock_priority.emoji = "🔴"
     mock_priority.description = "Critical"
     mock_priority.sla = "15 min"
     mock_priority.recommended_response_type = None
-    
+
     open_incident_context["impact_form_data"] = {"test_field": "test_value"}
-    
-    with patch('firefighter.slack.views.modals.open.SelectImpactForm', return_value=mock_impact_form), \
-         patch('firefighter.slack.views.modals.open.Priority.objects.get', return_value=mock_priority), \
-         patch.object(OpenModal, '_get_impact_descriptions', return_value="Test impact"):
+
+    with patch("firefighter.slack.views.modals.open.SelectImpactForm", return_value=mock_impact_form), \
+         patch("firefighter.slack.views.modals.open.Priority.objects.get", return_value=mock_priority), \
+         patch.object(OpenModal, "_get_impact_descriptions", return_value="Test impact"):
         blocks = OpenModal._build_response_type_blocks(open_incident_context)
         assert len(blocks) == 1
         first_block = blocks[0]
