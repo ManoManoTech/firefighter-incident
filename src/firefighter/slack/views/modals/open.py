@@ -12,7 +12,6 @@ from django.utils.translation import ngettext
 from slack_sdk.models.blocks.basic_components import MarkdownTextObject, Option
 from slack_sdk.models.blocks.block_elements import ButtonElement, StaticSelectElement
 from slack_sdk.models.blocks.blocks import (
-    ActionsBlock,
     Block,
     ContextBlock,
     DividerBlock,
@@ -74,7 +73,9 @@ class OpenModal(SlackModal):
         # 1. Check if impact form is good
         is_impact_form_valid: bool = self._check_impact_form(open_incident_context)
 
-        # 2. Check if we have a normal incident type
+        # 2. Auto-determine response type based on priority
+        self._auto_set_response_type(open_incident_context)
+
         incident_type_value: str | None = open_incident_context.get(
             "incident_type", None
         )
@@ -181,11 +182,18 @@ class OpenModal(SlackModal):
             SelectImpactModal,
         )
 
+        # Check if we have actual impacts (not all "NO") by checking if response_type is set
+        has_real_impacts = open_incident_context.get("response_type") is not None
+
+        # Show ✅ only if form is valid AND has real impacts, otherwise 📝
+        emoji = "✅" if impact_form_done and has_real_impacts else "📝"
+        button_text = "Edit impacts" if impact_form_done and has_real_impacts else "Set impacts"
+
         return [
             SectionBlock(
-                text=f"{'✅' if impact_form_done else '📝'} First, define the incident impacts and priority.",
+                text=f"{emoji} First, define the incident impacts and priority.",
                 accessory=ButtonElement(
-                    text="Edit impacts" if impact_form_done else "Set impacts",
+                    text=button_text,
                     action_id=SelectImpactModal.push_action,
                     value=json.dumps(open_incident_context, cls=SlackFormJSONEncoder),
                 ),
@@ -372,39 +380,52 @@ class OpenModal(SlackModal):
         return is_valid, details_form_class, details_form
 
     @staticmethod
+    def _auto_set_response_type(open_incident_context: OpeningData) -> None:
+        """Auto-determine response type based on priority from impact form."""
+        impact_form_data = open_incident_context.get("impact_form_data")
+        if not impact_form_data:
+            # Clear response_type and priority if no impact data
+            open_incident_context.pop("response_type", None)
+            open_incident_context.pop("priority", None)
+            return
+
+        impact_form = SelectImpactForm(impact_form_data)
+        if not impact_form.is_valid():
+            # Clear response_type and priority if form is invalid
+            open_incident_context.pop("response_type", None)
+            open_incident_context.pop("priority", None)
+            return
+
+        priority_value = impact_form.suggest_priority_from_impact()
+
+        # If no impacts are selected (all set to "NO"), don't set priority/response_type
+        # Priority value 6 corresponds to LevelChoices.NONE.priority
+        if priority_value == 6:
+            open_incident_context.pop("response_type", None)
+            open_incident_context.pop("priority", None)
+            return
+
+        priority = Priority.objects.get(value=priority_value)
+
+        # Set priority in context
+        open_incident_context["priority"] = priority
+
+        # Set response type based on priority recommendation
+        if priority.recommended_response_type:
+            open_incident_context["response_type"] = cast("ResponseType | None", priority.recommended_response_type)
+        else:
+            # Default fallback: P1/P2/P3 = critical, P4/P5 = normal
+            response_type = cast("ResponseType", "critical" if priority_value < 4 else "normal")
+            open_incident_context["response_type"] = response_type
+
+    @staticmethod
     def _build_response_type_blocks(open_incident_context: OpeningData) -> list[Block]:
         selected_response_type = open_incident_context.get("response_type")
         if selected_response_type not in {"critical", "normal"}:
             return []
 
-        response_types: list[ResponseType] = cast(
-            "list[ResponseType]", INCIDENT_TYPES.keys()
-        )
-        elements: list[ButtonElement] = []
-
-        for response_type in response_types:
-            if response_type != selected_response_type:
-                continue
-
-            is_selected = (
-                open_incident_context.get("response_type") == response_type
-                or len(INCIDENT_TYPES) == 1
-            )
-            style: str | None = "primary" if is_selected else None
-            text = (
-                ":slack: Slack :jira_new: Jira ticket"
-                if response_type == "critical"
-                else ":jira_new: Jira ticket"
-            )
-            button = ButtonElement(
-                text=text,
-                action_id=f"incident_open_set_res_type_{response_type}",
-                value=json.dumps(open_incident_context, cls=SlackFormJSONEncoder),
-                style=style,
-            )
-            elements.append(button)
-
-        blocks: list[Block] = [ActionsBlock(elements=elements)]
+        blocks: list[Block] = []
+        # No buttons needed - response type is auto-determined
         if impact_form_data := open_incident_context.get("impact_form_data"):
             impact_form = SelectImpactForm(impact_form_data)
             if impact_form.is_valid():
@@ -414,6 +435,7 @@ class OpenModal(SlackModal):
                 process = ":slack: Slack :jira_new: Jira ticket" if open_incident_context.get("response_type") == "critical" else ":jira_new: Jira ticket"
 
                 impact_descriptions = OpenModal._get_impact_descriptions(open_incident_context)
+
                 blocks.append(
                     ContextBlock(
                         elements=[
@@ -422,12 +444,12 @@ class OpenModal(SlackModal):
                                 f"> ⏱️ SLA: {priority.sla}\n"
                                 f"> :gear: Process: {process}\n"
                                 f"> :pushpin: Selected impacts:\n"
-                                f"{impact_descriptions}\n"
+                                f"{impact_descriptions}"
                                 + (
                                     (
-                                        "\n> Critical incidents are for *emergency* only"
+                                        "> :warning: Critical incidents are for *emergency* only"
                                         + (
-                                            f" <{SLACK_SEVERITY_HELP_GUIDE_URL}|learn more>"
+                                            f" <{SLACK_SEVERITY_HELP_GUIDE_URL}|more info>"
                                             if SLACK_SEVERITY_HELP_GUIDE_URL
                                             else "."
                                         )
@@ -459,17 +481,55 @@ class OpenModal(SlackModal):
     @staticmethod
     def _get_impact_descriptions(open_incident_context: OpeningData) -> str:
         impact_form_data = open_incident_context.get("impact_form_data", {})
+        if not impact_form_data:
+            return ""
+
         impact_descriptions = ""
-        if impact_form_data:
-            for value in impact_form_data.values():
-                if value.name != "NO" and value.description:
-                    if hasattr(value, "impact_type_id") and value.impact_type_id:
-                        impact_type = ImpactType.objects.get(pk=value.impact_type_id)
-                        if impact_type:
-                            impact_descriptions += f"> \u00A0\u00A0 :exclamation: {impact_type} - {value}\n"
-                    for line in str(value.description).splitlines():
-                        impact_descriptions += f"> \u00A0\u00A0\u00A0\u00A0\u00A0\u00A0 • {line}\n"
+        for field_name, original_value in impact_form_data.items():
+            value = original_value
+            # Handle case where value might be an ID instead of an object
+            if isinstance(value, int | str) and not hasattr(value, "name"):
+                # Try to get the object from the database
+                form = SelectImpactForm()
+                if field_name in form.fields:
+                    field = form.fields[field_name]
+                    if hasattr(field, "queryset") and field.queryset is not None:
+                        try:
+                            value = field.queryset.get(pk=value)
+                        except field.queryset.model.DoesNotExist:
+                            logger.warning(f"Could not find impact object with pk={value} for field {field_name}")
+                            continue
+
+            description = OpenModal._format_single_impact_description(value)
+            if description:
+                impact_descriptions += description
         return impact_descriptions
+
+    @staticmethod
+    def _format_single_impact_description(value: Any) -> str:
+        """Format a single impact value into description text."""
+        # Handle object with name and description attributes (impact levels)
+        if hasattr(value, "name") and hasattr(value, "description"):
+            if value.name == "NO" or not value.description:
+                return ""
+
+            description = ""
+            # Add impact type header if available
+            if hasattr(value, "impact_type_id") and value.impact_type_id:
+                try:
+                    impact_type = ImpactType.objects.get(pk=value.impact_type_id)
+                    # Use value.name instead of value to avoid showing IDs
+                    description += f"> \u00A0\u00A0 :exclamation: {impact_type} - {value.name}\n"
+                except ImpactType.DoesNotExist:
+                    description += f"> \u00A0\u00A0 :exclamation: {value.name}\n"
+
+            # Add description lines
+            for line in str(value.description).splitlines():
+                description += f"> \u00A0\u00A0\u00A0\u00A0\u00A0\u00A0 • {line}\n"
+            return description
+
+        # Skip string values - incident_type is handled separately, not in impact descriptions
+        return ""
 
     @staticmethod
     def get_details_modal_form_class(
@@ -531,21 +591,7 @@ class OpenModal(SlackModal):
                     logger.exception("Error triggering incident workflow")
                     # XXX warn the user via DM!
 
-    @app.action("incident_open_set_res_type_normal")
-    @app.action("incident_open_set_res_type_critical")
-    @staticmethod
-    def handle_set_incident_response_type_action(
-        ack: Ack, body: dict[str, Any]
-    ) -> None:
-        action_name: str = body.get("actions", [{}])[0].get("action_id", "")
-        action_name = action_name.replace("incident_open_set_res_type_", "")
-        opening_data = cast(
-            "OpeningData", json.loads(body.get("actions", [{}])[0].get("value", {})) or {}
-        )
-
-        OpenModal._update_incident_modal(
-            action_name, "response_type", ack, body, opening_data
-        )
+# Response type buttons removed - now auto-determined based on priority
 
     @app.action("set_type")
     @staticmethod
@@ -567,7 +613,11 @@ class OpenModal(SlackModal):
         body: dict[str, Any],
         opening_data: OpeningData,
     ) -> None:
-        data: OpeningData = {**opening_data, metadata_key: action_value}  # type: ignore
+        # Ensure we preserve all existing data, especially impact_form_data
+        data: OpeningData = OpeningData()
+        data.update(opening_data)
+        data[metadata_key] = action_value
+
         user = get_user_from_context(body)
         view = cls().build_modal_fn(open_incident_context=data, user=user)
 

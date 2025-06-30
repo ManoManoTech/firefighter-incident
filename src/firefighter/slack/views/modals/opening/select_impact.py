@@ -205,7 +205,16 @@ class SelectImpactModal(
     def _calculate_proposed_incident_type(
         suggested_priority_value: int,
     ) -> ResponseType:
-        return "critical" if suggested_priority_value <= 3 else "normal"
+        try:
+            priority = Priority.objects.get(value=suggested_priority_value)
+            # Use priority recommendation if available
+            if priority.recommended_response_type:
+                return cast("ResponseType", priority.recommended_response_type)
+        except Priority.DoesNotExist:
+            logger.warning(f"Priority with value {suggested_priority_value} does not exist")
+
+        # Fallback logic: P1/P2/P3 = critical, P4/P5 = normal
+        return cast("ResponseType", "critical" if suggested_priority_value < 4 else "normal")
 
     @staticmethod
     def _update_private_metadata(
@@ -230,12 +239,36 @@ class SelectImpactModal(
                     )
                 except queryset.model.DoesNotExist:
                     form.form.data[field_name] = None  # type: ignore
+        suggested_priority_value = form.form.suggest_priority_from_impact()
+
+        # If no impacts are selected (all set to "NO"), don't set priority/response_type
+        if suggested_priority_value == 6:  # LevelChoices.NONE.priority
+            return OpeningData(
+                priority=None,
+                response_type=None,
+                impact_form_data=cast("dict[str, Any]", form.form.data),
+                details_form_data=private_metadata_raw.get("details_form_data", {}),
+                incident_type=private_metadata_raw.get("incident_type"),
+            )
+
+        try:
+            priority = Priority.objects.get(value=suggested_priority_value)
+        except Priority.DoesNotExist as err:
+            logger.exception(
+                f"Priority with value {suggested_priority_value} does not exist"
+            )
+            # Fallback to default priority (assuming P3 exists)
+            fallback_priority = Priority.objects.filter(value__gte=3).first()
+            if not fallback_priority:
+                # If no priority exists, create a minimal fallback
+                logger.exception("No priority found in database")
+                raise ValueError("No priority configuration found in database") from err
+            priority = fallback_priority
+
         return OpeningData(
-            priority=Priority.objects.get(
-                value=form.form.suggest_priority_from_impact()
-            ),
+            priority=priority,
             response_type=SelectImpactModal._calculate_proposed_incident_type(
-                form.form.suggest_priority_from_impact()
+                suggested_priority_value
             ),
             impact_form_data=cast("dict[str, Any]", form.form.data),
             details_form_data=private_metadata_raw.get("details_form_data", {}),
