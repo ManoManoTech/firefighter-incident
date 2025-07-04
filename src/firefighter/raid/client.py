@@ -65,8 +65,8 @@ class RaidJiraClient(JiraClient):
         if priority is None:
             priority_value = "-"
         else:
-            if not 1 <= priority <= 4:
-                raise ValueError("Priority must be between 1 and 4")
+            if not 1 <= priority <= 5:
+                raise ValueError("Priority must be between 1 and 5")
             priority_value = str(priority)
         if area:
             extra_args["customfield_10920"] = str(area)

@@ -300,11 +300,13 @@ class OpenModal(SlackModal):
 
             if slack_msg is None:
                 slack_msg = "> :slack: A dedicated Slack channel will be created, and responders will be invited to help.\n"
-            text = f"> :firefighter_incident: This will trigger a critical incident response.\n{slack_msg}> :jira_new: An associated Jira ticket will also be created."
+            #text = f"> :firefighter_incident: This will trigger a critical incident response.\n{slack_msg}> :jira_new: An associated Jira ticket will also be created."
+            text = f"> :jira_new: An associated Jira ticket will also be created."
             if not is_during_office_hours(timezone.now()):
                 text += "\n> :pagerduty: If you need it, you'll be able to escalate the incident to our 24/7 on-call response teams."
         else:
-            text = "> :raid_logo: This will trigger a normal incident response.\n> :jira_new: A Jira ticket will be created."
+            #text = "> :raid_logo: This will trigger a normal incident response.\n> :jira_new: A Jira ticket will be created."
+            text = "> :jira_new: A Jira ticket will be created."
         done_review_blocks += [SectionBlock(text=text)]
 
         return done_review_blocks

@@ -148,7 +148,7 @@ def _home_incident_element(
                     text=f":rotating_light: *Priority:* {incident.priority.emoji} {incident.priority.name}"
                 ),
                 MarkdownTextObject(
-                    text=f":package: *Component:* {incident.component.group.name} - {incident.component.name}"
+                    text=f":package: *Issue category:* {incident.component.group.name} - {incident.component.name}"
                 ),
                 MarkdownTextObject(
                     text=f":speaking_head_in_silhouette: *Last update:* {date_time(incident.updated_at)}"

@@ -38,7 +38,7 @@ def trigger_oncall(
         details = f"""Triggered from {APP_DISPLAY_NAME} incident #{incident.id} {f"by {triggered_by.full_name}" if triggered_by else ""}
 Priority: {incident.priority}
 Environment: {incident.environment}
-Component: {incident.component}
+Issue category: {incident.component.group.name} - {incident.component.name}
 FireFighter page: {incident.status_page_url + "?utm_medium=FireFighter+PagerDuty&utm_source=PagerDuty+Incident&utm_campaign=OnCall+Message+In+Channel"}
 Slack channel #{incident.slack_channel_name}: {incident.slack_channel_url}
 
