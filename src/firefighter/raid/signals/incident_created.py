@@ -43,7 +43,7 @@ def create_ticket(
         description=f"""{incident.description}\n
 \n
 🧯 This incident has been created for a critical incident. Links below to Slack and {APP_DISPLAY_NAME}.\n
-📦 Component: {incident.component.name} ({incident.component.group.name})\n
+📦 Issue category: {incident.component.name} ({incident.component.group.name})\n
 {incident.priority.emoji} Priority: {incident.priority.name}\n""",
         assignee=None,
         reporter=account_id,
