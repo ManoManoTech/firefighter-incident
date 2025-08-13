@@ -112,7 +112,7 @@ class IncidentChannel(Conversation):
 
     @slack_client
     def invite_users(
-        self, users_mapped: list[User], client: WebClient = DefaultWebClient
+        self, users_mapped: list[User], client: WebClient = DefaultWebClient, slack_user_id: str | None = None
     ) -> None:
         """Invite users to the conversation, if they have a Slack user linked and are active.
 
@@ -121,7 +121,7 @@ class IncidentChannel(Conversation):
         users_with_slack: list[User] = self._get_active_slack_users(users_mapped)
         users_with_slack = list(set(users_with_slack))  # Remove duplicates
 
-        user_id_list: set[str] = self._get_slack_id_list(users_with_slack)
+        user_id_list: set[str] = self._get_slack_id_list(users_with_slack, slack_user_id)
         if not user_id_list:
             logger.info(f"No users to invite to the conversation {self}.")
             return
@@ -161,19 +161,70 @@ class IncidentChannel(Conversation):
         return users_with_slack
 
     @staticmethod
-    def _get_slack_id_list(users_with_slack: list[User]) -> set[str]:
-        return {u.slack_user.slack_id for u in users_with_slack if u.slack_user}
+    def _get_slack_id_list(users_with_slack: list[User], slack_user_id: str | None = None) -> set[str]:
+        from firefighter.firefighter.settings.settings_utils import (
+            config,
+        )
+
+        test_mode = config("TEST_MODE", default="False", cast=str).lower() == "true"
+        slack_ids = set()
+
+        for user in users_with_slack:
+            if not user:
+                continue
+
+            # In test mode, handle user ID mapping more carefully
+            if test_mode and hasattr(user, "slack_user") and user.slack_user and user.slack_user.slack_id:
+                stored_slack_id = user.slack_user.slack_id
+
+                # Skip users with old production IDs that don't exist in test workspace
+                # Old production IDs are alphabetic only, while test IDs contain numbers
+                if stored_slack_id.startswith("U") and not any(c.isdigit() for c in stored_slack_id):
+                    logger.info(f"Test mode: Skipping user {user.id} with production slack_id {stored_slack_id}")
+                    continue
+                # Valid test ID, use it
+                slack_ids.add(stored_slack_id)
+            elif hasattr(user, "slack_user") and user.slack_user and user.slack_user.slack_id:
+                # Non-test mode: use stored slack_id
+                slack_ids.add(user.slack_user.slack_id)
+
+        # In test mode, ensure the current user (from the event) is included if provided
+        if test_mode and slack_user_id and slack_user_id not in slack_ids:
+            logger.info(f"Test mode: Adding current user's Slack ID {slack_user_id} to invitation list")
+            slack_ids.add(slack_user_id)
+
+        return slack_ids
 
     def _invite_users_to_conversation(
         self, user_id_list: set[str], client: WebClient
     ) -> set[str]:
+        # In test mode, filter out invalid user IDs to prevent errors
+        from firefighter.firefighter.settings.settings_utils import (
+            config,
+        )
+        test_mode = config("TEST_MODE", default="False", cast=str).lower() == "true"
+
+        if test_mode:
+            logger.info(f"Test mode: Attempting to invite users with IDs: {user_id_list}")
+
         try:
             done = self._invite_users_with_slack_id(user_id_list, client)
-        except SlackApiError:
+        except SlackApiError as e:
             logger.warning(
                 f"Could not batch import Slack users! Slack IDs: {user_id_list}",
                 exc_info=True,
             )
+
+            # In test mode, if batch invite fails due to user_not_found, skip individual retries
+            if test_mode and e.response.get("error") == "user_not_found":
+                logger.info("Test mode: Skipping individual invitations for user_not_found errors")
+                return set()
+
+            # If batch invite fails due to already_in_channel, consider all users as successfully invited
+            if e.response.get("error") == "already_in_channel":
+                logger.debug("All users already in channel - this is expected")
+                return user_id_list
+
             done = self._invite_users_to_conversation_individually(user_id_list, client)
         return done
 
@@ -193,14 +244,30 @@ class IncidentChannel(Conversation):
     def _invite_users_to_conversation_individually(
         self, slack_user_ids: set[str], client: WebClient
     ) -> set[str]:
+        from firefighter.firefighter.settings.settings_utils import (
+            config,
+        )
+        test_mode = config("TEST_MODE", default="False", cast=str).lower() == "true"
+
         done = set()
         for slack_user_id in slack_user_ids:
             try:
                 self._invite_users_with_slack_id({slack_user_id}, client)
                 done.add(slack_user_id)
-            except SlackApiError:
+            except SlackApiError as e:
+                error_type = e.response.get("error", "unknown_error")
+
+                if test_mode and error_type == "user_not_found":
+                    logger.info(f"Test mode: Skipping user_not_found error for user ID {slack_user_id}")
+                    continue
+
+                if error_type == "already_in_channel":
+                    logger.debug(f"User {slack_user_id} is already in channel - this is expected")
+                    done.add(slack_user_id)  # Consider as successfully "invited"
+                    continue
+
                 logger.warning(
-                    f"Could not import Slack user! User ID: {slack_user_id}",
+                    f"Could not import Slack user! User ID: {slack_user_id} - {error_type}",
                     exc_info=True,
                 )
         return done

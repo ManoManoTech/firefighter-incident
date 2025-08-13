@@ -61,13 +61,41 @@ def date_time(date: datetime | None) -> str:
     return localtime(date).strftime("%Y-%m-%d %H:%M")
 
 
-def user_slack_handle_or_name(user: User | None) -> str:
-    """Returns the Slack handle of the user in Slack MD format (`<@SLACK_ID>`) or the user full name."""
+def user_slack_handle_or_name(user: User | None, slack_user_id: str | None = None) -> str:
+    """Returns the Slack handle of the user in Slack MD format (`<@SLACK_ID>`) or the user full name.
+
+    Args:
+        user: The user to display
+        slack_user_id: Optional Slack user ID from current event context (used in TEST_MODE for the current action performer only)
+
+    Returns:
+        Slack handle format '<@USER_ID>' in production or test mode, or user full name as fallback
+    """
     if user is None:
         return "∅"
 
-    if hasattr(user, "slack_user") and user.slack_user:
+    # In test mode: if slack_user_id is provided, it's only for the current action performer
+    # For other users (assigned to roles), use their stored slack_id if valid or fallback to name
+    from firefighter.firefighter.settings.settings_utils import config  # noqa: PLC0415
+    test_mode = config("TEST_MODE", default="False", cast=str).lower() == "true"
+    if test_mode and slack_user_id:
+        # This is specifically for the "Updated by" context where we use the current action performer's ID
+        return f"<@{slack_user_id}>"
+
+    # In test mode: check if the user has a valid slack_id (not production ID)
+    if test_mode and hasattr(user, "slack_user") and user.slack_user and user.slack_user.slack_id:
+        # Skip production IDs that don't exist in test workspace - fallback to user name
+        if user.slack_user.slack_id.startswith("U") and len(user.slack_user.slack_id) >= 9:
+            # This looks like a production ID, fallback to user name in test mode
+            return user.full_name
+        # Valid test environment slack_id
         return f"<@{user.slack_user.slack_id}>"
+
+    # In production: use the stored user.slack_user.slack_id from database
+    if hasattr(user, "slack_user") and user.slack_user and user.slack_user.slack_id:
+        return f"<@{user.slack_user.slack_id}>"
+
+    # Fallback to user full name
     return user.full_name
 
 
