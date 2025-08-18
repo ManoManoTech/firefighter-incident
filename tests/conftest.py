@@ -71,7 +71,6 @@ def django_db_setup(django_db_setup: Any, django_db_blocker: DjangoDbBlocker) ->
         call_command(
             "loaddata", fixtures_path / "incidents" / "incident_role_type.json"
         )
-        call_command("loaddata", fixtures_path / "raid" / "area.json")
     django_db_blocker.restore()
 
 

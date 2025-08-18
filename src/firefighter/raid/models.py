@@ -58,24 +58,6 @@ class JiraTicketImpact(models.Model):
         return f"{self.jira_ticket.key}: {self.impact}"
 
 
-class RaidArea(models.Model):
-    id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=128)
-    area = models.CharField(
-        choices=(
-            ("Sellers", "Sellers"),
-            ("Internal", "Internal"),
-            ("Customers", "Customers"),
-        ),
-        max_length=32,
-    )
-
-    class Meta(TypedModelMeta):
-        unique_together = ("name", "area")
-
-    def __str__(self) -> str:
-        return self.name
-
 
 class FeatureTeam(models.Model):
     id = models.AutoField(primary_key=True)
