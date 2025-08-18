@@ -6,7 +6,7 @@ import django_tables2 as tables
 from django.conf import settings
 
 from firefighter.firefighter.tables_utils import BASE_TABLE_ATTRS
-from firefighter.incidents.models import Component, Incident
+from firefighter.incidents.models import IncidentCategory, Incident
 from firefighter.incidents.models.incident import IncidentStatus
 
 if TYPE_CHECKING:
@@ -23,8 +23,8 @@ class IncidentTable(tables.Table):
             "priority",
             "status",
             "environment",
-            "component",
-            "component__group",
+            "incident_category",
+            "incident_category__group",
             "created_at",
         )
         order_by = "-id"
@@ -63,13 +63,13 @@ class IncidentTable(tables.Table):
         attrs={"td": {"class": "table-td text-center"}},
     )
     environment = tables.Column(attrs={"td": {"class": "table-td text-center"}})
-    component = tables.Column(attrs={"td": {"class": "table-td text-center"}})
-    component__group = tables.Column(attrs={"td": {"class": "table-td text-center"}})
+    incident_category = tables.Column(attrs={"td": {"class": "table-td text-center"}})
+    incident_category__group = tables.Column(attrs={"td": {"class": "table-td text-center"}})
 
 
-class ComponentsTable(tables.Table):
+class IncidentCategoriesTable(tables.Table):
     class Meta:
-        model = Component
+        model = IncidentCategory
         template_name = "incidents/table.html"
         fields = (
             "name",

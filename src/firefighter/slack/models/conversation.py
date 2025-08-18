@@ -11,7 +11,7 @@ from django_stubs_ext.db.models import TypedModelMeta
 from slack_sdk.errors import SlackApiError
 
 from firefighter.firefighter.utils import get_in
-from firefighter.incidents.models import Component, User
+from firefighter.incidents.models import IncidentCategory, User
 from firefighter.slack.messages.base import SlackMessageStrategy, SlackMessageSurface
 from firefighter.slack.models.user import SlackUser
 from firefighter.slack.slack_app import DefaultWebClient, SlackApp, slack_client
@@ -188,8 +188,8 @@ class Conversation(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     members = models.ManyToManyField(User, blank=True)
-    components = models.ManyToManyField["Component", "Component"](
-        Component, related_name="conversations", blank=True
+    incident_categories = models.ManyToManyField["IncidentCategory", "IncidentCategory"](
+        IncidentCategory, related_name="conversations", blank=True
     )
     tag = models.CharField(
         max_length=80,

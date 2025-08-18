@@ -6,7 +6,7 @@ from django import forms
 
 from firefighter.incidents.forms.select_impact import SelectImpactForm
 from firefighter.incidents.forms.utils import GroupedModelChoiceField
-from firefighter.incidents.models import Component, Environment, Priority
+from firefighter.incidents.models import IncidentCategory, Environment, Priority
 from firefighter.incidents.models.incident import Incident
 from firefighter.incidents.signals import create_incident_conversation
 
@@ -52,11 +52,11 @@ class CreateIncidentForm(CreateIncidentFormBase):
         max_length=1200,
     )
 
-    component = GroupedModelChoiceField(
+    incident_category = GroupedModelChoiceField(
         choices_groupby="group",
         label="Issue category",
         queryset=(
-            Component.objects.all()
+            IncidentCategory.objects.all()
             .select_related("group")
             .order_by(
                 "group__order",

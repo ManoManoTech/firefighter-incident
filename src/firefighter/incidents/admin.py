@@ -19,7 +19,7 @@ from django.utils.translation import ngettext
 from slack_sdk.errors import SlackApiError
 
 from firefighter.incidents.models import (
-    Component,
+    IncidentCategory,
     Environment,
     Group,
     Incident,
@@ -63,7 +63,7 @@ logger = logging.getLogger(__name__)
 
 # Append inlines to these objects, from other modules
 user_inlines: list[type[InlineModelAdmin[Any, User]]] = []
-component_inlines: list[type[InlineModelAdmin[Any, Component]]] = []
+incident_category_inlines: list[type[InlineModelAdmin[Any, IncidentCategory]]] = []
 
 
 class IncidentCostInline(admin.TabularInline[IncidentCost, Incident]):
@@ -97,9 +97,9 @@ class IncidentMembershipInline(admin.StackedInline[IncidentMembership, Incident]
 incident_inlines: MutableSequence[type[InlineModelAdmin[Any, Incident]]] = []
 
 
-@admin.register(Component)
-class ComponentAdmin(admin.ModelAdmin[Component]):
-    model = Component
+@admin.register(IncidentCategory)
+class IncidentCategoryAdmin(admin.ModelAdmin[IncidentCategory]):
+    model = IncidentCategory
     list_display = ["name", "group", "order", "private", "deploy_warning"]
     list_editable = ["order", "group", "private"]
     list_display_links = ["name"]
@@ -111,7 +111,7 @@ class ComponentAdmin(admin.ModelAdmin[Component]):
         "created_at",
         "updated_at",
     ]
-    inlines = component_inlines
+    inlines = incident_category_inlines
 
     fieldsets = (
         (
@@ -132,8 +132,8 @@ class ComponentAdmin(admin.ModelAdmin[Component]):
     )
 
 
-class ComponentInline(admin.StackedInline[Component, Component]):
-    model = Component
+class IncidentCategoryInline(admin.StackedInline[IncidentCategory, IncidentCategory]):
+    model = IncidentCategory
     fields = ["name", "order"]
 
 
@@ -544,7 +544,7 @@ class GroupAdmin(admin.ModelAdmin[Group]):
     ]
     ordering = ["order"]
     list_display_links = ["name"]
-    inlines = [ComponentInline]
+    inlines = [IncidentCategoryInline]
     search_fields = ["name"]
 
 

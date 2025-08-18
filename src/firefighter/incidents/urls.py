@@ -3,8 +3,8 @@ from __future__ import annotations
 from django.urls import path
 
 from firefighter.incidents.views import views
-from firefighter.incidents.views.components.details import ComponentDetailView
-from firefighter.incidents.views.components.list import ComponentsViewList
+from firefighter.incidents.views.components.details import IncidentCategoryDetailView
+from firefighter.incidents.views.components.list import IncidentCategoriesViewList
 from firefighter.incidents.views.docs.metrics import MetricsView
 from firefighter.incidents.views.docs.role_types import (
     RoleTypeDetailView,
@@ -37,11 +37,11 @@ urlpatterns = [
         views.IncidentStatisticsView.as_view(),
         name="incident-statistics",
     ),
-    path("component/", ComponentsViewList.as_view(), name="component-list"),
+    path("incident-category/", IncidentCategoriesViewList.as_view(), name="incident-category-list"),
     path(
-        "component/<uuid:component_id>/",
-        ComponentDetailView.as_view(),
-        name="component-detail",
+        "incident-category/<uuid:incident_category_id>/",
+        IncidentCategoryDetailView.as_view(),
+        name="incident-category-detail",
     ),
     path(
         "user/<uuid:user_id>/",

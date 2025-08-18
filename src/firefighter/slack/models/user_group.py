@@ -8,7 +8,7 @@ from django.db import models
 from django_stubs_ext.db.models import TypedModelMeta
 
 from firefighter.firefighter.utils import get_first_in, get_in
-from firefighter.incidents.models import Component, User
+from firefighter.incidents.models import IncidentCategory, User
 from firefighter.slack.slack_app import DefaultWebClient, SlackApp, slack_client
 
 if TYPE_CHECKING:
@@ -167,8 +167,8 @@ class UserGroup(models.Model):
         help_text="Is this an external group, from an external Slack Workspace? Corresponds to the `is_external` field in the Slack API.",
     )
 
-    components = models.ManyToManyField["Component", "Component"](
-        Component,
+    incident_categories = models.ManyToManyField["IncidentCategory", "IncidentCategory"](
+        IncidentCategory,
         related_name="usergroups",
         blank=True,
         help_text="Incident created with this usergroup automatically add the group members to these issue categories.",
