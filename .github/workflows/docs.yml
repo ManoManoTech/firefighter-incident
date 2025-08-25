@@ -40,7 +40,7 @@ jobs:
           git add .
           git commit -a -m "chore(act): fake commit"
           git log
-      - uses: jdx/mise-action@v2
+      - uses: jdx/mise-action@v3
       - name: Install dependencies
         run: pdm install --dev -v && pdm info
       - name: "Check for mkdocs build --strict"
