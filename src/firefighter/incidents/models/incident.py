@@ -90,7 +90,7 @@ class IncidentManager(models.Manager["Incident"]):
         """
         with transaction.atomic():
             if "private" not in kwargs:
-                kwargs["private"] = kwargs["component"].private
+                kwargs["private"] = kwargs["incident_category"].private
             if "severity" not in kwargs and "priority" in kwargs:
                 kwargs["severity"] = Severity.objects.get(
                     value=kwargs["priority"].value

@@ -81,7 +81,7 @@ class ConversationAdmin(admin.ModelAdmin[Conversation]):
     list_max_show_all = 500
     search_fields = ["channel_id", "name", "tag"]
 
-    autocomplete_fields = ["components", "members"]
+    autocomplete_fields = ["incident_categories", "members"]
 
     def get_queryset(self, request: HttpRequest) -> QuerySet[Conversation]:
         """Restrict the queryset to only include conversations that are not IncidentChannels. Incident channels are managed in the IncidentChannelAdmin."""
@@ -155,7 +155,7 @@ class IncidentChannelAdmin(ConversationAdmin):
     ]
     list_max_show_all = 500
     search_fields = ["channel_id", "name", "incident__id"]
-    exclude = ("components",)
+    exclude = ("incident_categories",)
     readonly_fields = ("members",)
 
     def get_queryset(self, request: HttpRequest) -> QuerySet[IncidentChannel]:
@@ -208,7 +208,7 @@ class UserGroupAdmin(admin.ModelAdmin[UserGroup]):
         "updated_at",
     )
 
-    autocomplete_fields = ["components", "members"]
+    autocomplete_fields = ["incident_categories", "members"]
     search_fields = ["name", "handle", "description", "usergroup_id", "tag"]
 
     fieldsets = (
@@ -226,7 +226,7 @@ class UserGroupAdmin(admin.ModelAdmin[UserGroup]):
                 )
             },
         ),
-        (_("Firefighter attributes"), {"fields": ("tag", "components", "created_at", "updated_at")}),
+        (_("Firefighter attributes"), {"fields": ("tag", "incident_categories", "created_at", "updated_at")}),)
     )
 
     def save_model(
@@ -317,7 +317,7 @@ class UserGroupAdmin(admin.ModelAdmin[UserGroup]):
 
 
 class UserGroupInline(admin.StackedInline[UserGroup, Any]):
-    model = UserGroup.components.through  # type: ignore[assignment]
+    model = UserGroup.incident_categories.through  # type: ignore[assignment]
     show_change_link = True
     extra = 0
     verbose_name = "Slack User Group"
@@ -344,7 +344,7 @@ class IncidentChannelInline(admin.StackedInline[IncidentChannel, Any]):
 
 
 class ConversationInline(admin.StackedInline[Conversation, Any]):
-    model: type[Conversation] = Conversation.components.through  # type: ignore[assignment]
+    model: type[Conversation] = Conversation.incident_categories.through  # type: ignore[assignment]
     extra = 0
     verbose_name = "Slack Conversation"
     show_change_link = True

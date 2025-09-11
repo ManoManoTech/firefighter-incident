@@ -93,12 +93,12 @@ class IncidentCategoriesTable(tables.Table):
     )
 
     @staticmethod
-    def render_mtbf(record: Component, *args: Any) -> str:
+    def render_mtbf(record: IncidentCategory, *args: Any) -> str:
         mtbf: timedelta | None = record.mtbf  # type: ignore[attr-defined]
         return str(mtbf).split(".", maxsplit=1)[0] if mtbf else "N/A"
 
     @staticmethod
-    def render_incident_count(record: Component, *args: Any) -> int:
+    def render_incident_count(record: IncidentCategory, *args: Any) -> int:
         return int(record.incident_count) if record.incident_count else 0  # type: ignore[attr-defined]
 
     group__name = tables.Column(verbose_name="Group")
