@@ -229,8 +229,8 @@ class CloseModal(
         # If fields haven't changed, don't include them in the update.
         update_kwargs = {}
         for changed_key in form.changed_data:
-            if changed_key == "component":
-                update_kwargs["component_id"] = form.cleaned_data[changed_key].id
+            if changed_key == "incident_category":
+                update_kwargs["incident_category_id"] = form.cleaned_data[changed_key].id
             if changed_key in {"description", "title", "message"}:
                 update_kwargs[changed_key] = form.cleaned_data[changed_key]
         # Check can close
@@ -258,7 +258,7 @@ class CloseModal(
         return {
             "title": incident.title,
             "description": incident.description,
-            "component": incident.incident_category,
+            "incident_category": incident.incident_category,
         }
 
     @staticmethod

@@ -33,10 +33,17 @@ router.register(
     views.severities.PriorityViewSet,
     basename="priorities",
 )
+# Legacy endpoint for backward compatibility
 router.register(
     r"components",
-    views.components.ComponentViewSet,
+    views.components.IncidentCategoryViewSet,
     basename="components",
+)
+# New preferred endpoint
+router.register(
+    r"incident-categories",
+    views.components.IncidentCategoryViewSet,
+    basename="incident-categories",
 )
 router.register(
     r"groups",

@@ -564,7 +564,7 @@ class Incident(models.Model):
 
         _update_incident_field(self, "_status", status, updated_fields)
         _update_incident_field(self, "priority_id", priority_id, updated_fields)
-        _update_incident_field(self, "component_id", component_id, updated_fields)
+        _update_incident_field(self, "incident_category_id", incident_category_id, updated_fields)
         _update_incident_field(self, "title", title, updated_fields)
         _update_incident_field(self, "description", description, updated_fields)
         _update_incident_field(self, "environment_id", environment_id, updated_fields)
@@ -582,7 +582,7 @@ class Incident(models.Model):
                 status=status,  # type: ignore
                 priority_id=priority_id,
                 environment_id=environment_id,
-                incident_category_id=component_id,
+                incident_category_id=incident_category_id,
                 message=message,
                 created_by=created_by,
                 title=title,

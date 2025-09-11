@@ -134,6 +134,7 @@ def create_issue_internal(
     business_impact: str | None,
     team_to_be_routed: str | None,
     area: str | None,
+    incident_category: str | None = None,
 ) -> JiraObject:
     """Creates a Jira Incident Issue of type Internal.
 
@@ -147,6 +148,7 @@ def create_issue_internal(
         business_impact (str): Business impact of the issue
         team_to_be_routed (str): Team to be routed
         area (str): Area of the issue
+        incident_category (str): Incident category
     """
     issue = jira_client.create_issue(
         issuetype="Incident",
@@ -160,6 +162,7 @@ def create_issue_internal(
         business_impact=business_impact,
         suggested_team_routing=team_to_be_routed,
         area=area,
+        incident_category=incident_category,
     )
     check_issue_id(issue, title=title, reporter=reporter)
     return issue
@@ -176,6 +179,7 @@ def create_issue_customer(
     team_to_be_routed: str | None,
     area: str | None,
     zendesk_ticket_id: str | None,
+    incident_category: str | None = None,
 ) -> JiraObject:
     """Creates a Jira Incident issue of type Customer.
 
@@ -190,6 +194,7 @@ def create_issue_customer(
         team_to_be_routed (str): Team to be routed
         area (str): Area of the issue
         zendesk_ticket_id (str): Zendesk ticket id
+        incident_category (str): Incident category
     """
     issue = jira_client.create_issue(
         issuetype="Incident",
@@ -204,6 +209,7 @@ def create_issue_customer(
         suggested_team_routing=team_to_be_routed,
         area=area,
         zendesk_ticket_id=zendesk_ticket_id,
+        incident_category=incident_category,
     )
     check_issue_id(issue, title=title, reporter=reporter)
     return issue
@@ -223,6 +229,7 @@ def create_issue_seller(  # noqa: PLR0913, PLR0917
     is_key_account: bool | None,  # noqa: FBT001
     is_seller_in_golden_list: bool | None,  # noqa: FBT001
     zoho_desk_ticket_id: str | None,
+    incident_category: str | None = None,
 ) -> JiraObject:
     """Creates a Jira Incident issue of type Seller.
 
@@ -240,6 +247,7 @@ def create_issue_seller(  # noqa: PLR0913, PLR0917
         is_key_account (bool): Is key account
         is_seller_in_golden_list (bool): Is seller in golden list
         zoho_desk_ticket_id (str): Zoho desk ticket id
+        incident_category (str): Incident category
     """
     issue = jira_client.create_issue(
         issuetype="Incident",
@@ -257,6 +265,7 @@ def create_issue_seller(  # noqa: PLR0913, PLR0917
         is_key_account=is_key_account,
         is_seller_in_golden_list=is_seller_in_golden_list,
         zoho_desk_ticket_id=zoho_desk_ticket_id,
+        incident_category=incident_category,
     )
     check_issue_id(issue, title=title, reporter=reporter)
     return issue

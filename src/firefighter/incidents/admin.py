@@ -218,7 +218,7 @@ class IncidentUpdateInline(admin.StackedInline[IncidentUpdate, Incident]):
         "_status",
         "priority",
         "message",
-        "component",
+        "incident_category",
         "created_by",
     ]
     extra = 0
@@ -226,7 +226,7 @@ class IncidentUpdateInline(admin.StackedInline[IncidentUpdate, Incident]):
         "priority",
         "message",
         "_status",
-        "component",
+        "incident_category",
         "created_by",
         "commander",
         "communication_lead",
@@ -239,11 +239,11 @@ class IncidentUpdateInline(admin.StackedInline[IncidentUpdate, Incident]):
             .get_queryset(request)
             .select_related(
                 "priority",
-                "component",
+                "incident_category",
                 "incident",
                 "incident__priority",
-                "incident__component",
-                "component__group",
+                "incident__incident_category",
+                "incident_category__group",
                 "created_by",
                 "commander",
                 "communication_lead",
@@ -398,7 +398,7 @@ class IncidentAdmin(admin.ModelAdmin[Incident]):
         # Return None to display the change list page again.
 
     date_hierarchy = "created_at"
-    autocomplete_fields = ["created_by", "component"]
+    autocomplete_fields = ["created_by", "incident_category"]
     actions: list[_ActionCallable[Any, Incident]] = [
         compute_metrics,
         compute_and_purge_metrics,
@@ -410,14 +410,14 @@ class IncidentAdmin(admin.ModelAdmin[Incident]):
         "short_description",
         "_status",
         "priority",
-        "component",
+        "incident_category",
         "environment",
         "created_at",
         "updated_at",
     ]
 
     list_display_links = ["id", "title"]
-    list_filter = ("_status", "priority", "component", "environment")
+    list_filter = ("_status", "priority", "incident_category", "environment")
     readonly_fields = (
         "created_at",
         "updated_at",
@@ -429,7 +429,7 @@ class IncidentAdmin(admin.ModelAdmin[Incident]):
 
     list_select_related = (
         "priority",
-        "component__group",
+        "incident_category__group",
         "environment",
     )
     list_max_show_all = 1000
@@ -450,7 +450,7 @@ class IncidentAdmin(admin.ModelAdmin[Incident]):
                 )
             },
         ),
-        (_("Relations"), {"fields": ("priority", "component", "environment")}),
+        (_("Relations"), {"fields": ("priority", "incident_category", "environment")}),
         (
             _("User Roles"),
             {
@@ -506,10 +506,10 @@ class IncidentAdmin(admin.ModelAdmin[Incident]):
     def _get_select_related(self) -> list[str]:
         select_related = [
             "priority",
-            "component__group",
+            "incident_category__group",
             "environment",
             "conversation",
-            "component",
+            "incident_category",
             "created_by",
         ]
         if apps.apps.is_installed("firefighter.confluence"):
@@ -525,13 +525,13 @@ class IncidentUpdateAdmin(admin.ModelAdmin[IncidentUpdate]):
         "_status",
         "priority",
         "message",
-        "component",
+        "incident_category",
         "created_by",
     ]
     list_display_links = ["_status"]
-    list_filter = ("_status", "priority", "component", "event_type")
+    list_filter = ("_status", "priority", "incident_category", "event_type")
     readonly_fields = ("created_at", "updated_at", "incident")
-    list_select_related = ("priority", "component", "incident", "created_by")
+    list_select_related = ("priority", "incident_category", "incident", "created_by")
     search_fields = ["description", "message"]
 
 

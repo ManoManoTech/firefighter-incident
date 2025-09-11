@@ -226,7 +226,7 @@ class UserGroupAdmin(admin.ModelAdmin[UserGroup]):
                 )
             },
         ),
-        (_("Firefighter attributes"), {"fields": ("tag", "incident_categories", "created_at", "updated_at")}),)
+        (_("Firefighter attributes"), {"fields": ("tag", "incident_categories", "created_at", "updated_at")}),
     )
 
     def save_model(
@@ -356,8 +356,8 @@ class ConversationInline(admin.StackedInline[Conversation, Any]):
 
 # Add inlines to incidents models
 firefighter.incidents.admin.user_inlines.append(SlackUserInline)
-firefighter.incidents.admin.component_inlines.append(UserGroupInline)
-firefighter.incidents.admin.component_inlines.append(ConversationInline)
+firefighter.incidents.admin.incident_category_inlines.append(UserGroupInline)
+firefighter.incidents.admin.incident_category_inlines.append(ConversationInline)
 firefighter.incidents.admin.incident_inlines.append(IncidentChannelInline)
 
 # Register Slack models

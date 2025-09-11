@@ -48,6 +48,7 @@ def create_ticket(
         assignee=None,
         reporter=account_id,
         priority=priority,
+        incident_category=incident.incident_category.name,
     )
     issue_id = issue.get("id")
     if issue_id is None:

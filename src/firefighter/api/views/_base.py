@@ -20,7 +20,7 @@ T_co = TypeVar("T_co", bound=Model, covariant=True)
             examples=[
                 OpenApiExample(
                     name="Comma separated list of fields",
-                    value="id,name,component.name,component.group.name",
+                    value="id,name,incident_category.name,incident_category.group.name",
                     request_only=True,
                 ),
                 OpenApiExample(

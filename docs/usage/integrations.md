@@ -101,6 +101,38 @@ You can configure [SOSes][firefighter.slack.models.sos.Sos] in the back-office.
 
 ## :fontawesome-brands-jira: Jira
 
-!!! warning
-    This integration is disabled by default, and is not yet documented.
-    It is specific to our internal use case.
+### Features
+
+Automatically create Jira tickets when FireFighter incidents are created. Each incident will generate a corresponding Jira ticket with incident details, priority, and category information.
+
+### Settings and configuration
+
+Basic configuration with environment variables (in `.env` file):
+
+```bash
+# Enable Jira integration
+ENABLE_JIRA=True
+
+# Jira API settings
+RAID_JIRA_API_URL="mycompany.atlassian.local"
+RAID_JIRA_API_USER="teamqraft@mycompany.local"
+RAID_JIRA_API_PASSWORD="XXXXXXXXXXXXX"
+
+# Enable RAID module (requires JIRA settings)
+ENABLE_RAID=True
+
+# RAID configuration
+RAID_DEFAULT_JIRA_QRAFT_USER_ID="XXXXXXXX"
+RAID_JIRA_PROJECT_KEY="T2"
+RAID_TOOLBOX_URL=https://toolbox.mycompany.com/login
+
+# Optional: Custom field for incident category
+RAID_JIRA_INCIDENT_CATEGORY_FIELD="customfield_12369"
+```
+
+#### Incident Category Field
+
+If `RAID_JIRA_INCIDENT_CATEGORY_FIELD` is configured, the incident category will be populated in the specified Jira custom field in addition to being mentioned in the ticket description.
+
+!!! note
+    Without this configuration, the incident category will only appear in the ticket description.

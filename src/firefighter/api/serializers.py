@@ -210,9 +210,9 @@ class IncidentSerializer(TaggitSerializer, serializers.ModelSerializer[Incident]
     priority_id = serializers.PrimaryKeyRelatedField(
         source="priority", queryset=Priority.objects.all(), write_only=True
     )
-    component = ComponentSerializer(read_only=True)
-    component_id = serializers.PrimaryKeyRelatedField(
-        source="component", queryset=Component.objects.all(), write_only=True
+    incident_category = IncidentCategorySerializer(read_only=True)
+    incident_category_id = serializers.PrimaryKeyRelatedField(
+        source="incident_category", queryset=IncidentCategory.objects.all(), write_only=True
     )
 
     status = serializers.SerializerMethodField()
@@ -274,14 +274,14 @@ class IncidentSerializer(TaggitSerializer, serializers.ModelSerializer[Incident]
             "description",
             "created_at",
             "environment",
-            "component",
+            "incident_category",
             "priority",
             "status",
             "slack_channel_name",
             "status_page_url",
             "status",
             "environment_id",
-            "component_id",
+            "incident_category_id",
             "priority_id",
             "created_by_email",
             "tags",

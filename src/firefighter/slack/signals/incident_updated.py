@@ -44,7 +44,7 @@ def incident_updated_update_status_handler(
     # Update topic if needed
     if (
         "priority_id" in updated_fields
-        or "component_id" in updated_fields
+        or "incident_category_id" in updated_fields
         or "_status" in updated_fields
     ):
         incident.conversation.set_incident_channel_topic()

@@ -57,7 +57,7 @@ def update_home_tab(
         Incident.objects.filter(_status__lt=IncidentStatus.CLOSED.value)
         .order_by("-id")
         .select_related(
-            "priority", "component", "environment", "component__group", "conversation"
+            "priority", "incident_category", "environment", "incident_category__group", "conversation"
         )[:30]
     )
     blocks: list[Block] = [
