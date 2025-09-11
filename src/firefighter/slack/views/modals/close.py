@@ -258,7 +258,7 @@ class CloseModal(
         return {
             "title": incident.title,
             "description": incident.description,
-            "component": incident.component,
+            "component": incident.incident_category,
         }
 
     @staticmethod

@@ -14,7 +14,7 @@
           {% include "./environment_pill.html" with environment=incident.environment only %}
         {% endif %}
         <span class="inline-flex font-semibold rounded-full px-2 text-xs leading-5 bg-neutral-300 text-neutral-600 ">
-          {{ incident.component.name }} ({{ incident.component.group.name }})
+          {{ incident.incident_category.name }} ({{ incident.incident_category.group.name }})
         </span>
         {% include "./priority_pill.html" with priority=incident.priority only %}
         <p class="mt-2 text-neutral-500 dark:text-neutral-200 text-sm line-clamp-3">{{ incident.description|truncatechars:150 }}</p>

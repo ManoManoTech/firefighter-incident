@@ -100,7 +100,7 @@ class IncidentChannel(Conversation):
         self, client: WebClient = DefaultWebClient
     ) -> SlackResponse | None:
         incident: Incident = self.incident
-        topic = f"Incident - {incident.priority.emoji} {incident.priority.name}  - {incident.status.label} - {incident.component.group.name} - {incident.component.name} - {SLACK_APP_EMOJI} <{incident.status_page_url + '?utm_medium=FireFighter+Slack&utm_source=Slack+Topic&utm_campaign=Slack+Topic+Link'}| {APP_DISPLAY_NAME} Status>"
+        topic = f"Incident - {incident.priority.emoji} {incident.priority.name}  - {incident.status.label} - {incident.incident_category.group.name} - {incident.incident_category.name} - {SLACK_APP_EMOJI} <{incident.status_page_url + '?utm_medium=FireFighter+Slack&utm_source=Slack+Topic&utm_campaign=Slack+Topic+Link'}| {APP_DISPLAY_NAME} Status>"
 
         if len(topic) > 250:
             logger.warning(

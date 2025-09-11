@@ -52,16 +52,16 @@
                 <dd class="mt-1 text-sm text-neutral-900 dark:text-neutral-100"> {% include "../layouts/partials/environment_pill.html" with environment=incident.environment only %}
                 </dd>
               </div>
-              {% if incident.component is not none %}
+              {% if incident.incident_category is not none %}
                 <div class="sm:col-span-1">
                   <dt class="text-sm font-medium text-neutral-500 dark:text-neutral-300">Group</dt>
-                  <dd class="mt-1 text-sm text-neutral-900 dark:text-neutral-100"> {{ incident.component.group }}</dd>
+                  <dd class="mt-1 text-sm text-neutral-900 dark:text-neutral-100"> {{ incident.incident_category.group }}</dd>
                 </div>
               {% endif %}
 
               <div class="sm:col-span-1">
                 <dt class="text-sm font-medium text-neutral-500 dark:text-neutral-300">Component</dt>
-                <dd class="mt-1 text-sm text-neutral-900 dark:text-neutral-100"><a class="link" href="{{ incident.component.get_absolute_url }}">{{ incident.component }}</a></dd>
+                <dd class="mt-1 text-sm text-neutral-900 dark:text-neutral-100"><a class="link" href="{{ incident.incident_category.get_absolute_url }}">{{ incident.incident_category }}</a></dd>
               </div>
 
 

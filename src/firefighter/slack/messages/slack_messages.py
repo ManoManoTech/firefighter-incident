@@ -735,7 +735,7 @@ class SlackMessagesSOS(SlackMessageSurface):
             ),
             SectionBlock(
                 text=MarkdownTextObject(
-                    text=f"Hello {self.usergroup_target}\nIncident responders have asked for help on a critical incident. This incident is a *{self.incident.priority.name}* and concerns the *{self.incident.component.group.name}/{self.incident.component}* domain.\n\nPlease help the team working to mitigate it :lovecommunity:"
+                    text=f"Hello {self.usergroup_target}\nIncident responders have asked for help on a critical incident. This incident is a *{self.incident.priority.name}* and concerns the *{self.incident.incident_category.group.name}/{self.incident.incident_category}* domain.\n\nPlease help the team working to mitigate it :lovecommunity:"
                 )
             ),
         ]

@@ -111,13 +111,13 @@
                       Priority changed to: {{ incident_update.priority }}
                     </p>
                   {% endif %}
-                  {% if incident_update.component %}
+                  {% if incident_update.incident_category %}
                     <p class="mt-0.5">
                       Component update
                     </p>
                     <p class="pl-2 mt-0.5 text-sm text-neutral-500 dark:text-neutral-300">
                       Component impacted changed to:
-                      {{ incident_update.component }}
+                      {{ incident_update.incident_category }}
                     </p>
                   {% endif %}
                   {% if incident_update.communication_lead or incident_update.commander %}

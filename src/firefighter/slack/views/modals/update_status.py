@@ -73,7 +73,7 @@ class UpdateStatusModal(ModalForm[UpdateStatusFormSlack]):
             initial={
                 "status": incident.status,
                 "priority": incident.priority,
-                "component": incident.component,
+                "component": incident.incident_category,
             }
         ).slack_blocks()
         blocks.append(slack_block_separator())
@@ -97,7 +97,7 @@ class UpdateStatusModal(ModalForm[UpdateStatusFormSlack]):
                 "initial": {
                     "status": incident.status,
                     "priority": incident.priority,
-                    "component": incident.component,
+                    "component": incident.incident_category,
                 }
             },
         )
