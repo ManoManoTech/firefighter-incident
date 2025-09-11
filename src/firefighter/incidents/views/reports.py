@@ -359,8 +359,8 @@ class _IncidentByDomainAnnotation(TypedDict):
 def get_incidents_by_domain(
     incidents: QuerySet[Incident],
 ) -> QuerySet[WithAnnotations[Group, _IncidentByDomainAnnotation]]:
-    return Group.objects.filter(component__incident__in=incidents).annotate(
-        incidents_nb=Count("component__incident", output_field=FloatField()),
+    return Group.objects.filter(incidentcategory__incident__in=incidents).annotate(
+        incidents_nb=Count("incidentcategory__incident", output_field=FloatField()),
     )
 
 

@@ -11,7 +11,7 @@ from factory.fuzzy import FuzzyChoice, FuzzyDateTime, FuzzyInteger
 
 from firefighter.incidents.enums import IncidentStatus
 from firefighter.incidents.models import (
-    Component,
+    IncidentCategory,
     Environment,
     Group,
     Incident,
@@ -56,9 +56,9 @@ class EnvironmentFactory(DjangoModelFactory[Environment]):
     order = FuzzyInteger(100, 1000)  # type: ignore[no-untyped-call]
 
 
-class ComponentFactory(DjangoModelFactory[Component]):
+class IncidentCategoryFactory(DjangoModelFactory[IncidentCategory]):
     class Meta:
-        model = Component
+        model = IncidentCategory
 
     name = Faker("text", max_nb_chars=30)  # type: ignore[no-untyped-call]
     description = Faker("text", max_nb_chars=50)  # type: ignore[no-untyped-call]
@@ -86,7 +86,7 @@ class IncidentFactory(DjangoModelFactory[Incident]):
             tzinfo=timezone.get_current_timezone(),
         )
     )  # type: ignore[no-untyped-call]
-    component = Iterator(Component.objects.all())  # type: ignore[no-untyped-call]
+    incident_category = Iterator(IncidentCategory.objects.all())  # type: ignore[no-untyped-call]
     priority = Iterator(Priority.objects.all())  # type: ignore[no-untyped-call]
     environment = Iterator(Environment.objects.all())  # type: ignore[no-untyped-call]
 

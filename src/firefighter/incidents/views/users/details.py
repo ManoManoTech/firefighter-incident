@@ -34,13 +34,13 @@ class UserDetailView(CustomDetailView[User]):
             "conversation_set",
             queryset=Conversation.objects.not_incident_channel()
             .exclude(tag="")
-            .filter(components__isnull=False)
+            .filter(incident_categories__isnull=False)
             .distinct()
             .prefetch_related(Prefetch("members")),
         ),
         Prefetch(
             "usergroup_set",
-            queryset=UserGroup.objects.filter(components__isnull=False)
+            queryset=UserGroup.objects.filter(incident_categories__isnull=False)
             .distinct()
             .prefetch_related(Prefetch("members")),
         ),

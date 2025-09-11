@@ -44,7 +44,7 @@ class IncidentListView(SingleTableMixin, FilterView):
     paginate_by = 125
     paginate_orphans = 15
     queryset = Incident.objects.select_related(
-        "priority", "component__group", "environment"
+        "priority", "incident_category__group", "environment"
     ).order_by("-id")
 
     def get_template_names(self) -> list[str]:
@@ -69,7 +69,7 @@ class IncidentListView(SingleTableMixin, FilterView):
             "status",
             "environment",
             "priority",
-            "component",
+            "incident_category",
         ]
 
         context["page_title"] = "Incidents List"
@@ -105,7 +105,7 @@ class IncidentStatisticsView(FilterView):
             "status",
             "environment",
             "priority",
-            "component",
+            "incident_category",
         ]
         context_data = weekly_dashboard_context(
             self.request, context.get("incidents_filtered", [])
@@ -144,7 +144,7 @@ class IncidentDetailView(CustomDetailView[Incident]):
     select_related = [
         "priority",
         "environment",
-        "component__group",
+        "incident_category__group",
         "conversation",
         "created_by",
     ]
@@ -155,7 +155,7 @@ class IncidentDetailView(CustomDetailView[Incident]):
             "incidentupdate_set",
             queryset=IncidentUpdate.objects.select_related(
                 "priority",
-                "component__group",
+                "incident_category__group",
                 "created_by__slack_user",
                 "created_by",
                 "commander",
