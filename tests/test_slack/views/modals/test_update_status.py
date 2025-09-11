@@ -250,13 +250,13 @@ valid_submission = {
             },
             {
                 "type": "input",
-                "block_id": "component",
+                "block_id": "incident_category",
                 "label": {"type": "plain_text", "text": "Issue category", "emoji": True},
                 "optional": False,
                 "dispatch_action": False,
                 "element": {
                     "type": "static_select",
-                    "action_id": "component",
+                    "action_id": "incident_category",
                     "placeholder": {
                         "type": "plain_text",
                         "text": "Select affected issue category",
@@ -844,8 +844,8 @@ valid_submission = {
                         },
                     }
                 },
-                "component": {
-                    "component": {
+                "incident_category": {
+                    "incident_category": {
                         "type": "static_select",
                         "selected_option": {
                             "text": {

@@ -220,13 +220,13 @@ valid_submission = {
             },
             {
                 "type": "input",
-                "block_id": "component",
+                "block_id": "incident_category",
                 "label": {"type": "plain_text", "text": "Issue category", "emoji": True},
                 "optional": False,
                 "dispatch_action": False,
                 "element": {
                     "type": "static_select",
-                    "action_id": "component",
+                    "action_id": "incident_category",
                     "placeholder": {
                         "type": "plain_text",
                         "text": "Select affected issue category",
@@ -909,8 +909,8 @@ valid_submission = {
                         "value": "This is a valid description.",
                     }
                 },
-                "component": {
-                    "component": {
+                "incident_category": {
+                    "incident_category": {
                         "type": "static_select",
                         "selected_option": {
                             "text": {
@@ -972,7 +972,7 @@ valid_submission = {
 invalid_title = deepcopy(valid_submission)
 invalid_title["view"]["state"]["values"]["title"]["title"]["value"] = "short"  # type: ignore
 
-invalid_component = deepcopy(valid_submission)
-invalid_component["view"]["state"]["values"]["component"]["component"][
+invalid_incident_category = deepcopy(valid_submission)
+invalid_incident_category["view"]["state"]["values"]["incident_category"]["incident_category"][
     "selected_option"
 ]["value"] = "notauuid-d445-4fc9-92eb-e742ee14fd4a"  # type: ignore
