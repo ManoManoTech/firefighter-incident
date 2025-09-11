@@ -83,7 +83,7 @@ def incident() -> Incident:
 @pytest.mark.django_db
 def incident_saved() -> Incident:
     incident: Incident = IncidentFactory.build()
-    incident.component.group.save()
+    incident.incident_category.group.save()
     incident.created_by.save()
     incident.save()
     return incident
