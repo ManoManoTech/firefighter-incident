@@ -667,7 +667,7 @@ class IncidentFilterSet(django_filters.FilterSet):
     )
     incident_category = ModelMultipleChoiceFilter(
         queryset=incident_category_filter_choices_queryset,
-        label="Issue category",
+        label="Incident category",
         widget=GroupedCheckboxSelectMultiple,
     )
     created_at = FFDateRangeSingleFilter(field_name="created_at")

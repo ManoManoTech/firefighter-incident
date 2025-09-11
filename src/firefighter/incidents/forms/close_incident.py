@@ -28,7 +28,7 @@ class CloseIncidentForm(forms.Form):
     )
     incident_category = GroupedModelChoiceField(
         choices_groupby="group",
-        label="Issue category",
+        label="Incident category",
         queryset=IncidentCategory.objects.all()
         .select_related("group")
         .order_by(

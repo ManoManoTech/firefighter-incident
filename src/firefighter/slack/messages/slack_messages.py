@@ -210,7 +210,7 @@ class SlackMessageIncidentDeclaredAnnouncement(SlackMessageSurface):
     def get_blocks(self) -> list[Block]:
         fields = [
             f"{self.incident.priority.emoji} *Priority:* {self.incident.priority.name}",
-            f":package: *Issue category:* {self.incident.component.name}",
+            f":package: *Incident category:* {self.incident.incident_category.name}",
             f":speaking_head_in_silhouette: *Opened by:* {user_slack_handle_or_name(self.incident.created_by)}",
             f":calendar: *Created at:* {date_time(self.incident.created_at)}",
             f"{SLACK_APP_EMOJI} <{self.incident.status_page_url + '?utm_medium=FireFighter+Slack&utm_source=Slack+Message&utm_campaign=Announcement+Message+In+Channel'}|*{APP_DISPLAY_NAME} Status Page*>",
@@ -270,7 +270,7 @@ class SlackMessageIncidentDeclaredAnnouncementGeneral(SlackMessageSurface):
     def get_blocks(self) -> list[Block]:
         fields = [
             f"{self.incident.priority.emoji} *Priority:* {self.incident.priority.name}",
-            f":package: *Issue category:* {self.incident.component.name}",
+            f":package: *Incident category:* {self.incident.incident_category.name}",
             f"{SLACK_APP_EMOJI} <{self.incident.status_page_url + '?utm_medium=FireFighter+Slack&utm_source=Slack+Message&utm_campaign=Announcement+Message+General'}|*{APP_DISPLAY_NAME} Status Page*>",
             f":speaking_head_in_silhouette: *Opened by:* {user_slack_handle_or_name(self.incident.created_by)}",
             f":calendar: *Created at:* {date_time(self.incident.created_at)}",
@@ -483,10 +483,10 @@ class SlackMessageIncidentStatusUpdated(SlackMessageSurface):
                         text=f":rotating_light: *Priority:* {self.incident.priority.emoji} {self.incident.priority.name}"
                     )
                 )
-            if self.incident_update.component:
+            if self.incident_update.incident_category:
                 fields.append(
                     MarkdownTextObject(
-                        text=f":package: *Issue category:* {self.incident.component.group.name} - {self.incident.component.name}"
+                        text=f":package: *Incident category:* {self.incident.incident_category.group.name} - {self.incident.incident_category.name}"
                     )
                 )
             if self.incident_update.environment:
