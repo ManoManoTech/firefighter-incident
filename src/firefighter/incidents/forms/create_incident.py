@@ -6,7 +6,7 @@ from django import forms
 
 from firefighter.incidents.forms.select_impact import SelectImpactForm
 from firefighter.incidents.forms.utils import GroupedModelChoiceField
-from firefighter.incidents.models import IncidentCategory, Environment, Priority
+from firefighter.incidents.models import Environment, IncidentCategory, Priority
 from firefighter.incidents.models.incident import Incident
 from firefighter.incidents.signals import create_incident_conversation
 

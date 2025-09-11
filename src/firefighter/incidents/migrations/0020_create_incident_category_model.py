@@ -1,7 +1,8 @@
 # Generated manually on 2025-08-19 - Step 1: Create IncidentCategory model
 
-from django.db import migrations, models
 import uuid
+
+from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
@@ -51,7 +52,7 @@ class Migration(migrations.Migration):
                 (
                     "group",
                     models.ForeignKey(
-                        on_delete=models.PROTECT, 
+                        on_delete=models.PROTECT,
                         to="incidents.group"
                     ),
                 ),

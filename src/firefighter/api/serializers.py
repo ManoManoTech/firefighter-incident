@@ -15,10 +15,10 @@ from rest_framework.fields import empty
 from taggit.serializers import TaggitSerializer, TagListSerializerField
 
 from firefighter.firefighter.utils import get_in
-from firefighter.incidents.models.incident_category import IncidentCategory
 from firefighter.incidents.models.environment import Environment
 from firefighter.incidents.models.group import Group
 from firefighter.incidents.models.incident import Incident
+from firefighter.incidents.models.incident_category import IncidentCategory
 from firefighter.incidents.models.incident_cost import IncidentCost
 from firefighter.incidents.models.incident_cost_type import IncidentCostType
 from firefighter.incidents.models.incident_membership import IncidentRole

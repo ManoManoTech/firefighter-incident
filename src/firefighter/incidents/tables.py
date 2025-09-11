@@ -6,7 +6,7 @@ import django_tables2 as tables
 from django.conf import settings
 
 from firefighter.firefighter.tables_utils import BASE_TABLE_ATTRS
-from firefighter.incidents.models import IncidentCategory, Incident
+from firefighter.incidents.models import Incident, IncidentCategory
 from firefighter.incidents.models.incident import IncidentStatus
 
 if TYPE_CHECKING:

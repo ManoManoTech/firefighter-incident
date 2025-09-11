@@ -30,9 +30,9 @@ from firefighter.firefighter.fields_forms_widgets import (
 )
 from firefighter.incidents import signals
 from firefighter.incidents.enums import IncidentStatus
-from firefighter.incidents.models.incident_category import IncidentCategory
 from firefighter.incidents.models.environment import Environment
 from firefighter.incidents.models.group import Group
+from firefighter.incidents.models.incident_category import IncidentCategory
 from firefighter.incidents.models.incident_membership import (
     IncidentMembership,
     IncidentRole,

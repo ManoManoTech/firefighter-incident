@@ -1,7 +1,7 @@
 # Generated manually on 2025-08-19 - Step 6: Make incident_category field required
 
-from django.db import migrations, models
 import django.db.models.deletion
+from django.db import migrations, models
 
 
 class Migration(migrations.Migration):

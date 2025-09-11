@@ -19,10 +19,10 @@ from django.utils.translation import ngettext
 from slack_sdk.errors import SlackApiError
 
 from firefighter.incidents.models import (
-    IncidentCategory,
     Environment,
     Group,
     Incident,
+    IncidentCategory,
     IncidentUpdate,
     Severity,
     User,

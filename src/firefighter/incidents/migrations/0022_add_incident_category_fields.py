@@ -1,7 +1,7 @@
 # Generated manually on 2025-08-19 - Step 3: Add incident_category fields (nullable initially)
 
-from django.db import migrations, models
 import django.db.models.deletion
+from django.db import migrations, models
 
 
 class Migration(migrations.Migration):

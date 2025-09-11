@@ -7,7 +7,7 @@ def copy_component_data_to_incident_category(apps, schema_editor):
     """Copy all data from Component to IncidentCategory"""
     Component = apps.get_model("incidents", "Component")
     IncidentCategory = apps.get_model("incidents", "IncidentCategory")
-    
+
     # Copy all components to incident categories with the same fields
     for component in Component.objects.all():
         IncidentCategory.objects.create(
@@ -21,7 +21,7 @@ def copy_component_data_to_incident_category(apps, schema_editor):
             updated_at=component.updated_at,
             group=component.group,
         )
-    
+
     print(f"Copied {Component.objects.count()} components to incident categories")
 
 
@@ -29,7 +29,7 @@ def reverse_copy_component_data_to_incident_category(apps, schema_editor):
     """Reverse operation - copy IncidentCategory back to Component if needed"""
     Component = apps.get_model("incidents", "Component")
     IncidentCategory = apps.get_model("incidents", "IncidentCategory")
-    
+
     # This would only work if Component table still exists during rollback
     for incident_category in IncidentCategory.objects.all():
         Component.objects.create(

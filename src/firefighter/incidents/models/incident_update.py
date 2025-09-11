@@ -11,8 +11,8 @@ from django.utils import timezone
 from django_stubs_ext.db.models import TypedModelMeta
 
 from firefighter.incidents.enums import IncidentStatus
-from firefighter.incidents.models.incident_category import IncidentCategory
 from firefighter.incidents.models.environment import Environment
+from firefighter.incidents.models.incident_category import IncidentCategory
 from firefighter.incidents.models.priority import Priority
 from firefighter.incidents.models.severity import Severity
 from firefighter.incidents.models.user import User
