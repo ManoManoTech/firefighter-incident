@@ -6,8 +6,8 @@ from django.forms import Form
 
 from firefighter.incidents.enums import IncidentStatus
 from firefighter.incidents.forms.utils import EnumChoiceField, GroupedModelChoiceField
-from firefighter.incidents.models.incident_category import IncidentCategory
 from firefighter.incidents.models.group import Group
+from firefighter.incidents.models.incident_category import IncidentCategory
 
 
 class EnumChoiceFieldForm(Form):

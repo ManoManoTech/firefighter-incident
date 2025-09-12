@@ -11,10 +11,10 @@ from factory.fuzzy import FuzzyChoice, FuzzyDateTime, FuzzyInteger
 
 from firefighter.incidents.enums import IncidentStatus
 from firefighter.incidents.models import (
-    IncidentCategory,
     Environment,
     Group,
     Incident,
+    IncidentCategory,
     Priority,
     User,
 )
