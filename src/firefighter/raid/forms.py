@@ -335,10 +335,15 @@ def alert_slack_new_jira_ticket(
                 message,
                 unfurl_links=False,
             )
-        except SlackApiError:
-            logger.exception(
-                f"Couldn't send private message to reporter {reporter_user.slack_user}"
-            )
+        except SlackApiError as e:
+            if e.response.get("error") == "messages_tab_disabled":
+                logger.warning(
+                    f"User {reporter_user.slack_user} has disabled private messages from bots"
+                )
+            else:
+                logger.exception(
+                    f"Couldn't send private message to reporter {reporter_user.slack_user}"
+                )
 
     # Get the right channels from tags
     channels = get_internal_alert_conversations(jira_ticket)
