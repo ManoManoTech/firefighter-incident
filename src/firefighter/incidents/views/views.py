@@ -82,7 +82,7 @@ class IncidentStatisticsView(FilterView):
     filterset_class = IncidentFilterSet
     model = Incident
     queryset = (
-        Incident.objects.select_related("priority", "component__group", "environment")
+        Incident.objects.select_related("priority", "incident_category__group", "environment")
         .all()
         .order_by("-id")
     )
@@ -123,7 +123,7 @@ class DashboardView(generic.ListView[Incident]):
     )
     queryset = (
         Incident.objects.filter(_status__lt=IncidentStatus.CLOSED)
-        .select_related("priority", "component__group", "environment", "created_by")
+        .select_related("priority", "incident_category__group", "environment", "created_by")
         .order_by("_status", "priority__value")
         .annotate(latest_event_ts=Subquery(sub.values("event_ts")))
     )

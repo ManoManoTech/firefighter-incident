@@ -1,6 +1,6 @@
 [
 {
-    "model": "incidents.component",
+    "model": "incidents.incidentcategory",
     "pk": "02a18a9c-67ba-45e8-9b50-8662f1c6eae1",
     "fields": {
         "name": "Payment",
@@ -14,7 +14,7 @@
     }
 },
 {
-    "model": "incidents.component",
+    "model": "incidents.incidentcategory",
     "pk": "0b7df3de-e3b5-4924-bcff-bb0ccc31fa03",
     "fields": {
         "name": "Mobile Apps",
@@ -28,7 +28,7 @@
     }
 },
 {
-    "model": "incidents.component",
+    "model": "incidents.incidentcategory",
     "pk": "0dff9974-b5bd-4d3d-84a0-b93b8d3a69ce",
     "fields": {
         "name": "Attack",
@@ -42,7 +42,7 @@
     }
 },
 {
-    "model": "incidents.component",
+    "model": "incidents.incidentcategory",
     "pk": "0f2c7343-d526-4aee-8b54-ef1de7c1fd61",
     "fields": {
         "name": "Applications",
@@ -56,7 +56,7 @@
     }
 },
 {
-    "model": "incidents.component",
+    "model": "incidents.incidentcategory",
     "pk": "23bf9043-6591-4333-8c90-f036341803df",
     "fields": {
         "name": "data-visitors",
@@ -70,7 +70,7 @@
     }
 },
 {
-    "model": "incidents.component",
+    "model": "incidents.incidentcategory",
     "pk": "2f8a8cad-4950-41b3-8fb3-ec0b6608f324",
     "fields": {
         "name": "Customer Management",
@@ -84,7 +84,7 @@
     }
 },
 {
-    "model": "incidents.component",
+    "model": "incidents.incidentcategory",
     "pk": "390a993a-d273-4db8-b7d6-190ab294961a",
     "fields": {
         "name": "Other",
@@ -98,7 +98,7 @@
     }
 },
 {
-    "model": "incidents.component",
+    "model": "incidents.incidentcategory",
     "pk": "3d71d900-bf53-47e2-883b-332c641f7541",
     "fields": {
         "name": "Product Information",
@@ -112,7 +112,7 @@
     }
 },
 {
-    "model": "incidents.component",
+    "model": "incidents.incidentcategory",
     "pk": "3e0bedcb-725b-4c02-876f-c7665d5bb15d",
     "fields": {
         "name": "Infra - System",
@@ -126,7 +126,7 @@
     }
 },
 {
-    "model": "incidents.component",
+    "model": "incidents.incidentcategory",
     "pk": "421927b9-76a2-43b3-9a44-92e794b5c523",
     "fields": {
         "name": "Spartacux Foundations",
@@ -140,7 +140,7 @@
     }
 },
 {
-    "model": "incidents.component",
+    "model": "incidents.incidentcategory",
     "pk": "432e2ea4-4908-484b-8fa8-2bd943cff41f",
     "fields": {
         "name": "Legacy",
@@ -154,7 +154,7 @@
     }
 },
 {
-    "model": "incidents.component",
+    "model": "incidents.incidentcategory",
     "pk": "43b582f1-d445-4fc9-92eb-e742ee14fd4a",
     "fields": {
         "name": "BO Catalog - Master Experience",
@@ -168,7 +168,7 @@
     }
 },
 {
-    "model": "incidents.component",
+    "model": "incidents.incidentcategory",
     "pk": "4c896455-f6d8-42c8-b6cf-d5be87cdfc3c",
     "fields": {
         "name": "Offer (Price & Stock)",
@@ -182,7 +182,7 @@
     }
 },
 {
-    "model": "incidents.component",
+    "model": "incidents.incidentcategory",
     "pk": "4ef370d3-73dc-4ea6-829b-4cd155abaa93",
     "fields": {
         "name": "ManoFulfillment OPS",
@@ -196,7 +196,7 @@
     }
 },
 {
-    "model": "incidents.component",
+    "model": "incidents.incidentcategory",
     "pk": "4fbfb9d9-8746-465f-9166-1149a54aba23",
     "fields": {
         "name": "Compromised laptop / server",
@@ -210,7 +210,7 @@
     }
 },
 {
-    "model": "incidents.component",
+    "model": "incidents.incidentcategory",
     "pk": "585795c3-f2fe-441c-b13f-3e6975538ea8",
     "fields": {
         "name": "Authentification",
@@ -224,7 +224,7 @@
     }
 },
 {
-    "model": "incidents.component",
+    "model": "incidents.incidentcategory",
     "pk": "5900badb-1d82-4aa6-b6e2-b76f29a83d5f",
     "fields": {
         "name": "Legal",
@@ -238,7 +238,7 @@
     }
 },
 {
-    "model": "incidents.component",
+    "model": "incidents.incidentcategory",
     "pk": "5abb78d3-1214-4a06-81a1-04351a5c9b33",
     "fields": {
         "name": "Cloud Infrastructure",
@@ -252,7 +252,7 @@
     }
 },
 {
-    "model": "incidents.component",
+    "model": "incidents.incidentcategory",
     "pk": "5d4e006d-423d-493b-9d98-bfd1ca82cf42",
     "fields": {
         "name": "Customer service",
@@ -266,7 +266,7 @@
     }
 },
 {
-    "model": "incidents.component",
+    "model": "incidents.incidentcategory",
     "pk": "68ccfee4-c7a2-4009-b9bb-d7cc30c52519",
     "fields": {
         "name": "Publication on website",
@@ -280,7 +280,7 @@
     }
 },
 {
-    "model": "incidents.component",
+    "model": "incidents.incidentcategory",
     "pk": "6e4ce13e-527d-426a-a753-36c5f207a8bb",
     "fields": {
         "name": "Delivery experience",
@@ -294,7 +294,7 @@
     }
 },
 {
-    "model": "incidents.component",
+    "model": "incidents.incidentcategory",
     "pk": "7529a8b4-ec9b-4722-a772-e10ff7a616ad",
     "fields": {
         "name": "Order management",
@@ -308,7 +308,7 @@
     }
 },
 {
-    "model": "incidents.component",
+    "model": "incidents.incidentcategory",
     "pk": "767dc095-fbc4-4dd0-9c8e-32f5e268c958",
     "fields": {
         "name": "Spinak",
@@ -322,7 +322,7 @@
     }
 },
 {
-    "model": "incidents.component",
+    "model": "incidents.incidentcategory",
     "pk": "795ffe46-e30e-483b-abac-0bc7570d4266",
     "fields": {
         "name": "Performance",
@@ -336,7 +336,7 @@
     }
 },
 {
-    "model": "incidents.component",
+    "model": "incidents.incidentcategory",
     "pk": "808e7a69-ad6c-4a20-86b4-2754a9c4ff1a",
     "fields": {
         "name": "Catalog Performance",
@@ -350,7 +350,7 @@
     }
 },
 {
-    "model": "incidents.component",
+    "model": "incidents.incidentcategory",
     "pk": "81fa0384-3930-47d4-ab81-ee3ac057485f",
     "fields": {
         "name": "Personal Data Breach",
@@ -364,7 +364,7 @@
     }
 },
 {
-    "model": "incidents.component",
+    "model": "incidents.incidentcategory",
     "pk": "86ae1442-a15a-4545-98bb-1a3226b98a23",
     "fields": {
         "name": "Product Discovery",
@@ -378,7 +378,7 @@
     }
 },
 {
-    "model": "incidents.component",
+    "model": "incidents.incidentcategory",
     "pk": "89c9ff50-5b0b-4554-a3e3-cbe31258dd19",
     "fields": {
         "name": "Security Misc",
@@ -392,7 +392,7 @@
     }
 },
 {
-    "model": "incidents.component",
+    "model": "incidents.incidentcategory",
     "pk": "8bfafb93-8790-42f0-898a-d2e30e8ba532",
     "fields": {
         "name": "System Compromise",
@@ -406,7 +406,7 @@
     }
 },
 {
-    "model": "incidents.component",
+    "model": "incidents.incidentcategory",
     "pk": "8f1ecfc2-445f-4eac-a1b4-8b3261c8fe49",
     "fields": {
         "name": "Test Incident",
@@ -420,7 +420,7 @@
     }
 },
 {
-    "model": "incidents.component",
+    "model": "incidents.incidentcategory",
     "pk": "9325f518-856b-4683-9fdc-3538c737543a",
     "fields": {
         "name": "data-buyers",
@@ -434,7 +434,7 @@
     }
 },
 {
-    "model": "incidents.component",
+    "model": "incidents.incidentcategory",
     "pk": "952bd782-b6e4-43e1-989f-aa93b3c03c2b",
     "fields": {
         "name": "Crisis Communication Room",
@@ -448,7 +448,7 @@
     }
 },
 {
-    "model": "incidents.component",
+    "model": "incidents.incidentcategory",
     "pk": "962bf559-5fc2-4cd4-8834-6c3c1e767085",
     "fields": {
         "name": "CDN",
@@ -462,7 +462,7 @@
     }
 },
 {
-    "model": "incidents.component",
+    "model": "incidents.incidentcategory",
     "pk": "96c9f325-539d-4325-8498-62f7b41a5ed7",
     "fields": {
         "name": "Gitlab",
@@ -476,7 +476,7 @@
     }
 },
 {
-    "model": "incidents.component",
+    "model": "incidents.incidentcategory",
     "pk": "9fa9f139-8344-4f2e-8c25-f318e75bcf4f",
     "fields": {
         "name": "Taxonomy",
@@ -490,7 +490,7 @@
     }
 },
 {
-    "model": "incidents.component",
+    "model": "incidents.incidentcategory",
     "pk": "b048da6b-6834-48eb-b8a4-bab33acf5bf3",
     "fields": {
         "name": "data-platform",
@@ -504,7 +504,7 @@
     }
 },
 {
-    "model": "incidents.component",
+    "model": "incidents.incidentcategory",
     "pk": "b055c52e-ea0f-4584-9d15-6391afa5c3f7",
     "fields": {
         "name": "Loyalty and coupons",
@@ -518,7 +518,7 @@
     }
 },
 {
-    "model": "incidents.component",
+    "model": "incidents.incidentcategory",
     "pk": "bb4b4549-6f60-4e11-9dc5-607ffd19834f",
     "fields": {
         "name": "Returns",
@@ -532,7 +532,7 @@
     }
 },
 {
-    "model": "incidents.component",
+    "model": "incidents.incidentcategory",
     "pk": "c419c3a0-9490-416e-8b4c-4e39c55b41a8",
     "fields": {
         "name": "Network",
@@ -546,7 +546,7 @@
     }
 },
 {
-    "model": "incidents.component",
+    "model": "incidents.incidentcategory",
     "pk": "c5466a41-4528-49ca-bb86-de2b6c26c652",
     "fields": {
         "name": "Payouts to seller",
@@ -560,7 +560,7 @@
     }
 },
 {
-    "model": "incidents.component",
+    "model": "incidents.incidentcategory",
     "pk": "c8ba4508-54d0-4421-9f3b-8fe143df97d0",
     "fields": {
         "name": "data-operations",
@@ -574,7 +574,7 @@
     }
 },
 {
-    "model": "incidents.component",
+    "model": "incidents.incidentcategory",
     "pk": "d65e9e46-1119-4e8d-b9df-995d59e6f612",
     "fields": {
         "name": "Refunds",
@@ -588,7 +588,7 @@
     }
 },
 {
-    "model": "incidents.component",
+    "model": "incidents.incidentcategory",
     "pk": "d81c2362-f44c-4e2c-a431-6a5e1c53415b",
     "fields": {
         "name": "User & Purchase",
@@ -602,7 +602,7 @@
     }
 },
 {
-    "model": "incidents.component",
+    "model": "incidents.incidentcategory",
     "pk": "de920235-2c36-45fc-b366-02e9079603b2",
     "fields": {
         "name": "Internal Messaging",
@@ -616,7 +616,7 @@
     }
 },
 {
-    "model": "incidents.component",
+    "model": "incidents.incidentcategory",
     "pk": "e1d539ce-e02b-47fa-b16c-39d26e3ddf9c",
     "fields": {
         "name": "Finance Operations",
@@ -630,7 +630,7 @@
     }
 },
 {
-    "model": "incidents.component",
+    "model": "incidents.incidentcategory",
     "pk": "ea2ee443-9716-4e81-91ae-a66caef0749a",
     "fields": {
         "name": "Inventory",
@@ -644,7 +644,7 @@
     }
 },
 {
-    "model": "incidents.component",
+    "model": "incidents.incidentcategory",
     "pk": "ea3e5cfb-0cc4-42e2-824a-e5108c4085e3",
     "fields": {
         "name": "data-specialist-offer",
@@ -658,7 +658,7 @@
     }
 },
 {
-    "model": "incidents.component",
+    "model": "incidents.incidentcategory",
     "pk": "eef1c9d0-a460-4821-8dc7-6361ba1e016c",
     "fields": {
         "name": "Seller Order",
@@ -672,7 +672,7 @@
     }
 },
 {
-    "model": "incidents.component",
+    "model": "incidents.incidentcategory",
     "pk": "f114c217-7d67-44e1-bd8c-db5040afe888",
     "fields": {
         "name": "data-wbr",
@@ -686,7 +686,7 @@
     }
 },
 {
-    "model": "incidents.component",
+    "model": "incidents.incidentcategory",
     "pk": "f28a2d22-fa77-4d33-8b78-30e3a1828c5e",
     "fields": {
         "name": "Commercial Animation",
@@ -700,7 +700,7 @@
     }
 },
 {
-    "model": "incidents.component",
+    "model": "incidents.incidentcategory",
     "pk": "f460e4ee-ac13-4b94-b9e4-fbb0aa87558c",
     "fields": {
         "name": "Helpcenter",
@@ -714,7 +714,7 @@
     }
 },
 {
-    "model": "incidents.component",
+    "model": "incidents.incidentcategory",
     "pk": "fe05c1e5-e978-462a-ade2-92924e01244c",
     "fields": {
         "name": "Tracking",

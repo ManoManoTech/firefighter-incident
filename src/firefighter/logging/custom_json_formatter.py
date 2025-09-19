@@ -7,7 +7,8 @@ from socket import socket
 from typing import TYPE_CHECKING, Any
 
 from django.conf import settings
-from pythonjsonlogger.jsonlogger import RESERVED_ATTRS, JsonEncoder, JsonFormatter
+from pythonjsonlogger.json import JsonEncoder, JsonFormatter
+from pythonjsonlogger.core import RESERVED_ATTRS
 
 if TYPE_CHECKING:
     from logging import LogRecord

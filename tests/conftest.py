@@ -81,7 +81,6 @@ def incident() -> Incident:
 
 
 @pytest.fixture
-@pytest.mark.django_db
 def incident_saved() -> Incident:
     incident: Incident = IncidentFactory.build()
     incident.incident_category.group.save()
