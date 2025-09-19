@@ -22,8 +22,6 @@ def copy_component_data_to_incident_category(apps, schema_editor):
             group=component.group,
         )
 
-    print(f"Copied {Component.objects.count()} components to incident categories")
-
 
 def reverse_copy_component_data_to_incident_category(apps, schema_editor):
     """Reverse operation - copy IncidentCategory back to Component if needed"""

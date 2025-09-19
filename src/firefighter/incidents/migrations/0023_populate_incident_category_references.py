@@ -25,8 +25,6 @@ def populate_incident_category_references(apps, schema_editor):
             incident_update.save(update_fields=["incident_category"])
             updates_updated += 1
 
-    print(f"Updated {incidents_updated} incidents and {updates_updated} incident updates")
-
 
 def reverse_populate_incident_category_references(apps, schema_editor):
     """Reverse: copy incident_category references back to component references"""

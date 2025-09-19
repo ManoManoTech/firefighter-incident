@@ -25,8 +25,6 @@ def copy_components_to_incident_categories(apps, schema_editor):
         if incident_category_ids:
             usergroups_updated += 1
 
-    print(f"Updated {conversations_updated} conversations and {usergroups_updated} usergroups")
-
 
 def reverse_copy_components_to_incident_categories(apps, schema_editor):
     """Reverse: copy incident_categories relationships back to components"""

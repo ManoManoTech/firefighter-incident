@@ -23,6 +23,7 @@ from firefighter.raid.messages import (
 )
 from firefighter.raid.models import FeatureTeam, JiraTicket, RaidArea
 from firefighter.raid.service import (
+    CustomerIssueData,
     create_issue_customer,
     create_issue_documentation_request,
     create_issue_feature_request,
@@ -126,17 +127,21 @@ class CreateNormalCustomerIncidentForm(CreateNormalIncidentFormBase):
         **kwargs: Never,
     ) -> None:
         jira_user: JiraUser = get_jira_user_from_user(creator)
-        issue_data = create_issue_customer(
-            title=self.cleaned_data["title"],
-            description=self.cleaned_data["description"],
+        customer_data = CustomerIssueData(
             priority=self.cleaned_data["priority"].value,
-            reporter=jira_user.id,
+            labels=[""],
             platform=self.cleaned_data["platform"],
             business_impact=str(get_business_impact(impacts_data)),
             team_to_be_routed=self.cleaned_data["suggested_team_routing"],
             area=self.cleaned_data["area"].name,
             zendesk_ticket_id=self.cleaned_data["zendesk_ticket_id"],
-            labels=[""],
+            incident_category=None,
+        )
+        issue_data = create_issue_customer(
+            title=self.cleaned_data["title"],
+            description=self.cleaned_data["description"],
+            reporter=jira_user.id,
+            issue_data=customer_data,
         )
         process_jira_issue(
             issue_data, creator, jira_user=jira_user, impacts_data=impacts_data
