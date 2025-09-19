@@ -28,7 +28,7 @@ class TestRaidJiraClientBasics:
     @pytest.fixture
     def mock_jira_client(self):
         """Create a minimal mock RaidJiraClient."""
-        with patch('firefighter.jira_app.client.JiraClient.__init__', return_value=None):
+        with patch("firefighter.jira_app.client.JiraClient.__init__", return_value=None):
             client = RaidJiraClient()
             client.jira = Mock()
             return client
@@ -188,8 +188,8 @@ class TestRaidJiraClientBasics:
 class TestRaidJiraClientAttachments:
     """Test attachment functionality."""
 
-    @patch('firefighter.raid.client.HttpClient')
-    @patch('firefighter.raid.client.client')
+    @patch("firefighter.raid.client.HttpClient")
+    @patch("firefighter.raid.client.client")
     def test_add_attachments_success(self, mock_client, mock_http_client_class):
         """Test successful attachment addition."""
         # Setup HTTP client mock
@@ -210,7 +210,7 @@ class TestRaidJiraClientAttachments:
         mock_http_client.get.assert_called_once_with("https://example.com/image.png")
         mock_client.jira.add_attachment.assert_called_once()
 
-    @patch('firefighter.raid.client.HttpClient')
+    @patch("firefighter.raid.client.HttpClient")
     def test_add_attachments_http_error(self, mock_http_client_class):
         """Test attachment with HTTP error."""
         mock_http_client = Mock()
@@ -220,8 +220,8 @@ class TestRaidJiraClientAttachments:
         with pytest.raises(JiraAttachmentError, match="Error while adding attachment to issue"):
             RaidJiraClient.add_attachments_to_issue("TEST-123", ["https://bad-url.com/file.png"])
 
-    @patch('firefighter.raid.client.HttpClient')
-    @patch('firefighter.raid.client.client')
+    @patch("firefighter.raid.client.HttpClient")
+    @patch("firefighter.raid.client.client")
     def test_add_attachments_jira_error(self, mock_client, mock_http_client_class):
         """Test attachment with JIRA error."""
         # Setup HTTP client mock
@@ -247,7 +247,7 @@ class TestRaidJiraClientWorkflow:
     @pytest.fixture
     def workflow_client(self):
         """Create client for workflow testing."""
-        with patch('firefighter.jira_app.client.JiraClient.__init__', return_value=None):
+        with patch("firefighter.jira_app.client.JiraClient.__init__", return_value=None):
             client = RaidJiraClient()
             client.jira = Mock()
             return client

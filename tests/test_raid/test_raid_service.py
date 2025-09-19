@@ -5,10 +5,8 @@ from __future__ import annotations
 from unittest.mock import Mock, patch
 
 import pytest
-from django.contrib.auth.models import User
 
 from firefighter.jira_app.client import JiraAPIError
-from firefighter.jira_app.models import JiraUser
 from firefighter.raid.service import (
     CustomerIssueData,
     check_issue_id,
@@ -72,7 +70,7 @@ class TestCustomerIssueData:
 class TestGetJiraUserFromUser:
     """Test get_jira_user_from_user function."""
 
-    @patch('firefighter.raid.service.jira_client')
+    @patch("firefighter.raid.service.jira_client")
     def test_get_jira_user_success(self, mock_jira_client, admin_user):
         """Test successful get_jira_user_from_user."""
         mock_jira_user = Mock()
@@ -84,7 +82,7 @@ class TestGetJiraUserFromUser:
         mock_jira_client.get_jira_user_from_user.assert_called_once_with(admin_user)
         assert result == mock_jira_user
 
-    @patch('firefighter.raid.service.jira_client')
+    @patch("firefighter.raid.service.jira_client")
     def test_get_jira_user_fallback_to_default(self, mock_jira_client, admin_user):
         """Test fallback to default user when jira_client fails."""
         from firefighter.jira_app.client import JiraAPIError
@@ -103,8 +101,8 @@ class TestGetJiraUserFromUser:
         mock_jira_client.get_jira_user_from_jira_id.assert_called_once()
         assert result == mock_fallback_user
 
-    @patch('firefighter.raid.service.jira_client')
-    @patch('firefighter.raid.service.JiraUser')
+    @patch("firefighter.raid.service.jira_client")
+    @patch("firefighter.raid.service.JiraUser")
     def test_get_jira_user_fallback_to_db(self, mock_jira_user_model, mock_jira_client, admin_user):
         """Test fallback to database when both API calls fail."""
         from firefighter.jira_app.client import JiraAPIError, JiraUserNotFoundError
@@ -155,7 +153,7 @@ class TestCheckIssueId:
 class TestCreateIssueFunctions:
     """Test the create_issue_* functions."""
 
-    @patch('firefighter.raid.service.jira_client')
+    @patch("firefighter.raid.service.jira_client")
     def test_create_issue_customer(self, mock_jira_client):
         """Test create_issue_customer function."""
         # Setup mock
@@ -202,7 +200,7 @@ class TestCreateIssueFunctions:
 
         assert result == mock_issue
 
-    @patch('firefighter.raid.service.jira_client')
+    @patch("firefighter.raid.service.jira_client")
     def test_create_issue_feature_request(self, mock_jira_client):
         """Test create_issue_feature_request function."""
         mock_issue = {"id": "FEAT-123"}
@@ -227,7 +225,7 @@ class TestCreateIssueFunctions:
 
         assert result == mock_issue
 
-    @patch('firefighter.raid.service.jira_client')
+    @patch("firefighter.raid.service.jira_client")
     def test_create_issue_feature_request_with_none_labels(self, mock_jira_client):
         """Test create_issue_feature_request with None labels (covers line 75)."""
         mock_issue = {"id": "FEAT-124"}
@@ -249,7 +247,7 @@ class TestCreateIssueFunctions:
         assert call_args[1]["labels"] == expected_labels
         assert result == mock_issue
 
-    @patch('firefighter.raid.service.jira_client')
+    @patch("firefighter.raid.service.jira_client")
     def test_create_issue_feature_request_with_existing_label(self, mock_jira_client):
         """Test create_issue_feature_request when label already exists (covers branch 76->78)."""
         mock_issue = {"id": "FEAT-125"}
@@ -271,7 +269,7 @@ class TestCreateIssueFunctions:
         assert call_args[1]["labels"] == expected_labels
         assert result == mock_issue
 
-    @patch('firefighter.raid.service.jira_client')
+    @patch("firefighter.raid.service.jira_client")
     def test_create_issue_documentation_request(self, mock_jira_client):
         """Test create_issue_documentation_request function."""
         mock_issue = {"id": "DOC-123"}
@@ -293,7 +291,7 @@ class TestCreateIssueFunctions:
 
         assert result == mock_issue
 
-    @patch('firefighter.raid.service.jira_client')
+    @patch("firefighter.raid.service.jira_client")
     def test_create_issue_documentation_request_with_none_labels(self, mock_jira_client):
         """Test create_issue_documentation_request with None labels (covers line 111)."""
         mock_issue = {"id": "DOC-124"}
@@ -315,7 +313,7 @@ class TestCreateIssueFunctions:
         assert call_args[1]["labels"] == expected_labels
         assert result == mock_issue
 
-    @patch('firefighter.raid.service.jira_client')
+    @patch("firefighter.raid.service.jira_client")
     def test_create_issue_documentation_request_with_existing_label(self, mock_jira_client):
         """Test create_issue_documentation_request when label already exists (covers branch 112->114)."""
         mock_issue = {"id": "DOC-125"}
@@ -337,7 +335,7 @@ class TestCreateIssueFunctions:
         assert call_args[1]["labels"] == expected_labels
         assert result == mock_issue
 
-    @patch('firefighter.raid.service.jira_client')
+    @patch("firefighter.raid.service.jira_client")
     def test_create_issue_internal(self, mock_jira_client):
         """Test create_issue_internal function."""
         mock_issue = {"id": "INT-123"}
@@ -362,7 +360,7 @@ class TestCreateIssueFunctions:
 
         assert result == mock_issue
 
-    @patch('firefighter.raid.service.jira_client')
+    @patch("firefighter.raid.service.jira_client")
     def test_create_issue_seller(self, mock_jira_client):
         """Test create_issue_seller function."""
         mock_issue = {"id": "SELL-123"}
@@ -397,7 +395,7 @@ class TestCreateIssueFunctions:
 class TestCreateIssueErrorHandling:
     """Test error handling in create_issue functions."""
 
-    @patch('firefighter.raid.service.jira_client')
+    @patch("firefighter.raid.service.jira_client")
     def test_create_issue_customer_with_jira_client_returning_none(self, mock_jira_client):
         """Test create_issue_customer when jira_client returns None."""
         mock_jira_client.create_issue.return_value = None
@@ -420,7 +418,7 @@ class TestCreateIssueErrorHandling:
                 issue_data=issue_data,
             )
 
-    @patch('firefighter.raid.service.jira_client')
+    @patch("firefighter.raid.service.jira_client")
     def test_create_issue_customer_with_empty_issue_data(self, mock_jira_client):
         """Test create_issue_customer with minimal issue_data."""
         mock_issue = {"id": "TEST-123"}
