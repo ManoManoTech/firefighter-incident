@@ -48,9 +48,9 @@ slack_fields: SlackFormAttributesDict = {
             )
         },
     },
-    "area": {
+    "incident_category": {
         "input": {
-            "placeholder": "Select affected area",
+            "placeholder": "Select incident category",
         },
     },
 }

@@ -37,7 +37,7 @@ if TYPE_CHECKING:
                 "zoho": "https://crmplus.zoho.eu/mycrmlink/index.do/cxapp/agent/mycompany/all/tickets/details/123456789",
                 "platform": "FR",
                 "reporter_email": "john.doe@mycompany.com",
-                "impacted_area": "Sellers>MF Stock Replenishment",
+                "incident_category": "Payment Processing",
                 "project": "SBI",
                 "labels": ["originBot", "ProductsMerge"],
                 "environments": ["PRD", "STG"],

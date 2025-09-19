@@ -139,13 +139,16 @@ class SelectImpactModal(
         impact_descriptions = ""
         if impact_form_data:
             for value in impact_form_data.values():
-                if value.name != "NO" and value.description:
+                # Filter out "no impact" levels using the value field instead of name
+                if not ((hasattr(value, "value") and value.value == "NO") or value.name == "NO" or not value.description):
                     if hasattr(value, "impact_type_id") and value.impact_type_id:
                         impact_type = ImpactType.objects.get(pk=value.impact_type_id)
                         if impact_type:
                             impact_descriptions += f"\u00A0\u00A0 :exclamation: {impact_type} - {value}\n"
                     for line in str(value.description).splitlines():
-                        impact_descriptions += f"\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0 • {line}\n"
+                        # Skip empty lines or lines with only dashes/whitespace
+                        if line.strip() and line.strip() != "-":
+                            impact_descriptions += f"\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0 • {line}\n"
         return impact_descriptions
 
     def handle_modal_fn(  # type: ignore

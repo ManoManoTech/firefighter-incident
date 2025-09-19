@@ -336,6 +336,12 @@ class SlackForm(Generic[T]):
         ):
             slack_input_kwargs["options"].append(slack_input_kwargs["initial_option"])
 
+        # Ensure we have at least one option for Slack API
+        if not slack_input_kwargs["options"]:
+            slack_input_kwargs["options"] = [
+                SafeOption(label="Please select an option", value="__placeholder__")
+            ]
+
         field_name = f"{field_name}___{f.initial}{datetime.now().timestamp()}"  # noqa: DTZ005
         field_name = field_name[:254]
         return SelectElement(action_id=field_name, **slack_input_kwargs)
@@ -400,6 +406,15 @@ class SlackForm(Generic[T]):
                 slack_input_kwargs["option_groups"].append(
                     OptionGroup(label=str(group_name), options=subgroup)
                 )
+
+        # Ensure we have at least one option group for Slack API
+        if not slack_input_kwargs["option_groups"]:
+            slack_input_kwargs["option_groups"] = [
+                OptionGroup(
+                    label="No options available",
+                    options=[SafeOption(label="Please select an option", value="__placeholder__")]
+                )
+            ]
 
         return SelectElement(action_id=field_name, **slack_input_kwargs)
 

@@ -80,7 +80,7 @@ class CreateNormalIncidentFormBase(CreateIncidentFormBase):
         max_length=1200,
     )
     suggested_team_routing = forms.ModelChoiceField(
-        queryset=FeatureTeam.objects.only("name"),
+        queryset=FeatureTeam.objects.only("name").order_by("name"),
         label="Feature Team or Train",
         required=True,
     )
@@ -155,6 +155,12 @@ class CreateNormalCustomerIncidentForm(CreateNormalIncidentFormBase):
 
 
 class CreateRaidDocumentationRequestIncidentForm(CreateNormalIncidentFormBase):
+    incident_category = GroupedModelChoiceField(
+        choices_groupby="group",
+        queryset=IncidentCategory.objects.all().select_related("group").order_by("group__order", "name"),
+        label="Incident category"
+    )
+
     def trigger_incident_workflow(
         self,
         creator: User,
@@ -178,6 +184,12 @@ class CreateRaidDocumentationRequestIncidentForm(CreateNormalIncidentFormBase):
 
 
 class CreateRaidFeatureRequestIncidentForm(CreateNormalIncidentFormBase):
+    incident_category = GroupedModelChoiceField(
+        choices_groupby="group",
+        queryset=IncidentCategory.objects.all().select_related("group").order_by("group__order", "name"),
+        label="Incident category"
+    )
+
     def trigger_incident_workflow(
         self,
         creator: User,
