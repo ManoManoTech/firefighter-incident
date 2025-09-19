@@ -11,6 +11,7 @@ from slack_sdk.errors import SlackApiError
 from firefighter.incidents.forms.create_incident import CreateIncidentFormBase
 from firefighter.incidents.forms.select_impact import SelectImpactForm
 from firefighter.incidents.forms.utils import GroupedModelChoiceField
+from firefighter.incidents.models import IncidentCategory
 from firefighter.incidents.models.priority import Priority
 from firefighter.jira_app.client import (
     JiraAPIError,
@@ -22,7 +23,6 @@ from firefighter.raid.messages import (
     SlackMessageRaidCreatedIssue,
     SlackMessageRaidModifiedIssue,
 )
-from firefighter.incidents.models import IncidentCategory
 from firefighter.raid.models import FeatureTeam, JiraTicket
 from firefighter.raid.service import (
     CustomerIssueData,

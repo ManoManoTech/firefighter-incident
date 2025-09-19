@@ -58,7 +58,6 @@ class JiraTicketImpact(models.Model):
         return f"{self.jira_ticket.key}: {self.impact}"
 
 
-
 class FeatureTeam(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=80)

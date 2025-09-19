@@ -1,5 +1,4 @@
-"""
-Django management command to switch Slack user IDs for test environment.
+"""Django management command to switch Slack user IDs for test environment.
 
 This command:
 1. Fetches all users from the test Slack workspace
@@ -149,7 +148,7 @@ class Command(BaseCommand):
                 test_slack_id = slack_email_to_id[db_user.email.lower()]
                 # Get current slack_id from SlackUser relation
                 current_slack_id = None
-                if hasattr(db_user, 'slack_user') and db_user.slack_user:
+                if hasattr(db_user, "slack_user") and db_user.slack_user:
                     current_slack_id = db_user.slack_user.slack_id
 
                 mapping[db_user.email] = {
@@ -173,7 +172,7 @@ class Command(BaseCommand):
 
     def _load_mapping_file(self, file_path: Path) -> dict[str, Any]:
         """Load mapping from JSON file."""
-        with open(file_path, "r") as f:
+        with open(file_path) as f:
             return json.load(f)
 
     def _apply_mapping(self, mapping: dict[str, Any], dry_run: bool = False) -> int:
@@ -189,7 +188,7 @@ class Command(BaseCommand):
 
                 # Get current slack_id from SlackUser relation
                 current_slack_id = None
-                if hasattr(user, 'slack_user') and user.slack_user:
+                if hasattr(user, "slack_user") and user.slack_user:
                     current_slack_id = user.slack_user.slack_id
 
                 if current_slack_id == test_slack_id:
@@ -199,16 +198,14 @@ class Command(BaseCommand):
                     self.stdout.write(
                         f"🔄 Would update {email}: {current_slack_id} -> {test_slack_id}"
                     )
+                elif hasattr(user, "slack_user") and user.slack_user:
+                    user.slack_user.slack_id = test_slack_id
+                    user.slack_user.save(update_fields=["slack_id"])
+                    self.stdout.write(f"✅ Updated {email}: {current_slack_id} -> {test_slack_id}")
                 else:
-                    # Update or create SlackUser
-                    if hasattr(user, 'slack_user') and user.slack_user:
-                        user.slack_user.slack_id = test_slack_id
-                        user.slack_user.save(update_fields=['slack_id'])
-                        self.stdout.write(f"✅ Updated {email}: {current_slack_id} -> {test_slack_id}")
-                    else:
-                        # Create new SlackUser if it doesn't exist
-                        SlackUser.objects.create(user=user, slack_id=test_slack_id)
-                        self.stdout.write(f"✅ Created SlackUser for {email}: -> {test_slack_id}")
+                    # Create new SlackUser if it doesn't exist
+                    SlackUser.objects.create(user=user, slack_id=test_slack_id)
+                    self.stdout.write(f"✅ Created SlackUser for {email}: -> {test_slack_id}")
 
                 updated_count += 1
 
@@ -232,7 +229,7 @@ class Command(BaseCommand):
 
                 # Get current slack_id from SlackUser relation
                 current_slack_id = None
-                if hasattr(user, 'slack_user') and user.slack_user:
+                if hasattr(user, "slack_user") and user.slack_user:
                     current_slack_id = user.slack_user.slack_id
 
                 if current_slack_id == original_slack_id:
@@ -242,20 +239,18 @@ class Command(BaseCommand):
                     self.stdout.write(
                         f"🔄 Would restore {email}: {current_slack_id} -> {original_slack_id}"
                     )
-                else:
-                    # Update or handle SlackUser
-                    if hasattr(user, 'slack_user') and user.slack_user:
-                        if original_slack_id:
-                            user.slack_user.slack_id = original_slack_id
-                            user.slack_user.save(update_fields=['slack_id'])
-                            self.stdout.write(f"✅ Restored {email}: {current_slack_id} -> {original_slack_id}")
-                        else:
-                            # If original was None, delete the SlackUser
-                            user.slack_user.delete()
-                            self.stdout.write(f"✅ Removed SlackUser for {email}: {current_slack_id} -> None")
+                elif hasattr(user, "slack_user") and user.slack_user:
+                    if original_slack_id:
+                        user.slack_user.slack_id = original_slack_id
+                        user.slack_user.save(update_fields=["slack_id"])
+                        self.stdout.write(f"✅ Restored {email}: {current_slack_id} -> {original_slack_id}")
                     else:
-                        self.stdout.write(f"⚠️  User {email} has no SlackUser to restore")
-                        continue
+                        # If original was None, delete the SlackUser
+                        user.slack_user.delete()
+                        self.stdout.write(f"✅ Removed SlackUser for {email}: {current_slack_id} -> None")
+                else:
+                    self.stdout.write(f"⚠️  User {email} has no SlackUser to restore")
+                    continue
 
                 updated_count += 1
 

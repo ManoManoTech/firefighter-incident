@@ -30,7 +30,6 @@ class JiraTicketAdmin(JiraIssueAdmin):
     inlines = [JiraTicketImpactInline]
 
 
-
 @admin.register(FeatureTeam)
 class FeatureTeamAdmin(ImportExportModelAdmin):
     resource_class = FeatureTeamResource
