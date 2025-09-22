@@ -459,6 +459,8 @@ omit = [
   ".scannerwork/*",
   "docs/*",
   ".*",
+  "*/templates/**/*.html",
+  "**/*.html",
 ]
 include = [
   "src/**/*",

@@ -9,6 +9,7 @@ from httpx import HTTPError
 from jira.exceptions import JIRAError
 
 from firefighter.raid.client import JiraAttachmentError, RaidJiraClient
+from firefighter.raid.models import FeatureTeam
 
 
 class TestJiraAttachmentError:
@@ -143,6 +144,213 @@ class TestRaidJiraClientBasics:
 
         assert result["id"] == 12347
 
+    def test_create_issue_with_assignee(self, mock_jira_client):
+        """Test create_issue with assignee."""
+        mock_issue = Mock()
+        mock_issue.raw = {
+            "id": "12348",
+            "key": "TEST-126",
+            "fields": {
+                "summary": "Test task",
+                "description": "Task description",
+                "assignee": {"accountId": "assignee123"},
+                "reporter": {"accountId": "reporter123"},
+                "issuetype": {"name": "Task"}
+            }
+        }
+        mock_jira_client.jira.create_issue.return_value = mock_issue
+
+        result = mock_jira_client.create_issue(
+            issuetype="Task",
+            summary="Test task",
+            description="Task description",
+            assignee="assignee123",
+            reporter="test_reporter",
+            priority=1
+        )
+
+        assert result["id"] == 12348
+
+    def test_create_issue_with_none_labels(self, mock_jira_client):
+        """Test create_issue with None labels (should default to empty string)."""
+        mock_issue = Mock()
+        mock_issue.raw = {
+            "id": "12349",
+            "key": "TEST-127",
+            "fields": {
+                "summary": "Test task",
+                "description": "Task description",
+                "assignee": {"accountId": "assignee123"},
+                "reporter": {"accountId": "reporter123"},
+                "issuetype": {"name": "Task"}
+            }
+        }
+        mock_jira_client.jira.create_issue.return_value = mock_issue
+
+        result = mock_jira_client.create_issue(
+            issuetype="Task",
+            summary="Test task",
+            description="Task description",
+            assignee=None,
+            reporter="test_reporter",
+            priority=None,  # Test None priority
+            labels=None
+        )
+
+        assert result["id"] == 12349
+
+    def test_create_issue_with_invalid_priority(self, mock_jira_client):
+        """Test create_issue with invalid priority."""
+        with pytest.raises(ValueError, match="Priority must be between 1 and 5"):
+            mock_jira_client.create_issue(
+                issuetype="Bug",
+                summary="Test bug",
+                description="Bug description",
+                assignee=None,
+                reporter="test_reporter",
+                priority=6  # Invalid priority
+            )
+
+    def test_create_issue_with_all_extra_fields(self, mock_jira_client):
+        """Test create_issue with all extra fields."""
+        mock_issue = Mock()
+        mock_issue.raw = {
+            "id": "12350",
+            "key": "TEST-128",
+            "fields": {
+                "summary": "Test comprehensive",
+                "description": "Comprehensive description",
+                "assignee": {"accountId": "assignee123"},
+                "reporter": {"accountId": "reporter123"},
+                "issuetype": {"name": "Story"}
+            }
+        }
+        mock_jira_client.jira.create_issue.return_value = mock_issue
+
+        result = mock_jira_client.create_issue(
+            issuetype="Story",
+            summary="Test comprehensive",
+            description="Base description",
+            assignee="assignee123",
+            reporter="test_reporter",
+            priority=2,
+            labels=["label1", "label2"],
+            zoho_desk_ticket_id="12345",
+            zendesk_ticket_id="67890",
+            is_seller_in_golden_list=True,
+            is_key_account=True,
+            seller_contract_id=999,
+            suggested_team_routing="TeamA",
+            business_impact="High",
+            platform="platform-web",
+            area="frontend",
+            environments=["production", "staging"],
+            incident_category="Performance"
+        )
+
+        assert result["id"] == 12350
+
+    @patch('firefighter.raid.models.FeatureTeam.objects.get')
+    def test_create_issue_with_feature_team_routing(self, mock_feature_team_get, mock_jira_client):
+        """Test create_issue with suggested_team_routing that maps to FeatureTeam."""
+        # Mock FeatureTeam
+        mock_feature_team = Mock()
+        mock_feature_team.jira_project_key = "CUSTOM-PROJ"
+        mock_feature_team_get.return_value = mock_feature_team
+
+        mock_issue = Mock()
+        mock_issue.raw = {
+            "id": "12351",
+            "key": "CUSTOM-129",
+            "fields": {
+                "summary": "Custom project issue",
+                "description": "Custom description",
+                "assignee": {"accountId": "assignee123"},
+                "reporter": {"accountId": "reporter123"},
+                "issuetype": {"name": "Story"}
+            }
+        }
+        mock_jira_client.jira.create_issue.return_value = mock_issue
+
+        result = mock_jira_client.create_issue(
+            issuetype="Story",
+            summary="Custom project issue",
+            description="Custom description",
+            assignee=None,
+            reporter="test_reporter",
+            priority=1,
+            suggested_team_routing="CustomTeam",
+            project=None  # Force the method to look up FeatureTeam
+        )
+
+        mock_feature_team_get.assert_called_once_with(name="CustomTeam")
+        assert result["id"] == 12351
+
+    @patch('firefighter.raid.models.FeatureTeam.objects.get')
+    def test_create_issue_with_nonexistent_feature_team(self, mock_feature_team_get, mock_jira_client):
+        """Test create_issue with suggested_team_routing for nonexistent FeatureTeam."""
+        from firefighter.raid.models import FeatureTeam
+
+        # Mock FeatureTeam.DoesNotExist
+        mock_feature_team_get.side_effect = FeatureTeam.DoesNotExist()
+
+        mock_issue = Mock()
+        mock_issue.raw = {
+            "id": "12352",
+            "key": "DEFAULT-130",
+            "fields": {
+                "summary": "Default project issue",
+                "description": "Default description",
+                "assignee": {"accountId": "assignee123"},
+                "reporter": {"accountId": "reporter123"},
+                "issuetype": {"name": "Bug"}
+            }
+        }
+        mock_jira_client.jira.create_issue.return_value = mock_issue
+
+        result = mock_jira_client.create_issue(
+            issuetype="Bug",
+            summary="Default project issue",
+            description="Default description",
+            assignee=None,
+            reporter="test_reporter",
+            priority=1,
+            suggested_team_routing="NonexistentTeam",
+            project=None  # Force the method to look up FeatureTeam
+        )
+
+        mock_feature_team_get.assert_called_once_with(name="NonexistentTeam")
+        assert result["id"] == 12352
+
+    def test_create_issue_with_explicit_project(self, mock_jira_client):
+        """Test create_issue with explicit project (skips FeatureTeam lookup)."""
+        mock_issue = Mock()
+        mock_issue.raw = {
+            "id": "12353",
+            "key": "EXPLICIT-131",
+            "fields": {
+                "summary": "Explicit project issue",
+                "description": "Explicit description",
+                "assignee": {"accountId": "assignee123"},
+                "reporter": {"accountId": "reporter123"},
+                "issuetype": {"name": "Task"}
+            }
+        }
+        mock_jira_client.jira.create_issue.return_value = mock_issue
+
+        result = mock_jira_client.create_issue(
+            issuetype="Task",
+            summary="Explicit project issue",
+            description="Explicit description",
+            assignee=None,
+            reporter="test_reporter",
+            priority=1,
+            suggested_team_routing="SomeTeam",
+            project="EXPLICIT-PROJ"  # Explicit project bypasses FeatureTeam lookup
+        )
+
+        assert result["id"] == 12353
+
     def test_create_issue_with_jira_error(self, mock_jira_client):
         """Test create_issue when JIRA raises an error."""
         mock_jira_client.jira.create_issue.side_effect = JIRAError("JIRA error")
@@ -182,6 +390,56 @@ class TestRaidJiraClientBasics:
         """Test _jira_object with invalid input type."""
         with pytest.raises(AttributeError):
             RaidJiraClient._jira_object("invalid_input")
+
+    def test_jira_object_missing_id(self):
+        """Test _jira_object with missing ID."""
+        test_issue = {
+            "key": "TEST-123",
+            "fields": {
+                "summary": "Test issue",
+                "description": "Test description",
+                "assignee": {"accountId": "assignee123"},
+                "reporter": {"accountId": "reporter123"},
+                "issuetype": {"name": "Bug"}
+            }
+        }
+
+        with pytest.raises(TypeError, match="Jira ID not found"):
+            RaidJiraClient._jira_object(test_issue)
+
+    def test_jira_object_missing_required_fields(self):
+        """Test _jira_object with missing required fields."""
+        test_issue = {
+            "id": "12345",
+            "key": "TEST-123",
+            "fields": {
+                "summary": "Test issue",
+                "description": None,  # Missing description
+                "assignee": {"accountId": "assignee123"},
+                "reporter": {"accountId": "reporter123"},
+                "issuetype": {"name": "Bug"}
+            }
+        }
+
+        with pytest.raises(TypeError, match="Jira object has wrong type"):
+            RaidJiraClient._jira_object(test_issue)
+
+    def test_jira_object_missing_key(self):
+        """Test _jira_object with missing key."""
+        test_issue = {
+            "id": "12345",
+            "key": None,
+            "fields": {
+                "summary": "Test issue",
+                "description": "Test description",
+                "assignee": {"accountId": "assignee123"},
+                "reporter": {"accountId": "reporter123"},
+                "issuetype": {"name": "Bug"}
+            }
+        }
+
+        with pytest.raises(TypeError, match="Jira key is None"):
+            RaidJiraClient._jira_object(test_issue)
 
 
 @pytest.mark.django_db
