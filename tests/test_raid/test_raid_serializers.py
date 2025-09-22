@@ -180,10 +180,9 @@ class TestLandbotIssueRequestSerializer(TestCase):
         result = serializer.validate_environments(environments)
         assert result == environments
 
-    @patch("firefighter.raid.serializers.alert_slack_new_jira_ticket")
     @patch("firefighter.raid.serializers.get_reporter_user_from_email")
     @patch("firefighter.raid.serializers.jira_client")
-    def test_create_with_attachments_error(self, mock_jira_client, mock_get_reporter, _mock_alert):
+    def test_create_with_attachments_error(self, mock_jira_client, mock_get_reporter):
         """Test create method when JIRA returns no issue ID."""
         # Setup mocks
         user = UserFactory()
@@ -215,10 +214,9 @@ class TestLandbotIssueRequestSerializer(TestCase):
         with pytest.raises(JiraAPIError):
             serializer.create(validated_data)
 
-    @patch("firefighter.raid.serializers.alert_slack_new_jira_ticket")
     @patch("firefighter.raid.serializers.get_reporter_user_from_email")
     @patch("firefighter.raid.serializers.jira_client")
-    def test_create_with_attachments(self, mock_jira_client, mock_get_reporter, _mock_alert):
+    def test_create_with_attachments(self, mock_jira_client, mock_get_reporter):
         """Test create method with attachments."""
         # Setup mocks
         user = UserFactory()
@@ -260,10 +258,9 @@ class TestLandbotIssueRequestSerializer(TestCase):
         )
         assert isinstance(result, JiraTicket)
 
-    @patch("firefighter.raid.serializers.alert_slack_new_jira_ticket")
     @patch("firefighter.raid.serializers.get_reporter_user_from_email")
     @patch("firefighter.raid.serializers.jira_client")
-    def test_create_external_user_description(self, mock_jira_client, mock_get_reporter, _mock_alert):
+    def test_create_external_user_description(self, mock_jira_client, mock_get_reporter):
         """Test create method adds email to description for external users."""
         # Setup mocks - external domain
         user = UserFactory()
