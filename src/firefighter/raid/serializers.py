@@ -131,7 +131,8 @@ class LandbotIssueRequestSerializer(serializers.ModelSerializer[JiraTicket]):
         ],
     )
     priority = serializers.IntegerField(
-        min_value=1, max_value=4, write_only=True, allow_null=True
+        min_value=1, max_value=5, write_only=True, allow_null=True,
+        help_text="Priority level 1-5 (1=Critical, 2=High, 3=Medium, 4=Low, 5=Lowest)"
     )
     business_impact = serializers.ChoiceField(
         write_only=True, choices=["High", "Medium", "Low"], allow_null=True

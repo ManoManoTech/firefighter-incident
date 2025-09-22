@@ -36,7 +36,8 @@ def create_ticket(
     # XXX Custom field with FireFighter ID/link?
     # XXX Set affected environment custom field
     # XXX Set custom field impacted area to group/domain?
-    priority: int = incident.priority.value if 1 <= incident.priority.value <= 4 else 1
+    # Map Impact priority (1-5) to JIRA priority (1-5), fallback to P1 for invalid values
+    priority: int = incident.priority.value if 1 <= incident.priority.value <= 5 else 1
     issue = client.create_issue(
         issuetype="Incident",
         summary=incident.title,
