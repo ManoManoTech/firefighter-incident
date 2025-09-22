@@ -250,7 +250,7 @@ class TestRaidJiraClientBasics:
 
         assert result["id"] == 12350
 
-    @patch('firefighter.raid.models.FeatureTeam.objects.get')
+    @patch("firefighter.raid.models.FeatureTeam.objects.get")
     def test_create_issue_with_feature_team_routing(self, mock_feature_team_get, mock_jira_client):
         """Test create_issue with suggested_team_routing that maps to FeatureTeam."""
         # Mock FeatureTeam
@@ -286,10 +286,9 @@ class TestRaidJiraClientBasics:
         mock_feature_team_get.assert_called_once_with(name="CustomTeam")
         assert result["id"] == 12351
 
-    @patch('firefighter.raid.models.FeatureTeam.objects.get')
+    @patch("firefighter.raid.models.FeatureTeam.objects.get")
     def test_create_issue_with_nonexistent_feature_team(self, mock_feature_team_get, mock_jira_client):
         """Test create_issue with suggested_team_routing for nonexistent FeatureTeam."""
-        from firefighter.raid.models import FeatureTeam
 
         # Mock FeatureTeam.DoesNotExist
         mock_feature_team_get.side_effect = FeatureTeam.DoesNotExist()

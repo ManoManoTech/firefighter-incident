@@ -53,7 +53,7 @@ class TestLinkAuthUser:
         user = UserFactory.create(is_staff=True)
         claim = {"roles": ["back_office"]}
 
-        with patch.object(user, 'save') as mock_save:
+        with patch.object(user, "save") as mock_save:
             link_auth_user(user, claim)
             # save() should not be called since user is already staff
             mock_save.assert_not_called()
