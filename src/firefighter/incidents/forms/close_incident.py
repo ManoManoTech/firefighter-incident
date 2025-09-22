@@ -3,7 +3,7 @@ from __future__ import annotations
 from django import forms
 
 from firefighter.incidents.forms.utils import GroupedModelChoiceField
-from firefighter.incidents.models import Component
+from firefighter.incidents.models import IncidentCategory
 
 
 class CloseIncidentForm(forms.Form):
@@ -26,10 +26,10 @@ class CloseIncidentForm(forms.Form):
         max_length=1200,
         required=False,
     )
-    component = GroupedModelChoiceField(
+    incident_category = GroupedModelChoiceField(
         choices_groupby="group",
-        label="Issue category",
-        queryset=Component.objects.all()
+        label="Incident category",
+        queryset=IncidentCategory.objects.all()
         .select_related("group")
         .order_by(
             "group__order",

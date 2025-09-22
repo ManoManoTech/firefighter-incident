@@ -30,9 +30,9 @@ from firefighter.firefighter.fields_forms_widgets import (
 )
 from firefighter.incidents import signals
 from firefighter.incidents.enums import IncidentStatus
-from firefighter.incidents.models.component import Component
 from firefighter.incidents.models.environment import Environment
 from firefighter.incidents.models.group import Group
+from firefighter.incidents.models.incident_category import IncidentCategory
 from firefighter.incidents.models.incident_membership import (
     IncidentMembership,
     IncidentRole,
@@ -90,7 +90,7 @@ class IncidentManager(models.Manager["Incident"]):
         """
         with transaction.atomic():
             if "private" not in kwargs:
-                kwargs["private"] = kwargs["component"].private
+                kwargs["private"] = kwargs["incident_category"].private
             if "severity" not in kwargs and "priority" in kwargs:
                 kwargs["severity"] = Severity.objects.get(
                     value=kwargs["priority"].value
@@ -110,7 +110,7 @@ class IncidentManager(models.Manager["Incident"]):
                 description=incident.description,
                 status=incident.status,  # type: ignore[misc]
                 priority=incident.priority,
-                component=incident.component,
+                incident_category=incident.incident_category,
                 created_by=incident.created_by,
                 commander=incident.created_by,
                 incident=incident,
@@ -212,8 +212,8 @@ class Incident(models.Model):
         on_delete=models.PROTECT,
         help_text="Priority",
     )
-    component = models.ForeignKey(
-        Component, on_delete=models.PROTECT
+    incident_category = models.ForeignKey(
+        IncidentCategory, on_delete=models.PROTECT
     )
     environment = models.ForeignKey(
         Environment, on_delete=models.PROTECT
@@ -545,7 +545,7 @@ class Incident(models.Model):
         message: str | None = None,
         status: int | None = None,
         priority_id: UUID | None = None,
-        component_id: UUID | None = None,
+        incident_category_id: UUID | None = None,
         created_by: User | None = None,
         event_type: str | None = None,
         title: str | None = None,
@@ -564,7 +564,7 @@ class Incident(models.Model):
 
         _update_incident_field(self, "_status", status, updated_fields)
         _update_incident_field(self, "priority_id", priority_id, updated_fields)
-        _update_incident_field(self, "component_id", component_id, updated_fields)
+        _update_incident_field(self, "incident_category_id", incident_category_id, updated_fields)
         _update_incident_field(self, "title", title, updated_fields)
         _update_incident_field(self, "description", description, updated_fields)
         _update_incident_field(self, "environment_id", environment_id, updated_fields)
@@ -582,7 +582,7 @@ class Incident(models.Model):
                 status=status,  # type: ignore
                 priority_id=priority_id,
                 environment_id=environment_id,
-                component_id=component_id,
+                incident_category_id=incident_category_id,
                 message=message,
                 created_by=created_by,
                 title=title,
@@ -628,12 +628,12 @@ class Incident(models.Model):
         incidentupdate_set: QuerySet[IncidentUpdate]
 
 
-def component_filter_choices_queryset(_: Any) -> QuerySet[Component]:
-    """Queryset for choices of Components in IncidentFilterSet.
+def incident_category_filter_choices_queryset(_: Any) -> QuerySet[IncidentCategory]:
+    """Queryset for choices of IncidentCategories in IncidentFilterSet.
     Moved it as a function because models are not loaded when creating filters.
     """
     return (
-        Component.objects.all()
+        IncidentCategory.objects.all()
         .select_related("group")
         .order_by(
             "group__order",
@@ -663,11 +663,11 @@ class IncidentFilterSet(django_filters.FilterSet):
         widget=CustomCheckboxSelectMultiple,
     )
     group = ModelMultipleChoiceFilter(
-        queryset=Group.objects.all(), field_name="component__group_id", label="Group"
+        queryset=Group.objects.all(), field_name="incident_category__group_id", label="Group"
     )
-    component = ModelMultipleChoiceFilter(
-        queryset=component_filter_choices_queryset,
-        label="Issue category",
+    incident_category = ModelMultipleChoiceFilter(
+        queryset=incident_category_filter_choices_queryset,
+        label="Incident category",
         widget=GroupedCheckboxSelectMultiple,
     )
     created_at = FFDateRangeSingleFilter(field_name="created_at")

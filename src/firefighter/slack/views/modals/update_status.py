@@ -51,7 +51,7 @@ class UpdateStatusFormSlack(UpdateStatusForm):
                 "label_from_instance": priority_label,
             },
         },
-        "component": {
+        "incident_category": {
             "input": {
                 "placeholder": "Select affected issue category",
             }
@@ -73,7 +73,7 @@ class UpdateStatusModal(ModalForm[UpdateStatusFormSlack]):
             initial={
                 "status": incident.status,
                 "priority": incident.priority,
-                "component": incident.component,
+                "incident_category": incident.incident_category,
             }
         ).slack_blocks()
         blocks.append(slack_block_separator())
@@ -97,7 +97,7 @@ class UpdateStatusModal(ModalForm[UpdateStatusFormSlack]):
                 "initial": {
                     "status": incident.status,
                     "priority": incident.priority,
-                    "component": incident.component,
+                    "incident_category": incident.incident_category,
                 }
             },
         )
@@ -109,7 +109,7 @@ class UpdateStatusModal(ModalForm[UpdateStatusFormSlack]):
             return
         update_kwargs: dict[str, Any] = {}
         for changed_key in form.changed_data:
-            if changed_key in {"component", "priority"}:
+            if changed_key in {"incident_category", "priority"}:
                 update_kwargs[f"{changed_key}_id"] = form.cleaned_data[changed_key].id
             if changed_key in {"description", "title", "message", "status"}:
                 update_kwargs[changed_key] = form.cleaned_data[changed_key]

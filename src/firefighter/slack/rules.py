@@ -50,5 +50,5 @@ def should_publish_in_it_deploy_channel(incident: Incident) -> bool:
         incident.environment.value == "PRD"
         and incident.priority.value <= 1
         and not incident.private
-        and incident.component.deploy_warning
+        and incident.incident_category.deploy_warning
     )

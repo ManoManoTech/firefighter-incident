@@ -15,10 +15,10 @@ from rest_framework.fields import empty
 from taggit.serializers import TaggitSerializer, TagListSerializerField
 
 from firefighter.firefighter.utils import get_in
-from firefighter.incidents.models.component import Component
 from firefighter.incidents.models.environment import Environment
 from firefighter.incidents.models.group import Group
 from firefighter.incidents.models.incident import Incident
+from firefighter.incidents.models.incident_category import IncidentCategory
 from firefighter.incidents.models.incident_cost import IncidentCost
 from firefighter.incidents.models.incident_cost_type import IncidentCostType
 from firefighter.incidents.models.incident_membership import IncidentRole
@@ -157,11 +157,11 @@ class GroupSerializer(serializers.ModelSerializer[Group]):
         fields = "__all__"
 
 
-class ComponentSerializer(serializers.ModelSerializer[Component]):
+class IncidentCategorySerializer(serializers.ModelSerializer[IncidentCategory]):
     group = GroupSerializer()
 
     class Meta:
-        model = Component
+        model = IncidentCategory
         fields = "__all__"
 
 
@@ -210,9 +210,9 @@ class IncidentSerializer(TaggitSerializer, serializers.ModelSerializer[Incident]
     priority_id = serializers.PrimaryKeyRelatedField(
         source="priority", queryset=Priority.objects.all(), write_only=True
     )
-    component = ComponentSerializer(read_only=True)
-    component_id = serializers.PrimaryKeyRelatedField(
-        source="component", queryset=Component.objects.all(), write_only=True
+    incident_category = IncidentCategorySerializer(read_only=True)
+    incident_category_id = serializers.PrimaryKeyRelatedField(
+        source="incident_category", queryset=IncidentCategory.objects.all(), write_only=True
     )
 
     status = serializers.SerializerMethodField()
@@ -274,14 +274,14 @@ class IncidentSerializer(TaggitSerializer, serializers.ModelSerializer[Incident]
             "description",
             "created_at",
             "environment",
-            "component",
+            "incident_category",
             "priority",
             "status",
             "slack_channel_name",
             "status_page_url",
             "status",
             "environment_id",
-            "component_id",
+            "incident_category_id",
             "priority_id",
             "created_by_email",
             "tags",

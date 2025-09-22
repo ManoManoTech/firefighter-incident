@@ -97,9 +97,9 @@ def channel_name_from_incident(incident: Incident) -> str:
         )
     date_formatted = localtime(incident.created_at).strftime("%Y%m%d")
     if incident.environment is not None and incident.environment.value != "PRD":
-        topic = f"{date_formatted}-{str(incident.id)[:8]}-{incident.environment.value}-{incident.component.name}"
+        topic = f"{date_formatted}-{str(incident.id)[:8]}-{incident.environment.value}-{incident.incident_category.name}"
     else:
-        topic = f"{date_formatted}-{str(incident.id)[:8]}-{incident.component.name}"
+        topic = f"{date_formatted}-{str(incident.id)[:8]}-{incident.incident_category.name}"
 
     # Strip non-alphanumeric characters, cut at 80 chars
     # XXX django.utils.text.slugify should be used instead

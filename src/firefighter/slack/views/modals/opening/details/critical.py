@@ -58,7 +58,7 @@ class CreateIncidentFormSlack(CreateIncidentForm):
                 "label_from_instance": lambda obj: f"{obj.emoji}  {obj.name} - {obj.description}",
             },
         },
-        "component": {
+        "incident_category": {
             "input": {
                 "placeholder": "Select affected issue category",
             },

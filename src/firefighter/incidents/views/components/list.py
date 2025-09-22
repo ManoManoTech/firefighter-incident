@@ -7,9 +7,9 @@ from django.utils import timezone
 from django_filters.views import FilterView
 from django_tables2.views import SingleTableMixin
 
-from firefighter.incidents.models import Component
-from firefighter.incidents.models.component import ComponentFilterSet
-from firefighter.incidents.tables import ComponentsTable
+from firefighter.incidents.models import IncidentCategory
+from firefighter.incidents.models.incident_category import IncidentCategoryFilterSet
+from firefighter.incidents.tables import IncidentCategoriesTable
 
 if TYPE_CHECKING:
     from django_tables2.tables import Table
@@ -21,11 +21,11 @@ logger = logging.getLogger(__name__)
 TZ = timezone.get_current_timezone()
 
 
-class ComponentsViewList(SingleTableMixin, FilterView):
-    table_class = ComponentsTable
-    context_object_name = "components"
-    filterset_class = ComponentFilterSet
-    model = Component
+class IncidentCategoriesViewList(SingleTableMixin, FilterView):
+    table_class = IncidentCategoriesTable
+    context_object_name = "incident_categories"
+    filterset_class = IncidentCategoryFilterSet
+    model = IncidentCategory
 
     paginate_by = 150
     paginate_orphans = 20
@@ -46,7 +46,7 @@ class ComponentsViewList(SingleTableMixin, FilterView):
         if request.htmx and not request.htmx.boosted:
             template_name = "layouts/partials/partial_table_list_paginated.html"
         else:
-            template_name = "pages/component_list.html"
+            template_name = "pages/incident_category_list.html"
 
         return [template_name]
 

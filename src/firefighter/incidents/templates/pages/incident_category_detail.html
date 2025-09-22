@@ -7,13 +7,13 @@
       <div class="flex items-center space-x-5">
         <div>
           <h1 class="text-xl leading-6 font-bold text-neutral-900 dark:text-neutral-50">
-            {{ component.name }}
+            {{ incident_category.name }}
           </h1>
         </div>
       </div>
       <div class="mt-6 flex flex-col-reverse justify-stretch space-y-4 space-y-reverse sm:flex-row-reverse sm:justify-end sm:space-x-reverse sm:space-y-0 sm:space-x-3 md:mt-0 md:flex-row md:space-x-3">
 
-        {% if perms.incidents.change_components %}
+        {% if perms.incidents.change_incident_categories %}
           <a href="{{ admin_edit_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary gap-2 ">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-5" viewBox="0 0 20 20" fill="currentColor">
               <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" />
@@ -27,26 +27,26 @@
 
     <div class="mt-8 max-w-3xl mx-auto grid grid-cols-1 gap-6 sm:px-6 lg:max-w-7xl lg:grid-flow-col-dense lg:grid-cols-12">
       <div class="space-y-6 lg:col-start-1 lg:col-span-7">
-        {% component "card" card_title="Issue category information" id="component-information" %}
+        {% component "card" card_title="Incident category information" id="incident-category-information" %}
           {% fill "card_content" %}
             <dl class="grid grid-cols-1 gap-x-4 gap-y-8 sm:grid-cols-2">
-              {% if component.description %}
+              {% if incident_category.description %}
                 <div class="sm:col-span-2">
                   <dt class="text-sm font-medium text-neutral-500 dark:text-neutral-300">Description</dt>
-                  <dd class="mt-1 text-sm text-neutral-900 dark:text-neutral-100"> {{ component.description|urlize|linebreaksbr }}</dd>
+                  <dd class="mt-1 text-sm text-neutral-900 dark:text-neutral-100"> {{ incident_category.description|urlize|linebreaksbr }}</dd>
                 </div>
               {% endif %}
               <div class="sm:col-span-1">
                 <dt class="text-sm font-medium text-neutral-500 dark:text-neutral-300">Group</dt>
-                <dd class="mt-1 text-sm text-neutral-900 dark:text-neutral-100"> {{ component.group.name }}</dd>
+                <dd class="mt-1 text-sm text-neutral-900 dark:text-neutral-100"> {{ incident_category.group.name }}</dd>
               </div>
             </dl>
           {% endfill %}
         {% endcomponent %}
-        {% component "card" card_title="Responders groups" card_subtitle="People from these groups will be added to incidents created with this component" id="incident-responders-groups" %}
+        {% component "card" card_title="Responders groups" card_subtitle="People from these groups will be added to incidents created with this incident category" id="incident-responders-groups" %}
           {% fill "card_content" %}
             <ul role="list" class="mt-3 grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
-              {% for usergroup in component.usergroups.all %}
+              {% for usergroup in incident_category.usergroups.all %}
                 <li class="col-span-1 flex rounded-md shadow-sm">
                   <div class="flex flex-1 items-center justify-between truncate rounded-md border border-neutral-200 dark:border-neutral-700">
                     <div class="flex-1 truncate px-4 py-2 text-sm">
@@ -56,7 +56,7 @@
                   </div>
                 </li>
               {% endfor %}
-              {% for conversation in component.conversations.all %}
+              {% for conversation in incident_category.conversations.all %}
                 <li class="col-span-1 flex rounded-md shadow-sm">
                   <div class="flex flex-1 items-center justify-between truncate rounded-md border border-neutral-200 dark:border-neutral-700">
                     <div class="flex-1 truncate px-4 py-2 text-sm">
@@ -74,13 +74,13 @@
       <div class="lg:col-start-8 lg:col-span-5 space-y-6 ">
         {% component "card" card_title="Other components in the same group" id="incident-timeline" %}
           {% fill "card_title" %}
-            <h2 id="{{ id }}-title" class="text-lg leading-6 font-medium text-neutral-900 dark:text-neutral-50">Other components in "{{ component.group.name }}"</h2>
+            <h2 id="{{ id }}-title" class="text-lg leading-6 font-medium text-neutral-900 dark:text-neutral-50">Other incident categories in "{{ incident_category.group.name }}"</h2>
           {% endfill %}
           {% fill "card_content" %}
             <ul class="mx-6 list-disc">
-              {% for other_component in component.group.component_set.all %}
-                {% if other_component.id != component.id %}
-                  <li><a href="{{ other_component.get_absolute_url }}" class="link"> {{ other_component.name }}</a></li>
+              {% for other_incident_category in incident_category.group.incidentcategory_set.all %}
+                {% if other_incident_category.id != incident_category.id %}
+                  <li><a href="{{ other_incident_category.get_absolute_url }}" class="link"> {{ other_incident_category.name }}</a></li>
                 {% endif %}
               {% endfor %}
             </ul>

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from django.conf import settings
@@ -134,6 +135,7 @@ def create_issue_internal(
     business_impact: str | None,
     team_to_be_routed: str | None,
     area: str | None,
+    incident_category: str | None = None,
 ) -> JiraObject:
     """Creates a Jira Incident Issue of type Internal.
 
@@ -147,6 +149,7 @@ def create_issue_internal(
         business_impact (str): Business impact of the issue
         team_to_be_routed (str): Team to be routed
         area (str): Area of the issue
+        incident_category (str): Incident category
     """
     issue = jira_client.create_issue(
         issuetype="Incident",
@@ -160,22 +163,30 @@ def create_issue_internal(
         business_impact=business_impact,
         suggested_team_routing=team_to_be_routed,
         area=area,
+        incident_category=incident_category,
     )
     check_issue_id(issue, title=title, reporter=reporter)
     return issue
+
+
+@dataclass
+class CustomerIssueData:
+    """Data container for customer issue creation parameters."""
+    priority: int | None
+    labels: list[str] | None
+    platform: str
+    business_impact: str | None
+    team_to_be_routed: str | None
+    area: str | None
+    zendesk_ticket_id: str | None
+    incident_category: str | None = None
 
 
 def create_issue_customer(
     title: str,
     description: str,
     reporter: str,
-    priority: int | None,
-    labels: list[str] | None,
-    platform: str,
-    business_impact: str | None,
-    team_to_be_routed: str | None,
-    area: str | None,
-    zendesk_ticket_id: str | None,
+    issue_data: CustomerIssueData,
 ) -> JiraObject:
     """Creates a Jira Incident issue of type Customer.
 
@@ -183,13 +194,7 @@ def create_issue_customer(
         title (str): Summary of the issue
         description (str): Description of the issue
         reporter (str): Jira account id of the reporter
-        priority (int): Priority of the issue
-        labels (list[str]): Labels to add to the issue
-        platform (str): Platform of the issue
-        business_impact (str): Business impact of the issue
-        team_to_be_routed (str): Team to be routed
-        area (str): Area of the issue
-        zendesk_ticket_id (str): Zendesk ticket id
+        issue_data (CustomerIssueData): Container with issue parameters
     """
     issue = jira_client.create_issue(
         issuetype="Incident",
@@ -197,13 +202,14 @@ def create_issue_customer(
         description=description,
         assignee=None,
         reporter=reporter,
-        priority=priority,
-        labels=labels,
-        platform=platform,
-        business_impact=business_impact,
-        suggested_team_routing=team_to_be_routed,
-        area=area,
-        zendesk_ticket_id=zendesk_ticket_id,
+        priority=issue_data.priority,
+        labels=issue_data.labels,
+        platform=issue_data.platform,
+        business_impact=issue_data.business_impact,
+        suggested_team_routing=issue_data.team_to_be_routed,
+        area=issue_data.area,
+        zendesk_ticket_id=issue_data.zendesk_ticket_id,
+        incident_category=issue_data.incident_category,
     )
     check_issue_id(issue, title=title, reporter=reporter)
     return issue
@@ -223,6 +229,7 @@ def create_issue_seller(  # noqa: PLR0913, PLR0917
     is_key_account: bool | None,  # noqa: FBT001
     is_seller_in_golden_list: bool | None,  # noqa: FBT001
     zoho_desk_ticket_id: str | None,
+    incident_category: str | None = None,
 ) -> JiraObject:
     """Creates a Jira Incident issue of type Seller.
 
@@ -240,6 +247,7 @@ def create_issue_seller(  # noqa: PLR0913, PLR0917
         is_key_account (bool): Is key account
         is_seller_in_golden_list (bool): Is seller in golden list
         zoho_desk_ticket_id (str): Zoho desk ticket id
+        incident_category (str): Incident category
     """
     issue = jira_client.create_issue(
         issuetype="Incident",
@@ -257,6 +265,7 @@ def create_issue_seller(  # noqa: PLR0913, PLR0917
         is_key_account=is_key_account,
         is_seller_in_golden_list=is_seller_in_golden_list,
         zoho_desk_ticket_id=zoho_desk_ticket_id,
+        incident_category=incident_category,
     )
     check_issue_id(issue, title=title, reporter=reporter)
     return issue

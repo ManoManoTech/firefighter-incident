@@ -44,9 +44,9 @@ class CheckCurrentIncidentsModal(
             .order_by("-created_at")
             .select_related(
                 "priority",
-                "component",
+                "incident_category",
                 "environment",
-                "component__group",
+                "incident_category__group",
                 "conversation",
             )[:30]
         )

@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from firefighter.incidents.models.component import Component
 from firefighter.incidents.models.environment import Environment
 from firefighter.incidents.models.group import Group
 from firefighter.incidents.models.impact import Impact
 from firefighter.incidents.models.incident import Incident
+from firefighter.incidents.models.incident_category import IncidentCategory
 from firefighter.incidents.models.incident_cost import IncidentCost
 from firefighter.incidents.models.incident_cost_type import IncidentCostType
 from firefighter.incidents.models.incident_role_type import IncidentRoleType

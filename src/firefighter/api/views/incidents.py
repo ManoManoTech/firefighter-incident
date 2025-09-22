@@ -44,7 +44,7 @@ class ProcessAfterResponse(Response):
             examples=[
                 OpenApiExample(
                     name="Comma separated list of fields",
-                    value="id,name,component.name,component.group.name",
+                    value="id,name,incident_category.name,incident_category.group.name",
                     request_only=True,
                 ),
                 OpenApiExample(
@@ -73,8 +73,8 @@ class IncidentViewSet(
         Incident.objects.all()
         .select_related(
             "priority",
-            "component__group",
-            "component",
+            "incident_category__group",
+            "incident_category",
             "environment",
             "conversation",
             "created_by",
@@ -113,8 +113,8 @@ class IncidentViewSet(
         "priority.name",
         "title",
         "description",
-        "component.name",
-        "component.group.name",
+        "incident_category.name",
+        "incident_category.group.name",
         "created_at",
         "slack_channel_name",
         "status_page_url",
@@ -154,12 +154,12 @@ class IncidentViewSet(
         OpenApiExample(
             "Create an incident",
             summary="Create an incident",
-            description="Create an incident, on INT, P4, with `Other` component and John Doe as creator. All fields are required. The email must be a valid email of a ManoMano employee, that has a Slack account or has already used FireFighter before.",
+            description="Create an incident, on INT, P4, with `Other` incident category and John Doe as creator. All fields are required. The email must be a valid email of a ManoMano employee, that has a Slack account or has already used FireFighter before.",
             value={
                 "title": "Title of the incident, limited to 128 characters.",
                 "description": "Longer description of the incident. No characters limit.",
                 "environment_id": "1b960430-995b-47e1-beab-23dbe3dbccbf",
-                "component_id": "390a993a-d273-4db8-b7d6-190ab294961a",
+                "incident_category_id": "390a993a-d273-4db8-b7d6-190ab294961a",
                 "priority_id": "b814c9d2-48a8-4ac4-9c71-ff844e1b77f1",
                 "created_by_email": "john.doe@mycompany.com",
             },
@@ -185,7 +185,7 @@ class IncidentViewSet(
                     "order": 3,
                     "default": False,
                 },
-                "component": {
+                "incident_category": {
                     "id": "390a993a-d273-4db8-b7d6-190ab294961a",
                     "name": "Other",
                     "description": "",
@@ -241,7 +241,7 @@ class CreateIncidentViewSet(
     viewsets.GenericViewSet[Incident],
 ):
     queryset: QuerySet[Incident] = Incident.objects.all().select_related(
-        "priority", "component__group", "component", "environment", "conversation"
+        "priority", "incident_category__group", "incident_category", "environment", "conversation"
     )
     serializer_class = IncidentSerializer
     filterset_class = IncidentFilterSet

@@ -57,7 +57,7 @@ def update_home_tab(
         Incident.objects.filter(_status__lt=IncidentStatus.CLOSED.value)
         .order_by("-id")
         .select_related(
-            "priority", "component", "environment", "component__group", "conversation"
+            "priority", "incident_category", "environment", "incident_category__group", "conversation"
         )[:30]
     )
     blocks: list[Block] = [
@@ -148,7 +148,7 @@ def _home_incident_element(
                     text=f":rotating_light: *Priority:* {incident.priority.emoji} {incident.priority.name}"
                 ),
                 MarkdownTextObject(
-                    text=f":package: *Issue category:* {incident.component.group.name} - {incident.component.name}"
+                    text=f":package: *Incident category:* {incident.incident_category.group.name} - {incident.incident_category.name}"
                 ),
                 MarkdownTextObject(
                     text=f":speaking_head_in_silhouette: *Last update:* {date_time(incident.updated_at)}"

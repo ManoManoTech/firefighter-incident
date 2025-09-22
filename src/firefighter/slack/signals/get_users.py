@@ -26,8 +26,8 @@ logger = logging.getLogger(__name__)
 def get_invites_from_slack(incident: Incident, **_kwargs: Any) -> Iterable[User]:
     """New version using cached users instead of querying Slack API."""
     # Prepare sub-queries
-    slack_usergroups: QuerySet[UserGroup] = incident.component.usergroups.all()
-    slack_conversations: QuerySet[Conversation] = incident.component.conversations.all()
+    slack_usergroups: QuerySet[UserGroup] = incident.incident_category.usergroups.all()
+    slack_conversations: QuerySet[Conversation] = incident.incident_category.conversations.all()
 
     # We make sure to exclude the bot user, and avoid duplicates with distinct()
     # Also make sure that all users have related SlackUser and a slack_id

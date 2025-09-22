@@ -4,7 +4,7 @@ from django import forms
 
 from firefighter.incidents.enums import IncidentStatus
 from firefighter.incidents.forms.utils import EnumChoiceField, GroupedModelChoiceField
-from firefighter.incidents.models import Component, Priority
+from firefighter.incidents.models import IncidentCategory, Priority
 
 
 class UpdateStatusForm(forms.Form):
@@ -24,10 +24,10 @@ class UpdateStatusForm(forms.Form):
         label="Priority",
         queryset=Priority.objects.filter(enabled_update=True),
     )
-    component = GroupedModelChoiceField(
+    incident_category = GroupedModelChoiceField(
         choices_groupby="group",
-        label="Issue category",
-        queryset=Component.objects.all()
+        label="Incident category",
+        queryset=IncidentCategory.objects.all()
         .select_related("group")
         .order_by(
             "group__order",

@@ -54,6 +54,7 @@ class RaidJiraClient(JiraClient):
         platform: str | None = None,
         area: str | None = None,
         environments: list[str] | None = None,
+        incident_category: str | None = None,
         project: str | None = None,
     ) -> JiraObject:
         description_addendum: list[str] = []
@@ -96,6 +97,8 @@ class RaidJiraClient(JiraClient):
             extra_args["customfield_10201"] = {"value": platform}
         if environments:
             extra_args["customfield_11049"] = [{"value": e} for e in environments]
+        if incident_category and settings.RAID_JIRA_INCIDENT_CATEGORY_FIELD:
+            extra_args[settings.RAID_JIRA_INCIDENT_CATEGORY_FIELD] = {"value": incident_category}
         if len(description_addendum) > 0:
             description_addendum_str = "\n *Additional Information* \n" + "\n".join(
                 description_addendum

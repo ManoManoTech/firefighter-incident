@@ -40,18 +40,18 @@ logger = logging.getLogger(__name__)
 TZ = timezone.get_current_timezone()
 
 
-class ComponentManager(models.Manager["Component"]):
-    model: type[Component]
+class IncidentCategoryManager(models.Manager["IncidentCategory"]):
+    model: type[IncidentCategory]
 
     def queryset_with_mtbf(
         self,
         date_from: datetime,
         date_to: datetime,
-        queryset: QuerySet[Component] | None = None,
+        queryset: QuerySet[IncidentCategory] | None = None,
         metric_type: str = "time_to_fix",
         field_name: str = "mtbf",
-    ) -> QuerySet[Component]:
-        """Returns a queryset of components with an additional `mtbf` field."""
+    ) -> QuerySet[IncidentCategory]:
+        """Returns a queryset of incident categories with an additional `mtbf` field."""
         date_to = min(date_to, datetime.now(tz=TZ))
 
         date_interval = date_to - date_from
@@ -62,12 +62,12 @@ class ComponentManager(models.Manager["Component"]):
             .annotate(
                 metric_subquery=Subquery(
                     IncidentMetric.objects.filter(
-                        incident__component=OuterRef("pk"),
+                        incident__incident_category=OuterRef("pk"),
                         metric_type__type=metric_type,
                         incident__created_at__gte=date_from,
                         incident__created_at__lte=date_to,
                     )
-                    .values("incident__component")
+                    .values("incident__incident_category")
                     .annotate(sum_downtime=Sum("duration"))
                     .values("sum_downtime")
                 )
@@ -95,11 +95,11 @@ class ComponentManager(models.Manager["Component"]):
 
     @staticmethod
     def search(
-        queryset: QuerySet[Component] | None, search_term: str
-    ) -> tuple[QuerySet[Component], bool]:
+        queryset: QuerySet[IncidentCategory] | None, search_term: str
+    ) -> tuple[QuerySet[IncidentCategory], bool]:
         # XXX Common search method
         if queryset is None:
-            queryset = Component.objects.all()
+            queryset = IncidentCategory.objects.all()
 
         # If not search, return the original queryset
         if search_term is None or search_term.strip() == "":
@@ -135,24 +135,24 @@ class ComponentManager(models.Manager["Component"]):
         return queryset, False
 
 
-class Component(models.Model):
-    objects: ComponentManager = ComponentManager()
+class IncidentCategory(models.Model):
+    objects: IncidentCategoryManager = IncidentCategoryManager()
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=128)
     description = models.TextField(blank=True)
     order = models.IntegerField(
         default=0,
-        help_text="Order of the component in the list. Should be unique per `Group`.",
+        help_text="Order of the incident category in the list. Should be unique per `Group`.",
     )
     group = models.ForeignKey(Group, on_delete=models.PROTECT)
     private = models.BooleanField(
         default=False,
-        help_text="If true, incident created with this component won't be communicated, and conversations will be made private. This is useful for sensitive components. In the future, private incidents may be visible only to its members.",
+        help_text="If true, incident created with this incident category won't be communicated, and conversations will be made private. This is useful for sensitive incident categories. In the future, private incidents may be visible only to its members.",
     )
     deploy_warning = models.BooleanField(
         default=True,
-        help_text="If true, a warning will be sent when creating an incident of high severity with this component.",
+        help_text="If true, a warning will be sent when creating an incident of high severity with this incident category.",
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -174,11 +174,11 @@ class Component(models.Model):
         return f"{'🔒 ' if self.private else ''}{self.name}"
 
     def get_absolute_url(self) -> str:
-        return reverse("incidents:component-detail", kwargs={"component_id": self.id})
+        return reverse("incidents:incident-category-detail", kwargs={"incident_category_id": self.id})
 
 
-class ComponentFilterSet(django_filters.FilterSet):
-    """Set of filters for Component, share by Web UI and API."""
+class IncidentCategoryFilterSet(django_filters.FilterSet):
+    """Set of filters for IncidentCategory, share by Web UI and API."""
 
     id = django_filters.CharFilter(lookup_expr="iexact")
     private = django_filters.BooleanFilter()
@@ -194,30 +194,30 @@ class ComponentFilterSet(django_filters.FilterSet):
         label="MTBF period",
     )
     search = django_filters.CharFilter(
-        field_name="search", method="component_search", label="Search"
+        field_name="search", method="incident_category_search", label="Search"
     )
 
     @staticmethod
-    def component_search(
-        queryset: QuerySet[Component], _name: str, value: str
-    ) -> QuerySet[Component]:
-        """Search incidents by title, description, and ID.
+    def incident_category_search(
+        queryset: QuerySet[IncidentCategory], _name: str, value: str
+    ) -> QuerySet[IncidentCategory]:
+        """Search incident categories by title, description, and ID.
 
         Args:
-            queryset (QuerySet[Component]): Queryset to search in.
+            queryset (QuerySet[IncidentCategory]): Queryset to search in.
             _name:
             value (str): Value to search for.
 
         Returns:
-            QuerySet[Component]: Search results.
+            QuerySet[IncidentCategory]: Search results.
         """
-        return Component.objects.search(queryset=queryset, search_term=value)[0]
+        return IncidentCategory.objects.search(queryset=queryset, search_term=value)[0]
 
     @staticmethod
     def metrics_period_filter(
-        queryset: QuerySet[Component],
+        queryset: QuerySet[IncidentCategory],
         _name: str,
         value: tuple[datetime, datetime, Any, Any],
-    ) -> QuerySet[Component]:
+    ) -> QuerySet[IncidentCategory]:
         gte, lte, _, _ = value
-        return Component.objects.queryset_with_mtbf(gte, lte, queryset=queryset)
+        return IncidentCategory.objects.queryset_with_mtbf(gte, lte, queryset=queryset)

@@ -20,3 +20,6 @@ if ENABLE_RAID:
 
     RAID_TOOLBOX_URL: str = config("RAID_TOOLBOX_URL")
     "Toolbox URL"
+
+    RAID_JIRA_INCIDENT_CATEGORY_FIELD: str = config("RAID_JIRA_INCIDENT_CATEGORY_FIELD", default="")
+    "Jira custom field ID for incident category (e.g. 'customfield_12345')"

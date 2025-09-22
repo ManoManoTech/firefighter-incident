@@ -100,9 +100,9 @@ def test_incident_create_unauthorized(client: Client) -> None:
 
 @pytest.mark.django_db
 @pytest.mark.usefixtures("_debug")
-def test_component_list(client: Client) -> None:
-    """This test ensures that the component list is accessible."""
-    response = client.get(reverse("incidents:component-list"))
+def test_incident_category_list(client: Client) -> None:
+    """This test ensures that the incident category list is accessible."""
+    response = client.get(reverse("incidents:incident-category-list"))
 
     assert response.status_code == 302
 

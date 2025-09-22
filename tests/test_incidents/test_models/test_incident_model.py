@@ -20,8 +20,8 @@ class TestIncident(django.TestCase):
     @given(builds(IncidentFactory.build))
     def test_model_properties(self, instance: Incident) -> None:
         """Tests that instance can be saved and has correct representation."""
-        instance.component.group.save()
-        instance.component.save()
+        instance.incident_category.group.save()
+        instance.incident_category.save()
         instance.environment.save()
         instance.priority.save()
         instance.created_by.save()

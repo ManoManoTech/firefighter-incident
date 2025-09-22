@@ -53,13 +53,14 @@ def django_db_setup(django_db_setup: Any, django_db_blocker: DjangoDbBlocker) ->
         fixtures_path_mp = impresources.files("firefighter_fixtures")
         fixtures_path = fixtures_path_mp._paths[0]  # type: ignore
     except (ModuleNotFoundError, IndexError, AttributeError):
-        fixtures_path = Path(__file__).parent / "fixtures"
+        # Use the fixtures directory in the project root
+        fixtures_path = Path(__file__).parent.parent / "fixtures"
     logger.info(f"Loading fixtures from {fixtures_path}")
 
     # XXX(dugab): Make sure we load all fixtures
     with django_db_blocker.unblock():
         call_command("loaddata", fixtures_path / "incidents" / "groups.json")
-        call_command("loaddata", fixtures_path / "incidents" / "components.json")
+        call_command("loaddata", fixtures_path / "incidents" / "incident_categories.json")
         call_command("loaddata", fixtures_path / "incidents" / "severities.json")
         call_command("loaddata", fixtures_path / "incidents" / "priorities.json")
         call_command("loaddata", fixtures_path / "incidents" / "environments.json")
@@ -80,10 +81,9 @@ def incident() -> Incident:
 
 
 @pytest.fixture
-@pytest.mark.django_db
 def incident_saved() -> Incident:
     incident: Incident = IncidentFactory.build()
-    incident.component.group.save()
+    incident.incident_category.group.save()
     incident.created_by.save()
     incident.save()
     return incident
