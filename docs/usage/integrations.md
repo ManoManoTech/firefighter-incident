@@ -105,6 +105,17 @@ You can configure [SOSes][firefighter.slack.models.sos.Sos] in the back-office.
 
 Automatically create Jira tickets when FireFighter incidents are created. Each incident will generate a corresponding Jira ticket with incident details, priority, and category information.
 
+!!! warning "Synchronization Behavior"
+    **Important**: Jira integration is **unidirectional** (Impact → Jira only)
+
+    - ✅ Impact incidents automatically create Jira tickets
+    - ✅ Full P1-P5 priority mapping supported
+    - ❌ Impact is NOT notified when Jira tickets are updated
+    - ❌ Impact is NOT notified when Jira tickets are closed
+    - ❌ No webhook from Jira back to Impact
+
+    Manual monitoring of Jira tickets is required to track their resolution status.
+
 ### Settings and configuration
 
 Basic configuration with environment variables (in `.env` file):
@@ -136,3 +147,32 @@ If `RAID_JIRA_INCIDENT_CATEGORY_FIELD` is configured, the incident category will
 
 !!! note
     Without this configuration, the incident category will only appear in the ticket description.
+
+### Priority Mapping
+
+FireFighter incidents are mapped to Jira tickets with corresponding priority levels:
+
+| Impact Priority | Jira Priority | Description |
+|----------------|---------------|-------------|
+| P1 | 1 | Critical - System outage, complete service failure |
+| P2 | 2 | High - Major functionality impaired, significant impact |
+| P3 | 3 | Medium - Minor functionality affected, moderate impact |
+| P4 | 4 | Low - Small issues, minimal impact |
+| P5 | 5 | Lowest - Cosmetic issues, enhancement requests |
+
+!!! info "Priority Fallback"
+    If an incident has an invalid priority value (outside P1-P5 range), it will automatically fallback to **P1 (Critical)** in Jira to ensure proper escalation.
+
+### Ticket Information
+
+Each Jira ticket created from a FireFighter incident includes:
+
+- **Summary**: Incident title
+- **Description**: Incident description with:
+  - Incident category and group information
+  - Priority level with emoji indicator
+  - Links to Slack conversation and FireFighter incident page
+- **Priority**: Mapped from P1-P5 as described above
+- **Reporter**: The user who created the incident (with fallback to default user)
+- **Labels**: Custom labels if configured
+- **Custom Fields**: Incident category (if custom field is configured)

@@ -28,7 +28,9 @@
 
     ---
 
-    Create a Jira ticket for the incident, and follow the incident from Jira.
+    Create a Jira ticket for the incident with full P1-P5 priority mapping.
+
+    [:octicons-arrow-right-24: Learn more](usage/integrations.md#jira)
 
 -   :fontawesome-brands-confluence:{ .lg .middle } __Manage Confluence documents__ _(optional)_
 
