@@ -131,8 +131,8 @@ class TestLinkAuthUser:
     def test_link_auth_user_back_office_with_other_roles(self) -> None:
         """Test back_office role with other roles in comprehensive scenario."""
         user = UserFactory.create(is_staff=False)
-        group1 = Group.objects.create(name="admin")
-        group2 = Group.objects.create(name="editor")
+        admin_group = Group.objects.create(name="admin")
+        editor_group = Group.objects.create(name="editor")
 
         claim = {"roles": ["back_office", "admin", "editor"]}
 
@@ -141,6 +141,6 @@ class TestLinkAuthUser:
         user.refresh_from_db()
         assert user.is_staff is True
 
-        user_groups = set(user.groups.values_list("name", flat=True))
-        expected_groups = {"admin", "editor"}
+        user_groups = set(user.groups.all())
+        expected_groups = {admin_group, editor_group}
         assert user_groups == expected_groups

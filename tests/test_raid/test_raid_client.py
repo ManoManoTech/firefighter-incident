@@ -29,7 +29,9 @@ class TestRaidJiraClientBasics:
     @pytest.fixture
     def mock_jira_client(self):
         """Create a minimal mock RaidJiraClient."""
-        with patch("firefighter.jira_app.client.JiraClient.__init__", return_value=None):
+        with patch(
+            "firefighter.jira_app.client.JiraClient.__init__", return_value=None
+        ):
             client = RaidJiraClient()
             client.jira = Mock()
             return client
@@ -56,8 +58,8 @@ class TestRaidJiraClientBasics:
                 "description": "Test description",
                 "assignee": {"accountId": "assignee123"},
                 "reporter": {"accountId": "reporter123"},
-                "issuetype": {"name": "Bug"}
-            }
+                "issuetype": {"name": "Bug"},
+            },
         }
         mock_jira_client.jira.create_issue.return_value = mock_issue
 
@@ -67,7 +69,7 @@ class TestRaidJiraClientBasics:
             description="Bug description",
             assignee=None,
             reporter="test_reporter",
-            priority=1
+            priority=1,
         )
 
         mock_jira_client.jira.create_issue.assert_called_once()
@@ -85,8 +87,8 @@ class TestRaidJiraClientBasics:
                 "description": "Test description",
                 "assignee": {"accountId": "assignee123"},
                 "reporter": {"accountId": "reporter123"},
-                "issuetype": {"name": "Story"}
-            }
+                "issuetype": {"name": "Story"},
+            },
         }
         mock_jira_client.jira.create_issue.return_value = mock_issue
 
@@ -99,7 +101,7 @@ class TestRaidJiraClientBasics:
                 assignee=None,
                 reporter="test_reporter",
                 priority=2,
-                business_impact=impact
+                business_impact=impact,
             )
             assert result["id"] == 12346
 
@@ -113,7 +115,7 @@ class TestRaidJiraClientBasics:
                 assignee=None,
                 reporter="test_reporter",
                 priority=1,
-                business_impact="Invalid"
+                business_impact="Invalid",
             )
 
     def test_create_issue_with_na_business_impact(self, mock_jira_client):
@@ -127,8 +129,8 @@ class TestRaidJiraClientBasics:
                 "description": "Task description",
                 "assignee": {"accountId": "assignee123"},
                 "reporter": {"accountId": "reporter123"},
-                "issuetype": {"name": "Task"}
-            }
+                "issuetype": {"name": "Task"},
+            },
         }
         mock_jira_client.jira.create_issue.return_value = mock_issue
 
@@ -139,7 +141,7 @@ class TestRaidJiraClientBasics:
             assignee=None,
             reporter="test_reporter",
             priority=3,
-            business_impact="N/A"
+            business_impact="N/A",
         )
 
         assert result["id"] == 12347
@@ -155,8 +157,8 @@ class TestRaidJiraClientBasics:
                 "description": "Task description",
                 "assignee": {"accountId": "assignee123"},
                 "reporter": {"accountId": "reporter123"},
-                "issuetype": {"name": "Task"}
-            }
+                "issuetype": {"name": "Task"},
+            },
         }
         mock_jira_client.jira.create_issue.return_value = mock_issue
 
@@ -166,7 +168,7 @@ class TestRaidJiraClientBasics:
             description="Task description",
             assignee="assignee123",
             reporter="test_reporter",
-            priority=1
+            priority=1,
         )
 
         assert result["id"] == 12348
@@ -182,8 +184,8 @@ class TestRaidJiraClientBasics:
                 "description": "Task description",
                 "assignee": {"accountId": "assignee123"},
                 "reporter": {"accountId": "reporter123"},
-                "issuetype": {"name": "Task"}
-            }
+                "issuetype": {"name": "Task"},
+            },
         }
         mock_jira_client.jira.create_issue.return_value = mock_issue
 
@@ -194,7 +196,7 @@ class TestRaidJiraClientBasics:
             assignee=None,
             reporter="test_reporter",
             priority=None,  # Test None priority
-            labels=None
+            labels=None,
         )
 
         assert result["id"] == 12349
@@ -208,7 +210,7 @@ class TestRaidJiraClientBasics:
                 description="Bug description",
                 assignee=None,
                 reporter="test_reporter",
-                priority=6  # Invalid priority
+                priority=6,  # Invalid priority
             )
 
     def test_create_issue_with_all_extra_fields(self, mock_jira_client):
@@ -222,8 +224,8 @@ class TestRaidJiraClientBasics:
                 "description": "Comprehensive description",
                 "assignee": {"accountId": "assignee123"},
                 "reporter": {"accountId": "reporter123"},
-                "issuetype": {"name": "Story"}
-            }
+                "issuetype": {"name": "Story"},
+            },
         }
         mock_jira_client.jira.create_issue.return_value = mock_issue
 
@@ -245,13 +247,15 @@ class TestRaidJiraClientBasics:
             platform="platform-web",
             area="frontend",
             environments=["production", "staging"],
-            incident_category="Performance"
+            incident_category="Performance",
         )
 
         assert result["id"] == 12350
 
     @patch("firefighter.raid.models.FeatureTeam.objects.get")
-    def test_create_issue_with_feature_team_routing(self, mock_feature_team_get, mock_jira_client):
+    def test_create_issue_with_feature_team_routing(
+        self, mock_feature_team_get, mock_jira_client
+    ):
         """Test create_issue with suggested_team_routing that maps to FeatureTeam."""
         # Mock FeatureTeam
         mock_feature_team = Mock()
@@ -267,8 +271,8 @@ class TestRaidJiraClientBasics:
                 "description": "Custom description",
                 "assignee": {"accountId": "assignee123"},
                 "reporter": {"accountId": "reporter123"},
-                "issuetype": {"name": "Story"}
-            }
+                "issuetype": {"name": "Story"},
+            },
         }
         mock_jira_client.jira.create_issue.return_value = mock_issue
 
@@ -280,16 +284,17 @@ class TestRaidJiraClientBasics:
             reporter="test_reporter",
             priority=1,
             suggested_team_routing="CustomTeam",
-            project=None  # Force the method to look up FeatureTeam
+            project=None,  # Force the method to look up FeatureTeam
         )
 
         mock_feature_team_get.assert_called_once_with(name="CustomTeam")
         assert result["id"] == 12351
 
     @patch("firefighter.raid.models.FeatureTeam.objects.get")
-    def test_create_issue_with_nonexistent_feature_team(self, mock_feature_team_get, mock_jira_client):
+    def test_create_issue_with_nonexistent_feature_team(
+        self, mock_feature_team_get, mock_jira_client
+    ):
         """Test create_issue with suggested_team_routing for nonexistent FeatureTeam."""
-
         # Mock FeatureTeam.DoesNotExist
         mock_feature_team_get.side_effect = FeatureTeam.DoesNotExist()
 
@@ -302,8 +307,8 @@ class TestRaidJiraClientBasics:
                 "description": "Default description",
                 "assignee": {"accountId": "assignee123"},
                 "reporter": {"accountId": "reporter123"},
-                "issuetype": {"name": "Bug"}
-            }
+                "issuetype": {"name": "Bug"},
+            },
         }
         mock_jira_client.jira.create_issue.return_value = mock_issue
 
@@ -315,7 +320,7 @@ class TestRaidJiraClientBasics:
             reporter="test_reporter",
             priority=1,
             suggested_team_routing="NonexistentTeam",
-            project=None  # Force the method to look up FeatureTeam
+            project=None,  # Force the method to look up FeatureTeam
         )
 
         mock_feature_team_get.assert_called_once_with(name="NonexistentTeam")
@@ -332,8 +337,8 @@ class TestRaidJiraClientBasics:
                 "description": "Explicit description",
                 "assignee": {"accountId": "assignee123"},
                 "reporter": {"accountId": "reporter123"},
-                "issuetype": {"name": "Task"}
-            }
+                "issuetype": {"name": "Task"},
+            },
         }
         mock_jira_client.jira.create_issue.return_value = mock_issue
 
@@ -345,7 +350,7 @@ class TestRaidJiraClientBasics:
             reporter="test_reporter",
             priority=1,
             suggested_team_routing="SomeTeam",
-            project="EXPLICIT-PROJ"  # Explicit project bypasses FeatureTeam lookup
+            project="EXPLICIT-PROJ",  # Explicit project bypasses FeatureTeam lookup
         )
 
         assert result["id"] == 12353
@@ -361,7 +366,7 @@ class TestRaidJiraClientBasics:
                 description="Bug description",
                 assignee=None,
                 reporter="test_reporter",
-                priority=1
+                priority=1,
             )
 
     def test_jira_object_static_method(self):
@@ -374,8 +379,8 @@ class TestRaidJiraClientBasics:
                 "description": "Test description",
                 "assignee": {"accountId": "assignee123"},
                 "reporter": {"accountId": "reporter123"},
-                "issuetype": {"name": "Bug"}
-            }
+                "issuetype": {"name": "Bug"},
+            },
         }
 
         result = RaidJiraClient._jira_object(test_issue)
@@ -399,8 +404,8 @@ class TestRaidJiraClientBasics:
                 "description": "Test description",
                 "assignee": {"accountId": "assignee123"},
                 "reporter": {"accountId": "reporter123"},
-                "issuetype": {"name": "Bug"}
-            }
+                "issuetype": {"name": "Bug"},
+            },
         }
 
         with pytest.raises(TypeError, match="Jira ID not found"):
@@ -416,8 +421,8 @@ class TestRaidJiraClientBasics:
                 "description": None,  # Missing description
                 "assignee": {"accountId": "assignee123"},
                 "reporter": {"accountId": "reporter123"},
-                "issuetype": {"name": "Bug"}
-            }
+                "issuetype": {"name": "Bug"},
+            },
         }
 
         with pytest.raises(TypeError, match="Jira object has wrong type"):
@@ -433,8 +438,8 @@ class TestRaidJiraClientBasics:
                 "description": "Test description",
                 "assignee": {"accountId": "assignee123"},
                 "reporter": {"accountId": "reporter123"},
-                "issuetype": {"name": "Bug"}
-            }
+                "issuetype": {"name": "Bug"},
+            },
         }
 
         with pytest.raises(TypeError, match="Jira key is None"):
@@ -462,7 +467,9 @@ class TestRaidJiraClientAttachments:
         mock_client.jira.add_attachment.return_value = Mock()
 
         # Test the method
-        RaidJiraClient.add_attachments_to_issue("TEST-123", ["https://example.com/image.png"])
+        RaidJiraClient.add_attachments_to_issue(
+            "TEST-123", ["https://example.com/image.png"]
+        )
 
         mock_http_client.get.assert_called_once_with("https://example.com/image.png")
         mock_client.jira.add_attachment.assert_called_once()
@@ -474,8 +481,12 @@ class TestRaidJiraClientAttachments:
         mock_http_client_class.return_value = mock_http_client
         mock_http_client.get.side_effect = HTTPError("Network error")
 
-        with pytest.raises(JiraAttachmentError, match="Error while adding attachment to issue"):
-            RaidJiraClient.add_attachments_to_issue("TEST-123", ["https://bad-url.com/file.png"])
+        with pytest.raises(
+            JiraAttachmentError, match="Error while adding attachment to issue"
+        ):
+            RaidJiraClient.add_attachments_to_issue(
+                "TEST-123", ["https://bad-url.com/file.png"]
+            )
 
     @patch("firefighter.raid.client.HttpClient")
     @patch("firefighter.raid.client.client")
@@ -491,10 +502,16 @@ class TestRaidJiraClientAttachments:
         mock_http_client.get.return_value = mock_response
 
         # Setup JIRA to fail
-        mock_client.jira.add_attachment.side_effect = JIRAError("JIRA attachment failed")
+        mock_client.jira.add_attachment.side_effect = JIRAError(
+            "JIRA attachment failed"
+        )
 
-        with pytest.raises(JiraAttachmentError, match="Error while adding attachment to issue"):
-            RaidJiraClient.add_attachments_to_issue("TEST-123", ["https://example.com/file.txt"])
+        with pytest.raises(
+            JiraAttachmentError, match="Error while adding attachment to issue"
+        ):
+            RaidJiraClient.add_attachments_to_issue(
+                "TEST-123", ["https://example.com/file.txt"]
+            )
 
 
 @pytest.mark.django_db
@@ -504,7 +521,9 @@ class TestRaidJiraClientWorkflow:
     @pytest.fixture
     def workflow_client(self):
         """Create client for workflow testing."""
-        with patch("firefighter.jira_app.client.JiraClient.__init__", return_value=None):
+        with patch(
+            "firefighter.jira_app.client.JiraClient.__init__", return_value=None
+        ):
             client = RaidJiraClient()
             client.jira = Mock()
             return client

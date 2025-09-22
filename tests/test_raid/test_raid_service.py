@@ -6,7 +6,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from firefighter.jira_app.client import JiraAPIError
+from firefighter.jira_app.client import JiraAPIError, JiraUserNotFoundError
 from firefighter.raid.service import (
     CustomerIssueData,
     check_issue_id,
@@ -85,7 +85,6 @@ class TestGetJiraUserFromUser:
     @patch("firefighter.raid.service.jira_client")
     def test_get_jira_user_fallback_to_default(self, mock_jira_client, admin_user):
         """Test fallback to default user when jira_client fails."""
-        from firefighter.jira_app.client import JiraAPIError
 
         # Make the first call fail
         mock_jira_client.get_jira_user_from_user.side_effect = JiraAPIError("API error")
@@ -105,7 +104,6 @@ class TestGetJiraUserFromUser:
     @patch("firefighter.raid.service.JiraUser")
     def test_get_jira_user_fallback_to_db(self, mock_jira_user_model, mock_jira_client, admin_user):
         """Test fallback to database when both API calls fail."""
-        from firefighter.jira_app.client import JiraAPIError, JiraUserNotFoundError
 
         # Make both API calls fail
         mock_jira_client.get_jira_user_from_user.side_effect = JiraAPIError("API error")
