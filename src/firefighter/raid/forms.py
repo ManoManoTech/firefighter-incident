@@ -23,7 +23,6 @@ from firefighter.raid.messages import (
     SlackMessageRaidCreatedIssue,
     SlackMessageRaidModifiedIssue,
 )
-from firefighter.incidents.models import IncidentCategory
 from firefighter.raid.models import FeatureTeam, JiraTicket
 from firefighter.raid.service import (
     CustomerIssueData,
