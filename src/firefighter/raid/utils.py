@@ -33,7 +33,7 @@ def get_domain_from_email(email: str) -> str:
     if email.count("@") != 1:
         msg = f"Invalid email: {email}"
         raise ValueError(msg)
-    domain = email.split("@")[-1]
+    domain = email.rsplit("@", maxsplit=1)[-1]
     if not domain:
         msg = f"Invalid email: {email}"
         raise ValueError(msg)
