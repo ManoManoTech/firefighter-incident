@@ -15,7 +15,7 @@ base_valid_data = {
     "zoho": "https://test_url.com",
     "platform": "FR",
     "reporter_email": "test_email@example.com",
-    "impacted_area": "Test Area",
+    "incident_category": "Test Area",
     "suggested_team_routing": "TSTPRJ",
     "labels": ["testLabel1", "testLabel2"],
     "environments": ["PRD"],
