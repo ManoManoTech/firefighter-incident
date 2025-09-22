@@ -273,7 +273,7 @@ class JiraClient:
         name = jira_api_user.raw.get("displayName")
         if not name or not isinstance(name, str):
             logger.warning("User %s has no display name, using email as name", email)
-            name = email.split("@")[0]
+            name = email.split("@", maxsplit=1)[0]
         try:
             user: User = User.objects.create(
                 name=name,
