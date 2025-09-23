@@ -1,1 +1,0 @@
-[{"model": "raid.raidarea", "pk": 1, "fields": {"name": "Security", "area": "Internal"}}, {"model": "raid.raidarea", "pk": 2, "fields": {"name": "Checkout", "area": "Customers"}}, {"model": "raid.raidarea", "pk": 3, "fields": {"name": "Sellers permission", "area": "Sellers"}}]
