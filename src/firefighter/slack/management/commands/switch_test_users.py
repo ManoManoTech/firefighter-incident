@@ -50,6 +50,15 @@ class Command(BaseCommand):
             help="Restore original Slack IDs from mapping file",
         )
 
+    def _raise_mapping_file_not_found(self, mapping_file: Path) -> None:
+        """Raise error when mapping file is not found."""
+        error_msg = f"Mapping file {mapping_file} not found"
+        raise CommandError(error_msg)
+
+    def _raise_slack_token_not_configured(self) -> None:
+        """Raise error when Slack token is not configured."""
+        raise CommandError("SLACK_BOT_TOKEN not configured")
+
     def handle(self, *args: Any, **options: Any) -> None:
         """Main command handler."""
         mapping_file = Path(options["mapping_file"])
@@ -58,7 +67,7 @@ class Command(BaseCommand):
             if options["restore"]:
                 # Restore original Slack IDs from mapping file
                 if not mapping_file.exists():
-                    raise CommandError(f"Mapping file {mapping_file} not found")
+                    self._raise_mapping_file_not_found(mapping_file)
 
                 self.stdout.write("📄 Loading mapping from file...")
                 slack_mapping = self._load_mapping_file(mapping_file)
@@ -77,7 +86,7 @@ class Command(BaseCommand):
                 return
 
             if not settings.SLACK_BOT_TOKEN:
-                raise CommandError("SLACK_BOT_TOKEN not configured")
+                self._raise_slack_token_not_configured()
 
             # Step 1: Generate mapping by querying test Slack workspace
             self.stdout.write("🔍 Fetching users from test Slack workspace...")
@@ -107,11 +116,13 @@ class Command(BaseCommand):
                 )
 
         except SlackApiError as e:
-            raise CommandError(f"Slack API error: {e.response['error']}")
+            error_msg = f"Slack API error: {e.response['error']}"
+            raise CommandError(error_msg) from e
         except Exception as e:
-            raise CommandError(f"Error: {e}")
+            error_msg = f"Error: {e}"
+            raise CommandError(error_msg) from e
 
-    def _generate_slack_mapping(self) -> dict[str, str]:
+    def _generate_slack_mapping(self) -> dict[str, dict[str, Any]]:
         """Generate mapping by querying test Slack workspace."""
         client = WebClient(token=settings.SLACK_BOT_TOKEN)
 
@@ -120,7 +131,8 @@ class Command(BaseCommand):
             response = client.users_list()
             slack_users = response["members"]
         except SlackApiError as e:
-            raise CommandError(f"Failed to fetch Slack users: {e.response['error']}")
+            error_msg = f"Failed to fetch Slack users: {e.response['error']}"
+            raise CommandError(error_msg) from e
 
         # Create mapping: email -> test_slack_id
         slack_email_to_id = {}
@@ -167,21 +179,20 @@ class Command(BaseCommand):
 
     def _save_mapping_file(self, mapping: dict[str, Any], file_path: Path) -> None:
         """Save mapping to JSON file."""
-        with open(file_path, "w") as f:
+        with file_path.open("w", encoding="utf-8") as f:
             json.dump(mapping, f, indent=2, ensure_ascii=False)
 
     def _load_mapping_file(self, file_path: Path) -> dict[str, Any]:
         """Load mapping from JSON file."""
-        with open(file_path) as f:
+        with file_path.open(encoding="utf-8") as f:
             return json.load(f)
 
-    def _apply_mapping(self, mapping: dict[str, Any], dry_run: bool = False) -> int:
+    def _apply_mapping(self, mapping: dict[str, Any], *, dry_run: bool = False) -> int:
         """Apply the mapping to update database users."""
         updated_count = 0
 
         for email, user_data in mapping.items():
             test_slack_id = user_data["test_slack_id"]
-            original_slack_id = user_data["original_slack_id"]
 
             try:
                 user = User.objects.get(email=email)
@@ -211,18 +222,17 @@ class Command(BaseCommand):
 
             except User.DoesNotExist:
                 self.stdout.write(f"❌ User not found in database: {email}")
-            except Exception as e:
+            except (SlackUser.DoesNotExist, ValueError) as e:
                 self.stdout.write(f"❌ Error updating {email}: {e}")
 
         return updated_count
 
-    def _restore_mapping(self, mapping: dict[str, Any], dry_run: bool = False) -> int:
+    def _restore_mapping(self, mapping: dict[str, Any], *, dry_run: bool = False) -> int:
         """Restore original Slack IDs from mapping."""
         updated_count = 0
 
         for email, user_data in mapping.items():
             original_slack_id = user_data["original_slack_id"]
-            test_slack_id = user_data["test_slack_id"]
 
             try:
                 user = User.objects.get(email=email)
@@ -256,7 +266,7 @@ class Command(BaseCommand):
 
             except User.DoesNotExist:
                 self.stdout.write(f"❌ User not found in database: {email}")
-            except Exception as e:
+            except (SlackUser.DoesNotExist, ValueError) as e:
                 self.stdout.write(f"❌ Error restoring {email}: {e}")
 
         return updated_count
