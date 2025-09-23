@@ -38,13 +38,22 @@ class GroupFactory(DjangoModelFactory[Group]):
     order = FuzzyInteger(100, 1000)  # type: ignore[no-untyped-call]
 
 
-class SeverityFactory(DjangoModelFactory[Priority]):
+class PriorityFactory(DjangoModelFactory[Priority]):
+    """Factory for creating Priority instances in tests.
+
+    Creates Priority objects with random values. Use specific values in tests
+    when testing priority-specific behavior (e.g., P1-P5 JIRA mapping).
+    """
     class Meta:
         model = Priority
 
     name = Faker("text", max_nb_chars=20)  # type: ignore[no-untyped-call]
     value = FuzzyInteger(0, 100)  # type: ignore[no-untyped-call]
     order = FuzzyInteger(100, 1000)  # type: ignore[no-untyped-call]
+
+
+# Legacy alias - will be removed when Severity model is removed
+SeverityFactory = PriorityFactory
 
 
 class EnvironmentFactory(DjangoModelFactory[Environment]):
