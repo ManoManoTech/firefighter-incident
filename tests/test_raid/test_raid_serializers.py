@@ -8,6 +8,7 @@ from django.test import TestCase
 from rest_framework import serializers
 
 from firefighter.incidents.factories import UserFactory
+from firefighter.incidents.models.user import User
 from firefighter.jira_app.client import (
     JiraAPIError,
     JiraUserNotFoundError,
@@ -180,14 +181,16 @@ class TestLandbotIssueRequestSerializer(TestCase):
         result = serializer.validate_environments(environments)
         assert result == environments
 
+    @patch("firefighter.raid.serializers.alert_slack_new_jira_ticket")
     @patch("firefighter.raid.serializers.get_reporter_user_from_email")
     @patch("firefighter.raid.serializers.jira_client")
-    def test_create_with_attachments_error(self, mock_jira_client, mock_get_reporter):
+    def test_create_with_attachments_error(self, mock_jira_client, mock_get_reporter, mock_alert_slack):
         """Test create method when JIRA returns no issue ID."""
         # Setup mocks
         user = UserFactory()
         jira_user = JiraUser.objects.create(id="test-123", user=user)
         mock_get_reporter.return_value = (user, jira_user, "example.com")
+        mock_alert_slack.return_value = None
 
         # Mock create_issue to return None ID (error case)
         mock_jira_client.create_issue.return_value = {"id": None, "key": "TEST-123"}
@@ -203,7 +206,7 @@ class TestLandbotIssueRequestSerializer(TestCase):
             "seller_contract_id": "123",
             "zoho": "456",
             "platform": "ES",
-            "impacted_area": "test",
+            "incident_category": "test",
             "business_impact": "High",
             "environments": ["PRD"],
             "suggested_team_routing": "TEAM1",
@@ -214,14 +217,16 @@ class TestLandbotIssueRequestSerializer(TestCase):
         with pytest.raises(JiraAPIError):
             serializer.create(validated_data)
 
+    @patch("firefighter.raid.serializers.alert_slack_new_jira_ticket")
     @patch("firefighter.raid.serializers.get_reporter_user_from_email")
     @patch("firefighter.raid.serializers.jira_client")
-    def test_create_with_attachments(self, mock_jira_client, mock_get_reporter):
+    def test_create_with_attachments(self, mock_jira_client, mock_get_reporter, mock_alert_slack):
         """Test create method with attachments."""
         # Setup mocks
         user = UserFactory()
         jira_user = JiraUser.objects.create(id="test-123", user=user)
         mock_get_reporter.return_value = (user, jira_user, "example.com")
+        mock_alert_slack.return_value = None
 
         mock_jira_client.create_issue.return_value = {
             "id": "12345",
@@ -242,7 +247,7 @@ class TestLandbotIssueRequestSerializer(TestCase):
             "seller_contract_id": "123",
             "zoho": "456",
             "platform": "ES",
-            "impacted_area": "test",
+            "incident_category": "test",
             "business_impact": "High",
             "environments": ["PRD"],
             "suggested_team_routing": "TEAM1",
@@ -257,15 +262,18 @@ class TestLandbotIssueRequestSerializer(TestCase):
             "12345", ["file1.jpg", "file2.pdf"]
         )
         assert isinstance(result, JiraTicket)
+        mock_alert_slack.assert_called_once()
 
+    @patch("firefighter.raid.serializers.alert_slack_new_jira_ticket")
     @patch("firefighter.raid.serializers.get_reporter_user_from_email")
     @patch("firefighter.raid.serializers.jira_client")
-    def test_create_external_user_description(self, mock_jira_client, mock_get_reporter):
+    def test_create_external_user_description(self, mock_jira_client, mock_get_reporter, mock_alert_slack):
         """Test create method adds email to description for external users."""
         # Setup mocks - external domain
         user = UserFactory()
         jira_user = JiraUser.objects.create(id="test-123", user=user)
         mock_get_reporter.return_value = (user, jira_user, "external.com")
+        mock_alert_slack.return_value = None
 
         mock_jira_client.create_issue.return_value = {
             "id": "12345",
@@ -285,7 +293,7 @@ class TestLandbotIssueRequestSerializer(TestCase):
             "seller_contract_id": None,
             "zoho": None,
             "platform": "ES",
-            "impacted_area": None,
+            "incident_category": None,
             "business_impact": None,
             "environments": ["PRD"],
             "suggested_team_routing": "TEAM1",
@@ -299,6 +307,9 @@ class TestLandbotIssueRequestSerializer(TestCase):
         create_call = mock_jira_client.create_issue.call_args[1]
         assert "Reporter email test@external.com" in create_call["description"]
         assert isinstance(result, JiraTicket)
+        mock_alert_slack.assert_called_once_with(
+            result, reporter_user=user, reporter_email="test@external.com"
+        )
 
 
 class TestJiraWebhookUpdateSerializer(TestCase):
@@ -434,3 +445,63 @@ class TestJiraWebhookCommentSerializer(TestCase):
         serializer = JiraWebhookCommentSerializer()
         with pytest.raises(NotImplementedError):
             serializer.update(None, {})
+
+
+@pytest.mark.django_db
+class TestGetReporterUserFromEmailAdditional:
+    """Additional tests for get_reporter_user_from_email to reach 100% coverage."""
+
+    @patch("firefighter.raid.serializers.jira_client")
+    @patch("firefighter.raid.serializers.SlackUser")
+    def test_user_does_not_exist_no_slack_fallback(self, mock_slack_user, mock_jira_client):
+        """Test when User.DoesNotExist and no Slack user exists."""
+        # Setup mocks
+        mock_slack_user.objects.upsert_by_email.return_value = None
+
+        default_jira_user = JiraUser.objects.create(id="default-123", user=UserFactory())
+        mock_jira_client.get_jira_user_from_jira_id.return_value = default_jira_user
+
+        reporter_user, reporter, user_domain = get_reporter_user_from_email("test@example.com")
+
+        assert reporter_user == default_jira_user.user
+        assert reporter == default_jira_user
+        assert user_domain == "example.com"
+
+    @patch("firefighter.raid.serializers.jira_client")
+    @patch("firefighter.raid.serializers.SlackUser")
+    def test_slack_user_exists_but_reporter_user_tmp_is_none(self, mock_slack_user, mock_jira_client):
+        """Test when Slack upsert returns None and we use default JIRA user."""
+        # Setup mocks - simulate User.DoesNotExist
+        mock_slack_user.objects.upsert_by_email.return_value = None
+
+        default_jira_user = JiraUser.objects.create(id="default-123", user=UserFactory())
+        mock_jira_client.get_jira_user_from_jira_id.return_value = default_jira_user
+
+        with patch("firefighter.raid.serializers.User.objects.get", side_effect=User.DoesNotExist):
+            reporter_user, reporter, user_domain = get_reporter_user_from_email("test@example.com")
+
+        # Should use default JIRA user's user since reporter_user_tmp is None
+        assert reporter_user == default_jira_user.user
+        assert reporter == default_jira_user
+        assert user_domain == "example.com"
+
+    @patch("firefighter.raid.serializers.jira_client")
+    @patch("firefighter.raid.serializers.SlackUser")
+    @patch("firefighter.raid.serializers.JIRA_USER_IDS", {"special.com": "special-user-123"})
+    def test_domain_specific_jira_user_with_slack_fallback(self, mock_slack_user, mock_jira_client):
+        """Test domain-specific JIRA user when Slack user exists."""
+        # Setup mocks
+        slack_user = UserFactory(email="test@special.com")
+        mock_slack_user.objects.upsert_by_email.return_value = slack_user
+
+        domain_jira_user = JiraUser.objects.create(id="special-user-123", user=UserFactory())
+        mock_jira_client.get_jira_user_from_jira_id.return_value = domain_jira_user
+
+        with patch("firefighter.raid.serializers.User.objects.get", side_effect=User.DoesNotExist):
+            reporter_user, reporter, user_domain = get_reporter_user_from_email("test@special.com")
+
+        # Should use slack_user since reporter_user_tmp is not None
+        assert reporter_user == slack_user
+        assert reporter == domain_jira_user
+        assert user_domain == "special.com"
+        mock_jira_client.get_jira_user_from_jira_id.assert_called_once_with("special-user-123")
