@@ -76,8 +76,8 @@ class FeatureTeam(models.Model):
 
     @property
     def get_team(self) -> str:
-        return "{self.name}  {self.jira_project_key}"
+        return f"{self.name}  {self.jira_project_key}"
 
     @property
     def get_key(self) -> str:
-        return "{self.jira_project_key}"
+        return f"{self.jira_project_key}"
