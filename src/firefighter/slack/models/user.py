@@ -147,7 +147,7 @@ class SlackUserManager(models.Manager["SlackUser"]):
         # If we have no Slack User, let's go ahead and create a User and its associated SlackUser
         user, _created = User.objects.get_or_create(
             email=email,
-            username=email.split("@")[0],
+            username=email.split("@", maxsplit=1)[0],
             defaults={
                 "name": clean_user_info["name"],
             },
