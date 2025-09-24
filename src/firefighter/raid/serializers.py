@@ -114,7 +114,7 @@ class LandbotIssueRequestSerializer(serializers.ModelSerializer[JiraTicket]):
         ),
         help_text="List of labels to be added to the ticket. Labels cannot contain spaces and must not exceed 255 characters.",
     )
-    impacted_area = serializers.CharField(
+    incident_category = serializers.CharField(
         max_length=128,
         write_only=True,
         allow_null=True,
@@ -199,7 +199,7 @@ class LandbotIssueRequestSerializer(serializers.ModelSerializer[JiraTicket]):
             seller_contract_id=validated_data["seller_contract_id"],
             zoho_desk_ticket_id=validated_data["zoho"],
             platform=validated_data["platform"],
-            area=validated_data["impacted_area"],
+            incident_category=validated_data["incident_category"],
             business_impact=validated_data["business_impact"],
             environments=validated_data["environments"],
             suggested_team_routing=validated_data["suggested_team_routing"],
@@ -240,7 +240,7 @@ class LandbotIssueRequestSerializer(serializers.ModelSerializer[JiraTicket]):
             "zoho",
             "platform",
             "reporter_email",
-            "impacted_area",
+            "incident_category",
             "labels",
             "environments",
             "issue_type",

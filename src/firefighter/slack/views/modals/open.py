@@ -56,6 +56,12 @@ INCIDENT_TYPES: dict[ResponseType, dict[str, dict[str, Any]]] = {
             "slack_form": OpeningCriticalModal,
         },
     },
+    "normal": {
+        "normal": {
+            "label": "Normal",
+            "slack_form": OpeningCriticalModal,
+        },
+    },
 }
 
 
@@ -224,6 +230,20 @@ class OpenModal(SlackModal):
     ) -> list[Block]:
         if details_form_modal_class is None:
             return []
+
+        # Check if we need incident type selection and if it's been done
+        response_type = open_incident_context.get("response_type")
+        incident_type_value = open_incident_context.get("incident_type")
+
+        # If there are multiple incident types and none is selected, don't show details button yet
+        if (
+            response_type
+            and response_type in INCIDENT_TYPES
+            and len(INCIDENT_TYPES[response_type]) > 1
+            and incident_type_value is None
+        ):
+            return []
+
         return [
             SectionBlock(
                 text=f"{'✅' if details_form_done else '📝'} Finally, add incident details",
@@ -510,7 +530,8 @@ class OpenModal(SlackModal):
         """Format a single impact value into description text."""
         # Handle object with name and description attributes (impact levels)
         if hasattr(value, "name") and hasattr(value, "description"):
-            if value.name == "NO" or not value.description:
+            # Filter out "no impact" levels using the value field instead of name
+            if (hasattr(value, "value") and value.value == "NO") or value.name == "NO" or not value.description:
                 return ""
 
             description = ""
@@ -548,6 +569,9 @@ class OpenModal(SlackModal):
             return incident_types[next(iter(incident_types.keys()))].get("slack_form")
         if incident_types and incident_type_value is not None:
             return incident_types[incident_type_value].get("slack_form")
+        # Fallback for "normal" response type when no specific incident type is selected
+        if response_type == "normal" and incident_types:
+            return incident_types[next(iter(incident_types.keys()))].get("slack_form")
         logger.debug(
             f"No incident type found for {open_incident_context}. No fallback."
         )

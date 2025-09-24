@@ -169,6 +169,7 @@ class IncidentCategory(models.Model):
 
     class Meta(TypedModelMeta):
         ordering = ["order"]
+        verbose_name_plural = "incident categories"
 
     def __str__(self) -> str:
         return f"{'🔒 ' if self.private else ''}{self.name}"

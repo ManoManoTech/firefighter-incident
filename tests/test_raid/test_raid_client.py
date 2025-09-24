@@ -245,7 +245,6 @@ class TestRaidJiraClientBasics:
             suggested_team_routing="TeamA",
             business_impact="High",
             platform="platform-web",
-            area="frontend",
             environments=["production", "staging"],
             incident_category="Performance",
         )

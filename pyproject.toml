@@ -162,6 +162,8 @@ runserver = {cmd="ff-manage runserver", help="Run the Django dev server"}
 # Celery aliases
 celery-worker = {cmd="celery -A firefighter.firefighter worker -l DEBUG -c 4 -P gevent  ", help="Run the Celery worker (DEBUG)"}
 celery-beat = {cmd="celery -A firefighter.firefighter beat -l INFO", help="Run the Celery beat (INFO)"}
+# Testing utilities
+switch-test-users = {cmd="ff-manage switch_test_users", help="Generate and apply Slack user mapping for test environment"}
 
 [tool.pdm.dev-dependencies]
 dev = [

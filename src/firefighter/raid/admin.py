@@ -8,7 +8,6 @@ from firefighter.raid.models import (
     FeatureTeam,
     JiraTicket,
     JiraTicketImpact,
-    RaidArea,
 )
 from firefighter.raid.resources import FeatureTeamResource
 
@@ -29,16 +28,6 @@ class JiraTicketAdmin(JiraIssueAdmin):
 
     autocomplete_fields = ["watchers", "assignee", "reporter", "incident"]
     inlines = [JiraTicketImpactInline]
-
-
-@admin.register(RaidArea)
-class RaidAreaAdmin(admin.ModelAdmin[RaidArea]):
-    model = RaidArea
-    list_display = ["id", "name", "area"]
-    list_display_links = ["id", "name"]
-    list_filter = ["area"]
-    search_fields = ["id", "name"]
-    ordering = ["area", "name"]
 
 
 @admin.register(FeatureTeam)

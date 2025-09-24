@@ -191,7 +191,6 @@ class TestCreateIssueFunctions:
             platform="web",
             business_impact="high",
             suggested_team_routing="support-team",
-            area="billing",
             zendesk_ticket_id="ZD-456",
             incident_category="billing-issue",
         )
@@ -348,7 +347,7 @@ class TestCreateIssueFunctions:
             platform="api",
             business_impact="critical",
             team_to_be_routed="backend-team",
-            area="infrastructure",
+            incident_category="infrastructure",
         )
 
         mock_jira_client.create_issue.assert_called_once()
@@ -373,12 +372,11 @@ class TestCreateIssueFunctions:
             platform="web",
             business_impact="medium",
             team_to_be_routed="seller-team",
-            area="marketplace",
+            incident_category="marketplace",
             seller_contract_id="CONTRACT-123",
             is_key_account=True,
             is_seller_in_golden_list=False,
             zoho_desk_ticket_id="ZOHO-456",
-            incident_category="seller-support",
         )
 
         mock_jira_client.create_issue.assert_called_once()

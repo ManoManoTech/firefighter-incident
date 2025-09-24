@@ -10,6 +10,8 @@ from slack_sdk.errors import SlackApiError
 
 from firefighter.incidents.forms.create_incident import CreateIncidentFormBase
 from firefighter.incidents.forms.select_impact import SelectImpactForm
+from firefighter.incidents.forms.utils import GroupedModelChoiceField
+from firefighter.incidents.models import IncidentCategory
 from firefighter.incidents.models.priority import Priority
 from firefighter.jira_app.client import (
     JiraAPIError,
@@ -21,7 +23,7 @@ from firefighter.raid.messages import (
     SlackMessageRaidCreatedIssue,
     SlackMessageRaidModifiedIssue,
 )
-from firefighter.raid.models import FeatureTeam, JiraTicket, RaidArea
+from firefighter.raid.models import FeatureTeam, JiraTicket
 from firefighter.raid.service import (
     CustomerIssueData,
     create_issue_customer,
@@ -78,7 +80,7 @@ class CreateNormalIncidentFormBase(CreateIncidentFormBase):
         max_length=1200,
     )
     suggested_team_routing = forms.ModelChoiceField(
-        queryset=FeatureTeam.objects.only("name"),
+        queryset=FeatureTeam.objects.only("name").order_by("name"),
         label="Feature Team or Train",
         required=True,
     )
@@ -90,7 +92,7 @@ class CreateNormalIncidentFormBase(CreateIncidentFormBase):
     )
 
     field_order = [
-        "area",
+        "incident_category",
         "platform",
         "title",
         "description",
@@ -113,7 +115,11 @@ class CreateNormalIncidentFormBase(CreateIncidentFormBase):
 
 
 class CreateNormalCustomerIncidentForm(CreateNormalIncidentFormBase):
-    area = forms.ModelChoiceField(queryset=RaidArea.objects.filter(area="Customers"))
+    incident_category = GroupedModelChoiceField(
+        choices_groupby="group",
+        queryset=IncidentCategory.objects.all().select_related("group").order_by("group__order", "name"),
+        label="Incident category"
+    )
     zendesk_ticket_id = forms.CharField(
         label="Zendesk Ticket ID", max_length=128, min_length=2, required=False
     )
@@ -133,9 +139,9 @@ class CreateNormalCustomerIncidentForm(CreateNormalIncidentFormBase):
             platform=self.cleaned_data["platform"],
             business_impact=str(get_business_impact(impacts_data)),
             team_to_be_routed=self.cleaned_data["suggested_team_routing"],
-            area=self.cleaned_data["area"].name,
+            area=None,
             zendesk_ticket_id=self.cleaned_data["zendesk_ticket_id"],
-            incident_category=None,
+            incident_category=self.cleaned_data["incident_category"].name,
         )
         issue_data = create_issue_customer(
             title=self.cleaned_data["title"],
@@ -149,6 +155,12 @@ class CreateNormalCustomerIncidentForm(CreateNormalIncidentFormBase):
 
 
 class CreateRaidDocumentationRequestIncidentForm(CreateNormalIncidentFormBase):
+    incident_category = GroupedModelChoiceField(
+        choices_groupby="group",
+        queryset=IncidentCategory.objects.all().select_related("group").order_by("group__order", "name"),
+        label="Incident category"
+    )
+
     def trigger_incident_workflow(
         self,
         creator: User,
@@ -172,6 +184,12 @@ class CreateRaidDocumentationRequestIncidentForm(CreateNormalIncidentFormBase):
 
 
 class CreateRaidFeatureRequestIncidentForm(CreateNormalIncidentFormBase):
+    incident_category = GroupedModelChoiceField(
+        choices_groupby="group",
+        queryset=IncidentCategory.objects.all().select_related("group").order_by("group__order", "name"),
+        label="Incident category"
+    )
+
     def trigger_incident_workflow(
         self,
         creator: User,
@@ -195,8 +213,10 @@ class CreateRaidFeatureRequestIncidentForm(CreateNormalIncidentFormBase):
 
 
 class CreateRaidInternalIncidentForm(CreateNormalIncidentFormBase):
-    area = forms.ModelChoiceField(
-        queryset=RaidArea.objects.filter(area="Internal").order_by("name")
+    incident_category = GroupedModelChoiceField(
+        choices_groupby="group",
+        queryset=IncidentCategory.objects.all().select_related("group").order_by("group__order", "name"),
+        label="Incident category"
     )
 
     def trigger_incident_workflow(
@@ -215,7 +235,7 @@ class CreateRaidInternalIncidentForm(CreateNormalIncidentFormBase):
             platform=self.cleaned_data["platform"],
             business_impact=str(get_business_impact(impacts_data)),
             team_to_be_routed=self.cleaned_data["suggested_team_routing"],
-            area=self.cleaned_data["area"].name,
+            incident_category=self.cleaned_data["incident_category"].name,
             labels=[""],
         )
 
@@ -225,7 +245,11 @@ class CreateRaidInternalIncidentForm(CreateNormalIncidentFormBase):
 
 
 class RaidCreateIncidentSellerForm(CreateNormalIncidentFormBase):
-    area = forms.ModelChoiceField(queryset=RaidArea.objects.filter(area="Sellers"))
+    incident_category = GroupedModelChoiceField(
+        choices_groupby="group",
+        queryset=IncidentCategory.objects.all().select_related("group").order_by("group__order", "name"),
+        label="Incident category"
+    )
     seller_contract_id = forms.CharField(
         label="Seller Contract ID", max_length=128, min_length=0
     )
@@ -253,7 +277,7 @@ class RaidCreateIncidentSellerForm(CreateNormalIncidentFormBase):
             platform=self.cleaned_data["platform"],
             business_impact=str(get_business_impact(impacts_data)),
             team_to_be_routed=self.cleaned_data["suggested_team_routing"],
-            area=self.cleaned_data["area"].name,
+            incident_category=self.cleaned_data["incident_category"].name,
             zoho_desk_ticket_id=self.cleaned_data["zoho_desk_ticket_id"],
             is_key_account=self.cleaned_data["is_key_account"],
             is_seller_in_golden_list=self.cleaned_data["is_seller_in_golden_list"],

@@ -52,7 +52,6 @@ class RaidJiraClient(JiraClient):
         suggested_team_routing: str | None = None,
         business_impact: str | None = None,
         platform: str | None = None,
-        area: str | None = None,
         environments: list[str] | None = None,
         incident_category: str | None = None,
         project: str | None = None,
@@ -69,8 +68,6 @@ class RaidJiraClient(JiraClient):
             if not 1 <= priority <= 5:
                 raise ValueError("Priority must be between 1 and 5")
             priority_value = str(priority)
-        if area:
-            extra_args["customfield_10920"] = str(area)
         if zoho_desk_ticket_id:
             extra_args["customfield_10896"] = str(zoho_desk_ticket_id)
         if zendesk_ticket_id:
