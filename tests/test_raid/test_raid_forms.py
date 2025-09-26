@@ -521,14 +521,16 @@ class TestAlertSlackNewJiraTicket:
 class TestAlertSlackUpdateTicket:
     """Test alert_slack_update_ticket function."""
 
+    @patch("firefighter.raid.forms.send_message_to_incident_channel")
     @patch("firefighter.raid.forms.send_message_to_watchers")
     @patch("firefighter.raid.forms.SlackMessageRaidModifiedIssue")
-    def test_alert_slack_update_ticket(self, mock_message_class, mock_send_message):
+    def test_alert_slack_update_ticket(self, mock_message_class, mock_send_message, mock_send_to_channel):
         """Test alert_slack_update_ticket function."""
         # Given
         mock_message = Mock()
         mock_message_class.return_value = mock_message
         mock_send_message.return_value = True
+        mock_send_to_channel.return_value = True
 
         # When
         result = alert_slack_update_ticket(
@@ -544,6 +546,7 @@ class TestAlertSlackUpdateTicket:
         assert result is True
         mock_message_class.assert_called_once()
         mock_send_message.assert_called_once_with(jira_issue_id=10001, message=mock_message)
+        mock_send_to_channel.assert_called_once_with(10001, "Priority", mock_message)
 
 
 @pytest.mark.django_db

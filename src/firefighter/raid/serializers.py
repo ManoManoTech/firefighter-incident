@@ -19,6 +19,7 @@ from firefighter.raid.forms import (
     alert_slack_update_ticket,
 )
 from firefighter.raid.models import JiraTicket
+from firefighter.raid.sync import handle_jira_webhook_update
 from firefighter.raid.utils import get_domain_from_email
 from firefighter.slack.models.user import SlackUser
 
@@ -264,6 +265,16 @@ class JiraWebhookUpdateSerializer(serializers.Serializer[Any]):
     )
 
     def create(self, validated_data: dict[str, Any]) -> bool:
+        # First, sync the changes to Impact incident
+        sync_success = handle_jira_webhook_update(
+            issue_data=validated_data["issue"],
+            changelog_data=validated_data["changelog"],
+        )
+
+        if not sync_success:
+            logger.warning("Failed to sync Jira changes to Impact incident")
+
+        # Then, notify Slack about the changes
         jira_field_modified = validated_data["changelog"].get("items")[0].get("field")
         if jira_field_modified in {
             "Priority",
