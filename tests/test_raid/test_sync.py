@@ -167,7 +167,8 @@ class TestJiraToImpactSync:
         assert latest_update.status == IncidentStatus.POST_MORTEM
         assert "from Jira" in latest_update.message
 
-    def test_sync_jira_priority_to_incident_success(self):
+    @patch("firefighter.raid.sync.jira_client")
+    def test_sync_jira_priority_to_incident_success(self, mock_jira_client):  # noqa: ARG002
         """Test successful priority sync from Jira to Impact."""
         priority_p2, _ = Priority.objects.get_or_create(value=2, defaults={"name": "High Priority"})
 
@@ -182,8 +183,12 @@ class TestJiraToImpactSync:
         result = sync_jira_priority_to_incident(self.jira_ticket, "Unknown")
         assert result is False
 
-    def test_sync_jira_fields_to_incident(self):
+    @patch("firefighter.raid.sync.jira_client")
+    def test_sync_jira_fields_to_incident(self, mock_jira_client):
         """Test syncing multiple fields from Jira to Impact."""
+        # Mock the jira_client to avoid real JIRA calls
+        mock_jira_client.get_jira_user_from_user.return_value = self.jira_user
+
         jira_fields = {
             "summary": "New title",
             "description": "New description",
