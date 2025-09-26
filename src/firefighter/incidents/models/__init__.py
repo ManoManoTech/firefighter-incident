@@ -7,6 +7,10 @@ from firefighter.incidents.models.incident import Incident
 from firefighter.incidents.models.incident_category import IncidentCategory
 from firefighter.incidents.models.incident_cost import IncidentCost
 from firefighter.incidents.models.incident_cost_type import IncidentCostType
+from firefighter.incidents.models.incident_membership import (
+    IncidentMembership,
+    IncidentRole,
+)
 from firefighter.incidents.models.incident_role_type import IncidentRoleType
 from firefighter.incidents.models.incident_update import IncidentUpdate
 from firefighter.incidents.models.milestone_type import MilestoneType

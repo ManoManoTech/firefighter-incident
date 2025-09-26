@@ -15,6 +15,7 @@ from firefighter.incidents.models import (
     Group,
     Incident,
     IncidentCategory,
+    IncidentUpdate,
     Priority,
     User,
 )
@@ -99,4 +100,15 @@ class IncidentFactory(DjangoModelFactory[Incident]):
     priority = Iterator(Priority.objects.all())  # type: ignore[no-untyped-call]
     environment = Iterator(Environment.objects.all())  # type: ignore[no-untyped-call]
 
+    created_by = SubFactory(UserFactory)  # type: ignore[no-untyped-call]
+
+
+class IncidentUpdateFactory(DjangoModelFactory[IncidentUpdate]):
+    """Factory for creating IncidentUpdate instances in tests."""
+
+    class Meta:
+        model = IncidentUpdate
+
+    incident = SubFactory(IncidentFactory)  # type: ignore[no-untyped-call]
+    message = Faker("text", max_nb_chars=100)  # type: ignore[no-untyped-call]
     created_by = SubFactory(UserFactory)  # type: ignore[no-untyped-call]
