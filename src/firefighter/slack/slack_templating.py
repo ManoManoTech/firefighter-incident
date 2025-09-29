@@ -96,7 +96,7 @@ def slack_block_separator() -> DividerBlock:
 @cache
 def slack_block_help_commands() -> SectionBlock:
     return SectionBlock(
-        text=f"- `{COMMAND} open`: open an incident to start investigation\n- `{COMMAND} update`: update incident roles or statuses\n- `{COMMAND} close`: close an incident and archive the channel\n- `{COMMAND} status`: get a recap of the incident from this channel\n- `{COMMAND} oncall`: select an on-call you want to call\n- `{COMMAND} postmortem`: create the postmortem if needed\n- `{COMMAND} sos`: ask for SRE help"
+        text=f"- `{COMMAND} open`: open an incident to start investigation\n- `{COMMAND} update`: update incident roles or statuses\n- `{COMMAND} close`: close an incident and archive the channel\n- `{COMMAND} direct-close`: close an incident directly (duplicates, false alarms)\n- `{COMMAND} status`: get a recap of the incident from this channel\n- `{COMMAND} oncall`: select an on-call you want to call\n- `{COMMAND} postmortem`: create the postmortem if needed\n- `{COMMAND} sos`: ask for SRE help"
     )
 
 

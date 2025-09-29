@@ -3,6 +3,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from firefighter.slack.views.modals.close import CloseModal, modal_close
+from firefighter.slack.views.modals.direct_close import (
+    DirectCloseModal,
+    modal_direct_close,
+)
 from firefighter.slack.views.modals.downgrade_workflow import (
     DowngradeWorkflowModal,
     modal_dowgrade_workflow,
@@ -44,6 +48,7 @@ selectable_modals: list[type[SlackModal]] = [
     UpdateRolesModal,
     OnCallModal,
     CloseModal,
+    DirectCloseModal,
     PostMortemModal,
     StatusModal,
     SendSosModal,
