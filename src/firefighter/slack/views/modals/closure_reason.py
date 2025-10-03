@@ -3,7 +3,6 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING, Any
 
-from django import forms
 from slack_sdk.models.blocks.basic_components import MarkdownTextObject, Option
 from slack_sdk.models.blocks.block_elements import (
     PlainTextInputElement,
@@ -34,58 +33,35 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-class DirectCloseForm(forms.Form):
-    """Form for direct incident closure."""
+class ClosureReasonModal(IncidentSelectableModalMixin, SlackModal):
+    """Modal for closing an incident with a mandatory reason from early statuses."""
 
-    closure_reason = forms.ChoiceField(
-        label="Closure Reason",
-        choices=ClosureReason.choices,
-        required=True,
-        help_text="Select the reason for closing this incident directly",
-    )
-    closure_reference = forms.CharField(
-        label="Reference (optional)",
-        max_length=100,
-        required=False,
-        help_text="Reference incident ID or external link for context (e.g., #1234 or URL)",
-    )
-    message = forms.CharField(
-        label="Closure Message",
-        widget=forms.Textarea,
-        required=True,
-        help_text="Brief explanation of why this incident is being closed",
-    )
-
-
-class DirectCloseModal(IncidentSelectableModalMixin, SlackModal):
-    """Modal for directly closing an incident with a specific reason."""
-
-    open_action: str = "direct_close_incident"
-    open_shortcut = "direct_close_incident"
-    callback_id: str = "incident_direct_close"
+    open_action: str = "closure_reason_incident"
+    open_shortcut = "closure_reason_incident"
+    callback_id: str = "incident_closure_reason"
 
     def build_modal_fn(
         self, body: dict[str, Any], incident: Incident, **kwargs: Any  # noqa: ARG002
     ) -> View:
-        """Build the direct close modal."""
-        # Build closure reason options
+        """Build the closure reason modal."""
+        # Build closure reason options (exclude RESOLVED)
         closure_options = [
             Option(
                 value=choice[0],
                 label=choice[1],
             )
             for choice in ClosureReason.choices
-            if choice[0] != ClosureReason.RESOLVED  # Exclude normal resolution
+            if choice[0] != ClosureReason.RESOLVED
         ]
 
         blocks: list[Block] = [
             SectionBlock(
-                text=f"*Direct Closure for Incident #{incident.id}*\n_{incident.title}_"
+                text=f"*Closure Reason Required for Incident #{incident.id}*\n_{incident.title}_"
             ),
             ContextBlock(
                 elements=[
                     MarkdownTextObject(
-                        text="⚠️ This will immediately close the incident without requiring the normal workflow.\nUse this for duplicates, false alarms, or incidents that don't need the full process."
+                        text=f"⚠️ This incident is currently in *{incident.status.label}* status.\nA closure reason is required to close incidents from this status."
                     )
                 ]
             ),
@@ -127,7 +103,7 @@ class DirectCloseModal(IncidentSelectableModalMixin, SlackModal):
 
         return View(
             type="modal",
-            title=f"Direct Close #{incident.id}"[:24],
+            title=f"Close #{incident.id}"[:24],
             submit="Close Incident",
             callback_id=self.callback_id,
             private_metadata=str(incident.id),
@@ -137,7 +113,7 @@ class DirectCloseModal(IncidentSelectableModalMixin, SlackModal):
     def handle_modal_fn(  # type: ignore[override]
         self, ack: Ack, body: dict[str, Any], incident: Incident, user: User
     ) -> bool | None:
-        """Handle the direct close modal submission."""
+        """Handle the closure reason modal submission."""
         ack()
 
         # Extract form values
@@ -161,13 +137,13 @@ class DirectCloseModal(IncidentSelectableModalMixin, SlackModal):
             incident.create_incident_update(
                 created_by=user,
                 status=IncidentStatus.CLOSED,
-                message=f"Direct closure: {message}",
-                event_type="direct_close",
+                message=message,
+                event_type="closure_reason",
             )
 
         except Exception:
             logger.exception(
-                "Error closing incident #%s directly", incident.id
+                "Error closing incident #%s with reason", incident.id
             )
             respond(
                 body=body,
@@ -179,7 +155,7 @@ class DirectCloseModal(IncidentSelectableModalMixin, SlackModal):
             respond(
                 body=body,
                 text=(
-                    f"✅ Incident #{incident.id} has been closed directly.\n"
+                    f"✅ Incident #{incident.id} has been closed.\n"
                     f"*Reason:* {ClosureReason(closure_reason).label}\n"
                     f"*Message:* {message}"
                     + (f"\n*Reference:* {closure_reference}" if closure_reference else "")
@@ -187,7 +163,7 @@ class DirectCloseModal(IncidentSelectableModalMixin, SlackModal):
             )
 
             logger.info(
-                "Incident #%s closed directly by %s with reason: %s",
+                "Incident #%s closed with reason by %s: %s",
                 incident.id,
                 user.email,
                 closure_reason,
@@ -195,10 +171,10 @@ class DirectCloseModal(IncidentSelectableModalMixin, SlackModal):
             return True
 
     def get_select_modal_title(self) -> str:
-        return "Direct Close"
+        return "Close with Reason"
 
     def get_select_title(self) -> str:
-        return "Select an incident to close directly (bypass normal workflow)"
+        return "Select an incident to close with a specific reason"
 
 
-modal_direct_close = DirectCloseModal()
+modal_closure_reason = ClosureReasonModal()

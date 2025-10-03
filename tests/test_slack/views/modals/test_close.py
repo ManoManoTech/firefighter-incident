@@ -72,7 +72,8 @@ class TestCloseModal:
     def test_close_modal_build_cant_close(incident: Incident) -> None:
         # Arrange
         modal = CloseModal()
-        incident.status = IncidentStatus.OPEN
+        # Use FIXING (Mitigating) status - cannot close from this status without going through FIXED
+        incident.status = IncidentStatus.FIXING
 
         # Act
         res = modal.build_modal_fn(incident=incident, body={})
@@ -89,6 +90,22 @@ class TestCloseModal:
         assert (
             "This incident can't be closed yet." in values["blocks"][0]["text"]["text"]
         )
+
+    @staticmethod
+    def test_close_modal_build_shows_closure_reason_from_open(incident: Incident) -> None:
+        # Arrange
+        modal = CloseModal()
+        incident.status = IncidentStatus.OPEN
+
+        # Act
+        res = modal.build_modal_fn(incident=incident, body={})
+
+        # Assert
+        assert res.to_dict()
+        values = res.to_dict()
+        assert "blocks" in values
+        # Should show closure reason form
+        assert "Closure Reason Required" in values["blocks"][0]["text"]["text"]
 
     @staticmethod
     def test_submit_empty_bodied_form() -> None:

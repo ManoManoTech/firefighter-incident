@@ -7,6 +7,7 @@ import pytest
 from django.conf import settings
 from pytest_mock import MockerFixture
 
+from firefighter.incidents.enums import IncidentStatus
 from firefighter.incidents.factories import IncidentFactory, UserFactory
 from firefighter.incidents.models import Incident
 from firefighter.slack.views import UpdateStatusModal
@@ -47,7 +48,10 @@ class TestUpdateStatusModal:
             modal.handle_modal_fn(ack=ack, body={}, incident=incident, user=user)
 
     @staticmethod
-    def test_submit_valid_form(mocker: MockerFixture, incident: Incident) -> None:
+    def test_submit_valid_form(mocker: MockerFixture) -> None:
+        # Create an incident in OPEN status so we can transition to INVESTIGATING
+        incident = IncidentFactory.build(_status=IncidentStatus.OPEN)  # OPEN status
+
         modal = UpdateStatusModal()
         trigger_incident_workflow = mocker.patch.object(
             modal, "_trigger_incident_workflow"
@@ -56,8 +60,17 @@ class TestUpdateStatusModal:
         ack = MagicMock()
         user = UserFactory.build()
         user.save()
+
+        # Create a valid submission that transitions from OPEN to INVESTIGATING (valid workflow)
+        valid_submission_copy = dict(valid_submission)
+        # Change status to INVESTIGATING (20) which is valid from OPEN
+        valid_submission_copy["view"]["state"]["values"]["status"]["status"]["selected_option"] = {
+            "text": {"type": "plain_text", "text": "Investigating", "emoji": True},
+            "value": "20",
+        }
+
         modal.handle_modal_fn(
-            ack=ack, body=valid_submission, incident=incident, user=user
+            ack=ack, body=valid_submission_copy, incident=incident, user=user
         )
 
         # Assert
@@ -161,6 +174,14 @@ valid_submission = {
                                 "emoji": True,
                             },
                             "value": "50",
+                        },
+                        {
+                            "text": {
+                                "type": "plain_text",
+                                "text": "Closed",
+                                "emoji": True,
+                            },
+                            "value": "60",
                         },
                     ],
                 },

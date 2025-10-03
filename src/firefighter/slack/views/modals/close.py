@@ -25,6 +25,10 @@ from firefighter.slack.views.modals.base_modal.mixins import (
 )
 from firefighter.slack.views.modals.postmortem import PostMortemModal
 from firefighter.slack.views.modals.update_status import UpdateStatusModal
+from firefighter.slack.views.modals.utils import (
+    get_close_modal_view,
+    handle_close_modal_callback,
+)
 
 if TYPE_CHECKING:
     from slack_bolt.context.ack.ack import Ack
@@ -77,6 +81,11 @@ class CloseModal(
     def build_modal_fn(
         self, body: dict[str, Any], incident: Incident, **kwargs: Any
     ) -> View:
+        # Check if closure reason modal should be shown instead
+        closure_view = get_close_modal_view(body, incident, **kwargs)
+        if closure_view:
+            return closure_view
+
         can_be_closed, reasons = incident.can_be_closed
         if not can_be_closed:
             reason_blocks: list[Block] = []
@@ -220,6 +229,10 @@ class CloseModal(
         self, ack: Ack, body: dict[str, Any], incident: Incident, user: User
     ) ->  bool | None:
         """Handle response from /incident close modal."""
+        # Check if this should be handled by closure reason modal
+        closure_result = handle_close_modal_callback(ack, body, incident, user)
+        if closure_result is not None:
+            return closure_result
         slack_form = self.handle_form_errors(
             ack, body, forms_kwargs={"initial": self._get_initial_form_values(incident)}
         )

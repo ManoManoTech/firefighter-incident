@@ -31,6 +31,15 @@ class IncidentStatus(models.IntegerChoices):
     def choices_lt(val: int) -> list[tuple[int, str]]:
         return [i for i in IncidentStatus.choices if i[0] < val]
 
+    @staticmethod
+    def choices_lte(val: int) -> list[tuple[int, str]]:
+        return [i for i in IncidentStatus.choices if i[0] <= val]
+
+    @staticmethod
+    def choices_lte_skip_postmortem(val: int) -> list[tuple[int, str]]:
+        """Return choices up to val but excluding POST_MORTEM (for P3+ incidents)."""
+        return [i for i in IncidentStatus.choices if i[0] <= val and i[0] != IncidentStatus.POST_MORTEM]
+
 
 class ClosureReason(models.TextChoices):
     """Reasons for direct incident closure bypassing normal workflow."""

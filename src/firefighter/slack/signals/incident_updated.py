@@ -159,6 +159,11 @@ def incident_key_events_updated_handler(
     **kwargs: Any,
 ) -> None:
     logger.info("Received incident_key_events_updated signal")
+    # Skip key events for incidents closed directly
+    if incident.closure_reason:
+        logger.info(f"Skipping key events update for incident {incident.id} (direct closure)")
+        return
+
     # Everything in Slack views trigger the Slack handshake, so we delay the import
     from firefighter.slack.views.modals.key_event_message import (  # noqa: PLC0415
         SlackMessageKeyEvents,
@@ -197,6 +202,7 @@ def publish_status_update(
         incident.ask_for_milestones
         and status_changed
         and incident.status >= IncidentStatus.FIXED
+        and not incident.closure_reason  # Don't show key events for direct closures
     ):
         from firefighter.slack.views.modals.key_event_message import (  # noqa: PLC0415
             SlackMessageKeyEvents,
