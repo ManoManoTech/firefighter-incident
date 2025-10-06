@@ -67,14 +67,14 @@ class UpdateStatusForm(forms.Form):
                     allowed_statuses = [IncidentStatus.INVESTIGATING, IncidentStatus.CLOSED]
                     status_field.choices = [(s.value, s.label) for s in allowed_statuses]  # type: ignore[attr-defined]
                 elif current_status == IncidentStatus.INVESTIGATING:
-                    # From Investigating: can go to FIXING or CLOSED (with reason)
-                    allowed_statuses = [IncidentStatus.FIXING, IncidentStatus.CLOSED]
+                    # From Investigating: can go to MITIGATING or CLOSED (with reason)
+                    allowed_statuses = [IncidentStatus.MITIGATING, IncidentStatus.CLOSED]
                     status_field.choices = [(s.value, s.label) for s in allowed_statuses]  # type: ignore[attr-defined]
-                elif current_status == IncidentStatus.FIXING:
-                    # From Mitigating: can only go to FIXED
-                    allowed_statuses = [IncidentStatus.FIXED]
+                elif current_status == IncidentStatus.MITIGATING:
+                    # From Mitigating: can only go to MITIGATED
+                    allowed_statuses = [IncidentStatus.MITIGATED]
                     status_field.choices = [(s.value, s.label) for s in allowed_statuses]  # type: ignore[attr-defined]
-                elif current_status == IncidentStatus.FIXED:
+                elif current_status == IncidentStatus.MITIGATED:
                     # From Mitigated: can only go to POST_MORTEM
                     allowed_statuses = [IncidentStatus.POST_MORTEM]
                     status_field.choices = [(s.value, s.label) for s in allowed_statuses]  # type: ignore[attr-defined]
@@ -91,14 +91,14 @@ class UpdateStatusForm(forms.Form):
                 allowed_statuses = [IncidentStatus.INVESTIGATING, IncidentStatus.CLOSED]
                 status_field.choices = [(s.value, s.label) for s in allowed_statuses]  # type: ignore[attr-defined]
             elif current_status == IncidentStatus.INVESTIGATING:
-                # From Investigating: can go to FIXING or CLOSED (with reason)
-                allowed_statuses = [IncidentStatus.FIXING, IncidentStatus.CLOSED]
+                # From Investigating: can go to MITIGATING or CLOSED (with reason)
+                allowed_statuses = [IncidentStatus.MITIGATING, IncidentStatus.CLOSED]
                 status_field.choices = [(s.value, s.label) for s in allowed_statuses]  # type: ignore[attr-defined]
-            elif current_status == IncidentStatus.FIXING:
-                # From Mitigating: can only go to FIXED
-                allowed_statuses = [IncidentStatus.FIXED]
+            elif current_status == IncidentStatus.MITIGATING:
+                # From Mitigating: can only go to MITIGATED
+                allowed_statuses = [IncidentStatus.MITIGATED]
                 status_field.choices = [(s.value, s.label) for s in allowed_statuses]  # type: ignore[attr-defined]
-            elif current_status == IncidentStatus.FIXED:
+            elif current_status == IncidentStatus.MITIGATED:
                 # From Mitigated: can go to CLOSED (P3+ doesn't need post-mortem)
                 allowed_statuses = [IncidentStatus.CLOSED]
                 status_field.choices = [(s.value, s.label) for s in allowed_statuses]  # type: ignore[attr-defined]

@@ -65,14 +65,14 @@ The RAID module provides comprehensive bidirectional synchronization between Imp
 JIRA_TO_IMPACT_STATUS_MAP = {
     "Open": IncidentStatus.INVESTIGATING,
     "To Do": IncidentStatus.INVESTIGATING,
-    "In Progress": IncidentStatus.FIXING,
-    "In Review": IncidentStatus.FIXING,
-    "Resolved": IncidentStatus.FIXED,
-    "Done": IncidentStatus.FIXED,
+    "In Progress": IncidentStatus.MITIGATING,
+    "In Review": IncidentStatus.MITIGATING,
+    "Resolved": IncidentStatus.MITIGATED,
+    "Done": IncidentStatus.MITIGATED,
     "Closed": IncidentStatus.POST_MORTEM,
     "Reopened": IncidentStatus.INVESTIGATING,
-    "Blocked": IncidentStatus.FIXING,
-    "Waiting": IncidentStatus.FIXING,
+    "Blocked": IncidentStatus.MITIGATING,
+    "Waiting": IncidentStatus.MITIGATING,
 }
 ```
 
@@ -81,8 +81,8 @@ JIRA_TO_IMPACT_STATUS_MAP = {
 IMPACT_TO_JIRA_STATUS_MAP = {
     IncidentStatus.OPEN: "Open",
     IncidentStatus.INVESTIGATING: "In Progress",
-    IncidentStatus.FIXING: "In Progress",
-    IncidentStatus.FIXED: "Resolved",
+    IncidentStatus.MITIGATING: "In Progress",
+    IncidentStatus.MITIGATED: "Resolved",
     IncidentStatus.POST_MORTEM: "Closed",
     IncidentStatus.CLOSED: "Closed",
 }

@@ -4,16 +4,16 @@ Workflow transitions:
 
 P1/P2:
 - OPEN → [INVESTIGATING, CLOSED (avec reason form)]
-- INVESTIGATING → [FIXING, CLOSED (avec reason form)]
-- FIXING → [FIXED]
-- FIXED → [POST_MORTEM]
+- INVESTIGATING → [MITIGATING, CLOSED (avec reason form)]
+- MITIGATING → [MITIGATED]
+- MITIGATED → [POST_MORTEM]
 - POST_MORTEM → [CLOSED]
 
 P3/P4/P5:
 - OPEN → [INVESTIGATING, CLOSED (avec reason form)]
-- INVESTIGATING → [FIXING, CLOSED (avec reason form)]
-- FIXING → [FIXED]
-- FIXED → [CLOSED]
+- INVESTIGATING → [MITIGATING, CLOSED (avec reason form)]
+- MITIGATING → [MITIGATED]
+- MITIGATED → [CLOSED]
 """
 from __future__ import annotations
 
@@ -48,9 +48,9 @@ class TestCompleteWorkflowTransitions(TestCase):
         transitions = [
             # Test transitions from each status
             (IncidentStatus.OPEN, [IncidentStatus.INVESTIGATING, IncidentStatus.CLOSED]),
-            (IncidentStatus.INVESTIGATING, [IncidentStatus.FIXING, IncidentStatus.CLOSED]),
-            (IncidentStatus.FIXING, [IncidentStatus.FIXED]),
-            (IncidentStatus.FIXED, [IncidentStatus.POST_MORTEM]),
+            (IncidentStatus.INVESTIGATING, [IncidentStatus.MITIGATING, IncidentStatus.CLOSED]),
+            (IncidentStatus.MITIGATING, [IncidentStatus.MITIGATED]),
+            (IncidentStatus.MITIGATED, [IncidentStatus.POST_MORTEM]),
             (IncidentStatus.POST_MORTEM, [IncidentStatus.CLOSED]),
         ]
 
@@ -96,9 +96,9 @@ class TestCompleteWorkflowTransitions(TestCase):
         transitions = [
             # Test transitions from each status
             (IncidentStatus.OPEN, [IncidentStatus.INVESTIGATING, IncidentStatus.CLOSED]),
-            (IncidentStatus.INVESTIGATING, [IncidentStatus.FIXING, IncidentStatus.CLOSED]),
-            (IncidentStatus.FIXING, [IncidentStatus.FIXED]),
-            (IncidentStatus.FIXED, [IncidentStatus.CLOSED]),
+            (IncidentStatus.INVESTIGATING, [IncidentStatus.MITIGATING, IncidentStatus.CLOSED]),
+            (IncidentStatus.MITIGATING, [IncidentStatus.MITIGATED]),
+            (IncidentStatus.MITIGATED, [IncidentStatus.CLOSED]),
         ]
 
         for current_status, expected_statuses in transitions:
@@ -156,7 +156,7 @@ class TestCompleteWorkflowTransitions(TestCase):
                 ), f"Should require closure reason from {status.label} for {priority.name}"
 
             # Should NOT require reason from other statuses
-            for status in [IncidentStatus.FIXING, IncidentStatus.FIXED, IncidentStatus.POST_MORTEM]:
+            for status in [IncidentStatus.MITIGATING, IncidentStatus.MITIGATED, IncidentStatus.POST_MORTEM]:
                 incident = IncidentFactory.create(
                     priority=priority,
                     _status=status,

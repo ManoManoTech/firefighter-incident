@@ -42,7 +42,7 @@ class TestUpdateStatusWorkflow(TestCase):
         incident = IncidentFactory.create(
             priority=p1_priority,
             environment=prd_env,
-            _status=IncidentStatus.FIXED,
+            _status=IncidentStatus.MITIGATED,
         )
 
         # Note: incident.needs_postmortem also requires firefighter.confluence to be installed
@@ -102,7 +102,7 @@ class TestUpdateStatusWorkflow(TestCase):
         # Create an incident with P3+ priority in Mitigated status
         incident = IncidentFactory.create(
             priority=p3_priority,
-            _status=IncidentStatus.FIXED,
+            _status=IncidentStatus.MITIGATED,
         )
 
         # Create form with the incident
@@ -129,11 +129,11 @@ class TestUpdateStatusWorkflow(TestCase):
         if not prd_env:
             pytest.skip("No PRD environment found in database")
 
-        # Create an incident with P1/P2 priority in FIXING (Mitigating) status with PRD env
+        # Create an incident with P1/P2 priority in MITIGATING (Mitigating) status with PRD env
         incident = IncidentFactory.create(
             priority=p1_priority,
             environment=prd_env,
-            _status=IncidentStatus.FIXING,  # Test from FIXING (Mitigating), not FIXED
+            _status=IncidentStatus.MITIGATING,  # Test from MITIGATING (Mitigating), not MITIGATED
         )
 
         # Create form with the incident
@@ -188,7 +188,7 @@ class TestUpdateStatusWorkflow(TestCase):
         incident = IncidentFactory.create(
             priority=p1_priority,
             environment=prd_env,
-            _status=IncidentStatus.FIXED,  # FIXED = "Mitigated"
+            _status=IncidentStatus.MITIGATED,  # MITIGATED = "Mitigated"
         )
 
         # Create form with the incident
@@ -213,8 +213,8 @@ class TestUpdateStatusWorkflow(TestCase):
         test_cases = [
             (IncidentStatus.OPEN, True),           # Can close with reason
             (IncidentStatus.INVESTIGATING, True),  # Can close with reason
-            (IncidentStatus.FIXING, False),        # Cannot close from Mitigating (must go to Mitigated first)
-            (IncidentStatus.FIXED, True),          # Can close normally from Mitigated
+            (IncidentStatus.MITIGATING, False),        # Cannot close from Mitigating (must go to Mitigated first)
+            (IncidentStatus.MITIGATED, True),          # Can close normally from Mitigated
         ]
 
         for current_status, should_have_closed in test_cases:
@@ -259,7 +259,7 @@ class TestUpdateStatusWorkflow(TestCase):
                 ), f"Should require closure reason from {status.label} for {priority.name}"
 
             # Test from other statuses - should NOT require reason
-            for status in [IncidentStatus.FIXING, IncidentStatus.FIXED, IncidentStatus.POST_MORTEM]:
+            for status in [IncidentStatus.MITIGATING, IncidentStatus.MITIGATED, IncidentStatus.POST_MORTEM]:
                 incident = IncidentFactory.create(
                     priority=priority,
                     _status=status,
@@ -278,7 +278,7 @@ class TestUpdateStatusWorkflow(TestCase):
         for priority in priorities:
             incident = IncidentFactory.create(
                 priority=priority,
-                _status=IncidentStatus.FIXING,  # Mitigating status
+                _status=IncidentStatus.MITIGATING,  # Mitigating status
             )
 
             form = UpdateStatusForm(incident=incident)
@@ -289,7 +289,7 @@ class TestUpdateStatusWorkflow(TestCase):
 
             # Should have Post-mortem option only for P1/P2 priorities that need postmortem
             if priority.needs_postmortem:
-                # For P1/P2, should still NOT have post-mortem from FIXING (Mitigating)
+                # For P1/P2, should still NOT have post-mortem from MITIGATING (Mitigating)
                 assert IncidentStatus.POST_MORTEM not in status_choices, f"P1/P2 should NOT be able to go to Post-mortem from Mitigating for {priority.name}"
             else:
                 # For P3+, should not have post-mortem at all
@@ -311,8 +311,8 @@ class TestUpdateStatusWorkflow(TestCase):
 
         # Should not require reason for non-CLOSED statuses
         assert not UpdateStatusForm.requires_closure_reason(incident, IncidentStatus.INVESTIGATING)
-        assert not UpdateStatusForm.requires_closure_reason(incident, IncidentStatus.FIXING)
-        assert not UpdateStatusForm.requires_closure_reason(incident, IncidentStatus.FIXED)
+        assert not UpdateStatusForm.requires_closure_reason(incident, IncidentStatus.MITIGATING)
+        assert not UpdateStatusForm.requires_closure_reason(incident, IncidentStatus.MITIGATED)
         assert not UpdateStatusForm.requires_closure_reason(incident, IncidentStatus.POST_MORTEM)
 
     def test_incident_status_edge_cases(self):

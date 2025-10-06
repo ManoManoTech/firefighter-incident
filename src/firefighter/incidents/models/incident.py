@@ -362,11 +362,11 @@ class Incident(models.Model):
                         f"Incident is not in PostMortem status, and needs one because of its priority and environment ({self.priority.name}/{self.environment.value}).",
                     )
                 )
-        elif self.status.value < IncidentStatus.FIXED:
+        elif self.status.value < IncidentStatus.MITIGATED:
             cant_closed_reasons.append(
                 (
                     "STATUS_NOT_MITIGATED",
-                    f"Incident is not in {IncidentStatus.FIXED.label} status (currently {self.status.label}).",
+                    f"Incident is not in {IncidentStatus.MITIGATED.label} status (currently {self.status.label}).",
                 )
             )
         missing_milestones = self.missing_milestones()
@@ -613,7 +613,7 @@ class Incident(models.Model):
             )
             incident_update.save()
 
-            if status == IncidentStatus.FIXED:
+            if status == IncidentStatus.MITIGATED:
                 IncidentUpdate.objects.update_or_create(
                     incident_id=self.id,
                     event_type="recovered",

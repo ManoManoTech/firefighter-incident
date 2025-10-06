@@ -368,7 +368,7 @@ def get_incident_time_to_by_priority(
     incidents: QuerySet[Incident], time_to: str = "time_to_fix"
 ) -> tuple[dict[str, str], QuerySet[Priority]]:
     ttr_q = (
-        Q(incident___status__gte=IncidentStatus.FIXED)
+        Q(incident___status__gte=IncidentStatus.MITIGATED)
         & Q(metric_type__type=time_to)
         & Q(duration__gte=timedelta(seconds=1))
         & Q(incident__in=incidents)
@@ -518,12 +518,12 @@ def get_incident_by_status_chart_data(
         ),
         incident_fixing=Count(
             "_status",
-            filter=Q(_status=IncidentStatus.FIXING),
+            filter=Q(_status=IncidentStatus.MITIGATING),
             output_field=FloatField(),
         ),
         incident_fixed=Count(
             "_status",
-            filter=Q(_status=IncidentStatus.FIXED),
+            filter=Q(_status=IncidentStatus.MITIGATED),
             output_field=FloatField(),
         ),
         incident_postmortem=Count(

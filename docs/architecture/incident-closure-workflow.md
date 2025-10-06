@@ -19,7 +19,7 @@ graph TD
     A[Incident Created] --> B[Opened]
     B --> C[Investigating]
     C --> D[Mitigating]
-    D --> E[Fixed]
+    D --> E[Mitigated]
 
     %% P1/P2 PRD Path (Post-mortem Required)
     E --> F{P1/P2 in PRD?}
@@ -42,7 +42,7 @@ graph TD
     B[Opened<br/>⚠️ Reason required for closure]
     C[Investigating<br/>⚠️ Reason required for closure]
     D[Mitigating]
-    E[Fixed/Mitigated]
+    E[Mitigated]
     G[Post-mortem<br/>✅ Can close normally]
     H[Closed<br/>📁 Channel archived]
     I[Closure Reason<br/>🗃️ Mandatory form]
@@ -52,7 +52,7 @@ graph TD
 
 ### 1. Normal Workflow Closure
 
-**Path**: `Fixed/Mitigated` → `Closed` (or `Post-mortem` → `Closed` for P1/P2)
+**Path**: `Mitigated` → `Closed` (or `Post-mortem` → `Closed` for P1/P2)
 
 - **When**: Incident has been properly resolved through the normal workflow
 - **Requirements**:
@@ -102,7 +102,7 @@ graph TD
 - ✅ **Can close with reason** (mandatory closure reason form)
 - **All priorities** follow the same rule
 
-### From "Mitigating" or "Fixed"
+### From "Mitigating" or "Mitigated"
 
 - ✅ **Can close normally** (P3+ incidents)
 - ❌ **Cannot close normally** (P1/P2 in PRD - must go through post-mortem)

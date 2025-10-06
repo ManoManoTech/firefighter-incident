@@ -11,8 +11,8 @@ class TestIncidentStatus:
         """Test that enum values are correctly defined."""
         assert IncidentStatus.OPEN.value == 10
         assert IncidentStatus.INVESTIGATING.value == 20
-        assert IncidentStatus.FIXING.value == 30
-        assert IncidentStatus.FIXED.value == 40
+        assert IncidentStatus.MITIGATING.value == 30
+        assert IncidentStatus.MITIGATED.value == 40
         assert IncidentStatus.POST_MORTEM.value == 50
         assert IncidentStatus.CLOSED.value == 60
 
@@ -20,8 +20,8 @@ class TestIncidentStatus:
         """Test that enum labels are correctly defined."""
         assert IncidentStatus.OPEN.label == "Open"
         assert IncidentStatus.INVESTIGATING.label == "Investigating"
-        assert IncidentStatus.FIXING.label == "Mitigating"
-        assert IncidentStatus.FIXED.label == "Mitigated"
+        assert IncidentStatus.MITIGATING.label == "Mitigating"
+        assert IncidentStatus.MITIGATED.label == "Mitigated"
         assert IncidentStatus.POST_MORTEM.label == "Post-mortem"
         assert IncidentStatus.CLOSED.label == "Closed"
 
@@ -34,19 +34,19 @@ class TestIncidentStatus:
     def test_lte_method(self):
         """Test the lte static method."""
         result = IncidentStatus.lte(30)
-        expected = [IncidentStatus.OPEN, IncidentStatus.INVESTIGATING, IncidentStatus.FIXING]
+        expected = [IncidentStatus.OPEN, IncidentStatus.INVESTIGATING, IncidentStatus.MITIGATING]
         assert result == expected
 
     def test_gt_method(self):
         """Test the gt static method."""
         result = IncidentStatus.gt(30)
-        expected = [IncidentStatus.FIXED, IncidentStatus.POST_MORTEM, IncidentStatus.CLOSED]
+        expected = [IncidentStatus.MITIGATED, IncidentStatus.POST_MORTEM, IncidentStatus.CLOSED]
         assert result == expected
 
     def test_gte_method(self):
         """Test the gte static method."""
         result = IncidentStatus.gte(30)
-        expected = [IncidentStatus.FIXING, IncidentStatus.FIXED, IncidentStatus.POST_MORTEM, IncidentStatus.CLOSED]
+        expected = [IncidentStatus.MITIGATING, IncidentStatus.MITIGATED, IncidentStatus.POST_MORTEM, IncidentStatus.CLOSED]
         assert result == expected
 
     def test_choices_lt_method(self):

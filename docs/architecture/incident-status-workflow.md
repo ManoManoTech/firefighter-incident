@@ -15,31 +15,31 @@ The incident status workflow differs based on the incident priority:
 
 ```
 OPEN → [INVESTIGATING, CLOSED (with reason)]
-INVESTIGATING → [FIXING, CLOSED (with reason)]
-FIXING → [FIXED]
-FIXED → [POST_MORTEM]
+INVESTIGATING → [MITIGATING, CLOSED (with reason)]
+MITIGATING → [MITIGATED]
+MITIGATED → [POST_MORTEM]
 POST_MORTEM → [CLOSED]
 ```
 
 **Key Rules for P1/P2:**
 - **Post-mortem is mandatory** for P1/P2 incidents in PRD environment
 - **Cannot skip POST_MORTEM status** - must go through it before closing
-- **From FIXING**: Can only go to FIXED, not to POST_MORTEM or CLOSED
-- **From FIXED**: Can only go to POST_MORTEM, not directly to CLOSED
+- **From MITIGATING**: Can only go to MITIGATED, not to POST_MORTEM or CLOSED
+- **From MITIGATED**: Can only go to POST_MORTEM, not directly to CLOSED
 - **Closure with reason**: Only allowed from OPEN and INVESTIGATING statuses
 
 ### P3/P4/P5 Incidents (Priority 3+ or Non-PRD)
 
 ```
 OPEN → [INVESTIGATING, CLOSED (with reason)]
-INVESTIGATING → [FIXING, CLOSED (with reason)]
-FIXING → [FIXED]
-FIXED → [CLOSED]
+INVESTIGATING → [MITIGATING, CLOSED (with reason)]
+MITIGATING → [MITIGATED]
+MITIGATED → [CLOSED]
 ```
 
 **Key Rules for P3+:**
 - **No post-mortem required** - POST_MORTEM status is not available
-- **Direct closure**: Can close directly from FIXED without intermediate steps
+- **Direct closure**: Can close directly from MITIGATED without intermediate steps
 - **Closure with reason**: Only allowed from OPEN and INVESTIGATING statuses
 
 ## Closure Reason Requirements
@@ -55,8 +55,8 @@ This applies to **all priority levels** (P1-P5).
 ### Status Values
 - `OPEN = 10`
 - `INVESTIGATING = 20`
-- `FIXING = 30` (labeled as "Mitigating")
-- `FIXED = 40` (labeled as "Mitigated")
+- `MITIGATING = 30` (labeled as "Mitigating")
+- `MITIGATED = 40` (labeled as "Mitigated")
 - `POST_MORTEM = 50`
 - `CLOSED = 60`
 

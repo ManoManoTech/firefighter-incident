@@ -31,7 +31,7 @@ def should_publish_in_general_channel(
     ):
         # If it has just been Mitigated
         if (
-            incident.status == IncidentStatus.FIXED
+            incident.status == IncidentStatus.MITIGATED
             and incident_update is not None
             and incident_update.status is not None
         ):

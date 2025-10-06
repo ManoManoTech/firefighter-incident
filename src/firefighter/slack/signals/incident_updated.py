@@ -201,7 +201,7 @@ def publish_status_update(
     if (
         incident.ask_for_milestones
         and status_changed
-        and incident.status >= IncidentStatus.FIXED
+        and incident.status >= IncidentStatus.MITIGATED
         and not incident.closure_reason  # Don't show key events for direct closures
     ):
         from firefighter.slack.views.modals.key_event_message import (  # noqa: PLC0415

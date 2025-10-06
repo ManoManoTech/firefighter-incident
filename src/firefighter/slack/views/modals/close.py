@@ -151,12 +151,12 @@ class CloseModal(
                 elif reason[0] == "STATUS_NOT_MITIGATED":
                     reason_blocks += [
                         SectionBlock(
-                            text=f":warning: *Status is not _{IncidentStatus.FIXED.label}_* :warning:\n"
+                            text=f":warning: *Status is not _{IncidentStatus.MITIGATED.label}_* :warning:\n"
                         ),
                         ContextBlock(
                             elements=[
                                 MarkdownTextObject(
-                                    text=f"You can only close an incident when its status is _{IncidentStatus.FIXED.label}_ or _{IncidentStatus.POST_MORTEM.label}_. The _{IncidentStatus.POST_MORTEM.label}_ status is not mandatory for this incident."
+                                    text=f"You can only close an incident when its status is _{IncidentStatus.MITIGATED.label}_ or _{IncidentStatus.POST_MORTEM.label}_. The _{IncidentStatus.POST_MORTEM.label}_ status is not mandatory for this incident."
                                 )
                             ]
                         ),

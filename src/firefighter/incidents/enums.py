@@ -6,8 +6,8 @@ from django.db import models
 class IncidentStatus(models.IntegerChoices):
     OPEN = 10, "Open"
     INVESTIGATING = 20, "Investigating"
-    FIXING = 30, "Mitigating"
-    FIXED = 40, "Mitigated"
+    MITIGATING = 30, "Mitigating"
+    MITIGATED = 40, "Mitigated"
     POST_MORTEM = 50, "Post-mortem"
     CLOSED = 60, "Closed"
 

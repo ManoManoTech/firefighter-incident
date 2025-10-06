@@ -27,7 +27,7 @@ class TestCloseModal:
             new_callable=PropertyMock(return_value=(True, [])),
         )
         incident = IncidentFactory.build()
-        incident.status = IncidentStatus.FIXED
+        incident.status = IncidentStatus.MITIGATED
 
         # Act
         res = modal.build_modal_fn(incident=incident, body={})
@@ -54,7 +54,7 @@ class TestCloseModal:
             return_value=(True, []),
             new_callable=mocker.PropertyMock,
         )
-        incident.status = IncidentStatus.FIXED
+        incident.status = IncidentStatus.MITIGATED
         incident.title = "This is the title"
         incident.description = "This is the description"
 
@@ -72,8 +72,8 @@ class TestCloseModal:
     def test_close_modal_build_cant_close(incident: Incident) -> None:
         # Arrange
         modal = CloseModal()
-        # Use FIXING (Mitigating) status - cannot close from this status without going through FIXED
-        incident.status = IncidentStatus.FIXING
+        # Use MITIGATING (Mitigating) status - cannot close from this status without going through MITIGATED
+        incident.status = IncidentStatus.MITIGATING
 
         # Act
         res = modal.build_modal_fn(incident=incident, body={})
