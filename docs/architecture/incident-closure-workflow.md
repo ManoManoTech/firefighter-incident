@@ -2,17 +2,11 @@
 
 This document describes the complete incident closure workflow in FireFighter, including the different paths and requirements for closing incidents based on priority and status.
 
-**Implementation Status**: ✅ **COMPLETED** (October 3, 2025)
-**Branch**: `feat/direct-incident-closure`
-**Testing**: 335 tests passing with comprehensive coverage
-
 ## Overview
 
 FireFighter supports multiple ways to close incidents, with different requirements based on the incident's priority level and current status. The workflow ensures that critical incidents (P1/P2) follow proper post-mortem procedures, while allowing more streamlined closure for lower priority incidents.
 
 ## Workflow Diagram
-
-The following diagram shows the complete incident closure workflow:
 
 ```mermaid
 graph TD
@@ -129,25 +123,23 @@ When closing with a reason, the following options are available:
 
 1. **UpdateStatusForm.requires_closure_reason()**: Determines when closure reason is needed
    - Location: `src/firefighter/incidents/forms/update_status.py`
-   - Coverage: 97%
 
 2. **IncidentClosureReasonForm**: Handles closure reason input
    - Location: `src/firefighter/incidents/forms/closure_reason.py`
-   - Coverage: 93%
 
 3. **ClosureReason Enum**: Defines available closure reasons
    - Location: `src/firefighter/incidents/enums.py`
-   - Coverage: 100%
 
 4. **Modal Utils**: Circular import resolution and modal routing
    - Location: `src/firefighter/slack/views/modals/utils.py`
-   - Coverage: 100%
 
 5. **Slack Integration**: Modal handlers for closure reason collection
    - Close Modal: Redirects to reason form when needed
    - Update Status Modal: Shows reason form for early closure attempts
 
-### Form Validation
+### Closure Reason Detection Logic
+
+The system determines if a closure reason is required based on the incident's current status:
 
 ```python
 @staticmethod
@@ -199,48 +191,3 @@ Closure reason information is stored in the incident model:
 - **Flexibility**: Supports both rigorous and quick closure paths
 - **Consistency**: Same logic applies across all interfaces
 - **User-Friendly**: Automatic detection and routing to correct form
-
-## Testing Coverage
-
-The implementation includes comprehensive test coverage across all components:
-
-### Test Files
-- `tests/test_incidents/test_forms/test_workflow_transitions.py` - Complete workflow testing
-- `tests/test_incidents/test_forms/test_closure_reason.py` - Form validation testing
-- `tests/test_incidents/test_enums.py` - Enum method testing
-- `tests/test_slack/views/modals/test_utils.py` - Utility function testing
-
-### Test Scenarios
-- ✅ P1/P2 workflow enforcement (post-mortem required)
-- ✅ P3+ workflow flexibility (direct closure allowed)
-- ✅ Closure reason requirement detection
-- ✅ Form validation and choices
-- ✅ Modal routing logic
-- ✅ Status transition validation
-- ✅ Edge cases and error handling
-
-### Quality Metrics
-- **Tests**: 335 passing (0 failed)
-- **Coverage**: 93-100% on all modified files
-- **Type checking**: 0 MyPy errors
-- **Linting**: 0 Ruff errors
-- **Pre-commit**: All hooks passing
-
-## Migration Notes
-
-This workflow replaces the previous "direct-close" command with a unified approach:
-
-- **Removed**: Separate direct-close command and modal
-- **Enhanced**: Existing close and update commands with intelligent routing
-- **Preserved**: All existing closure capabilities with better UX
-- **Added**: Comprehensive test coverage and quality enforcement
-
-## Future Enhancements
-
-Potential future improvements to consider:
-
-1. **Analytics Integration**: Track closure reason usage for insights
-2. **Automated Suggestions**: Suggest closure reasons based on incident content
-3. **Workflow Customization**: Allow organization-specific workflow rules
-4. **Integration Testing**: End-to-end Slack workflow testing
-5. **Performance Optimization**: Cache workflow rules for better performance
