@@ -56,7 +56,7 @@ graph TD
 
 - **When**: Incident has been properly resolved through the normal workflow
 - **Requirements**:
-  - Status must be `Fixed` or higher
+  - Status must be `Mitigated` or higher
   - For P1/P2 in PRD: Must complete post-mortem first
 - **Triggered via**:
   - `/incident close` command
@@ -85,13 +85,13 @@ graph TD
 ### P1/P2 Incidents in PRD Environment
 
 - **Post-mortem Required**: Must complete post-mortem before normal closure
-- **Workflow**: `Fixed` → `Post-mortem` → `Closed`
+- **Workflow**: `Mitigated` → `Post-mortem` → `Closed`
 - **Direct Closure**: Still available from `Opened/Investigating` with reason
 
 ### P3/P4/P5 Incidents
 
-- **Post-mortem Optional**: Can close directly from `Fixed` status
-- **Workflow**: `Fixed` → `Closed`
+- **Post-mortem Optional**: Can close directly from `Mitigated` status
+- **Workflow**: `Mitigated` → `Closed`
 - **Direct Closure**: Available from `Opened/Investigating` with reason
 
 ## Status Restrictions
