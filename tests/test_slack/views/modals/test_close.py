@@ -92,6 +92,51 @@ class TestCloseModal:
         )
 
     @staticmethod
+    def test_close_modal_build_shows_mitigated_status_requirement(
+        mocker: MockerFixture, incident: Incident
+    ) -> None:
+        """Test that the modal shows STATUS_NOT_MITIGATED error with proper references.
+
+        This test covers lines 151, 154, 159 in close.py where MITIGATED.label is used.
+        """
+        # Arrange
+        modal = CloseModal()
+        incident.status = IncidentStatus.INVESTIGATING
+
+        # Mock requires_closure_reason to return False so we bypass the closure reason modal
+        mocker.patch(
+            "firefighter.slack.views.modals.utils.UpdateStatusForm.requires_closure_reason",
+            return_value=False
+        )
+
+        # Mock can_be_closed to return False with STATUS_NOT_MITIGATED reason
+        mocker.patch.object(
+            Incident,
+            "can_be_closed",
+            new_callable=PropertyMock(return_value=(False, [("STATUS_NOT_MITIGATED", "Status not mitigated")])),
+        )
+
+        # Act
+        res = modal.build_modal_fn(incident=incident, body={})
+
+        # Assert
+        assert res.to_dict()
+        values = res.to_dict()
+        assert "blocks" in values
+
+        # Convert blocks to text for easier searching
+        blocks_text = str(values["blocks"])
+
+        # Verify that "Mitigated" (the label) appears in the error message
+        # Line 154: text=f":warning: *Status is not _{IncidentStatus.MITIGATED.label}_* :warning:\n"
+        # Line 159: text=f"You can only close an incident when its status is _{IncidentStatus.MITIGATED.label}_ or _{IncidentStatus.POST_MORTEM.label}_..."
+        assert "Mitigated" in blocks_text
+        assert "Post-mortem" in blocks_text or "Post Mortem" in blocks_text
+
+        # Verify the error message structure
+        assert "This incident can't be closed yet." in values["blocks"][0]["text"]["text"]
+
+    @staticmethod
     def test_close_modal_build_shows_closure_reason_from_open(incident: Incident) -> None:
         # Arrange
         modal = CloseModal()
