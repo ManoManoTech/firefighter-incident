@@ -33,7 +33,7 @@ from firefighter.slack.views.modals.base_modal.modal_utils import update_modal
 from firefighter.slack.views.modals.opening.check_current_incidents import (
     CheckCurrentIncidentsModal,
 )
-from firefighter.slack.views.modals.opening.details.critical import OpeningCriticalModal
+from firefighter.slack.views.modals.opening.details.unified import OpeningUnifiedModal
 from firefighter.slack.views.modals.opening.types import OpeningData, ResponseType
 
 if TYPE_CHECKING:
@@ -53,13 +53,13 @@ INCIDENT_TYPES: dict[ResponseType, dict[str, dict[str, Any]]] = {
     "critical": {
         "critical": {
             "label": "Critical",
-            "slack_form": OpeningCriticalModal,
+            "slack_form": OpeningUnifiedModal,
         },
     },
     "normal": {
         "normal": {
             "label": "Normal",
-            "slack_form": OpeningCriticalModal,
+            "slack_form": OpeningUnifiedModal,  # Will be overridden by RAID app
         },
     },
 }
