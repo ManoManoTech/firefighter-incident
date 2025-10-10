@@ -39,7 +39,7 @@ def incident_updated_handler(
         if (
             "_status" in updated_fields
             and incident_update.status
-            in {IncidentStatus.FIXED, IncidentStatus.POST_MORTEM}
+            in {IncidentStatus.MITIGATED, IncidentStatus.POST_MORTEM}
             and incident.needs_postmortem
         ):
             if not hasattr(incident, "postmortem_for"):
@@ -48,7 +48,7 @@ def incident_updated_handler(
         elif (
             "_status" in updated_fields
             and incident_update.status
-            in {IncidentStatus.FIXED, IncidentStatus.POST_MORTEM}
+            in {IncidentStatus.MITIGATED, IncidentStatus.POST_MORTEM}
             and not incident.needs_postmortem
         ):
             publish_fixed_next_actions(incident)

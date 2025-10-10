@@ -114,6 +114,11 @@ nav:
       - Developper Guide & Tools: contributing/development.md
       - Architecture & Design:
           - Architecture Overview: contributing/0010-general_architecture.md
+          - Project Architecture: architecture/overview.md
+          - JIRA Integration: architecture/jira-integration.md
+          - Test Configuration: architecture/test-config.md
+          - Incident Closure Workflow: architecture/incident-closure-workflow.md
+          - Incident Status Workflow: architecture/incident-status-workflow.md
           - UI Guidelines: contributing/ui.md
           - UX Guidelines: contributing/ux.md
           - Docs Guidelines: contributing/documentation.md
@@ -188,7 +193,7 @@ plugins:
   - mkdocstrings:
       handlers:
         python:
-          import:
+          inventories:
             - https://docs.python.org/3.12/objects.inv
             - https://docs.celeryq.dev/en/stable/objects.inv
             # - https://slack.dev/python-slack-sdk/objects.inv

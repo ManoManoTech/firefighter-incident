@@ -29,7 +29,7 @@ from firefighter.firefighter.fields_forms_widgets import (
     GroupedCheckboxSelectMultiple,
 )
 from firefighter.incidents import signals
-from firefighter.incidents.enums import IncidentStatus
+from firefighter.incidents.enums import ClosureReason, IncidentStatus
 from firefighter.incidents.models.environment import Environment
 from firefighter.incidents.models.group import Group
 from firefighter.incidents.models.incident_category import IncidentCategory
@@ -230,6 +230,18 @@ class Incident(models.Model):
     closed_at = models.DateTimeField(
         null=True, blank=True
     )  # XXX-ZOR make this an event
+    closure_reason = models.CharField(
+        max_length=50,
+        choices=ClosureReason.choices,
+        null=True,
+        blank=True,
+        help_text="Reason for direct incident closure bypassing normal workflow",
+    )
+    closure_reference = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="Reference incident ID or external link for closure context",
+    )
 
     # XXX-ZOR pick a more meaningful name. maybe 'hidden'
     # XXX-ZOR document intent and impl. status
@@ -268,7 +280,11 @@ class Incident(models.Model):
             models.CheckConstraint(
                 name="%(app_label)s_%(class)s__status_valid",
                 check=models.Q(_status__in=IncidentStatus.values),
-            )
+            ),
+            models.CheckConstraint(
+                name="%(app_label)s_%(class)s_closure_reason_valid",
+                check=models.Q(closure_reason__in=[*ClosureReason.values, None]),
+            ),
         ]
 
     def __str__(self) -> str:
@@ -331,6 +347,11 @@ class Incident(models.Model):
     def can_be_closed(self) -> tuple[bool, list[tuple[str, str]]]:
         # XXX-ZOR we should use a proper FSM abstraction
         cant_closed_reasons: list[tuple[str, str]] = []
+
+        # Allow direct closure when closure_reason is provided (bypasses normal workflow)
+        if self.closure_reason:
+            return True, []
+
         if self.ignore:
             return True, []
         if self.needs_postmortem:
@@ -341,11 +362,11 @@ class Incident(models.Model):
                         f"Incident is not in PostMortem status, and needs one because of its priority and environment ({self.priority.name}/{self.environment.value}).",
                     )
                 )
-        elif self.status.value < IncidentStatus.FIXED:
+        elif self.status.value < IncidentStatus.MITIGATED:
             cant_closed_reasons.append(
                 (
                     "STATUS_NOT_MITIGATED",
-                    f"Incident is not in {IncidentStatus.FIXED.label} status (currently {self.status.label}).",
+                    f"Incident is not in {IncidentStatus.MITIGATED.label} status (currently {self.status.label}).",
                 )
             )
         missing_milestones = self.missing_milestones()
@@ -592,7 +613,7 @@ class Incident(models.Model):
             )
             incident_update.save()
 
-            if status == IncidentStatus.FIXED:
+            if status == IncidentStatus.MITIGATED:
                 IncidentUpdate.objects.update_or_create(
                     incident_id=self.id,
                     event_type="recovered",

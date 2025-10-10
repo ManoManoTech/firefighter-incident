@@ -10,6 +10,7 @@ from slack_sdk.models.views import View
 from firefighter.incidents.forms.update_status import UpdateStatusForm
 from firefighter.slack.slack_templating import slack_block_footer, slack_block_separator
 from firefighter.slack.views.modals.base_modal.base import ModalForm
+from firefighter.slack.views.modals.utils import handle_update_status_close_request
 
 if TYPE_CHECKING:
     from slack_bolt.context.ack.ack import Ack
@@ -74,7 +75,8 @@ class UpdateStatusModal(ModalForm[UpdateStatusFormSlack]):
                 "status": incident.status,
                 "priority": incident.priority,
                 "incident_category": incident.incident_category,
-            }
+            },
+            incident=incident,
         ).slack_blocks()
         blocks.append(slack_block_separator())
         blocks.append(slack_block_footer())
@@ -98,7 +100,8 @@ class UpdateStatusModal(ModalForm[UpdateStatusFormSlack]):
                     "status": incident.status,
                     "priority": incident.priority,
                     "incident_category": incident.incident_category,
-                }
+                },
+                "incident": incident,
             },
         )
         if slack_form is None:
@@ -107,6 +110,13 @@ class UpdateStatusModal(ModalForm[UpdateStatusFormSlack]):
         if len(form.cleaned_data) == 0:
             # XXX We should have a prompt for empty forms
             return
+
+        # Check if user is trying to close and needs a closure reason
+        if "status" in form.changed_data:
+            target_status = form.cleaned_data["status"]
+            if handle_update_status_close_request(ack, body, incident, target_status):
+                return
+
         update_kwargs: dict[str, Any] = {}
         for changed_key in form.changed_data:
             if changed_key in {"incident_category", "priority"}:

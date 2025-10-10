@@ -442,7 +442,7 @@ class SlackMessageIncidentStatusUpdated(SlackMessageSurface):
 
         if self.in_channel:
             self.title_text = "A new incident update has been posted"
-        elif incident.status == IncidentStatus.FIXED and status_changed:
+        elif incident.status == IncidentStatus.MITIGATED and status_changed:
             self.title_text = f":large_green_circle:  Incident #{incident.slack_channel_name} has been {incident.status.label}.  :large_green_circle:"
         elif old_priority is not None and old_priority.value > 3:
             self.title_text = f"Incident #{incident.slack_channel_name} has escalated from {old_priority.name} to {incident.priority.name}."
@@ -691,7 +691,7 @@ class SlackMessageDeployWarning(SlackMessageSurface):
         blocks = [
             HeaderBlock(
                 text=PlainTextObject(
-                    text=f":warning: Deploy warning {'(Mitigated) ' if self.incident.status == IncidentStatus.FIXED else ''}:warning:",
+                    text=f":warning: Deploy warning {'(Mitigated) ' if self.incident.status == IncidentStatus.MITIGATED else ''}:warning:",
                     emoji=True,
                 )
             ),
@@ -702,7 +702,7 @@ class SlackMessageDeployWarning(SlackMessageSurface):
             ),
         ]
 
-        if self.incident.status >= IncidentStatus.FIXED:
+        if self.incident.status >= IncidentStatus.MITIGATED:
             blocks.extend(
                 [
                     SectionBlock(

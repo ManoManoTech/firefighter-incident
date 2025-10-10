@@ -3,6 +3,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from firefighter.slack.views.modals.close import CloseModal, modal_close
+from firefighter.slack.views.modals.closure_reason import (
+    ClosureReasonModal,
+    modal_closure_reason,
+)
 from firefighter.slack.views.modals.downgrade_workflow import (
     DowngradeWorkflowModal,
     modal_dowgrade_workflow,
