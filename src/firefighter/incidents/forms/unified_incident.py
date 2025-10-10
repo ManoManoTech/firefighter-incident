@@ -142,7 +142,7 @@ class UnifiedIncidentForm(CreateIncidentFormBase):
         label="Seller Contract ID",
         max_length=128,
         min_length=0,
-        required=False,
+        required=False,  # Conditionally required in clean()
     )
 
     is_key_account = forms.BooleanField(

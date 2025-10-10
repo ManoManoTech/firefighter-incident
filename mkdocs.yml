@@ -119,7 +119,8 @@ nav:
           - Test Configuration: architecture/test-config.md
           - Incident Closure Workflow: architecture/incident-closure-workflow.md
           - Incident Status Workflow: architecture/incident-status-workflow.md
-          - Incident Opening Workflow: architecture/incident-opening-workflow-complete.md
+          - Incident Opening Workflow (Unified): architecture/incident-opening-workflow-unified.md
+          - Incident Opening Workflow (Legacy): architecture/incident-opening-workflow-complete.md
           - UI Guidelines: contributing/ui.md
           - UX Guidelines: contributing/ux.md
           - Docs Guidelines: contributing/documentation.md

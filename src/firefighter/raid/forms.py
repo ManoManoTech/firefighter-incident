@@ -8,10 +8,7 @@ from django.conf import settings
 from django.db import models
 from slack_sdk.errors import SlackApiError
 
-from firefighter.incidents.forms.create_incident import CreateIncidentFormBase
 from firefighter.incidents.forms.select_impact import SelectImpactForm
-from firefighter.incidents.forms.utils import GroupedModelChoiceField
-from firefighter.incidents.models import IncidentCategory
 from firefighter.incidents.models.priority import Priority
 from firefighter.jira_app.client import (
     JiraAPIError,
@@ -27,8 +24,6 @@ from firefighter.raid.models import FeatureTeam, JiraTicket
 from firefighter.raid.service import (
     CustomerIssueData,
     create_issue_customer,
-    create_issue_documentation_request,
-    create_issue_feature_request,
     create_issue_internal,
     create_issue_seller,
     get_jira_user_from_user,
@@ -63,230 +58,11 @@ def initial_priority() -> Priority:
     return Priority.objects.get(default=True)
 
 
-class CreateNormalIncidentFormBase(CreateIncidentFormBase):
-    platform = forms.ChoiceField(
-        label="Platform",
-        choices=PlatformChoices.choices,
-    )
-    title = forms.CharField(
-        label="Title",
-        max_length=128,
-        min_length=10,
-        widget=forms.TextInput(attrs={"placeholder": "What's going on?"}),
-    )
-    description = forms.CharField(
-        label="Summary",
-        min_length=10,
-        max_length=1200,
-    )
-    suggested_team_routing = forms.ModelChoiceField(
-        queryset=FeatureTeam.objects.only("name").order_by("name"),
-        label="Feature Team or Train",
-        required=True,
-    )
-    priority = forms.ModelChoiceField(
-        label="Priority",
-        queryset=Priority.objects.filter(enabled_create=True),
-        initial=initial_priority,
-        widget=forms.HiddenInput(),
-    )
-
-    field_order = [
-        "incident_category",
-        "platform",
-        "title",
-        "description",
-        "seller_contract_id",
-        "is_key_account",
-        "is_seller_in_golden_list",
-        "zoho_desk_ticket_id",
-        "zendesk_ticket_id",
-        "suggested_team_routing",
-    ]
-
-    def trigger_incident_workflow(
-        self,
-        creator: User,
-        impacts_data: dict[str, ImpactLevel],
-        *args: Any,
-        **kwargs: Any,
-    ) -> Any:
-        raise NotImplementedError
-
-
-class CreateNormalCustomerIncidentForm(CreateNormalIncidentFormBase):
-    incident_category = GroupedModelChoiceField(
-        choices_groupby="group",
-        queryset=IncidentCategory.objects.all().select_related("group").order_by("group__order", "name"),
-        label="Incident category"
-    )
-    zendesk_ticket_id = forms.CharField(
-        label="Zendesk Ticket ID", max_length=128, min_length=2, required=False
-    )
-
-    # XXX business impact: infer from impact/add in impact modal?
-    def trigger_incident_workflow(
-        self,
-        creator: User,
-        impacts_data: dict[str, ImpactLevel],
-        *args: Never,
-        **kwargs: Never,
-    ) -> None:
-        jira_user: JiraUser = get_jira_user_from_user(creator)
-        customer_data = CustomerIssueData(
-            priority=self.cleaned_data["priority"].value,
-            labels=[""],
-            platform=self.cleaned_data["platform"],
-            business_impact=str(get_business_impact(impacts_data)),
-            team_to_be_routed=self.cleaned_data["suggested_team_routing"],
-            area=None,
-            zendesk_ticket_id=self.cleaned_data["zendesk_ticket_id"],
-            incident_category=self.cleaned_data["incident_category"].name,
-        )
-        issue_data = create_issue_customer(
-            title=self.cleaned_data["title"],
-            description=self.cleaned_data["description"],
-            reporter=jira_user.id,
-            issue_data=customer_data,
-        )
-        process_jira_issue(
-            issue_data, creator, jira_user=jira_user, impacts_data=impacts_data
-        )
-
-
-class CreateRaidDocumentationRequestIncidentForm(CreateNormalIncidentFormBase):
-    incident_category = GroupedModelChoiceField(
-        choices_groupby="group",
-        queryset=IncidentCategory.objects.all().select_related("group").order_by("group__order", "name"),
-        label="Incident category"
-    )
-
-    def trigger_incident_workflow(
-        self,
-        creator: User,
-        impacts_data: dict[str, ImpactLevel],
-        *args: Never,
-        **kwargs: Never,
-    ) -> None:
-        jira_user: JiraUser = get_jira_user_from_user(creator)
-        issue_data = create_issue_documentation_request(
-            title=self.cleaned_data["title"],
-            description=self.cleaned_data["description"],
-            priority=self.cleaned_data["priority"].value,
-            reporter=jira_user.id,
-            platform=self.cleaned_data["platform"],
-            labels=[""],
-        )
-
-        process_jira_issue(
-            issue_data, creator, jira_user=jira_user, impacts_data=impacts_data
-        )
-
-
-class CreateRaidFeatureRequestIncidentForm(CreateNormalIncidentFormBase):
-    incident_category = GroupedModelChoiceField(
-        choices_groupby="group",
-        queryset=IncidentCategory.objects.all().select_related("group").order_by("group__order", "name"),
-        label="Incident category"
-    )
-
-    def trigger_incident_workflow(
-        self,
-        creator: User,
-        impacts_data: dict[str, ImpactLevel],
-        *args: Never,
-        **kwargs: Never,
-    ) -> None:
-        jira_user: JiraUser = get_jira_user_from_user(creator)
-        issue_data = create_issue_feature_request(
-            title=self.cleaned_data["title"],
-            description=self.cleaned_data["description"],
-            priority=self.cleaned_data["priority"].value,
-            reporter=jira_user.id,
-            platform=self.cleaned_data["platform"],
-            labels=[""],
-        )
-
-        process_jira_issue(
-            issue_data, creator, jira_user=jira_user, impacts_data=impacts_data
-        )
-
-
-class CreateRaidInternalIncidentForm(CreateNormalIncidentFormBase):
-    incident_category = GroupedModelChoiceField(
-        choices_groupby="group",
-        queryset=IncidentCategory.objects.all().select_related("group").order_by("group__order", "name"),
-        label="Incident category"
-    )
-
-    def trigger_incident_workflow(
-        self,
-        creator: User,
-        impacts_data: dict[str, ImpactLevel],
-        *args: Never,
-        **kwargs: Never,
-    ) -> None:
-        jira_user: JiraUser = get_jira_user_from_user(creator)
-        issue_data = create_issue_internal(
-            title=self.cleaned_data["title"],
-            description=self.cleaned_data["description"],
-            priority=self.cleaned_data["priority"].value,
-            reporter=jira_user.id,
-            platform=self.cleaned_data["platform"],
-            business_impact=str(get_business_impact(impacts_data)),
-            team_to_be_routed=self.cleaned_data["suggested_team_routing"],
-            incident_category=self.cleaned_data["incident_category"].name,
-            labels=[""],
-        )
-
-        process_jira_issue(
-            issue_data, creator, jira_user=jira_user, impacts_data=impacts_data
-        )
-
-
-class RaidCreateIncidentSellerForm(CreateNormalIncidentFormBase):
-    incident_category = GroupedModelChoiceField(
-        choices_groupby="group",
-        queryset=IncidentCategory.objects.all().select_related("group").order_by("group__order", "name"),
-        label="Incident category"
-    )
-    seller_contract_id = forms.CharField(
-        label="Seller Contract ID", max_length=128, min_length=0
-    )
-    is_key_account = forms.BooleanField(label="Is it a Key Account?", required=False)
-    is_seller_in_golden_list = forms.BooleanField(
-        label="Is the seller in the Golden List?", required=False
-    )
-    zoho_desk_ticket_id = forms.CharField(
-        required=False, label="Zoho Desk Ticket ID", max_length=128, min_length=1
-    )
-
-    def trigger_incident_workflow(
-        self,
-        creator: User,
-        impacts_data: dict[str, ImpactLevel],
-        *args: Never,
-        **kwargs: Never,
-    ) -> None:
-        jira_user: JiraUser = get_jira_user_from_user(creator)
-        issue_data = create_issue_seller(
-            title=self.cleaned_data["title"],
-            description=self.cleaned_data["description"],
-            priority=self.cleaned_data["priority"].value,
-            reporter=jira_user.id,
-            platform=self.cleaned_data["platform"],
-            business_impact=str(get_business_impact(impacts_data)),
-            team_to_be_routed=self.cleaned_data["suggested_team_routing"],
-            incident_category=self.cleaned_data["incident_category"].name,
-            zoho_desk_ticket_id=self.cleaned_data["zoho_desk_ticket_id"],
-            is_key_account=self.cleaned_data["is_key_account"],
-            is_seller_in_golden_list=self.cleaned_data["is_seller_in_golden_list"],
-            seller_contract_id=self.cleaned_data["seller_contract_id"],
-            labels=[""],
-        )
-        process_jira_issue(
-            issue_data, creator, jira_user=jira_user, impacts_data=impacts_data
-        )
+# NOTE: Incident creation forms have been unified and moved to:
+# firefighter.incidents.forms.unified_incident.UnifiedIncidentForm
+# This handles all incident types (P1-P5) with dynamic field visibility.
+# The following utility functions remain here as they are used by the unified form
+# and by JIRA webhook handlers.
 
 
 def process_jira_issue(
