@@ -218,6 +218,7 @@ class IncidentSerializer(TaggitSerializer, serializers.ModelSerializer[Incident]
     status = serializers.SerializerMethodField()
     created_by = UserSerializer(read_only=True)
     slack_channel_name = serializers.SerializerMethodField()
+    postmortem_url = serializers.SerializerMethodField()
 
     created_by_email = CreatableSlugRelatedField[User](
         source="created_by",
@@ -252,6 +253,13 @@ class IncidentSerializer(TaggitSerializer, serializers.ModelSerializer[Incident]
     def get_slack_channel_name(obj: Incident) -> str:
         return f"#{obj.slack_channel_name}" if obj.slack_channel_name else ""
 
+    @staticmethod
+    def get_postmortem_url(obj: Incident) -> str | None:
+        """Return the Confluence post-mortem page URL if it exists."""
+        if hasattr(obj, "postmortem_for"):
+            return obj.postmortem_for.page_url
+        return None
+
     def create(self, validated_data: dict[str, Any]) -> Incident:
         return Incident.objects.declare(**validated_data)
 
@@ -279,6 +287,7 @@ class IncidentSerializer(TaggitSerializer, serializers.ModelSerializer[Incident]
             "status",
             "slack_channel_name",
             "status_page_url",
+            "postmortem_url",
             "status",
             "environment_id",
             "incident_category_id",
