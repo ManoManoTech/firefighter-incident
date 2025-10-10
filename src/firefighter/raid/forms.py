@@ -1,9 +1,8 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Any, Never
+from typing import TYPE_CHECKING, Never
 
-from django import forms
 from django.conf import settings
 from django.db import models
 from slack_sdk.errors import SlackApiError
@@ -20,14 +19,7 @@ from firefighter.raid.messages import (
     SlackMessageRaidCreatedIssue,
     SlackMessageRaidModifiedIssue,
 )
-from firefighter.raid.models import FeatureTeam, JiraTicket
-from firefighter.raid.service import (
-    CustomerIssueData,
-    create_issue_customer,
-    create_issue_internal,
-    create_issue_seller,
-    get_jira_user_from_user,
-)
+from firefighter.raid.models import JiraTicket
 from firefighter.raid.utils import get_domain_from_email
 from firefighter.slack.models.conversation import Conversation
 

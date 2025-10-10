@@ -7,7 +7,6 @@ from django.test import TestCase
 from slack_sdk.errors import SlackApiError
 
 from firefighter.incidents.factories import (
-    IncidentCategoryFactory,
     IncidentFactory,
     PriorityFactory,
     UserFactory,
@@ -28,7 +27,7 @@ from firefighter.raid.forms import (
     send_message_to_watchers,
     set_jira_ticket_watchers_raid,
 )
-from firefighter.raid.models import FeatureTeam, JiraTicket
+from firefighter.raid.models import JiraTicket
 from firefighter.slack.models.conversation import Conversation
 from firefighter.slack.models.user import SlackUser
 
