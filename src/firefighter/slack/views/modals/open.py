@@ -310,10 +310,21 @@ class OpenModal(SlackModal):
         if open_incident_context.get("response_type") == "critical":
             slack_msg = None
             if details_form_done and details_form_class and details_form:
+                # Create a copy of cleaned_data to avoid modifying the form
+                cleaned_data_copy = details_form.cleaned_data.copy()
+
+                # Extract first environment from QuerySet (UnifiedIncidentForm uses ModelMultipleChoiceField)
+                environments = cleaned_data_copy.pop("environment", [])
+                if environments:
+                    cleaned_data_copy["environment"] = environments[0] if hasattr(environments, "__getitem__") else environments.first()
+
+                # Remove platform field (not part of Incident model)
+                cleaned_data_copy.pop("platform", None)
+
                 incident = Incident(
                     status=IncidentStatus.OPEN,  # type: ignore
                     created_by=user,
-                    **details_form.cleaned_data,
+                    **cleaned_data_copy,
                 )
                 users_list: set[User] = {*incident.build_invite_list(), user}
                 slack_msg = f"> :slack: A dedicated Slack channel will be created, and around {len(users_list)} responders will be invited to help.\n"
