@@ -191,12 +191,12 @@ class UnifiedIncidentForm(CreateIncidentFormBase):
             logger.warning("RAID module not available, suggested_team_routing will not work")
 
     def get_visible_fields_for_impacts(
-        self, impacts_data: dict[str, ImpactLevel], response_type: str
+        self, impacts_data: dict[str, ImpactLevel | str], response_type: str
     ) -> list[str]:
         """Determine which fields should be visible based on impacts and response type.
 
         Args:
-            impacts_data: Dictionary of impact type → impact level
+            impacts_data: Dictionary of impact type → impact level (ImpactLevel object or UUID string)
             response_type: "critical" or "normal"
 
         Returns:
@@ -225,12 +225,33 @@ class UnifiedIncidentForm(CreateIncidentFormBase):
             elif "sellers_impact" in field_name:
                 seller_impact = impact_level
 
+        # Helper to check if impact is not NONE
+        def has_impact(impact: ImpactLevel | str | None) -> bool:
+            if impact is None:
+                return False
+
+            # If it's a UUID string, fetch the ImpactLevel from database
+            if isinstance(impact, str):
+                from firefighter.incidents.models.impact import (  # noqa: PLC0415
+                    ImpactLevel as ImpactLevelModel,
+                )
+
+                try:
+                    impact_obj = ImpactLevelModel.objects.get(id=impact)
+                except ImpactLevelModel.DoesNotExist:
+                    return False
+                else:
+                    return impact_obj.value != LevelChoices.NONE.value
+
+            # Otherwise it's an ImpactLevel object
+            return impact.value != LevelChoices.NONE.value
+
         # Add customer-specific fields
-        if customer_impact and hasattr(customer_impact, "value") and customer_impact.value != LevelChoices.NONE.value:
+        if has_impact(customer_impact):
             visible_fields.append("zendesk_ticket_id")
 
         # Add seller-specific fields
-        if seller_impact and hasattr(seller_impact, "value") and seller_impact.value != LevelChoices.NONE.value:
+        if has_impact(seller_impact):
             visible_fields.extend([
                 "seller_contract_id",
                 "is_key_account",
@@ -289,20 +310,31 @@ class UnifiedIncidentForm(CreateIncidentFormBase):
         """Create a critical incident (P1-P3) with Slack channel."""
         # Create incident with first environment only (critical incidents use single env)
         cleaned_data_copy = self.cleaned_data.copy()
+        logger.info(f"UNIFIED FORM - cleaned_data keys: {list(self.cleaned_data.keys())}")
+        logger.info(f"UNIFIED FORM - cleaned_data values: {self.cleaned_data}")
+
         environments = cleaned_data_copy.pop("environment", [])
         _platforms = cleaned_data_copy.pop("platform", [])
 
-        # Remove normal-incident fields
-        cleaned_data_copy.pop("suggested_team_routing", None)
-        cleaned_data_copy.pop("zendesk_ticket_id", None)
-        cleaned_data_copy.pop("seller_contract_id", None)
-        cleaned_data_copy.pop("is_key_account", None)
-        cleaned_data_copy.pop("is_seller_in_golden_list", None)
-        cleaned_data_copy.pop("zoho_desk_ticket_id", None)
+        # Extract customer/seller fields for Jira ticket (not stored in Incident model)
+        jira_extra_fields = {
+            "suggested_team_routing": cleaned_data_copy.pop("suggested_team_routing", None),
+            "zendesk_ticket_id": cleaned_data_copy.pop("zendesk_ticket_id", None),
+            "seller_contract_id": cleaned_data_copy.pop("seller_contract_id", None),
+            "is_key_account": cleaned_data_copy.pop("is_key_account", None),
+            "is_seller_in_golden_list": cleaned_data_copy.pop("is_seller_in_golden_list", None),
+            "zoho_desk_ticket_id": cleaned_data_copy.pop("zoho_desk_ticket_id", None),
+        }
+        logger.info(f"UNIFIED FORM - jira_extra_fields extracted: {jira_extra_fields}")
 
         # Use first environment
         if environments:
             cleaned_data_copy["environment"] = environments[0]
+
+        # Store custom fields in the incident
+        cleaned_data_copy["custom_fields"] = {
+            k: v for k, v in jira_extra_fields.items() if v
+        }
 
         incident = Incident.objects.declare(created_by=creator, **cleaned_data_copy)
         impacts_form = SelectImpactForm(impacts_data)
@@ -311,6 +343,7 @@ class UnifiedIncidentForm(CreateIncidentFormBase):
         create_incident_conversation.send(
             "unified_incident_form",
             incident=incident,
+            jira_extra_fields=jira_extra_fields,
         )
 
     def _trigger_normal_incident_workflow(

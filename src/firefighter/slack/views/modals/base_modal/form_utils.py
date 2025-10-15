@@ -365,23 +365,20 @@ class SlackForm(Generic[T]):
 
         # Handle initial values (list of objects or values)
         if f.initial:
-            initial_options = []
+            initial_options: list[SafeOption] = []
             # f.initial can be a list, queryset, or callable
             initial_value = f.initial() if callable(f.initial) else f.initial
 
             if isinstance(f, forms.ModelMultipleChoiceField):
                 # For ModelMultipleChoiceField, initial is a list/queryset of model instances
-                for obj in initial_value:
-                    initial_options.append(
-                        SafeOption(
+                initial_options.extend(SafeOption(
                             label=f.label_from_instance(obj),
                             value=str(obj.pk),
-                        )
-                    )
+                        ) for obj in initial_value)
             elif isinstance(f, forms.MultipleChoiceField):
                 # For MultipleChoiceField, initial is a list of choice values
                 for val in initial_value:
-                    choice_label = str([c[1] for c in f.choices if c[0] == val][0])
+                    choice_label = str(next(c[1] for c in f.choices if c[0] == val))
                     initial_options.append(
                         SafeOption(label=choice_label, value=str(val))
                     )

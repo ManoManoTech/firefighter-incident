@@ -10,15 +10,15 @@ FireFighter supports multiple ways to close incidents, with different requiremen
 
 ```mermaid
 graph TD
-    A[Incident Created] --> B[Opened]
-    B --> C[Investigating]
-    C --> D[Mitigating]
-    D --> E[Mitigated]
+    A[Incident Created] --> B[OPEN]
+    B --> C[INVESTIGATING]
+    C --> D[MITIGATING]
+    D --> E[MITIGATED]
 
     %% P1/P2 PRD Path (Post-mortem Required)
     E --> F{P1/P2 in PRD?}
-    F -->|Yes| G[Post-mortem]
-    G --> H[Closed]
+    F -->|Yes| G[POST_MORTEM]
+    G --> H[CLOSED]
 
     %% P3+ Path (No Post-mortem Required)
     F -->|No| H
@@ -33,12 +33,12 @@ graph TD
     G -->|Normal Close| H
 
     %% Status Labels
-    B[Opened<br/>⚠️ Reason required for closure]
-    C[Investigating<br/>⚠️ Reason required for closure]
-    D[Mitigating]
-    E[Mitigated]
-    G[Post-mortem<br/>✅ Can close normally]
-    H[Closed<br/>📁 Channel archived]
+    B[OPEN<br/>⚠️ Reason required for closure]
+    C[INVESTIGATING<br/>⚠️ Reason required for closure]
+    D[MITIGATING]
+    E[MITIGATED]
+    G[POST_MORTEM<br/>✅ Can close normally]
+    H[CLOSED<br/>📁 Channel archived]
     I[Closure Reason<br/>🗃️ Mandatory form]
 ```
 

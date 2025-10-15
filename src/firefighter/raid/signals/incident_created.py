@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Any, Never
+from typing import TYPE_CHECKING, Any
 
 from django.conf import settings
 from django.dispatch.dispatcher import receiver
@@ -26,9 +26,14 @@ APP_DISPLAY_NAME: str = settings.APP_DISPLAY_NAME
 
 @receiver(signal=incident_channel_done)
 def create_ticket(
-    sender: Any, incident: Incident, channel: IncidentChannel, **kwargs: Never
+    sender: Any, incident: Incident, channel: IncidentChannel, **kwargs: Any
 ) -> JiraTicket:
     # pylint: disable=unused-argument
+
+    # Extract jira_extra_fields from kwargs (passed from unified incident form)
+    jira_extra_fields = kwargs.get("jira_extra_fields", {})
+    logger.info(f"CREATE_TICKET - kwargs keys: {list(kwargs.keys())}")
+    logger.info(f"CREATE_TICKET - jira_extra_fields received: {jira_extra_fields}")
 
     jira_user = get_jira_user_from_user(incident.created_by)
     account_id = jira_user.id
@@ -50,6 +55,11 @@ def create_ticket(
         reporter=account_id,
         priority=priority,
         incident_category=incident.incident_category.name,
+        zendesk_ticket_id=jira_extra_fields.get("zendesk_ticket_id", ""),
+        seller_contract_id=jira_extra_fields.get("seller_contract_id", ""),
+        zoho_desk_ticket_id=jira_extra_fields.get("zoho_desk_ticket_id", ""),
+        is_key_account=jira_extra_fields.get("is_key_account", False),
+        is_seller_in_golden_list=jira_extra_fields.get("is_seller_in_golden_list", False),
     )
     issue_id = issue.get("id")
     if issue_id is None:

@@ -114,7 +114,9 @@ class ClosureReasonModal(IncidentSelectableModalMixin, SlackModal):
         self, ack: Ack, body: dict[str, Any], incident: Incident, user: User
     ) -> bool | None:
         """Handle the closure reason modal submission."""
-        ack()
+        # Clear ALL modals in the stack (not just this one)
+        # This ensures the underlying "Update Status" modal is also closed
+        ack(response_action="clear")
 
         # Extract form values
         state_values = body["view"]["state"]["values"]

@@ -243,6 +243,12 @@ class Incident(models.Model):
         help_text="Reference incident ID or external link for closure context",
     )
 
+    custom_fields = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="Custom fields for incident (zendesk_ticket_id, seller_contract_id, etc.)",
+    )
+
     # XXX-ZOR pick a more meaningful name. maybe 'hidden'
     # XXX-ZOR document intent and impl. status
     ignore = models.BooleanField(

@@ -65,14 +65,22 @@ class PostMortemModal(
         )
 
     @staticmethod
-    def handle_modal_fn(ack: Ack, incident: Incident) -> None:  # type: ignore[override]
+    def handle_modal_fn(ack: Ack, body: dict[str, Any], incident: Incident) -> None:  # type: ignore[override]
         if not apps.is_installed("firefighter.confluence"):
             ack(text="Confluence is not enabled!")
             return
         if hasattr(incident, "postmortem_for"):
             ack(text="Post-mortem has already been created.")
             return
-        ack()
+
+        # Check if this modal was pushed on top of another modal
+        # If yes, clear the entire stack to avoid leaving stale modals visible
+        is_pushed = body.get("view", {}).get("previous_view_id") is not None
+        if is_pushed:
+            ack(response_action="clear")
+        else:
+            ack()
+
         PostMortem.objects.create_postmortem_for_incident(incident)
 
 

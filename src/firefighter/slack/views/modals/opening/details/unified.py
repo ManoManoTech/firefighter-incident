@@ -9,6 +9,7 @@ from slack_sdk.models.blocks.basic_components import MarkdownTextObject
 from slack_sdk.models.blocks.blocks import ContextBlock, SectionBlock
 
 from firefighter.incidents.forms.unified_incident import UnifiedIncidentForm
+from firefighter.slack.views.modals.base_modal.form_utils import SlackForm
 from firefighter.slack.views.modals.opening.set_details import SetIncidentDetails
 from firefighter.slack.views.modals.opening.types import OpeningData
 
@@ -41,9 +42,6 @@ class UnifiedIncidentFormSlack(UnifiedIncidentForm):
         "environment": {
             "input": {
                 "placeholder": "Select environments",
-            },
-            "widget": {
-                "label_from_instance": lambda obj: f"{obj.value} - {obj.description}",
             },
         },
         "platform": {
@@ -137,9 +135,6 @@ class UnifiedIncidentFormSlack(UnifiedIncidentForm):
 
     def _configure_field_visibility(self) -> None:
         """Configure which fields should be visible based on impacts and response type."""
-        if not self._impacts_data:
-            return
-
         visible_fields = self.get_visible_fields_for_impacts(
             self._impacts_data, self._response_type
         )
@@ -148,19 +143,9 @@ class UnifiedIncidentFormSlack(UnifiedIncidentForm):
         fields_to_remove = [
             field_name for field_name in self.fields if field_name not in visible_fields
         ]
+
         for field_name in fields_to_remove:
             del self.fields[field_name]
-
-    def slack_blocks(self) -> list[Any]:
-        """Generate Slack blocks for visible fields only.
-
-        This method is called by the Slack modal builder to generate the form UI.
-        Only fields that remain in self.fields after _configure_field_visibility()
-        will be included in the output.
-        """
-        # Call parent's slack_blocks method (provided by SlackFormMixin)
-        # This will only generate blocks for fields that are in self.fields
-        return super().slack_blocks()  # type: ignore[misc]
 
 
 class OpeningUnifiedModal(SetIncidentDetails[UnifiedIncidentFormSlack]):
@@ -173,6 +158,23 @@ class OpeningUnifiedModal(SetIncidentDetails[UnifiedIncidentFormSlack]):
 
     title = "Incident Details"
     form_class = UnifiedIncidentFormSlack
+
+    def get_form_class(self) -> Any:
+        """Return a SlackForm wrapper that passes impacts_data and response_type."""
+        form_class = self.form_class
+
+        # Create a custom form class that accepts our parameters
+        class ContextAwareForm(form_class):  # type: ignore
+            def __init__(self, *args: Any, **kwargs: Any) -> None:
+                # Extract context from kwargs
+                open_incident_context = kwargs.pop("open_incident_context", None)
+                if open_incident_context:
+                    kwargs["impacts_data"] = open_incident_context.get("impact_form_data", {})
+                    kwargs["response_type"] = open_incident_context.get("response_type", "critical")
+                super().__init__(*args, **kwargs)
+
+        # Return SlackForm wrapping the context-aware form
+        return SlackForm(ContextAwareForm)
 
     def build_modal_fn(
         self, open_incident_context: OpeningData | None = None, **kwargs: Any
@@ -193,8 +195,9 @@ class OpeningUnifiedModal(SetIncidentDetails[UnifiedIncidentFormSlack]):
         # Update context
         open_incident_context["details_form_data"] = details_form_data
 
-        # Call parent build_modal_fn
-        return super().build_modal_fn(open_incident_context, **kwargs)
+        # Store context for get_form_class in kwargs
+        # Call parent build_modal_fn with open_incident_context in kwargs
+        return super().build_modal_fn(open_incident_context=open_incident_context, **kwargs)
 
 
 modal_opening_unified = OpeningUnifiedModal()
