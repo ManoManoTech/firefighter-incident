@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, PropertyMock
 
 import pytest
 from django.conf import settings
@@ -79,16 +79,28 @@ class TestUpdateStatusModal:
 
     @staticmethod
     def test_cannot_close_without_required_key_events(mocker: MockerFixture) -> None:
-        """Test that closing is prevented when required key events are missing."""
-        # Create an incident in MITIGATED status
+        """Test that closing is prevented when required key events are missing.
+
+        This tests the scenario where a P3+ incident (no postmortem needed) is in
+        MITIGATED status and tries to close, but missing key events blocks it.
+        """
+        # Create a P3+ incident in MITIGATED status (can go directly to CLOSED)
         incident = IncidentFactory.build(
             _status=IncidentStatus.MITIGATED,
         )
-        # Mock missing_milestones to return missing events
+        # Mock needs_postmortem to return False (P3+ incident)
         mocker.patch.object(
-            incident,
-            "missing_milestones",
-            return_value=["detected", "started"]
+            type(incident),
+            "needs_postmortem",
+            new_callable=PropertyMock,
+            return_value=False
+        )
+        # Mock can_be_closed to return False with MISSING_REQUIRED_KEY_EVENTS reason
+        mocker.patch.object(
+            type(incident),
+            "can_be_closed",
+            new_callable=PropertyMock,
+            return_value=(False, [("MISSING_REQUIRED_KEY_EVENTS", "Missing key events: detected, started")])
         )
 
         modal = UpdateStatusModal()
@@ -129,6 +141,154 @@ class TestUpdateStatusModal:
 
         # Verify that incident update was NOT triggered
         trigger_incident_workflow.assert_not_called()
+
+    @staticmethod
+    def test_cannot_close_from_postmortem_without_key_events(mocker: MockerFixture) -> None:
+        """Test that closing from POST_MORTEM is prevented when key events missing.
+
+        This tests a P1/P2 incident in POST_MORTEM trying to close but blocked
+        by missing key events.
+        """
+        # Create a P1/P2 incident in POST_MORTEM status
+        incident = IncidentFactory.build(
+            _status=IncidentStatus.POST_MORTEM,
+        )
+        # Mock can_be_closed to return False with MISSING_REQUIRED_KEY_EVENTS reason
+        mocker.patch.object(
+            type(incident),
+            "can_be_closed",
+            new_callable=PropertyMock,
+            return_value=(False, [("MISSING_REQUIRED_KEY_EVENTS", "Missing key events: detected, started")])
+        )
+
+        modal = UpdateStatusModal()
+        trigger_incident_workflow = mocker.patch.object(
+            modal, "_trigger_incident_workflow"
+        )
+
+        ack = MagicMock()
+        user = UserFactory.build()
+        user.save()
+
+        # Create a submission trying to close the incident
+        submission_copy = dict(valid_submission)
+        submission_copy["view"]["state"]["values"]["status"]["status"]["selected_option"] = {
+            "text": {"type": "plain_text", "text": "Closed", "emoji": True},
+            "value": "60",
+        }
+        submission_copy["view"]["private_metadata"] = str(incident.id)
+
+        modal.handle_modal_fn(
+            ack=ack, body=submission_copy, incident=incident, user=user
+        )
+
+        # Assert that ack was called with errors
+        assert ack.called
+        last_call_kwargs = ack.call_args.kwargs
+        assert "response_action" in last_call_kwargs
+        assert last_call_kwargs["response_action"] == "errors"
+        assert "errors" in last_call_kwargs
+        assert "status" in last_call_kwargs["errors"]
+        error_msg = last_call_kwargs["errors"]["status"]
+        assert "Cannot close this incident" in error_msg
+        assert "Missing key events" in error_msg
+
+        # Verify that incident update was NOT triggered
+        trigger_incident_workflow.assert_not_called()
+
+    @staticmethod
+    def test_cannot_close_p1_p2_without_postmortem(mocker: MockerFixture) -> None:
+        """Test that P1/P2 incidents in PRD cannot close without going through post-mortem."""
+        # Create a P1/P2 incident in MITIGATED status (needs post-mortem)
+        incident = IncidentFactory.build(
+            _status=IncidentStatus.MITIGATED,
+        )
+        # Mock can_be_closed to return False with STATUS_NOT_POST_MORTEM reason
+        mocker.patch.object(
+            type(incident),
+            "can_be_closed",
+            new_callable=PropertyMock,
+            return_value=(False, [("STATUS_NOT_POST_MORTEM", "Incident is not in PostMortem status, and needs one because of its priority and environment (P1/PRD).")])
+        )
+
+        modal = UpdateStatusModal()
+        trigger_incident_workflow = mocker.patch.object(
+            modal, "_trigger_incident_workflow"
+        )
+
+        ack = MagicMock()
+        user = UserFactory.build()
+        user.save()
+
+        # Create a submission trying to close the incident
+        submission_copy = dict(valid_submission)
+        submission_copy["view"]["state"]["values"]["status"]["status"]["selected_option"] = {
+            "text": {"type": "plain_text", "text": "Closed", "emoji": True},
+            "value": "60",
+        }
+        submission_copy["view"]["private_metadata"] = str(incident.id)
+
+        modal.handle_modal_fn(
+            ack=ack, body=submission_copy, incident=incident, user=user
+        )
+
+        # Assert that ack was called with errors
+        assert ack.called
+        last_call_kwargs = ack.call_args.kwargs
+        assert "response_action" in last_call_kwargs
+        assert last_call_kwargs["response_action"] == "errors"
+        assert "errors" in last_call_kwargs
+        assert "status" in last_call_kwargs["errors"]
+        error_msg = last_call_kwargs["errors"]["status"]
+        assert "Cannot close this incident" in error_msg
+        assert "PostMortem status" in error_msg
+
+        # Verify that incident update was NOT triggered
+        trigger_incident_workflow.assert_not_called()
+
+    @staticmethod
+    def test_can_close_when_all_conditions_met(mocker: MockerFixture) -> None:
+        """Test that closing is allowed when all conditions are met."""
+        # Create an incident in MITIGATED status with all conditions met
+        incident = IncidentFactory.build(
+            _status=IncidentStatus.MITIGATED,
+        )
+        # Mock can_be_closed to return True (all conditions met)
+        mocker.patch.object(
+            type(incident),
+            "can_be_closed",
+            new_callable=PropertyMock,
+            return_value=(True, [])
+        )
+
+        modal = UpdateStatusModal()
+        trigger_incident_workflow = mocker.patch.object(
+            modal, "_trigger_incident_workflow"
+        )
+
+        ack = MagicMock()
+        user = UserFactory.build()
+        user.save()
+
+        # Create a submission to close the incident
+        submission_copy = dict(valid_submission)
+        submission_copy["view"]["state"]["values"]["status"]["status"]["selected_option"] = {
+            "text": {"type": "plain_text", "text": "Closed", "emoji": True},
+            "value": "60",
+        }
+        submission_copy["view"]["private_metadata"] = str(incident.id)
+
+        modal.handle_modal_fn(
+            ack=ack, body=submission_copy, incident=incident, user=user
+        )
+
+        # Assert that ack was called successfully (no errors)
+        # The first call is the successful ack() without errors
+        first_call_kwargs = ack.call_args_list[0][1] if ack.call_args_list else ack.call_args.kwargs
+        assert first_call_kwargs == {} or "errors" not in first_call_kwargs
+
+        # Verify that incident update WAS triggered
+        trigger_incident_workflow.assert_called_once()
 
 
 valid_submission = {
