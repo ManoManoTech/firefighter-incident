@@ -24,10 +24,11 @@ def incident_updated_close_ticket_when_mitigated_or_postmortem(
     updated_fields: list[str],
     **kwargs: Any,
 ) -> None:
-    # Close Jira ticket if mitigated or postmortem
+    # Close Jira ticket if mitigated, postmortem, or closed
     if "_status" in updated_fields and incident_update.status in {
         IncidentStatus.MITIGATED,
         IncidentStatus.POST_MORTEM,
+        IncidentStatus.CLOSED,
     }:
         if not hasattr(incident, "jira_ticket") or incident.jira_ticket is None:
             logger.warning(
