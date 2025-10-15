@@ -77,6 +77,59 @@ class TestUpdateStatusModal:
         ack.assert_called_once_with()
         trigger_incident_workflow.assert_called_once()
 
+    @staticmethod
+    def test_cannot_close_without_required_key_events(mocker: MockerFixture) -> None:
+        """Test that closing is prevented when required key events are missing."""
+        # Create an incident in MITIGATED status
+        incident = IncidentFactory.build(
+            _status=IncidentStatus.MITIGATED,
+        )
+        # Mock missing_milestones to return missing events
+        mocker.patch.object(
+            incident,
+            "missing_milestones",
+            return_value=["detected", "started"]
+        )
+
+        modal = UpdateStatusModal()
+        trigger_incident_workflow = mocker.patch.object(
+            modal, "_trigger_incident_workflow"
+        )
+
+        ack = MagicMock()
+        user = UserFactory.build()
+        user.save()
+
+        # Create a submission trying to close the incident
+        submission_copy = dict(valid_submission)
+        # Change status to CLOSED (60)
+        submission_copy["view"]["state"]["values"]["status"]["status"]["selected_option"] = {
+            "text": {"type": "plain_text", "text": "Closed", "emoji": True},
+            "value": "60",
+        }
+        # Update the private_metadata to match our test incident
+        submission_copy["view"]["private_metadata"] = str(incident.id)
+
+        modal.handle_modal_fn(
+            ack=ack, body=submission_copy, incident=incident, user=user
+        )
+
+        # Assert that ack was called with errors (may be 1 or 2 calls depending on form validation)
+        assert ack.called
+        # Check the last call (the error response)
+        last_call_kwargs = ack.call_args.kwargs
+        assert "response_action" in last_call_kwargs
+        assert last_call_kwargs["response_action"] == "errors"
+        assert "errors" in last_call_kwargs
+        assert "status" in last_call_kwargs["errors"]
+        # Check that the error message mentions the missing key events
+        error_msg = last_call_kwargs["errors"]["status"]
+        assert "Cannot close this incident" in error_msg
+        assert "Missing key events" in error_msg
+
+        # Verify that incident update was NOT triggered
+        trigger_incident_workflow.assert_not_called()
+
 
 valid_submission = {
     "type": "view_submission",
