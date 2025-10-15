@@ -77,9 +77,9 @@ class RaidJiraClient(JiraClient):
                 f"Seller link to TOOLBOX: {TOOLBOX_URL}?seller_id={seller_contract_id}"
             )
             extra_args["customfield_10908"] = str(seller_contract_id)
-        if is_seller_in_golden_list:
+        if is_seller_in_golden_list is True:
             labels = [*labels, "goldenList"]
-        if is_key_account:
+        if is_key_account is True:
             labels = [*labels, "keyAccount"]
         if suggested_team_routing and suggested_team_routing != "SBI":
             description_addendum.append(

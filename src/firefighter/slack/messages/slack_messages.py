@@ -227,9 +227,9 @@ class SlackMessageIncidentDeclaredAnnouncement(SlackMessageSurface):
                 fields.append(f":memo: *Seller Contract:* {custom_fields['seller_contract_id']}")
             if custom_fields.get("zoho_desk_ticket_id"):
                 fields.append(f":ticket: *Zoho Desk Ticket:* {custom_fields['zoho_desk_ticket_id']}")
-            if custom_fields.get("is_key_account"):
+            if custom_fields.get("is_key_account") is True:
                 fields.append(":star: *Key Account*")
-            if custom_fields.get("is_seller_in_golden_list"):
+            if custom_fields.get("is_seller_in_golden_list") is True:
                 fields.append(":medal: *Golden List Seller*")
 
         blocks: list[Block] = [
