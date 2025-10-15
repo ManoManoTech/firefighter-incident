@@ -8,6 +8,7 @@ from slack_sdk.models.blocks.blocks import (
     ContextBlock,
 )
 
+from firefighter.incidents.factories import IncidentCategoryFactory
 from firefighter.incidents.forms.create_incident import CreateIncidentFormBase
 from firefighter.incidents.models.user import User
 from firefighter.slack.views.modals.open import OpeningData, OpenModal
@@ -141,3 +142,47 @@ def test_build_modal_fn_empty(user: User) -> None:
 
     # View should not have a submit button
     assert view.submit is None
+
+
+@pytest.mark.django_db
+def test_get_done_review_blocks_with_custom_fields(
+    user: User, priority_factory, environment_factory
+) -> None:
+    """Test that get_done_review_blocks doesn't crash when form has custom fields."""
+    # Use factories to create DB objects
+    priority = priority_factory(value=1, default=True)
+    environment = environment_factory(value="PRD", default=True)
+    category = IncidentCategoryFactory()
+
+    # Create a mock form with cleaned_data containing custom fields
+    mock_form = MagicMock(spec=CreateIncidentFormBase)
+    mock_form.cleaned_data = {
+        "title": "Test incident with custom fields",
+        "description": "Testing custom fields handling",
+        "priority": priority,
+        "incident_category": category,
+        "environment": [environment],
+        "platform": ["platform-FR"],
+        # Custom fields that should be removed before creating Incident
+        "zendesk_ticket_id": "ZD-12345",
+        "seller_contract_id": "SELLER-789",
+        "zoho_desk_ticket_id": "ZOHO-456",
+        "is_key_account": True,
+        "is_seller_in_golden_list": False,
+        "suggested_team_routing": None,
+    }
+
+    open_incident_context = build_opening_data(response_type="critical")
+
+    # Should not raise TypeError about unexpected keyword arguments
+    blocks = OpenModal.get_done_review_blocks(
+        open_incident_context,
+        user,
+        details_form_done=True,
+        details_form_class=type(mock_form),
+        details_form=mock_form,
+        can_submit=True,
+    )
+
+    # Should return blocks (at least the divider and tada block)
+    assert len(blocks) >= 2

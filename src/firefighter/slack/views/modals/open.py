@@ -318,8 +318,14 @@ class OpenModal(SlackModal):
                 if environments:
                     cleaned_data_copy["environment"] = environments[0] if hasattr(environments, "__getitem__") else environments.first()
 
-                # Remove platform field (not part of Incident model)
+                # Remove fields that are not part of Incident model
                 cleaned_data_copy.pop("platform", None)
+                cleaned_data_copy.pop("zendesk_ticket_id", None)
+                cleaned_data_copy.pop("seller_contract_id", None)
+                cleaned_data_copy.pop("zoho_desk_ticket_id", None)
+                cleaned_data_copy.pop("is_key_account", None)
+                cleaned_data_copy.pop("is_seller_in_golden_list", None)
+                cleaned_data_copy.pop("suggested_team_routing", None)
 
                 incident = Incident(
                     status=IncidentStatus.OPEN,  # type: ignore
