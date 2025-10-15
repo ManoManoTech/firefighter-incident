@@ -173,3 +173,77 @@ class TestSlackViewSubmissionToDict:
         assert "environment" in result
         assert isinstance(result["environment"], list)
         assert result["environment"] == []
+
+    def test_checkboxes_checked(self):
+        """Test that checked checkboxes (BooleanField) return True."""
+        body = {
+            "view": {
+                "state": {
+                    "values": {
+                        "is_key_account": {
+                            "is_key_account": {
+                                "type": "checkboxes",
+                                "selected_options": [
+                                    {"value": "True"},
+                                ],
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        result = slack_view_submission_to_dict(body)
+
+        assert "is_key_account" in result
+        assert result["is_key_account"] is True
+
+    def test_checkboxes_unchecked(self):
+        """Test that unchecked checkboxes (BooleanField) return False."""
+        body = {
+            "view": {
+                "state": {
+                    "values": {
+                        "is_key_account": {
+                            "is_key_account": {
+                                "type": "checkboxes",
+                                "selected_options": [],
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        result = slack_view_submission_to_dict(body)
+
+        assert "is_key_account" in result
+        assert result["is_key_account"] is False
+
+    def test_multiple_checkboxes(self):
+        """Test that multiple checkboxes are parsed correctly."""
+        body = {
+            "view": {
+                "state": {
+                    "values": {
+                        "is_key_account": {
+                            "is_key_account": {
+                                "type": "checkboxes",
+                                "selected_options": [{"value": "True"}],
+                            }
+                        },
+                        "is_seller_in_golden_list": {
+                            "is_seller_in_golden_list": {
+                                "type": "checkboxes",
+                                "selected_options": [],  # Unchecked
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        result = slack_view_submission_to_dict(body)
+
+        assert result["is_key_account"] is True
+        assert result["is_seller_in_golden_list"] is False

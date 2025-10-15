@@ -585,6 +585,11 @@ def slack_view_submission_to_dict(
             # Handle multiple selections - return list of values
             selected_options = input_field.get("selected_options", [])
             data[action_id_stripped] = [opt.get("value") for opt in selected_options]
+        elif input_field.get("type") == "checkboxes":
+            # Handle checkboxes (BooleanField) - return True if "True" is in selected_options
+            selected_options = input_field.get("selected_options", [])
+            # For BooleanField, we have only one option with value="True"
+            data[action_id_stripped] = any(opt.get("value") == "True" for opt in selected_options)
         elif input_field.get("type") == "users_select":
             user_id = get_in(
                 input_field,
