@@ -247,6 +247,52 @@ class TestUpdateStatusModal:
         trigger_incident_workflow.assert_not_called()
 
     @staticmethod
+    def test_closure_reason_modal_shown_when_closing_from_investigating(mocker: MockerFixture) -> None:
+        """Test that closure reason modal is shown when trying to close from INVESTIGATING.
+
+        This tests that handle_update_status_close_request correctly shows the
+        closure reason modal and returns True, blocking the normal closure flow.
+        """
+        # Create an incident in INVESTIGATING status
+        incident = IncidentFactory.build(
+            _status=IncidentStatus.INVESTIGATING,
+        )
+
+        modal = UpdateStatusModal()
+
+        # Mock handle_update_status_close_request to return True (modal shown)
+        mock_handle_close = mocker.patch(
+            "firefighter.slack.views.modals.update_status.handle_update_status_close_request",
+            return_value=True
+        )
+
+        trigger_incident_workflow = mocker.patch.object(
+            modal, "_trigger_incident_workflow"
+        )
+
+        ack = MagicMock()
+        user = UserFactory.build()
+        user.save()
+
+        # Create a submission trying to close the incident
+        submission_copy = dict(valid_submission)
+        submission_copy["view"]["state"]["values"]["status"]["status"]["selected_option"] = {
+            "text": {"type": "plain_text", "text": "Closed", "emoji": True},
+            "value": "60",
+        }
+        submission_copy["view"]["private_metadata"] = str(incident.id)
+
+        modal.handle_modal_fn(
+            ack=ack, body=submission_copy, incident=incident, user=user
+        )
+
+        # Verify handle_update_status_close_request was called
+        mock_handle_close.assert_called_once_with(ack, submission_copy, incident, IncidentStatus.CLOSED)
+
+        # Verify that incident update was NOT triggered (because closure reason modal was shown)
+        trigger_incident_workflow.assert_not_called()
+
+    @staticmethod
     def test_can_close_when_all_conditions_met(mocker: MockerFixture) -> None:
         """Test that closing is allowed when all conditions are met."""
         # Create an incident in MITIGATED status with all conditions met
