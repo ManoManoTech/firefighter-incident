@@ -378,7 +378,9 @@ class OpenModal(SlackModal):
                 details_form_class,
                 details_form,
             ) = self._validate_details_form(
-                details_form_modal_class, open_incident_context["details_form_data"]
+                details_form_modal_class,
+                open_incident_context["details_form_data"],
+                open_incident_context,
             )
 
         return (
@@ -392,6 +394,7 @@ class OpenModal(SlackModal):
     def _validate_details_form(
         details_form_modal_class: type[SetIncidentDetails[Any]] | None,
         details_form_data: dict[str, Any],
+        open_incident_context: OpeningData,
     ) -> tuple[
         bool, type[CreateIncidentFormBase] | None, CreateIncidentFormBase | None
     ]:
@@ -405,7 +408,19 @@ class OpenModal(SlackModal):
         if not details_form_class:
             return False, None, None
 
-        details_form: CreateIncidentFormBase = details_form_class(details_form_data)
+        # Pass impacts_data and response_type to form if it supports them (UnifiedIncidentForm)
+        # Check if __init__ accepts these parameters
+        import inspect  # noqa: PLC0415
+        init_params = inspect.signature(details_form_class.__init__).parameters
+        form_kwargs: dict[str, Any] = {}
+        if "impacts_data" in init_params:
+            form_kwargs["impacts_data"] = open_incident_context.get("impact_form_data") or {}
+        if "response_type" in init_params:
+            form_kwargs["response_type"] = open_incident_context.get("response_type", "critical")
+
+        details_form: CreateIncidentFormBase = details_form_class(
+            details_form_data, **form_kwargs
+        )
         is_valid = details_form.is_valid()
 
         return is_valid, details_form_class, details_form
@@ -609,8 +624,17 @@ class OpenModal(SlackModal):
                 details_form_modal_class.form_class
             )
             if details_form_class:
+                # Pass impacts_data and response_type to form if it supports them (UnifiedIncidentForm)
+                import inspect  # noqa: PLC0415
+                init_params = inspect.signature(details_form_class.__init__).parameters
+                form_kwargs: dict[str, Any] = {}
+                if "impacts_data" in init_params:
+                    form_kwargs["impacts_data"] = data.get("impact_form_data") or {}
+                if "response_type" in init_params:
+                    form_kwargs["response_type"] = data.get("response_type", "critical")
+
                 details_form: CreateIncidentFormBase = details_form_class(
-                    details_form_data_raw
+                    details_form_data_raw, **form_kwargs
                 )
                 details_form.is_valid()
                 ack()
@@ -618,10 +642,16 @@ class OpenModal(SlackModal):
                     if hasattr(details_form, "trigger_incident_workflow") and callable(
                         details_form.trigger_incident_workflow
                     ):
-                        details_form.trigger_incident_workflow(
-                            creator=user,
-                            impacts_data=data.get("impact_form_data") or {},
-                        )
+                        # Pass response_type to trigger_incident_workflow if it accepts it
+                        trigger_params = inspect.signature(details_form.trigger_incident_workflow).parameters
+                        workflow_kwargs: dict[str, Any] = {
+                            "creator": user,
+                            "impacts_data": data.get("impact_form_data") or {},
+                        }
+                        if "response_type" in trigger_params:
+                            workflow_kwargs["response_type"] = data.get("response_type", "critical")
+
+                        details_form.trigger_incident_workflow(**workflow_kwargs)
                 except:  # noqa: E722
                     logger.exception("Error triggering incident workflow")
                     # XXX warn the user via DM!

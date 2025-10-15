@@ -64,6 +64,7 @@ def test_validate_details_form_valid() -> None:
     details_form_modal_class = MagicMock(spec=SetIncidentDetails)
     details_form_class = MagicMock(spec=CreateIncidentFormBase)
     details_form_data = {"key": "value"}
+    open_incident_context = build_opening_data()
 
     details_form_modal_class.form_class = details_form_class
 
@@ -72,7 +73,7 @@ def test_validate_details_form_valid() -> None:
     details_form_class.return_value = details_form_instance
 
     is_valid, returned_form_class, returned_form = OpenModal._validate_details_form(
-        details_form_modal_class, details_form_data
+        details_form_modal_class, details_form_data, open_incident_context
     )
 
     assert is_valid is True
@@ -84,6 +85,7 @@ def test_validate_details_form_invalid() -> None:
     details_form_modal_class = MagicMock(spec=SetIncidentDetails)
     details_form_class = MagicMock(spec=CreateIncidentFormBase)
     details_form_data = {"key": "value"}
+    open_incident_context = build_opening_data()
 
     details_form_modal_class.form_class = details_form_class
 
@@ -92,7 +94,7 @@ def test_validate_details_form_invalid() -> None:
     details_form_class.return_value = details_form_instance
 
     is_valid, returned_form_class, returned_form = OpenModal._validate_details_form(
-        details_form_modal_class, details_form_data
+        details_form_modal_class, details_form_data, open_incident_context
     )
 
     assert is_valid is False

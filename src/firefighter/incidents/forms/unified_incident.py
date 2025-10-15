@@ -333,7 +333,7 @@ class UnifiedIncidentForm(CreateIncidentFormBase):
 
         # Store custom fields in the incident
         cleaned_data_copy["custom_fields"] = {
-            k: v for k, v in jira_extra_fields.items() if v
+            k: v for k, v in jira_extra_fields.items() if v is not None
         }
 
         incident = Incident.objects.declare(created_by=creator, **cleaned_data_copy)
