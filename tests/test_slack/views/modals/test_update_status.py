@@ -299,6 +299,9 @@ class TestUpdateStatusModal:
         incident = IncidentFactory.build(
             _status=IncidentStatus.MITIGATED,
         )
+        # IMPORTANT: Save the incident so it has an ID for the form to reference
+        incident.save()
+
         # Mock can_be_closed to return True (all conditions met)
         mocker.patch.object(
             type(incident),
