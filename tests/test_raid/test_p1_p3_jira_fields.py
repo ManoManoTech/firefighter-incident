@@ -83,15 +83,19 @@ class TestP1P2P3JiraTicketFields:
 
             mock_signal_handler.side_effect = trigger_jira_creation
 
+            # Mock Jira client to prevent real connection
+            mock_jira_client = MagicMock()
+            mock_jira_client.add_watcher = MagicMock()
+            mock_jira_client.remove_watcher = MagicMock()
+            mock_jira_client.add_simple_link = MagicMock()
+
             with (
+                patch("firefighter.raid.signals.incident_created.client.jira", mock_jira_client),
                 patch("firefighter.raid.signals.incident_created.client.create_issue") as mock_jira_create,
                 patch("firefighter.raid.signals.incident_created.get_jira_user_from_user") as mock_get_jira_user,
                 patch("firefighter.raid.forms.get_business_impact") as mock_get_business_impact,
                 patch("firefighter.incidents.forms.unified_incident.SelectImpactForm.save"),
                 patch("firefighter.raid.signals.incident_created.JiraTicket.objects.create"),
-                patch("firefighter.raid.signals.incident_created.client.jira.add_watcher"),
-                patch("firefighter.raid.signals.incident_created.client.jira.remove_watcher"),
-                patch("firefighter.raid.signals.incident_created.client.jira.add_simple_link"),
             ):
                 # Mock Jira ticket creation (format from _jira_object)
                 mock_jira_create.return_value = {
@@ -198,15 +202,19 @@ class TestP1P2P3JiraTicketFields:
 
             mock_signal_handler.side_effect = trigger_jira_creation
 
+            # Mock Jira client to prevent real connection
+            mock_jira_client = MagicMock()
+            mock_jira_client.add_watcher = MagicMock()
+            mock_jira_client.remove_watcher = MagicMock()
+            mock_jira_client.add_simple_link = MagicMock()
+
             with (
+                patch("firefighter.raid.signals.incident_created.client.jira", mock_jira_client),
                 patch("firefighter.raid.signals.incident_created.client.create_issue") as mock_jira_create,
                 patch("firefighter.raid.signals.incident_created.get_jira_user_from_user") as mock_get_jira_user,
                 patch("firefighter.raid.forms.get_business_impact") as mock_get_business_impact,
                 patch("firefighter.incidents.forms.unified_incident.SelectImpactForm.save"),
                 patch("firefighter.raid.signals.incident_created.JiraTicket.objects.create"),
-                patch("firefighter.raid.signals.incident_created.client.jira.add_watcher"),
-                patch("firefighter.raid.signals.incident_created.client.jira.remove_watcher"),
-                patch("firefighter.raid.signals.incident_created.client.jira.add_simple_link"),
             ):
                 mock_jira_create.return_value = {
                     "id": 88888,
@@ -319,15 +327,19 @@ class TestP1P2P3JiraTicketFields:
 
             mock_signal_handler.side_effect = trigger_jira_creation
 
+            # Mock Jira client to prevent real connection
+            mock_jira_client = MagicMock()
+            mock_jira_client.add_watcher = MagicMock()
+            mock_jira_client.remove_watcher = MagicMock()
+            mock_jira_client.add_simple_link = MagicMock()
+
             with (
+                patch("firefighter.raid.signals.incident_created.client.jira", mock_jira_client),
                 patch("firefighter.raid.signals.incident_created.client.create_issue") as mock_jira_create,
                 patch("firefighter.raid.signals.incident_created.get_jira_user_from_user") as mock_get_jira_user,
                 patch("firefighter.raid.forms.get_business_impact") as mock_get_business_impact,
                 patch("firefighter.incidents.forms.unified_incident.SelectImpactForm.save"),
                 patch("firefighter.raid.signals.incident_created.JiraTicket.objects.create"),
-                patch("firefighter.raid.signals.incident_created.client.jira.add_watcher"),
-                patch("firefighter.raid.signals.incident_created.client.jira.remove_watcher"),
-                patch("firefighter.raid.signals.incident_created.client.jira.add_simple_link"),
             ):
                 mock_jira_create.return_value = {
                     "id": 77777,
