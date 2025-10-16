@@ -209,16 +209,28 @@ class TestUpdateStatusModal:
         trigger_incident_workflow.assert_not_called()
 
     @staticmethod
-    def test_cannot_close_p1_p2_without_postmortem(mocker: MockerFixture) -> None:
-        """Test that P1/P2 incidents in PRD cannot close without going through post-mortem."""
+    def test_cannot_close_p1_p2_without_postmortem(mocker: MockerFixture, priority_factory, environment_factory) -> None:
+        """Test that P1/P2 incidents in PRD cannot be closed directly from INVESTIGATING.
+
+        For P1/P2 incidents requiring post-mortem, although the form allows CLOSED as an option
+        from INVESTIGATING status, the can_be_closed validation should prevent closure with
+        an error message about needing to go through post-mortem.
+        """
         # Create a user first
         user = UserFactory.build()
         user.save()
 
-        # Create a P1/P2 incident in MITIGATED status (needs post-mortem)
+        # Create P1 priority (needs_postmortem=True) and PRD environment
+        p1_priority = priority_factory(value=1, name="P1", needs_postmortem=True)
+        prd_environment = environment_factory(value="PRD", name="Production")
+
+        # Create a P1/P2 incident in INVESTIGATING status
+        # From INVESTIGATING, the form allows transitioning to CLOSED (but can_be_closed will block it)
         incident = IncidentFactory.build(
-            _status=IncidentStatus.MITIGATED,
+            _status=IncidentStatus.INVESTIGATING,
             created_by=user,
+            priority=p1_priority,
+            environment=prd_environment,
         )
         incident.save()
         # Mock can_be_closed to return False with STATUS_NOT_POST_MORTEM reason
@@ -230,6 +242,14 @@ class TestUpdateStatusModal:
         )
 
         modal = UpdateStatusModal()
+
+        # Mock handle_update_status_close_request to NOT show closure reason modal
+        # This allows the test to reach the can_be_closed validation
+        mocker.patch(
+            "firefighter.slack.views.modals.update_status.handle_update_status_close_request",
+            return_value=False
+        )
+
         trigger_incident_workflow = mocker.patch.object(
             modal, "_trigger_incident_workflow"
         )
