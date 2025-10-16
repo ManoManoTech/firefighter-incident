@@ -117,15 +117,15 @@ The incident opening workflow in FireFighter now uses a **unified form** for all
         ↓                                       ↓
 _trigger_critical_incident_workflow    _trigger_normal_incident_workflow
         ↓                                       ↓
-  Create Incident object                Determine Jira issue type
-  Save impacts                          based on impacts:
-  Create Slack channel                   - has_customer → create_issue_customer()
-  Create Jira ticket                     - has_seller → create_issue_seller()
-  Invite responders                      - else → create_issue_internal()
-  Alert PagerDuty (if needed)           Create Jira ticket
-                                        Save impacts
-                                        Set watchers
-                                        Alert Slack channels
+  Create Incident object                Prepare fields (prepare_jira_fields):
+  Save impacts                           - Extract environments, platforms
+  Create Slack channel                   - Compute business_impact
+  Create Jira ticket                     - Gather optional fields
+  Invite responders                     Create Jira (jira_client.create_issue)
+  Alert PagerDuty (if needed)            - Passes ALL custom fields
+                                        Process ticket (process_jira_issue):
+                                         - Save impacts, set watchers
+                                         - Alert Slack
 ```
 
 ---
@@ -328,6 +328,7 @@ INCIDENT_TYPES["critical"] = {
 
 | Component | Location | Purpose |
 |-----------|----------|---------|
+| `prepare_jira_fields()` | `raid/forms.py` | **Centralize all Jira field preparation (GT-1334 fix)** |
 | `PlatformChoices` | `raid/forms.py` | Platform enum (FR/DE/IT/ES/UK/ALL/Internal) |
 | `initial_priority()` | `raid/forms.py` | Get default priority |
 | `process_jira_issue()` | `raid/forms.py` | Create Jira ticket + impacts |
