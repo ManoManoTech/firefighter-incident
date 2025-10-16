@@ -467,7 +467,7 @@ class OpenModal(SlackModal):
             open_incident_context["response_type"] = cast("ResponseType | None", priority.recommended_response_type)
         else:
             # Default fallback: P1/P2/P3 = critical, P4/P5 = normal
-            response_type = cast("ResponseType", "critical" if priority_value < 4 else "normal")
+            response_type: ResponseType = "critical" if priority_value < 4 else "normal"
             open_incident_context["response_type"] = response_type
 
     @staticmethod

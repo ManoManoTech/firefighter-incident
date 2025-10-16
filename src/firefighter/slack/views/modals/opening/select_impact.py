@@ -217,7 +217,7 @@ class SelectImpactModal(
             logger.warning(f"Priority with value {suggested_priority_value} does not exist")
 
         # Fallback logic: P1/P2/P3 = critical, P4/P5 = normal
-        return cast("ResponseType", "critical" if suggested_priority_value < 4 else "normal")
+        return "critical" if suggested_priority_value < 4 else "normal"
 
     @staticmethod
     def _update_private_metadata(
