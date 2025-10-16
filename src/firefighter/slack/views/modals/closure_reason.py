@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING, Any
 
+from slack_sdk.errors import SlackApiError
 from slack_sdk.models.blocks.basic_components import MarkdownTextObject, Option
 from slack_sdk.models.blocks.block_elements import (
     PlainTextInputElement,
@@ -114,7 +115,9 @@ class ClosureReasonModal(IncidentSelectableModalMixin, SlackModal):
         self, ack: Ack, body: dict[str, Any], incident: Incident, user: User
     ) -> bool | None:
         """Handle the closure reason modal submission."""
-        ack()
+        # Clear ALL modals in the stack (not just this one)
+        # This ensures the underlying "Update Status" modal is also closed
+        ack(response_action="clear")
 
         # Extract form values
         state_values = body["view"]["state"]["values"]
@@ -152,15 +155,25 @@ class ClosureReasonModal(IncidentSelectableModalMixin, SlackModal):
             return False
         else:
             # Send confirmation message
-            respond(
-                body=body,
-                text=(
-                    f"✅ Incident #{incident.id} has been closed.\n"
-                    f"*Reason:* {ClosureReason(closure_reason).label}\n"
-                    f"*Message:* {message}"
-                    + (f"\n*Reference:* {closure_reference}" if closure_reference else "")
-                ),
-            )
+            try:
+                respond(
+                    body=body,
+                    text=(
+                        f"✅ Incident #{incident.id} has been closed.\n"
+                        f"*Reason:* {ClosureReason(closure_reason).label}\n"
+                        f"*Message:* {message}"
+                        + (f"\n*Reference:* {closure_reference}" if closure_reference else "")
+                    ),
+                )
+            except SlackApiError as e:
+                if e.response.get("error") == "messages_tab_disabled":
+                    logger.warning(
+                        "Cannot send DM to user %s - messages tab disabled",
+                        user.email,
+                    )
+                else:
+                    # Re-raise for other Slack API errors
+                    raise
 
             logger.info(
                 "Incident #%s closed with reason by %s: %s",

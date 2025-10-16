@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, PropertyMock
 
 import pytest
 from django.conf import settings
@@ -75,6 +75,309 @@ class TestUpdateStatusModal:
 
         # Assert
         ack.assert_called_once_with()
+        trigger_incident_workflow.assert_called_once()
+
+    @staticmethod
+    def test_cannot_close_without_required_key_events(mocker: MockerFixture) -> None:
+        """Test that closing is prevented when required key events are missing.
+
+        This tests the scenario where a P3+ incident (no postmortem needed) is in
+        MITIGATED status and tries to close, but missing key events blocks it.
+        """
+        # Create a user first
+        user = UserFactory.build()
+        user.save()
+
+        # Create a P3+ incident in MITIGATED status (can go directly to CLOSED)
+        incident = IncidentFactory.build(
+            _status=IncidentStatus.MITIGATED,
+            created_by=user,
+        )
+        incident.save()
+        # Mock needs_postmortem to return False (P3+ incident)
+        mocker.patch.object(
+            type(incident),
+            "needs_postmortem",
+            new_callable=PropertyMock,
+            return_value=False
+        )
+        # Mock can_be_closed to return False with MISSING_REQUIRED_KEY_EVENTS reason
+        mocker.patch.object(
+            type(incident),
+            "can_be_closed",
+            new_callable=PropertyMock,
+            return_value=(False, [("MISSING_REQUIRED_KEY_EVENTS", "Missing key events: detected, started")])
+        )
+
+        modal = UpdateStatusModal()
+        trigger_incident_workflow = mocker.patch.object(
+            modal, "_trigger_incident_workflow"
+        )
+
+        ack = MagicMock()
+        user = UserFactory.build()
+        user.save()
+
+        # Create a submission trying to close the incident
+        submission_copy = dict(valid_submission)
+        # Change status to CLOSED (60)
+        submission_copy["view"]["state"]["values"]["status"]["status"]["selected_option"] = {
+            "text": {"type": "plain_text", "text": "Closed", "emoji": True},
+            "value": "60",
+        }
+        # Update the private_metadata to match our test incident
+        submission_copy["view"]["private_metadata"] = str(incident.id)
+
+        modal.handle_modal_fn(
+            ack=ack, body=submission_copy, incident=incident, user=user
+        )
+
+        # Assert that ack was called with errors (may be 1 or 2 calls depending on form validation)
+        assert ack.called
+        # Check the last call (the error response)
+        last_call_kwargs = ack.call_args.kwargs
+        assert "response_action" in last_call_kwargs
+        assert last_call_kwargs["response_action"] == "errors"
+        assert "errors" in last_call_kwargs
+        assert "status" in last_call_kwargs["errors"]
+        # Check that the error message mentions the missing key events
+        error_msg = last_call_kwargs["errors"]["status"]
+        assert "Cannot close this incident" in error_msg
+        assert "Missing key events" in error_msg
+
+        # Verify that incident update was NOT triggered
+        trigger_incident_workflow.assert_not_called()
+
+    @staticmethod
+    def test_cannot_close_from_postmortem_without_key_events(mocker: MockerFixture) -> None:
+        """Test that closing from POST_MORTEM is prevented when key events missing.
+
+        This tests a P1/P2 incident in POST_MORTEM trying to close but blocked
+        by missing key events.
+        """
+        # Create a user first
+        user = UserFactory.build()
+        user.save()
+
+        # Create a P1/P2 incident in POST_MORTEM status
+        incident = IncidentFactory.build(
+            _status=IncidentStatus.POST_MORTEM,
+            created_by=user,
+        )
+        incident.save()
+        # Mock can_be_closed to return False with MISSING_REQUIRED_KEY_EVENTS reason
+        mocker.patch.object(
+            type(incident),
+            "can_be_closed",
+            new_callable=PropertyMock,
+            return_value=(False, [("MISSING_REQUIRED_KEY_EVENTS", "Missing key events: detected, started")])
+        )
+
+        modal = UpdateStatusModal()
+        trigger_incident_workflow = mocker.patch.object(
+            modal, "_trigger_incident_workflow"
+        )
+
+        ack = MagicMock()
+        user = UserFactory.build()
+        user.save()
+
+        # Create a submission trying to close the incident
+        submission_copy = dict(valid_submission)
+        submission_copy["view"]["state"]["values"]["status"]["status"]["selected_option"] = {
+            "text": {"type": "plain_text", "text": "Closed", "emoji": True},
+            "value": "60",
+        }
+        submission_copy["view"]["private_metadata"] = str(incident.id)
+
+        modal.handle_modal_fn(
+            ack=ack, body=submission_copy, incident=incident, user=user
+        )
+
+        # Assert that ack was called with errors
+        assert ack.called
+        last_call_kwargs = ack.call_args.kwargs
+        assert "response_action" in last_call_kwargs
+        assert last_call_kwargs["response_action"] == "errors"
+        assert "errors" in last_call_kwargs
+        assert "status" in last_call_kwargs["errors"]
+        error_msg = last_call_kwargs["errors"]["status"]
+        assert "Cannot close this incident" in error_msg
+        assert "Missing key events" in error_msg
+
+        # Verify that incident update was NOT triggered
+        trigger_incident_workflow.assert_not_called()
+
+    @staticmethod
+    def test_cannot_close_p1_p2_without_postmortem(mocker: MockerFixture, priority_factory, environment_factory) -> None:
+        """Test that P1/P2 incidents in PRD cannot be closed directly from INVESTIGATING.
+
+        For P1/P2 incidents requiring post-mortem, although the form allows CLOSED as an option
+        from INVESTIGATING status, the can_be_closed validation should prevent closure with
+        an error message about needing to go through post-mortem.
+        """
+        # Create a user first
+        user = UserFactory.build()
+        user.save()
+
+        # Create P1 priority (needs_postmortem=True) and PRD environment
+        p1_priority = priority_factory(value=1, name="P1", needs_postmortem=True)
+        prd_environment = environment_factory(value="PRD", name="Production")
+
+        # Create a P1/P2 incident in INVESTIGATING status
+        # From INVESTIGATING, the form allows transitioning to CLOSED (but can_be_closed will block it)
+        incident = IncidentFactory.build(
+            _status=IncidentStatus.INVESTIGATING,
+            created_by=user,
+            priority=p1_priority,
+            environment=prd_environment,
+        )
+        incident.save()
+        # Mock can_be_closed to return False with STATUS_NOT_POST_MORTEM reason
+        mocker.patch.object(
+            type(incident),
+            "can_be_closed",
+            new_callable=PropertyMock,
+            return_value=(False, [("STATUS_NOT_POST_MORTEM", "Incident is not in PostMortem status, and needs one because of its priority and environment (P1/PRD).")])
+        )
+
+        modal = UpdateStatusModal()
+
+        # Mock handle_update_status_close_request to NOT show closure reason modal
+        # This allows the test to reach the can_be_closed validation
+        mocker.patch(
+            "firefighter.slack.views.modals.update_status.handle_update_status_close_request",
+            return_value=False
+        )
+
+        trigger_incident_workflow = mocker.patch.object(
+            modal, "_trigger_incident_workflow"
+        )
+
+        ack = MagicMock()
+        user = UserFactory.build()
+        user.save()
+
+        # Create a submission trying to close the incident
+        submission_copy = dict(valid_submission)
+        submission_copy["view"]["state"]["values"]["status"]["status"]["selected_option"] = {
+            "text": {"type": "plain_text", "text": "Closed", "emoji": True},
+            "value": "60",
+        }
+        submission_copy["view"]["private_metadata"] = str(incident.id)
+
+        modal.handle_modal_fn(
+            ack=ack, body=submission_copy, incident=incident, user=user
+        )
+
+        # Assert that ack was called with errors
+        assert ack.called
+        last_call_kwargs = ack.call_args.kwargs
+        assert "response_action" in last_call_kwargs
+        assert last_call_kwargs["response_action"] == "errors"
+        assert "errors" in last_call_kwargs
+        assert "status" in last_call_kwargs["errors"]
+        error_msg = last_call_kwargs["errors"]["status"]
+        assert "Cannot close this incident" in error_msg
+        assert "PostMortem status" in error_msg
+
+        # Verify that incident update was NOT triggered
+        trigger_incident_workflow.assert_not_called()
+
+    @staticmethod
+    def test_closure_reason_modal_shown_when_closing_from_investigating(mocker: MockerFixture) -> None:
+        """Test that closure reason modal is shown when trying to close from INVESTIGATING.
+
+        This tests that handle_update_status_close_request correctly shows the
+        closure reason modal and returns True, blocking the normal closure flow.
+        """
+        # Create an incident in INVESTIGATING status
+        incident = IncidentFactory.build(
+            _status=IncidentStatus.INVESTIGATING,
+        )
+
+        modal = UpdateStatusModal()
+
+        # Mock handle_update_status_close_request to return True (modal shown)
+        mock_handle_close = mocker.patch(
+            "firefighter.slack.views.modals.update_status.handle_update_status_close_request",
+            return_value=True
+        )
+
+        trigger_incident_workflow = mocker.patch.object(
+            modal, "_trigger_incident_workflow"
+        )
+
+        ack = MagicMock()
+        user = UserFactory.build()
+        user.save()
+
+        # Create a submission trying to close the incident
+        submission_copy = dict(valid_submission)
+        submission_copy["view"]["state"]["values"]["status"]["status"]["selected_option"] = {
+            "text": {"type": "plain_text", "text": "Closed", "emoji": True},
+            "value": "60",
+        }
+        submission_copy["view"]["private_metadata"] = str(incident.id)
+
+        modal.handle_modal_fn(
+            ack=ack, body=submission_copy, incident=incident, user=user
+        )
+
+        # Verify handle_update_status_close_request was called
+        mock_handle_close.assert_called_once_with(ack, submission_copy, incident, IncidentStatus.CLOSED)
+
+        # Verify that incident update was NOT triggered (because closure reason modal was shown)
+        trigger_incident_workflow.assert_not_called()
+
+    @staticmethod
+    def test_can_close_when_all_conditions_met(mocker: MockerFixture) -> None:
+        """Test that closing is allowed when all conditions are met."""
+        # Create a user first
+        user = UserFactory.build()
+        user.save()
+
+        # Create an incident in MITIGATED status with all conditions met
+        incident = IncidentFactory.build(
+            _status=IncidentStatus.MITIGATED,
+            created_by=user,
+        )
+        # IMPORTANT: Save the incident so it has an ID for the form to reference
+        incident.save()
+
+        # Mock can_be_closed to return True (all conditions met)
+        mocker.patch.object(
+            type(incident),
+            "can_be_closed",
+            new_callable=PropertyMock,
+            return_value=(True, [])
+        )
+
+        modal = UpdateStatusModal()
+        trigger_incident_workflow = mocker.patch.object(
+            modal, "_trigger_incident_workflow"
+        )
+
+        ack = MagicMock()
+
+        # Create a submission to close the incident
+        submission_copy = dict(valid_submission)
+        submission_copy["view"]["state"]["values"]["status"]["status"]["selected_option"] = {
+            "text": {"type": "plain_text", "text": "Closed", "emoji": True},
+            "value": "60",
+        }
+        submission_copy["view"]["private_metadata"] = str(incident.id)
+
+        modal.handle_modal_fn(
+            ack=ack, body=submission_copy, incident=incident, user=user
+        )
+
+        # Assert that ack was called successfully (no errors)
+        # The first call is the successful ack() without errors
+        first_call_kwargs = ack.call_args_list[0][1] if ack.call_args_list else ack.call_args.kwargs
+        assert first_call_kwargs == {} or "errors" not in first_call_kwargs
+
+        # Verify that incident update WAS triggered
         trigger_incident_workflow.assert_called_once()
 
 

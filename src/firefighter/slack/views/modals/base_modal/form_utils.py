@@ -26,6 +26,7 @@ from slack_sdk.models.blocks.block_elements import (
     InputInteractiveElement,
     PlainTextInputElement,
     SelectElement,
+    StaticMultiSelectElement,
     UserSelectElement,
 )
 from slack_sdk.models.blocks.blocks import ActionsBlock, Block, InputBlock, SectionBlock
@@ -176,6 +177,10 @@ class SlackForm(Generic[T]):
                     err_msg = f"Initial value for {field_name} is not a model instance or None"
                     raise ValueError(err_msg)
                 return self._process_slack_model_grouped_choice_field(
+                    field_name, f, slack_input_kwargs
+                )
+            case forms.ModelMultipleChoiceField() | forms.MultipleChoiceField():
+                return self._process_slack_multiple_choice_field(
                     field_name, f, slack_input_kwargs
                 )
             case forms.ModelChoiceField() | forms.ChoiceField() | EnumChoiceField():
@@ -345,6 +350,55 @@ class SlackForm(Generic[T]):
         field_name = f"{field_name}___{f.initial}{datetime.now().timestamp()}"  # noqa: DTZ005
         field_name = field_name[:254]
         return SelectElement(action_id=field_name, **slack_input_kwargs)
+
+    @classmethod
+    def _process_slack_multiple_choice_field(
+        cls,
+        field_name: str,
+        f: forms.ModelMultipleChoiceField | forms.MultipleChoiceField,  # type: ignore[type-arg]
+        slack_input_kwargs: dict[str, Any],
+    ) -> InputInteractiveElement:
+        """Process multiple choice fields (ModelMultipleChoiceField, MultipleChoiceField)."""
+        if not isinstance(f, forms.ModelMultipleChoiceField | forms.MultipleChoiceField):
+            err_msg = f"Field {field_name} is not a ModelMultipleChoiceField or MultipleChoiceField"  # type: ignore[unreachable]
+            raise TypeError(err_msg)
+
+        # Handle initial values (list of objects or values)
+        if f.initial:
+            initial_options: list[SafeOption] = []
+            # f.initial can be a list, queryset, or callable
+            initial_value = f.initial() if callable(f.initial) else f.initial
+
+            if isinstance(f, forms.ModelMultipleChoiceField):
+                # For ModelMultipleChoiceField, initial is a list/queryset of model instances
+                initial_options.extend(SafeOption(
+                            label=f.label_from_instance(obj),
+                            value=str(obj.pk),
+                        ) for obj in initial_value)
+            elif isinstance(f, forms.MultipleChoiceField):
+                # For MultipleChoiceField, initial is a list of choice values
+                for val in initial_value:
+                    choice_label = str(next(c[1] for c in f.choices if c[0] == val))
+                    initial_options.append(
+                        SafeOption(label=choice_label, value=str(val))
+                    )
+
+            if initial_options:
+                slack_input_kwargs["initial_options"] = initial_options
+
+        # Build all options
+        slack_input_kwargs["options"] = [
+            SafeOption(label=str(c[1]), value=str(c[0]))
+            for c in filter(lambda co: co[0] != "", f.choices)
+        ]
+
+        # Ensure we have at least one option for Slack API
+        if not slack_input_kwargs["options"]:
+            slack_input_kwargs["options"] = [
+                SafeOption(label="Please select an option", value="__placeholder__")
+            ]
+
+        return StaticMultiSelectElement(action_id=field_name, **slack_input_kwargs)
 
     @classmethod
     def _process_model_user_field(
@@ -527,6 +581,15 @@ def slack_view_submission_to_dict(
             )
         elif input_field.get("type") == "static_select":
             data[action_id_stripped] = get_in(input_field, ["selected_option", "value"])
+        elif input_field.get("type") == "multi_static_select":
+            # Handle multiple selections - return list of values
+            selected_options = input_field.get("selected_options", [])
+            data[action_id_stripped] = [opt.get("value") for opt in selected_options]
+        elif input_field.get("type") == "checkboxes":
+            # Handle checkboxes (BooleanField) - return True if "True" is in selected_options
+            selected_options = input_field.get("selected_options", [])
+            # For BooleanField, we have only one option with value="True"
+            data[action_id_stripped] = any(opt.get("value") == "True" for opt in selected_options)
         elif input_field.get("type") == "users_select":
             user_id = get_in(
                 input_field,

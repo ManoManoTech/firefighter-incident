@@ -7,6 +7,7 @@ from django.conf import settings
 from slack_sdk.models.blocks.blocks import SectionBlock
 from slack_sdk.models.views import View
 
+from firefighter.incidents.enums import IncidentStatus
 from firefighter.incidents.forms.update_status import UpdateStatusForm
 from firefighter.slack.slack_templating import slack_block_footer, slack_block_separator
 from firefighter.slack.views.modals.base_modal.base import ModalForm
@@ -116,6 +117,21 @@ class UpdateStatusModal(ModalForm[UpdateStatusFormSlack]):
             target_status = form.cleaned_data["status"]
             if handle_update_status_close_request(ack, body, incident, target_status):
                 return
+
+            # If trying to close, validate that incident can be closed
+            if target_status == IncidentStatus.CLOSED:
+                can_close, reasons = incident.can_be_closed
+                if not can_close:
+                    # Build error message from reasons
+                    error_messages = [reason[1] for reason in reasons]
+                    error_text = "\n".join([f"• {msg}" for msg in error_messages])
+                    ack(
+                        response_action="errors",
+                        errors={
+                            "status": f"Cannot close this incident:\n{error_text}"
+                        }
+                    )
+                    return
 
         update_kwargs: dict[str, Any] = {}
         for changed_key in form.changed_data:

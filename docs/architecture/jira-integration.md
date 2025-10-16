@@ -22,6 +22,40 @@ The RAID module provides comprehensive bidirectional synchronization between Imp
    - Issue creation, updates, and transitions
    - Attachment handling
 
+## JIRA Ticket Creation
+
+### Initial Ticket Creation
+
+**Function**: `prepare_jira_fields()` in `src/firefighter/raid/forms.py`
+
+Centralizes all JIRA field preparation for both P1-P3 and P4-P5 workflows.
+
+**P1-P3 (Critical)**:
+- Trigger: `incident_channel_done` signal
+- Handler: `src/firefighter/raid/signals/incident_created.py`
+- Flow: Create Incident → Create Slack channel → Signal triggers JIRA ticket
+
+**P4-P5 (Normal)**:
+- Trigger: Form submission
+- Handler: `UnifiedIncidentForm._trigger_normal_incident_workflow()`
+- Flow: Direct call to `jira_client.create_issue()`
+
+### Custom Fields Mapping
+
+**Always Passed**:
+- `customfield_11049` (environments): List of env values (PRD, STG, INT)
+  - P1-P3: First environment only
+  - P4-P5: All selected environments
+- `customfield_10201` (platform): Platform value (platform-FR, platform-All, etc.)
+- `customfield_10936` (business_impact): Computed from impacts_data
+
+**Impact-Specific**:
+- Customer: `zendesk_ticket_id`
+- Seller: `seller_contract_id`, `zoho_desk_ticket_id`, `is_key_account`, `is_seller_in_golden_list`
+- P4-P5: `suggested_team_routing`
+
+**Bug Fix GT-1334 (October 2025)**: P4-P5 incidents were not passing custom fields. Fixed by creating `prepare_jira_fields()` to centralize field preparation for both workflows.
+
 ## Bidirectional Sync Flows
 
 ### Impact → JIRA Sync

@@ -45,7 +45,12 @@ def create_incident_slack_conversation(
     Args:
         incident (Incident): The incident to open. It should be saved before calling this function, and have its first incident update created.
 
+    Kwargs:
+        jira_extra_fields (dict): Optional dictionary of customer/seller fields for Jira ticket
+
     """
+    # Extract jira_extra_fields from kwargs
+    jira_extra_fields = _kwargs.get("jira_extra_fields", {})
     channel: IncidentChannel | None = IncidentChannel.objects.create_incident_channel(
         incident=incident
     )
@@ -131,5 +136,6 @@ def create_incident_slack_conversation(
         sender=__name__,
         incident=incident,
         channel=channel,
+        jira_extra_fields=jira_extra_fields,
     )
     return None

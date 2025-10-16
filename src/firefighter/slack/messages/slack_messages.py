@@ -217,6 +217,21 @@ class SlackMessageIncidentDeclaredAnnouncement(SlackMessageSurface):
         ]
         if hasattr(self.incident, "jira_ticket") and self.incident.jira_ticket:
             fields.append(f":jira_new: <{self.incident.jira_ticket.url}|*Jira ticket*>")
+
+        # Add custom fields if present
+        if hasattr(self.incident, "custom_fields") and self.incident.custom_fields:
+            custom_fields = self.incident.custom_fields
+            if custom_fields.get("zendesk_ticket_id"):
+                fields.append(f":ticket: *Zendesk Ticket:* {custom_fields['zendesk_ticket_id']}")
+            if custom_fields.get("seller_contract_id"):
+                fields.append(f":memo: *Seller Contract:* {custom_fields['seller_contract_id']}")
+            if custom_fields.get("zoho_desk_ticket_id"):
+                fields.append(f":ticket: *Zoho Desk Ticket:* {custom_fields['zoho_desk_ticket_id']}")
+            if custom_fields.get("is_key_account") is True:
+                fields.append(":star: *Key Account*")
+            if custom_fields.get("is_seller_in_golden_list") is True:
+                fields.append(":medal: *Golden List Seller*")
+
         blocks: list[Block] = [
             SectionBlock(
                 text=f"{self.incident.priority.emoji} {self.incident.priority.name} - A new incident has been declared:"
@@ -509,7 +524,7 @@ class SlackMessageIncidentStatusUpdated(SlackMessageSurface):
                                 value=str(self.incident.id),
                                 action_id=UpdateStatusModal.open_action,
                             )
-                            if self.in_channel
+                            if self.in_channel and self.incident.status != IncidentStatus.CLOSED
                             else None
                         ),
                     ),

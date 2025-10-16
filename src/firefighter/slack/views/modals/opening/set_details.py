@@ -78,7 +78,7 @@ class SetIncidentDetails(ModalForm[T], Generic[T]):
             submit=self.submit_text[:24],
             close="Close details",
             callback_id=self.callback_id,
-            blocks=self.get_form_class()(initial=details_form_data).slack_blocks(),
+            blocks=self.get_form_class()(initial=details_form_data, open_incident_context=open_incident_context, **kwargs).slack_blocks(),
             private_metadata=json.dumps(
                 open_incident_context, cls=SlackFormJSONEncoder
             ),
@@ -99,7 +99,8 @@ class SetIncidentDetails(ModalForm[T], Generic[T]):
             priority = Priority.objects.get(pk=priority)
 
         slack_form = self.get_form_class()(
-            data={**slack_view_submission_to_dict(body), "priority": priority}
+            data={**slack_view_submission_to_dict(body), "priority": priority},
+            open_incident_context=private_metadata,
         )
         form: T = slack_form.form
         if form.is_valid():

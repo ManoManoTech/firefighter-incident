@@ -33,7 +33,7 @@ from firefighter.slack.views.modals.base_modal.modal_utils import update_modal
 from firefighter.slack.views.modals.opening.check_current_incidents import (
     CheckCurrentIncidentsModal,
 )
-from firefighter.slack.views.modals.opening.details.critical import OpeningCriticalModal
+from firefighter.slack.views.modals.opening.details.unified import OpeningUnifiedModal
 from firefighter.slack.views.modals.opening.types import OpeningData, ResponseType
 
 if TYPE_CHECKING:
@@ -53,13 +53,13 @@ INCIDENT_TYPES: dict[ResponseType, dict[str, dict[str, Any]]] = {
     "critical": {
         "critical": {
             "label": "Critical",
-            "slack_form": OpeningCriticalModal,
+            "slack_form": OpeningUnifiedModal,
         },
     },
     "normal": {
         "normal": {
             "label": "Normal",
-            "slack_form": OpeningCriticalModal,
+            "slack_form": OpeningUnifiedModal,  # Will be overridden by RAID app
         },
     },
 }
@@ -310,17 +310,34 @@ class OpenModal(SlackModal):
         if open_incident_context.get("response_type") == "critical":
             slack_msg = None
             if details_form_done and details_form_class and details_form:
+                # Create a copy of cleaned_data to avoid modifying the form
+                cleaned_data_copy = details_form.cleaned_data.copy()
+
+                # Extract first environment from QuerySet (UnifiedIncidentForm uses ModelMultipleChoiceField)
+                environments = cleaned_data_copy.pop("environment", [])
+                if environments:
+                    cleaned_data_copy["environment"] = environments[0] if hasattr(environments, "__getitem__") else environments.first()
+
+                # Remove fields that are not part of Incident model
+                cleaned_data_copy.pop("platform", None)
+                cleaned_data_copy.pop("zendesk_ticket_id", None)
+                cleaned_data_copy.pop("seller_contract_id", None)
+                cleaned_data_copy.pop("zoho_desk_ticket_id", None)
+                cleaned_data_copy.pop("is_key_account", None)
+                cleaned_data_copy.pop("is_seller_in_golden_list", None)
+                cleaned_data_copy.pop("suggested_team_routing", None)
+
                 incident = Incident(
                     status=IncidentStatus.OPEN,  # type: ignore
                     created_by=user,
-                    **details_form.cleaned_data,
+                    **cleaned_data_copy,
                 )
                 users_list: set[User] = {*incident.build_invite_list(), user}
                 slack_msg = f"> :slack: A dedicated Slack channel will be created, and around {len(users_list)} responders will be invited to help.\n"
 
             if slack_msg is None:
                 slack_msg = "> :slack: A dedicated Slack channel will be created, and responders will be invited to help.\n"
-            text = "> :jira_new: An associated Jira ticket will also be created."
+            text = slack_msg + "> :jira_new: An associated Jira ticket will also be created."
             if not is_during_office_hours(timezone.now()):
                 text += "\n> :pagerduty: If you need it, you'll be able to escalate the incident to our 24/7 on-call response teams."
         else:
@@ -367,7 +384,9 @@ class OpenModal(SlackModal):
                 details_form_class,
                 details_form,
             ) = self._validate_details_form(
-                details_form_modal_class, open_incident_context["details_form_data"]
+                details_form_modal_class,
+                open_incident_context["details_form_data"],
+                open_incident_context,
             )
 
         return (
@@ -381,6 +400,7 @@ class OpenModal(SlackModal):
     def _validate_details_form(
         details_form_modal_class: type[SetIncidentDetails[Any]] | None,
         details_form_data: dict[str, Any],
+        open_incident_context: OpeningData,
     ) -> tuple[
         bool, type[CreateIncidentFormBase] | None, CreateIncidentFormBase | None
     ]:
@@ -394,7 +414,19 @@ class OpenModal(SlackModal):
         if not details_form_class:
             return False, None, None
 
-        details_form: CreateIncidentFormBase = details_form_class(details_form_data)
+        # Pass impacts_data and response_type to form if it supports them (UnifiedIncidentForm)
+        # Check if __init__ accepts these parameters
+        import inspect  # noqa: PLC0415
+        init_params = inspect.signature(details_form_class.__init__).parameters
+        form_kwargs: dict[str, Any] = {}
+        if "impacts_data" in init_params:
+            form_kwargs["impacts_data"] = open_incident_context.get("impact_form_data") or {}
+        if "response_type" in init_params:
+            form_kwargs["response_type"] = open_incident_context.get("response_type", "critical")
+
+        details_form: CreateIncidentFormBase = details_form_class(
+            details_form_data, **form_kwargs
+        )
         is_valid = details_form.is_valid()
 
         return is_valid, details_form_class, details_form
@@ -598,8 +630,17 @@ class OpenModal(SlackModal):
                 details_form_modal_class.form_class
             )
             if details_form_class:
+                # Pass impacts_data and response_type to form if it supports them (UnifiedIncidentForm)
+                import inspect  # noqa: PLC0415
+                init_params = inspect.signature(details_form_class.__init__).parameters
+                form_kwargs: dict[str, Any] = {}
+                if "impacts_data" in init_params:
+                    form_kwargs["impacts_data"] = data.get("impact_form_data") or {}
+                if "response_type" in init_params:
+                    form_kwargs["response_type"] = data.get("response_type", "critical")
+
                 details_form: CreateIncidentFormBase = details_form_class(
-                    details_form_data_raw
+                    details_form_data_raw, **form_kwargs
                 )
                 details_form.is_valid()
                 ack()
@@ -607,10 +648,16 @@ class OpenModal(SlackModal):
                     if hasattr(details_form, "trigger_incident_workflow") and callable(
                         details_form.trigger_incident_workflow
                     ):
-                        details_form.trigger_incident_workflow(
-                            creator=user,
-                            impacts_data=data.get("impact_form_data") or {},
-                        )
+                        # Pass response_type to trigger_incident_workflow if it accepts it
+                        trigger_params = inspect.signature(details_form.trigger_incident_workflow).parameters
+                        workflow_kwargs: dict[str, Any] = {
+                            "creator": user,
+                            "impacts_data": data.get("impact_form_data") or {},
+                        }
+                        if "response_type" in trigger_params:
+                            workflow_kwargs["response_type"] = data.get("response_type", "critical")
+
+                        details_form.trigger_incident_workflow(**workflow_kwargs)
                 except:  # noqa: E722
                     logger.exception("Error triggering incident workflow")
                     # XXX warn the user via DM!

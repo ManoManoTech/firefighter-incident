@@ -9,6 +9,50 @@ The incident status workflow differs based on the incident priority:
 - **P1/P2 incidents**: Require post-mortem completion in PRD environment
 - **P3/P4/P5 incidents**: Do not require post-mortem
 
+## Workflow Diagram
+
+```mermaid
+graph TB
+    subgraph "P1/P2 Incidents (PRD Environment)"
+        A1[OPEN] --> B1[INVESTIGATING]
+        B1 --> C1[MITIGATING]
+        C1 --> D1[MITIGATED]
+        D1 --> E1[POST_MORTEM]
+        E1 --> F1[CLOSED]
+
+        %% Early closure with reason
+        A1 -.->|With Closure Reason| F1
+        B1 -.->|With Closure Reason| F1
+    end
+
+    subgraph "P3/P4/P5 Incidents (All Environments)"
+        A2[OPEN] --> B2[INVESTIGATING]
+        B2 --> C2[MITIGATING]
+        C2 --> D2[MITIGATED]
+        D2 --> F2[CLOSED]
+
+        %% Early closure with reason
+        A2 -.->|With Closure Reason| F2
+        B2 -.->|With Closure Reason| F2
+    end
+
+    %% Styling
+    classDef normalPath fill:#4CAF50,stroke:#2E7D32,stroke-width:2px,color:#fff
+    classDef earlyClose fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    classDef postMortem fill:#2196F3,stroke:#1565C0,stroke-width:2px,color:#fff
+
+    class A1,B1,C1,D1,A2,B2,C2,D2 normalPath
+    class E1 postMortem
+    class F1,F2 earlyClose
+
+    linkStyle 6,7,12,13 stroke:#FF9800,stroke-width:2px,stroke-dasharray: 5 5
+```
+
+**Legend:**
+- 🟢 **Solid arrows**: Normal workflow transitions
+- 🟠 **Dashed arrows**: Early closure (requires closure reason form)
+- 🔵 **POST_MORTEM**: Mandatory for P1/P2 in PRD
+
 ## Workflow Transitions
 
 ### P1/P2 Incidents (Priority 1-2 in PRD Environment)
