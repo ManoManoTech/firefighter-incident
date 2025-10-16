@@ -65,24 +65,29 @@ class TestP1P2P3JiraTicketFields:
         assert form.is_valid(), f"Form should be valid. Errors: {form.errors}"
 
         # Mock all the Slack/Jira interactions (but NOT SelectImpactForm - we need real business_impact calculation)
-        # Mock the entire create_incident_conversation signal handler to avoid Slack interactions
-        with patch("firefighter.slack.signals.create_incident_conversation.create_incident_slack_conversation") as mock_signal_handler:
-            # Setup mock channel that will be passed to incident_channel_done signal
-            mock_channel = MagicMock()
-            mock_channel.channel_id = "C123456"
+        # Setup mock channel that will be passed to incident_channel_done signal
+        mock_channel = MagicMock()
+        mock_channel.channel_id = "C123456"
 
-            # Mock the signal handler to manually trigger incident_channel_done
-            def trigger_jira_creation(sender, incident, **kwargs):
-                # Manually trigger the incident_channel_done signal to call Jira creation
-                incident_channel_done.send(
-                    "test",
-                    incident=incident,
-                    channel=mock_channel,
-                    jira_extra_fields=kwargs.get("jira_extra_fields", {}),
-                    impacts_data=kwargs.get("impacts_data", {}),
-                )
+        # Mock Slack channel creation to prevent API calls
+        mock_slack_client = MagicMock()
+        mock_slack_client.conversations_create.return_value = {"ok": True, "channel": {"id": "C123456", "name": "test-incident-1", "is_channel": True, "is_private": False, "is_archived": False}}
 
-            mock_signal_handler.side_effect = trigger_jira_creation
+        with patch("firefighter.slack.models.incident_channel.DefaultWebClient", mock_slack_client):
+            # Mock the create_incident_conversation signal handler to manually trigger incident_channel_done
+            with patch("firefighter.slack.signals.create_incident_conversation.create_incident_slack_conversation") as mock_signal_handler:
+                # Mock the signal handler to manually trigger incident_channel_done
+                def trigger_jira_creation(sender, incident, **kwargs):
+                    # Manually trigger the incident_channel_done signal to call Jira creation
+                    incident_channel_done.send(
+                        "test",
+                        incident=incident,
+                        channel=mock_channel,
+                        jira_extra_fields=kwargs.get("jira_extra_fields", {}),
+                        impacts_data=kwargs.get("impacts_data", {}),
+                    )
+
+                mock_signal_handler.side_effect = trigger_jira_creation
 
             # Mock Jira client property at the CLASS level to prevent real connection
             mock_jira_client = MagicMock()
@@ -181,24 +186,29 @@ class TestP1P2P3JiraTicketFields:
         assert form.is_valid(), f"Form should be valid. Errors: {form.errors}"
 
         # Mock all the Slack/Jira interactions (but NOT SelectImpactForm - we need real business_impact calculation)
-        # Mock the entire create_incident_conversation signal handler to avoid Slack interactions
-        with patch("firefighter.slack.signals.create_incident_conversation.create_incident_slack_conversation") as mock_signal_handler:
-            # Setup mock channel that will be passed to incident_channel_done signal
-            mock_channel = MagicMock()
-            mock_channel.channel_id = "C789012"
+        # Setup mock channel that will be passed to incident_channel_done signal
+        mock_channel = MagicMock()
+        mock_channel.channel_id = "C789012"
 
-            # Mock the signal handler to manually trigger incident_channel_done
-            def trigger_jira_creation(sender, incident, **kwargs):
-                # Manually trigger the incident_channel_done signal to call Jira creation
-                incident_channel_done.send(
-                    "test",
-                    incident=incident,
-                    channel=mock_channel,
-                    jira_extra_fields=kwargs.get("jira_extra_fields", {}),
-                    impacts_data=kwargs.get("impacts_data", {}),
-                )
+        # Mock Slack channel creation to prevent API calls
+        mock_slack_client = MagicMock()
+        mock_slack_client.conversations_create.return_value = {"ok": True, "channel": {"id": "C789012", "name": "test-incident-2", "is_channel": True, "is_private": False, "is_archived": False}}
 
-            mock_signal_handler.side_effect = trigger_jira_creation
+        with patch("firefighter.slack.models.incident_channel.DefaultWebClient", mock_slack_client):
+            # Mock the entire create_incident_conversation signal handler to avoid Slack interactions
+            with patch("firefighter.slack.signals.create_incident_conversation.create_incident_slack_conversation") as mock_signal_handler:
+                # Mock the signal handler to manually trigger incident_channel_done
+                def trigger_jira_creation(sender, incident, **kwargs):
+                    # Manually trigger the incident_channel_done signal to call Jira creation
+                    incident_channel_done.send(
+                        "test",
+                        incident=incident,
+                        channel=mock_channel,
+                        jira_extra_fields=kwargs.get("jira_extra_fields", {}),
+                        impacts_data=kwargs.get("impacts_data", {}),
+                    )
+
+                mock_signal_handler.side_effect = trigger_jira_creation
 
             # Mock Jira client property at the CLASS level to prevent real connection
             mock_jira_client = MagicMock()
@@ -303,24 +313,29 @@ class TestP1P2P3JiraTicketFields:
         assert form.is_valid(), f"Form should be valid. Errors: {form.errors}"
 
         # Mock all the Slack/Jira interactions (but NOT SelectImpactForm - we need real business_impact calculation)
-        # Mock the entire create_incident_conversation signal handler to avoid Slack interactions
-        with patch("firefighter.slack.signals.create_incident_conversation.create_incident_slack_conversation") as mock_signal_handler:
-            # Setup mock channel that will be passed to incident_channel_done signal
-            mock_channel = MagicMock()
-            mock_channel.channel_id = "C111222"
+        # Setup mock channel that will be passed to incident_channel_done signal
+        mock_channel = MagicMock()
+        mock_channel.channel_id = "C111222"
 
-            # Mock the signal handler to manually trigger incident_channel_done
-            def trigger_jira_creation(sender, incident, **kwargs):
-                # Manually trigger the incident_channel_done signal to call Jira creation
-                incident_channel_done.send(
-                    "test",
-                    incident=incident,
-                    channel=mock_channel,
-                    jira_extra_fields=kwargs.get("jira_extra_fields", {}),
-                    impacts_data=kwargs.get("impacts_data", {}),
-                )
+        # Mock Slack channel creation to prevent API calls
+        mock_slack_client = MagicMock()
+        mock_slack_client.conversations_create.return_value = {"ok": True, "channel": {"id": "C111222", "name": "test-incident-3", "is_channel": True, "is_private": False, "is_archived": False}}
 
-            mock_signal_handler.side_effect = trigger_jira_creation
+        with patch("firefighter.slack.models.incident_channel.DefaultWebClient", mock_slack_client):
+            # Mock the entire create_incident_conversation signal handler to avoid Slack interactions
+            with patch("firefighter.slack.signals.create_incident_conversation.create_incident_slack_conversation") as mock_signal_handler:
+                # Mock the signal handler to manually trigger incident_channel_done
+                def trigger_jira_creation(sender, incident, **kwargs):
+                    # Manually trigger the incident_channel_done signal to call Jira creation
+                    incident_channel_done.send(
+                        "test",
+                        incident=incident,
+                        channel=mock_channel,
+                        jira_extra_fields=kwargs.get("jira_extra_fields", {}),
+                        impacts_data=kwargs.get("impacts_data", {}),
+                    )
+
+                mock_signal_handler.side_effect = trigger_jira_creation
 
             # Mock Jira client property at the CLASS level to prevent real connection
             mock_jira_client = MagicMock()

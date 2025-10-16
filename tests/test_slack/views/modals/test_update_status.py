@@ -84,10 +84,16 @@ class TestUpdateStatusModal:
         This tests the scenario where a P3+ incident (no postmortem needed) is in
         MITIGATED status and tries to close, but missing key events blocks it.
         """
+        # Create a user first
+        user = UserFactory.build()
+        user.save()
+
         # Create a P3+ incident in MITIGATED status (can go directly to CLOSED)
         incident = IncidentFactory.build(
             _status=IncidentStatus.MITIGATED,
+            created_by=user,
         )
+        incident.save()
         # Mock needs_postmortem to return False (P3+ incident)
         mocker.patch.object(
             type(incident),
@@ -149,10 +155,16 @@ class TestUpdateStatusModal:
         This tests a P1/P2 incident in POST_MORTEM trying to close but blocked
         by missing key events.
         """
+        # Create a user first
+        user = UserFactory.build()
+        user.save()
+
         # Create a P1/P2 incident in POST_MORTEM status
         incident = IncidentFactory.build(
             _status=IncidentStatus.POST_MORTEM,
+            created_by=user,
         )
+        incident.save()
         # Mock can_be_closed to return False with MISSING_REQUIRED_KEY_EVENTS reason
         mocker.patch.object(
             type(incident),
@@ -199,10 +211,16 @@ class TestUpdateStatusModal:
     @staticmethod
     def test_cannot_close_p1_p2_without_postmortem(mocker: MockerFixture) -> None:
         """Test that P1/P2 incidents in PRD cannot close without going through post-mortem."""
+        # Create a user first
+        user = UserFactory.build()
+        user.save()
+
         # Create a P1/P2 incident in MITIGATED status (needs post-mortem)
         incident = IncidentFactory.build(
             _status=IncidentStatus.MITIGATED,
+            created_by=user,
         )
+        incident.save()
         # Mock can_be_closed to return False with STATUS_NOT_POST_MORTEM reason
         mocker.patch.object(
             type(incident),
