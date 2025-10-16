@@ -15,6 +15,7 @@ import pytest
 
 from firefighter.incidents.forms.unified_incident import UnifiedIncidentForm
 from firefighter.incidents.models.impact import ImpactLevel, ImpactType, LevelChoices
+from firefighter.jira_app.client import client
 from firefighter.jira_app.models import JiraUser
 from firefighter.slack.signals import incident_channel_done
 
@@ -83,14 +84,11 @@ class TestP1P2P3JiraTicketFields:
 
             mock_signal_handler.side_effect = trigger_jira_creation
 
-            # Mock Jira client to prevent real connection
+            # Mock Jira client property at the CLASS level to prevent real connection
             mock_jira_client = MagicMock()
-            mock_jira_client.add_watcher = MagicMock()
-            mock_jira_client.remove_watcher = MagicMock()
-            mock_jira_client.add_simple_link = MagicMock()
 
             with (
-                patch("firefighter.raid.signals.incident_created.client.jira", new_callable=PropertyMock, return_value=mock_jira_client),
+                patch.object(type(client), "jira", new_callable=PropertyMock, return_value=mock_jira_client),
                 patch("firefighter.raid.signals.incident_created.client.create_issue") as mock_jira_create,
                 patch("firefighter.raid.signals.incident_created.get_jira_user_from_user") as mock_get_jira_user,
                 patch("firefighter.raid.forms.get_business_impact") as mock_get_business_impact,
@@ -202,14 +200,11 @@ class TestP1P2P3JiraTicketFields:
 
             mock_signal_handler.side_effect = trigger_jira_creation
 
-            # Mock Jira client to prevent real connection
+            # Mock Jira client property at the CLASS level to prevent real connection
             mock_jira_client = MagicMock()
-            mock_jira_client.add_watcher = MagicMock()
-            mock_jira_client.remove_watcher = MagicMock()
-            mock_jira_client.add_simple_link = MagicMock()
 
             with (
-                patch("firefighter.raid.signals.incident_created.client.jira", new_callable=PropertyMock, return_value=mock_jira_client),
+                patch.object(type(client), "jira", new_callable=PropertyMock, return_value=mock_jira_client),
                 patch("firefighter.raid.signals.incident_created.client.create_issue") as mock_jira_create,
                 patch("firefighter.raid.signals.incident_created.get_jira_user_from_user") as mock_get_jira_user,
                 patch("firefighter.raid.forms.get_business_impact") as mock_get_business_impact,
@@ -327,14 +322,11 @@ class TestP1P2P3JiraTicketFields:
 
             mock_signal_handler.side_effect = trigger_jira_creation
 
-            # Mock Jira client to prevent real connection
+            # Mock Jira client property at the CLASS level to prevent real connection
             mock_jira_client = MagicMock()
-            mock_jira_client.add_watcher = MagicMock()
-            mock_jira_client.remove_watcher = MagicMock()
-            mock_jira_client.add_simple_link = MagicMock()
 
             with (
-                patch("firefighter.raid.signals.incident_created.client.jira", new_callable=PropertyMock, return_value=mock_jira_client),
+                patch.object(type(client), "jira", new_callable=PropertyMock, return_value=mock_jira_client),
                 patch("firefighter.raid.signals.incident_created.client.create_issue") as mock_jira_create,
                 patch("firefighter.raid.signals.incident_created.get_jira_user_from_user") as mock_get_jira_user,
                 patch("firefighter.raid.forms.get_business_impact") as mock_get_business_impact,
