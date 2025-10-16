@@ -314,7 +314,7 @@ class UnifiedIncidentForm(CreateIncidentFormBase):
         logger.info(f"UNIFIED FORM - cleaned_data values: {self.cleaned_data}")
 
         environments = cleaned_data_copy.pop("environment", [])
-        _platforms = cleaned_data_copy.pop("platform", [])
+        platforms = cleaned_data_copy.pop("platform", [])
 
         # Extract customer/seller fields for Jira ticket (not stored in Incident model)
         jira_extra_fields = {
@@ -324,6 +324,9 @@ class UnifiedIncidentForm(CreateIncidentFormBase):
             "is_key_account": cleaned_data_copy.pop("is_key_account", None),
             "is_seller_in_golden_list": cleaned_data_copy.pop("is_seller_in_golden_list", None),
             "zoho_desk_ticket_id": cleaned_data_copy.pop("zoho_desk_ticket_id", None),
+            # Pass full lists for Jira ticket creation
+            "environments": [env.value for env in environments],  # Convert QuerySet to list of values
+            "platforms": platforms,  # Already a list of strings
         }
         logger.info(f"UNIFIED FORM - jira_extra_fields extracted: {jira_extra_fields}")
 
@@ -344,6 +347,7 @@ class UnifiedIncidentForm(CreateIncidentFormBase):
             "unified_incident_form",
             incident=incident,
             jira_extra_fields=jira_extra_fields,
+            impacts_data=impacts_data,  # Pass impacts_data for business_impact computation
         )
 
     def _trigger_normal_incident_workflow(
@@ -352,86 +356,51 @@ class UnifiedIncidentForm(CreateIncidentFormBase):
         impacts_data: dict[str, ImpactLevel],
     ) -> None:
         """Create a normal incident (P4-P5) with Jira ticket only."""
+        from firefighter.raid.client import client as jira_client  # noqa: PLC0415
         from firefighter.raid.forms import (  # noqa: PLC0415
-            get_business_impact,
+            prepare_jira_fields,
             process_jira_issue,
         )
         from firefighter.raid.service import (  # noqa: PLC0415
-            CustomerIssueData,
-            create_issue_customer,
-            create_issue_internal,
-            create_issue_seller,
             get_jira_user_from_user,
         )
 
         jira_user: JiraUser = get_jira_user_from_user(creator)
 
-        # Determine which type of Jira issue to create based on impacts
-        customer_impact = None
-        seller_impact = None
-
-        for field_name, impact_level in impacts_data.items():
-            if "customers_impact" in field_name:
-                customer_impact = impact_level
-            elif "sellers_impact" in field_name:
-                seller_impact = impact_level
-
-        has_customer = customer_impact and hasattr(customer_impact, "value") and customer_impact.value != LevelChoices.NONE.value
-        has_seller = seller_impact and hasattr(seller_impact, "value") and seller_impact.value != LevelChoices.NONE.value
-
-        # Get first platform
+        # Extract environments and platforms
+        environments_qs = self.cleaned_data.get("environment", [])
+        environments = [env.value for env in environments_qs]  # Convert QuerySet to list of values
         platforms = self.cleaned_data.get("platform", [])
-        platform = platforms[0] if platforms else PlatformChoices.ALL.value
 
-        if has_customer:
-            # Create customer issue
-            customer_data = CustomerIssueData(
-                priority=self.cleaned_data["priority"].value,
-                labels=[""],
-                platform=platform,
-                business_impact=str(get_business_impact(impacts_data)),
-                team_to_be_routed=self.cleaned_data["suggested_team_routing"],
-                area=None,
-                zendesk_ticket_id=self.cleaned_data.get("zendesk_ticket_id", ""),
-                incident_category=self.cleaned_data["incident_category"].name,
-            )
-            issue_data = create_issue_customer(
-                title=self.cleaned_data["title"],
-                description=self.cleaned_data["description"],
-                reporter=jira_user.id,
-                issue_data=customer_data,
-            )
-        elif has_seller:
-            # Create seller issue
-            issue_data = create_issue_seller(
-                title=self.cleaned_data["title"],
-                description=self.cleaned_data["description"],
-                priority=self.cleaned_data["priority"].value,
-                reporter=jira_user.id,
-                platform=platform,
-                business_impact=str(get_business_impact(impacts_data)),
-                team_to_be_routed=self.cleaned_data["suggested_team_routing"],
-                incident_category=self.cleaned_data["incident_category"].name,
-                zoho_desk_ticket_id=self.cleaned_data.get("zoho_desk_ticket_id", ""),
-                is_key_account=self.cleaned_data.get("is_key_account", False),
-                is_seller_in_golden_list=self.cleaned_data.get("is_seller_in_golden_list", False),
-                seller_contract_id=self.cleaned_data.get("seller_contract_id", ""),
-                labels=[""],
-            )
-        else:
-            # Create internal issue (employees impact or no specific impact)
-            issue_data = create_issue_internal(
-                title=self.cleaned_data["title"],
-                description=self.cleaned_data["description"],
-                priority=self.cleaned_data["priority"].value,
-                reporter=jira_user.id,
-                platform=platform,
-                business_impact=str(get_business_impact(impacts_data)),
-                team_to_be_routed=self.cleaned_data["suggested_team_routing"],
-                incident_category=self.cleaned_data["incident_category"].name,
-                labels=[""],
-            )
+        # Extract suggested team routing (convert FeatureTeam instance to string)
+        team_routing = self.cleaned_data.get("suggested_team_routing")
+        team_routing_name = team_routing.name if team_routing else None
 
+        # Prepare all Jira fields using the common function
+        # P4-P5 pass all environments (unlike P1-P3 which pass first only)
+        jira_fields = prepare_jira_fields(
+            title=self.cleaned_data["title"],
+            description=self.cleaned_data["description"],
+            priority=self.cleaned_data["priority"].value,
+            reporter=jira_user.id,
+            incident_category=self.cleaned_data["incident_category"].name,
+            environments=environments,  # ✅ P4-P5: pass ALL environments
+            platforms=platforms,
+            impacts_data=impacts_data,
+            optional_fields={
+                "zendesk_ticket_id": self.cleaned_data.get("zendesk_ticket_id", ""),
+                "seller_contract_id": self.cleaned_data.get("seller_contract_id", ""),
+                "zoho_desk_ticket_id": self.cleaned_data.get("zoho_desk_ticket_id", ""),
+                "is_key_account": self.cleaned_data.get("is_key_account"),
+                "is_seller_in_golden_list": self.cleaned_data.get("is_seller_in_golden_list"),
+                "suggested_team_routing": team_routing_name,
+            },
+        )
+
+        # Create Jira issue with all prepared fields
+        issue_data = jira_client.create_issue(**jira_fields)
+
+        # Process the created Jira ticket (create JiraTicket in DB, save impacts, alert Slack)
         process_jira_issue(
             issue_data, creator, jira_user=jira_user, impacts_data=impacts_data
         )

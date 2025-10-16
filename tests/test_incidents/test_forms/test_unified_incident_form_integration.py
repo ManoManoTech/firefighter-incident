@@ -328,11 +328,19 @@ class TestUnifiedIncidentFormCustomFieldsPropagation:
             assert jira_extra_fields["is_key_account"] is False
             assert jira_extra_fields["is_seller_in_golden_list"] is True
 
-            # Verify incident custom_fields has all fields
+            # Verify new fields: environments and platforms
+            assert "environments" in jira_extra_fields
+            assert jira_extra_fields["environments"] == ["PRD"]
+            assert "platforms" in jira_extra_fields
+            assert jira_extra_fields["platforms"] == ["platform-All"]
+
+            # Verify incident custom_fields has all fields (5 original + 2 new = 7)
             incident = signal_data["incident"]
-            assert len(incident.custom_fields) == 5
+            assert len(incident.custom_fields) == 7
             assert incident.custom_fields["zendesk_ticket_id"] == "ZD-999"
             assert incident.custom_fields["seller_contract_id"] == "SC-888"
+            assert incident.custom_fields["environments"] == ["PRD"]
+            assert incident.custom_fields["platforms"] == ["platform-All"]
 
         finally:
             create_incident_conversation.disconnect(capture_signal)
@@ -405,7 +413,7 @@ class TestUnifiedIncidentFormCustomFieldsPropagation:
             # Verify signal was sent
             assert signal_received
 
-            # Verify jira_extra_fields exists but all values are None
+            # Verify jira_extra_fields exists - custom fields are None, but environments/platforms have defaults
             jira_extra_fields = signal_data["jira_extra_fields"]
             assert jira_extra_fields["zendesk_ticket_id"] is None
             assert jira_extra_fields["seller_contract_id"] is None
@@ -413,9 +421,17 @@ class TestUnifiedIncidentFormCustomFieldsPropagation:
             assert jira_extra_fields["is_key_account"] is None
             assert jira_extra_fields["is_seller_in_golden_list"] is None
 
-            # Verify incident custom_fields is empty
+            # New fields: environments and platforms have default values (not None)
+            assert "environments" in jira_extra_fields
+            assert jira_extra_fields["environments"] == ["PRD"]  # Default from form
+            assert "platforms" in jira_extra_fields
+            assert jira_extra_fields["platforms"] == ["platform-FR"]  # Default from form
+
+            # Verify incident custom_fields only has environments and platforms (None values filtered out)
             incident = signal_data["incident"]
-            assert incident.custom_fields == {}
+            assert len(incident.custom_fields) == 2
+            assert incident.custom_fields["environments"] == ["PRD"]
+            assert incident.custom_fields["platforms"] == ["platform-FR"]
 
         finally:
             create_incident_conversation.disconnect(capture_signal)

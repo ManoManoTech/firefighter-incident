@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Never
+from typing import TYPE_CHECKING, Any, Never
 
 from django.conf import settings
 from django.db import models
@@ -242,6 +242,75 @@ def send_message_to_watchers(
 def get_business_impact(impacts_data: dict[str, ImpactLevel]) -> str | None:
     impact_form = SelectImpactForm(impacts_data)
     return impact_form.business_impact_new
+
+
+def prepare_jira_fields(
+    *,
+    title: str,
+    description: str,
+    priority: int,
+    reporter: str,
+    incident_category: str,
+    environments: list[str],
+    platforms: list[str],
+    impacts_data: dict[str, ImpactLevel],
+    optional_fields: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Prepare all fields for jira_client.create_issue().
+
+    This function centralizes Jira field preparation for both P1-P3 and P4-P5 incidents,
+    ensuring all custom fields are properly passed.
+
+    Args:
+        title: Incident title
+        description: Incident description
+        priority: Priority value (1-5)
+        reporter: Jira user account ID
+        incident_category: Category name
+        environments: List of environment values (e.g. ["PRD", "STG"])
+        platforms: List of platform values (e.g. ["platform-FR", "platform-DE"])
+        impacts_data: Dictionary of impact data for business_impact computation
+        optional_fields: Optional dictionary containing:
+            - zendesk_ticket_id: Zendesk ticket ID (customer-specific)
+            - seller_contract_id: Seller contract ID (seller-specific)
+            - zoho_desk_ticket_id: Zoho Desk ticket ID (seller-specific)
+            - is_key_account: Key account flag (seller-specific)
+            - is_seller_in_golden_list: Golden list flag (seller-specific)
+            - suggested_team_routing: Suggested team routing (P4-P5 only)
+
+    Returns:
+        Dictionary of kwargs ready for jira_client.create_issue()
+    """
+    business_impact = get_business_impact(impacts_data)
+    platform = platforms[0] if platforms else PlatformChoices.ALL.value
+
+    # Extract optional fields with defaults
+    opt = optional_fields or {}
+    zendesk_ticket_id = opt.get("zendesk_ticket_id", "")
+    seller_contract_id = opt.get("seller_contract_id", "")
+    zoho_desk_ticket_id = opt.get("zoho_desk_ticket_id", "")
+    is_key_account = opt.get("is_key_account")
+    is_seller_in_golden_list = opt.get("is_seller_in_golden_list")
+    suggested_team_routing = opt.get("suggested_team_routing")
+
+    return {
+        "issuetype": "Incident",
+        "summary": title,
+        "description": description,
+        "priority": priority,
+        "reporter": reporter,
+        "assignee": None,
+        "incident_category": incident_category,
+        "environments": environments,  # ✅ Always pass environments list
+        "platform": platform,
+        "business_impact": business_impact,
+        "zendesk_ticket_id": zendesk_ticket_id,
+        "seller_contract_id": seller_contract_id,
+        "zoho_desk_ticket_id": zoho_desk_ticket_id,
+        "is_key_account": is_key_account if is_key_account is not None else False,
+        "is_seller_in_golden_list": is_seller_in_golden_list if is_seller_in_golden_list is not None else False,
+        "suggested_team_routing": suggested_team_routing,
+    }
 
 
 def get_partner_alert_conversations(user_domain: str) -> QuerySet[Conversation]:

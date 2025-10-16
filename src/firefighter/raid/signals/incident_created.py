@@ -8,6 +8,7 @@ from django.dispatch.dispatcher import receiver
 
 from firefighter.jira_app.client import JiraAPIError, JiraUserNotFoundError
 from firefighter.raid.client import client
+from firefighter.raid.forms import prepare_jira_fields
 from firefighter.raid.models import JiraTicket
 from firefighter.raid.service import get_jira_user_from_user
 from firefighter.slack.messages.slack_messages import (
@@ -30,37 +31,51 @@ def create_ticket(
 ) -> JiraTicket:
     # pylint: disable=unused-argument
 
-    # Extract jira_extra_fields from kwargs (passed from unified incident form)
+    # Extract jira_extra_fields and impacts_data from kwargs (passed from unified incident form)
     jira_extra_fields = kwargs.get("jira_extra_fields", {})
+    impacts_data = kwargs.get("impacts_data", {})
     logger.info(f"CREATE_TICKET - kwargs keys: {list(kwargs.keys())}")
     logger.info(f"CREATE_TICKET - jira_extra_fields received: {jira_extra_fields}")
 
     jira_user = get_jira_user_from_user(incident.created_by)
     account_id = jira_user.id
-    # XXX Better description
-    # XXX Custom field with FireFighter ID/link?
-    # XXX Set affected environment custom field
-    # XXX Set custom field impacted area to group/domain?
+
     # Map Impact priority (1-5) to JIRA priority (1-5), fallback to P1 for invalid values
     priority: int = incident.priority.value if 1 <= incident.priority.value <= 5 else 1
-    issue = client.create_issue(
-        issuetype="Incident",
-        summary=incident.title,
-        description=f"""{incident.description}\n
+
+    # Build enhanced description with incident metadata
+    description = f"""{incident.description}\n
 \n
 🧯 This incident has been created for a critical incident. Links below to Slack and {APP_DISPLAY_NAME}.\n
 📦 Incident category: {incident.incident_category.name} ({incident.incident_category.group.name})\n
-{incident.priority.emoji} Priority: {incident.priority.name}\n""",
-        assignee=None,
-        reporter=account_id,
+{incident.priority.emoji} Priority: {incident.priority.name}\n"""
+
+    # Prepare all Jira fields using the common function
+    # P1-P3 use first environment only (for backward compatibility)
+    environments = jira_extra_fields.get("environments", [incident.environment.value])
+    platforms = jira_extra_fields.get("platforms", ["platform-All"])
+
+    jira_fields = prepare_jira_fields(
+        title=incident.title,
+        description=description,
         priority=priority,
+        reporter=account_id,
         incident_category=incident.incident_category.name,
-        zendesk_ticket_id=jira_extra_fields.get("zendesk_ticket_id", ""),
-        seller_contract_id=jira_extra_fields.get("seller_contract_id", ""),
-        zoho_desk_ticket_id=jira_extra_fields.get("zoho_desk_ticket_id", ""),
-        is_key_account=jira_extra_fields.get("is_key_account", False),
-        is_seller_in_golden_list=jira_extra_fields.get("is_seller_in_golden_list", False),
+        environments=[environments[0]] if environments else [incident.environment.value],  # P1-P3: first only
+        platforms=platforms,
+        impacts_data=impacts_data,
+        optional_fields={
+            "zendesk_ticket_id": jira_extra_fields.get("zendesk_ticket_id", ""),
+            "seller_contract_id": jira_extra_fields.get("seller_contract_id", ""),
+            "zoho_desk_ticket_id": jira_extra_fields.get("zoho_desk_ticket_id", ""),
+            "is_key_account": jira_extra_fields.get("is_key_account"),
+            "is_seller_in_golden_list": jira_extra_fields.get("is_seller_in_golden_list"),
+            "suggested_team_routing": jira_extra_fields.get("suggested_team_routing"),
+        },
     )
+
+    # Create Jira issue with all prepared fields
+    issue = client.create_issue(**jira_fields)
     issue_id = issue.get("id")
     if issue_id is None:
         logger.error(f"Could not create Jira ticket for incident {incident.id}")
