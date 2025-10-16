@@ -9,7 +9,7 @@ to Jira when creating tickets via the incident_channel_done signal, including:
 """
 from __future__ import annotations
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, PropertyMock, patch
 
 import pytest
 
@@ -90,7 +90,7 @@ class TestP1P2P3JiraTicketFields:
             mock_jira_client.add_simple_link = MagicMock()
 
             with (
-                patch("firefighter.raid.signals.incident_created.client.jira", mock_jira_client),
+                patch("firefighter.raid.signals.incident_created.client.jira", new_callable=PropertyMock, return_value=mock_jira_client),
                 patch("firefighter.raid.signals.incident_created.client.create_issue") as mock_jira_create,
                 patch("firefighter.raid.signals.incident_created.get_jira_user_from_user") as mock_get_jira_user,
                 patch("firefighter.raid.forms.get_business_impact") as mock_get_business_impact,
@@ -209,7 +209,7 @@ class TestP1P2P3JiraTicketFields:
             mock_jira_client.add_simple_link = MagicMock()
 
             with (
-                patch("firefighter.raid.signals.incident_created.client.jira", mock_jira_client),
+                patch("firefighter.raid.signals.incident_created.client.jira", new_callable=PropertyMock, return_value=mock_jira_client),
                 patch("firefighter.raid.signals.incident_created.client.create_issue") as mock_jira_create,
                 patch("firefighter.raid.signals.incident_created.get_jira_user_from_user") as mock_get_jira_user,
                 patch("firefighter.raid.forms.get_business_impact") as mock_get_business_impact,
@@ -334,7 +334,7 @@ class TestP1P2P3JiraTicketFields:
             mock_jira_client.add_simple_link = MagicMock()
 
             with (
-                patch("firefighter.raid.signals.incident_created.client.jira", mock_jira_client),
+                patch("firefighter.raid.signals.incident_created.client.jira", new_callable=PropertyMock, return_value=mock_jira_client),
                 patch("firefighter.raid.signals.incident_created.client.create_issue") as mock_jira_create,
                 patch("firefighter.raid.signals.incident_created.get_jira_user_from_user") as mock_get_jira_user,
                 patch("firefighter.raid.forms.get_business_impact") as mock_get_business_impact,

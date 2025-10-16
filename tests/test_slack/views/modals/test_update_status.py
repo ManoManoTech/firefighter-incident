@@ -295,9 +295,14 @@ class TestUpdateStatusModal:
     @staticmethod
     def test_can_close_when_all_conditions_met(mocker: MockerFixture) -> None:
         """Test that closing is allowed when all conditions are met."""
+        # Create a user first
+        user = UserFactory.build()
+        user.save()
+
         # Create an incident in MITIGATED status with all conditions met
         incident = IncidentFactory.build(
             _status=IncidentStatus.MITIGATED,
+            created_by=user,
         )
         # IMPORTANT: Save the incident so it has an ID for the form to reference
         incident.save()
@@ -316,8 +321,6 @@ class TestUpdateStatusModal:
         )
 
         ack = MagicMock()
-        user = UserFactory.build()
-        user.save()
 
         # Create a submission to close the incident
         submission_copy = dict(valid_submission)
