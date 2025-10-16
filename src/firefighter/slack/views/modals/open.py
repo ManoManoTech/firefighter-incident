@@ -337,7 +337,7 @@ class OpenModal(SlackModal):
 
             if slack_msg is None:
                 slack_msg = "> :slack: A dedicated Slack channel will be created, and responders will be invited to help.\n"
-            text = "> :jira_new: An associated Jira ticket will also be created."
+            text = slack_msg + "> :jira_new: An associated Jira ticket will also be created."
             if not is_during_office_hours(timezone.now()):
                 text += "\n> :pagerduty: If you need it, you'll be able to escalate the incident to our 24/7 on-call response teams."
         else:
