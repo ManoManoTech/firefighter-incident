@@ -5,8 +5,9 @@ from django import forms
 from firefighter.incidents.models import Environment
 
 
-def initial_environments() -> Environment:
-    return Environment.objects.get(default=True)
+def initial_environments() -> list[Environment]:
+    """Get default environments for the form."""
+    return list(Environment.objects.filter(default=True))
 
 
 class EditMetaForm(forms.Form):
@@ -26,8 +27,9 @@ class EditMetaForm(forms.Form):
         min_length=10,
         max_length=1200,
     )
-    environment = forms.ModelChoiceField(
+    environment = forms.ModelMultipleChoiceField(
         label="Environment",
         queryset=Environment.objects.all(),
         initial=initial_environments,
+        required=True,
     )
