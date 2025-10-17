@@ -330,11 +330,12 @@ class UnifiedIncidentForm(CreateIncidentFormBase):
         }
         logger.info(f"UNIFIED FORM - jira_extra_fields extracted: {jira_extra_fields}")
 
-        # Use first environment
+        # Use highest priority environment (lowest order value) for the main environment field
         if environments:
-            cleaned_data_copy["environment"] = environments[0]
+            # Sort by order field to get highest priority (PRD typically has order=0)
+            cleaned_data_copy["environment"] = min(environments, key=lambda env: env.order)
 
-        # Store custom fields in the incident
+        # Store custom fields in the incident (including all environments)
         cleaned_data_copy["custom_fields"] = {
             k: v for k, v in jira_extra_fields.items() if v is not None
         }

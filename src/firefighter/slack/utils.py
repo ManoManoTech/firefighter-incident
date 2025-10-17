@@ -85,7 +85,12 @@ def get_slack_user_id_from_body(body: dict[str, Any]) -> str | None:
 
 
 def channel_name_from_incident(incident: Incident) -> str:
-    """Lowercase, truncated at 80 chars, this is obviously the channel #name."""
+    """Lowercase, truncated at 80 chars, this is obviously the channel #name.
+
+    The environment(s) are included in the channel name to clearly indicate scope.
+    When multiple environments are affected, all are displayed sorted by priority.
+    If the name exceeds 80 characters, environments are abbreviated progressively.
+    """
     if (
         not hasattr(incident, "created_at")
         or not hasattr(incident, "id")
@@ -96,13 +101,45 @@ def channel_name_from_incident(incident: Incident) -> str:
             "Incident must be saved before slack_channel_name can be computed"
         )
     date_formatted = localtime(incident.created_at).strftime("%Y%m%d")
-    if incident.environment is not None and incident.environment.value != "PRD":
-        topic = f"{date_formatted}-{str(incident.id)[:8]}-{incident.environment.value}-{incident.incident_category.name}"
+
+    # Get all environments from custom_fields, fallback to single environment field
+    environments_list = incident.custom_fields.get("environments", [])
+    if not environments_list and incident.environment is not None:
+        environments_list = [incident.environment.value]
+
+    # Sort environments by priority (assuming order: PRD < STG < INT < support)
+    # This puts the most important environment first
+    env_priority = {"PRD": 0, "STG": 1, "INT": 2, "support": 3}
+    if environments_list:
+        sorted_envs = sorted(environments_list, key=lambda e: env_priority.get(e, 99))
+        env_str = "-".join(sorted_envs)
+    else:
+        env_str = ""
+
+    # Build channel name with all environments
+    if env_str:
+        topic = f"{date_formatted}-{str(incident.id)[:8]}-{env_str}-{incident.incident_category.name}"
     else:
         topic = f"{date_formatted}-{str(incident.id)[:8]}-{incident.incident_category.name}"
 
-    # Strip non-alphanumeric characters, cut at 80 chars
-    # XXX django.utils.text.slugify should be used instead
+    # Strip non-alphanumeric characters
     topic = topic.replace(" ", "-")
     topic = NON_ALPHANUMERIC_CHARACTERS.sub("-", topic)
-    return topic.lower()[:80]
+    topic_clean = topic.lower()
+
+    # Slack channel name limit is 80 characters
+    # If too long, try to abbreviate environments progressively
+    if len(topic_clean) > 80:
+        # Try with abbreviated environments (first 3 chars)
+        if environments_list:
+            abbrev_envs = "-".join([e[:3] for e in sorted_envs])
+            topic = f"{date_formatted}-{str(incident.id)[:8]}-{abbrev_envs}-{incident.incident_category.name}"
+            topic = topic.replace(" ", "-")
+            topic = NON_ALPHANUMERIC_CHARACTERS.sub("-", topic)
+            topic_clean = topic.lower()
+
+        # If still too long, truncate at 80 chars
+        if len(topic_clean) > 80:
+            topic_clean = topic_clean[:80]
+
+    return topic_clean
