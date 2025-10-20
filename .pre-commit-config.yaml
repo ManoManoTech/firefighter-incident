@@ -19,7 +19,7 @@ repos:
       - id: fix-byte-order-marker
   # Versions must be kept in sync with lockfile
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: 'v0.13.1'
+    rev: 'v0.14.1'
     hooks:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix]
@@ -30,7 +30,7 @@ repos:
       - id: yamllint
 
   - repo: https://github.com/rtts/djhtml
-    rev: '3.0.9'
+    rev: '3.0.10'
     hooks:
       - id: djhtml
       - id: djcss
