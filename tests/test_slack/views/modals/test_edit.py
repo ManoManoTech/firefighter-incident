@@ -20,25 +20,23 @@ class TestEditMetaModal:
     def incident(environment_factory) -> Incident:
         """Returns a valid incident with environment and custom_fields."""
         env_prd = environment_factory(value="PRD", name="Production", order=0)
-        incident = IncidentFactory.create(
+        return IncidentFactory.create(
             environment=env_prd,
             custom_fields={"environments": ["PRD"]}
         )
-        return incident
 
     @staticmethod
     @pytest.fixture
     def multi_env_incident(environment_factory) -> Incident:
         """Returns an incident with multiple environments in custom_fields."""
         env_prd = environment_factory(value="PRD", name="Production", order=0)
-        env_stg = environment_factory(value="STG", name="Staging", order=1)
-        env_int = environment_factory(value="INT", name="Integration", order=2)
+        environment_factory(value="STG", name="Staging", order=1)
+        environment_factory(value="INT", name="Integration", order=2)
 
-        incident = IncidentFactory.create(
+        return IncidentFactory.create(
             environment=env_prd,
             custom_fields={"environments": ["PRD", "STG", "INT"]}
         )
-        return incident
 
     @staticmethod
     def test_build_modal_fn_single_environment(incident: Incident) -> None:
@@ -269,7 +267,7 @@ def create_edit_submission(
                 "value": env_id,
             })
 
-    submission = {
+    return {
         "type": "view_submission",
         "team": {"id": "T01FJ0NNFQD", "domain": "team-firefighter"},
         "user": {
@@ -324,5 +322,3 @@ def create_edit_submission(
         "is_enterprise_install": False,
         "enterprise": None,
     }
-
-    return submission
