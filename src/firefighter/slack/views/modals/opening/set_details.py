@@ -58,6 +58,20 @@ class SetIncidentDetails(ModalForm[T], Generic[T]):
         )
         for field_name, field in self.form_class.base_fields.items():
             if (
+                isinstance(field, forms.ModelMultipleChoiceField)
+                and field_name in details_form_data
+                and field.queryset is not None
+                and field.queryset.model
+                and hasattr(field.queryset.model, "DoesNotExist")
+            ):
+                # Handle ModelMultipleChoiceField (e.g., environment)
+                value = details_form_data[field_name]
+                if isinstance(value, list) and value and not isinstance(value[0], Model):
+                    # Convert list of UUIDs to list of model instances
+                    details_form_data[field_name] = list(
+                        field.queryset.filter(pk__in=value)
+                    )
+            elif (
                 isinstance(field, forms.ModelChoiceField)
                 and field_name in details_form_data
                 and not isinstance(details_form_data[field_name], Model)
@@ -65,6 +79,7 @@ class SetIncidentDetails(ModalForm[T], Generic[T]):
                 and field.queryset.model
                 and hasattr(field.queryset.model, "DoesNotExist")
             ):
+                # Handle single ModelChoiceField
                 try:
                     details_form_data[field_name] = field.queryset.get(
                         pk=details_form_data[field_name]

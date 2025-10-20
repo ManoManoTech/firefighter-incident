@@ -419,3 +419,30 @@ class TestOpeningUnifiedModal:
 
         # Verify that suggested_team_routing is NOT in the form (critical incident)
         assert "suggested_team_routing" not in form.fields, "suggested_team_routing should not be present for critical incidents"
+
+    def test_build_modal_fn_handles_environment_uuid_list(
+        self, priority_factory, environment_factory
+    ):
+        """build_modal_fn should handle list of environment UUIDs in details_form_data."""
+        priority_factory(value=1, default=True)
+        env_prd = environment_factory(value="PRD", default=True)
+        env_stg = environment_factory(value="STG", default=False)
+
+        modal = OpeningUnifiedModal()
+
+        # Simulate editing scenario where details_form_data contains list of environment UUIDs
+        open_incident_context = {
+            "response_type": "critical",
+            "impact_form_data": {},
+            "details_form_data": {
+                "environment": [str(env_prd.id), str(env_stg.id)]  # List of UUIDs
+            },
+        }
+
+        # This should NOT raise ValidationError about invalid UUID
+        view = modal.build_modal_fn(open_incident_context=open_incident_context)
+
+        # Should build view without errors
+        assert view is not None
+        assert view.type == "modal"
+        assert len(view.blocks) > 0
