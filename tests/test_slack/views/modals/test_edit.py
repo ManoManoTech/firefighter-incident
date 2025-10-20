@@ -20,9 +20,10 @@ class TestEditMetaModal:
     def incident(environment_factory) -> Incident:
         """Returns a valid incident with environment and custom_fields."""
         env_prd = environment_factory(value="PRD", name="Production", order=0)
-        incident = IncidentFactory.build(environment=env_prd)
-        incident.custom_fields = {"environments": ["PRD"]}
-        incident.save()
+        incident = IncidentFactory.create(
+            environment=env_prd,
+            custom_fields={"environments": ["PRD"]}
+        )
         return incident
 
     @staticmethod
@@ -33,9 +34,10 @@ class TestEditMetaModal:
         env_stg = environment_factory(value="STG", name="Staging", order=1)
         env_int = environment_factory(value="INT", name="Integration", order=2)
 
-        incident = IncidentFactory.build(environment=env_prd)
-        incident.custom_fields = {"environments": ["PRD", "STG", "INT"]}
-        incident.save()
+        incident = IncidentFactory.create(
+            environment=env_prd,
+            custom_fields={"environments": ["PRD", "STG", "INT"]}
+        )
         return incident
 
     @staticmethod
@@ -72,9 +74,10 @@ class TestEditMetaModal:
     def test_build_modal_fn_fallback_to_single_environment(environment_factory) -> None:
         """Test building modal falls back to single environment when custom_fields is empty."""
         env_prd = environment_factory(value="PRD", name="Production", order=0)
-        incident = IncidentFactory.build(environment=env_prd)
-        incident.custom_fields = {}  # No environments in custom_fields
-        incident.save()
+        incident = IncidentFactory.create(
+            environment=env_prd,
+            custom_fields={}  # No environments in custom_fields
+        )
 
         modal = EditMetaModal()
         res = modal.build_modal_fn(incident)
@@ -89,9 +92,10 @@ class TestEditMetaModal:
     def test_build_modal_fn_empty_custom_fields(environment_factory) -> None:
         """Test building modal when custom_fields has no environments."""
         env_stg = environment_factory(value="STG", name="Staging", order=1)
-        incident = IncidentFactory.build(environment=env_stg)
-        incident.custom_fields = {}  # Empty custom_fields
-        incident.save()
+        incident = IncidentFactory.create(
+            environment=env_stg,
+            custom_fields={}  # Empty custom_fields
+        )
 
         modal = EditMetaModal()
         res = modal.build_modal_fn(incident)
@@ -108,8 +112,7 @@ class TestEditMetaModal:
         trigger_workflow = mocker.patch.object(modal, "_trigger_incident_workflow")
 
         ack = MagicMock()
-        user = UserFactory.build()
-        user.save()
+        user = UserFactory.create()
 
         # Create a submission with updated title and description
         submission = create_edit_submission(
@@ -136,16 +139,16 @@ class TestEditMetaModal:
         env_stg = environment_factory(value="STG", name="Staging", order=1)
         env_int = environment_factory(value="INT", name="Integration", order=2)
 
-        incident = IncidentFactory.build(environment=env_prd)
-        incident.custom_fields = {"environments": ["PRD"]}
-        incident.save()
+        incident = IncidentFactory.create(
+            environment=env_prd,
+            custom_fields={"environments": ["PRD"]}
+        )
 
         modal = EditMetaModal()
         trigger_workflow = mocker.patch.object(modal, "_trigger_incident_workflow")
 
         ack = MagicMock()
-        user = UserFactory.build()
-        user.save()
+        user = UserFactory.create()
 
         # Create a submission with multiple environments selected
         submission = create_edit_submission(
@@ -175,16 +178,16 @@ class TestEditMetaModal:
         env_prd = environment_factory(value="PRD", name="Production", order=0)
         env_stg = environment_factory(value="STG", name="Staging", order=1)
 
-        incident = IncidentFactory.build(environment=env_prd)
-        incident.custom_fields = {"environments": ["PRD"]}
-        incident.save()
+        incident = IncidentFactory.create(
+            environment=env_prd,
+            custom_fields={"environments": ["PRD"]}
+        )
 
         modal = EditMetaModal()
         trigger_workflow = mocker.patch.object(modal, "_trigger_incident_workflow")
 
         ack = MagicMock()
-        user = UserFactory.build()
-        user.save()
+        user = UserFactory.create()
 
         # Change to STG only
         submission = create_edit_submission(
@@ -213,8 +216,7 @@ class TestEditMetaModal:
         trigger_workflow = mocker.patch.object(modal, "_trigger_incident_workflow")
 
         ack = MagicMock()
-        user = UserFactory.build()
-        user.save()
+        user = UserFactory.create()
 
         # Create a submission with same values as current incident
         submission = create_edit_submission(
@@ -235,7 +237,7 @@ class TestEditMetaModal:
         """Test handling modal with empty body raises TypeError."""
         modal = EditMetaModal()
         ack = MagicMock()
-        user = UserFactory.build()
+        user = UserFactory.create()
 
         with pytest.raises(TypeError, match="Expected a values dict in the body"):
             modal.handle_modal_fn(ack=ack, body={}, incident=incident, user=user)
