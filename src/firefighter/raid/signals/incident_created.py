@@ -51,8 +51,15 @@ def create_ticket(
 {incident.priority.emoji} Priority: {incident.priority.name}\n"""
 
     # Prepare all Jira fields using the common function
-    # P1-P3 use first environment only (for backward compatibility)
-    environments = jira_extra_fields.get("environments", [incident.environment.value])
+    # Get all environments from custom_fields or jira_extra_fields
+    environments = jira_extra_fields.get("environments")
+    if not environments:
+        # Fallback to incident.custom_fields for multi-environment support
+        environments = incident.custom_fields.get("environments", [])
+    if not environments and incident.environment:
+        # Final fallback to single environment field
+        environments = [incident.environment.value]
+
     platforms = jira_extra_fields.get("platforms", ["platform-All"])
 
     jira_fields = prepare_jira_fields(
@@ -61,7 +68,7 @@ def create_ticket(
         priority=priority,
         reporter=account_id,
         incident_category=incident.incident_category.name,
-        environments=[environments[0]] if environments else [incident.environment.value],  # P1-P3: first only
+        environments=environments,  # Pass ALL environments to Jira
         platforms=platforms,
         impacts_data=impacts_data,
         optional_fields={

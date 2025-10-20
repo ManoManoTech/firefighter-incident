@@ -125,11 +125,11 @@ class TestP1P2P3JiraTicketFields:
             # Get the call arguments
             call_kwargs = mock_jira_create.call_args.kwargs
 
-            # ✅ CRITICAL ASSERTIONS - These will FAIL initially
+            # ✅ CRITICAL ASSERTIONS - All environments should be passed
             assert "environments" in call_kwargs, "environments should be passed to Jira for P1-P3"
-            # P1-P3 use first environment only (from non-deterministic QuerySet order)
-            assert len(call_kwargs["environments"]) == 1, "Should pass exactly one environment"
-            assert call_kwargs["environments"][0] in {"PRD", "STG"}, "Should pass one of the form environments"
+            # All environments should be passed (not just the first one)
+            assert len(call_kwargs["environments"]) == 2, "Should pass all selected environments"
+            assert set(call_kwargs["environments"]) == {"PRD", "STG"}, "Should pass both PRD and STG"
 
             assert "platform" in call_kwargs, "platform should be passed to Jira for P1-P3"
             assert call_kwargs["platform"] == "platform-FR", "Should pass first platform value"
@@ -359,9 +359,9 @@ class TestP1P2P3JiraTicketFields:
 
             # ✅ All fields should be present with exact values
             assert "environments" in call_kwargs, "environments should be passed to Jira for P3"
-            # P1-P3 use first environment only (from non-deterministic QuerySet order)
-            assert len(call_kwargs["environments"]) == 1, "Should pass exactly one environment"
-            assert call_kwargs["environments"][0] in {"PRD", "STG"}, "Should pass one of the form environments"
+            # All environments should be passed (not just the first one)
+            assert len(call_kwargs["environments"]) == 2, "Should pass all selected environments"
+            assert set(call_kwargs["environments"]) == {"PRD", "STG"}, "Should pass both PRD and STG"
             assert "platform" in call_kwargs, "platform should be passed to Jira for P3"
             assert call_kwargs["platform"] == "platform-All", "Should pass first platform value"
             assert "business_impact" in call_kwargs, "business_impact should be passed to Jira for P3"
