@@ -67,10 +67,15 @@ class SetIncidentDetails(ModalForm[T], Generic[T]):
                 # Handle ModelMultipleChoiceField (e.g., environment)
                 value = details_form_data[field_name]
                 if isinstance(value, list) and value and not isinstance(value[0], Model):
-                    # Convert list of UUIDs to list of model instances
-                    details_form_data[field_name] = list(
-                        field.queryset.filter(pk__in=value)
-                    )
+                    # Convert list of UUIDs to list of model instances, preserving order
+                    objects_dict = {
+                        str(obj.pk): obj
+                        for obj in field.queryset.filter(pk__in=value)
+                    }
+                    # Preserve the original order from the value list
+                    details_form_data[field_name] = [
+                        objects_dict[str(pk)] for pk in value if str(pk) in objects_dict
+                    ]
             elif (
                 isinstance(field, forms.ModelChoiceField)
                 and field_name in details_form_data

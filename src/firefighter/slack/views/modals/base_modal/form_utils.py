@@ -147,7 +147,9 @@ class SlackForm(Generic[T]):
         else:
             initial = self.form.initial.get(field_name, f.initial)
 
-        if callable(f.initial):
+        # Only call the callable if we don't have an initial value from form.initial
+        # This allows form-level initial values to override field-level defaults
+        if initial is None and callable(f.initial):
             initial = f.initial()
         return initial
 

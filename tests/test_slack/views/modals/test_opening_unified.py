@@ -423,7 +423,7 @@ class TestOpeningUnifiedModal:
     def test_build_modal_fn_handles_environment_uuid_list(
         self, priority_factory, environment_factory
     ):
-        """build_modal_fn should handle list of environment UUIDs in details_form_data."""
+        """build_modal_fn should handle list of environment UUIDs and preserve order."""
         priority_factory(value=1, default=True)
         env_prd = environment_factory(value="PRD", default=True)
         env_stg = environment_factory(value="STG", default=False)
@@ -431,11 +431,12 @@ class TestOpeningUnifiedModal:
         modal = OpeningUnifiedModal()
 
         # Simulate editing scenario where details_form_data contains list of environment UUIDs
+        # IMPORTANT: Order is STG first, then PRD (not alphabetical order)
         open_incident_context = {
             "response_type": "critical",
             "impact_form_data": {},
             "details_form_data": {
-                "environment": [str(env_prd.id), str(env_stg.id)]  # List of UUIDs
+                "environment": [str(env_stg.id), str(env_prd.id)]  # List of UUIDs (STG, PRD)
             },
         }
 
@@ -446,3 +447,17 @@ class TestOpeningUnifiedModal:
         assert view is not None
         assert view.type == "modal"
         assert len(view.blocks) > 0
+
+        # Verify that the environment block preserves the order (STG, PRD)
+        env_blocks = [b for b in view.blocks if hasattr(b, "block_id") and b.block_id == "environment"]
+        assert len(env_blocks) == 1, "Should find exactly one environment block"
+        env_block = env_blocks[0]
+
+        # Check initial_options preserves order: STG first, then PRD
+        assert hasattr(env_block, "element"), "Block should have an element attribute"
+        assert hasattr(env_block.element, "initial_options"), "Element should have initial_options"
+        initial_options = env_block.element.initial_options
+        assert initial_options is not None, "initial_options should not be None"
+        assert len(initial_options) == 2, "Should have both environments in initial_options"
+        assert initial_options[0].value == str(env_stg.id), "First option should be STG (preserving order)"
+        assert initial_options[1].value == str(env_prd.id), "Second option should be PRD (preserving order)"
