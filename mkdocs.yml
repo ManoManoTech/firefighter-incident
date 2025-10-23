@@ -117,6 +117,7 @@ nav:
           - Project Architecture: architecture/overview.md
           - JIRA Integration: architecture/jira-integration.md
           - Test Configuration: architecture/test-config.md
+          - Incident Workflows: architecture/incident-workflows.md
           - Incident Closure Workflow: architecture/incident-closure-workflow.md
           - Incident Status Workflow: architecture/incident-status-workflow.md
           - Incident Opening Workflow (Unified): architecture/incident-opening-workflow-unified.md
