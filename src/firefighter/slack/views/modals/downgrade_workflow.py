@@ -67,6 +67,9 @@ class DowngradeWorkflowModal(
 
     @staticmethod
     def handle_modal_fn(ack: Ack, user: User, incident: Incident) -> None:  # type: ignore[override]
+        # Acknowledge the modal submission immediately (must be within 3 seconds)
+        ack()
+
         # XXX(dugab): error handling
         incident.ignore = True
         incident.save()
@@ -80,7 +83,6 @@ class DowngradeWorkflowModal(
             status=IncidentStatus.CLOSED,
             message=f"Incident channel closed - follow the incident on its Jira Ticket{jira_txt}",
         )
-        ack()
 
     def get_select_title(self) -> str:
         return "Select a critical incident you want to convert to a Jira incident"

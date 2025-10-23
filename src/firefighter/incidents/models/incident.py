@@ -582,6 +582,9 @@ class Incident(models.Model):
     ) -> IncidentUpdate:
         updated_fields: list[str] = []
 
+        # Save old priority BEFORE modifying the incident
+        old_priority = self.priority if priority_id is not None else None
+
         def _update_incident_field(
             incident: Incident, field_name: str, value: Any, updated_fields: list[str]
         ) -> None:
@@ -595,8 +598,6 @@ class Incident(models.Model):
         _update_incident_field(self, "title", title, updated_fields)
         _update_incident_field(self, "description", description, updated_fields)
         _update_incident_field(self, "environment_id", environment_id, updated_fields)
-
-        old_priority = self.priority if priority_id is not None else None
 
         if updated_fields:
             self.save(update_fields=[*updated_fields, "updated_at"])
