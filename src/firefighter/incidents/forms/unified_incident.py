@@ -497,29 +497,31 @@ class UnifiedIncidentForm(CreateIncidentFormBase):
             },
         )
 
-        # Send Slack notifications based on channel presence
-        if hasattr(incident, "conversation"):
-            # P1-P3: Add Jira link to Slack channel
-            logger.info(f"UNIFIED FORM - Adding Jira link to Slack channel for incident {incident.id}")
-            jira_client.jira.add_simple_link(
-                issue=str(jira_ticket.id),
-                object={
-                    "url": incident.conversation.link,
-                    "title": f"Slack conversation #{incident.conversation.name}",
-                },
-            )
+        # Send Slack notifications based on priority
+        # P1-P3 incidents have Slack channels, P4-P5 incidents don't
+        if incident.priority.value <= 3:
+            # P1-P3: Add Jira link to Slack channel (if exists)
+            if hasattr(incident, "conversation"):
+                logger.info(f"UNIFIED FORM - Adding Jira link to Slack channel for incident {incident.id}")
+                jira_client.jira.add_simple_link(
+                    issue=str(jira_ticket.id),
+                    object={
+                        "url": incident.conversation.link,
+                        "title": f"Slack conversation #{incident.conversation.name}",
+                    },
+                )
 
-            # Add Jira bookmark to channel
-            incident.conversation.add_bookmark(
-                title="Jira ticket",
-                link=jira_ticket.url,
-                emoji=":jira_new:",
-            )
+                # Add Jira bookmark to channel
+                incident.conversation.add_bookmark(
+                    title="Jira ticket",
+                    link=jira_ticket.url,
+                    emoji=":jira_new:",
+                )
 
-            # Send incident announcement in channel
-            incident.conversation.send_message_and_save(
-                SlackMessageIncidentDeclaredAnnouncement(incident)
-            )
+                # Send incident announcement in channel
+                incident.conversation.send_message_and_save(
+                    SlackMessageIncidentDeclaredAnnouncement(incident)
+                )
         else:
             # P4-P5: Send DM and raid_alert notifications
             logger.info(f"UNIFIED FORM - Sending Slack alerts for P4-P5 incident {incident.id}")
