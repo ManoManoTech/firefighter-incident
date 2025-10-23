@@ -85,7 +85,7 @@
             "description": "Minor issue affecting customers.",
             "order": 2,
             "default": false,
-            "needs_postmortem": true,
+            "needs_postmortem": false,
             "enabled_create": true,
             "enabled_update": true,
             "reminder_time": "01:00:00",

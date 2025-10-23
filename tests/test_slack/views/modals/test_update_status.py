@@ -332,18 +332,26 @@ class TestUpdateStatusModal:
 
     @staticmethod
     def test_can_close_when_all_conditions_met(mocker: MockerFixture) -> None:
-        """Test that closing is allowed when all conditions are met."""
+        """Test that closing is allowed when all conditions are met for P3+ incidents."""
         # Create a user first
         user = UserFactory.build()
         user.save()
 
-        # Create an incident in MITIGATED status with all conditions met
+        # Create a P3+ incident in MITIGATED status with all conditions met
         incident = IncidentFactory.build(
             _status=IncidentStatus.MITIGATED,
             created_by=user,
         )
         # IMPORTANT: Save the incident so it has an ID for the form to reference
         incident.save()
+
+        # Mock needs_postmortem to return False (P3+ incident)
+        mocker.patch.object(
+            type(incident),
+            "needs_postmortem",
+            new_callable=PropertyMock,
+            return_value=False
+        )
 
         # Mock can_be_closed to return True (all conditions met)
         mocker.patch.object(
@@ -378,6 +386,68 @@ class TestUpdateStatusModal:
         assert first_call_kwargs == {} or "errors" not in first_call_kwargs
 
         # Verify that incident update WAS triggered
+        trigger_incident_workflow.assert_called_once()
+
+    @staticmethod
+    def test_can_update_priority_without_changing_status(mocker: MockerFixture, priority_factory) -> None:
+        """Test that priority can be updated without changing status.
+
+        This reproduces the bug where trying to update only the priority of a P4
+        incident in MITIGATED status fails with:
+        "Select a valid choice. 40 is not one of the available choices."
+
+        The issue is that the form restricts status choices based on current status,
+        but the initial value (MITIGATED=40) may not be in those restricted choices.
+        """
+        # Create a user first
+        user = UserFactory.build()
+        user.save()
+
+        # Create P3 and P4 priorities
+        p3_priority = priority_factory(value=3, name="P3")
+        p4_priority = priority_factory(value=4, name="P4")
+
+        # Create a P3 incident in MITIGATED status
+        incident = IncidentFactory.build(
+            _status=IncidentStatus.MITIGATED,
+            created_by=user,
+            priority=p3_priority,
+        )
+        incident.save()
+
+        modal = UpdateStatusModal()
+        trigger_incident_workflow = mocker.patch.object(
+            modal, "_trigger_incident_workflow"
+        )
+
+        ack = MagicMock()
+
+        # User tries to change priority from P3 to P4 WITHOUT changing status
+        # The status field will have MITIGATED (40) as initial value, but it's not in the available choices
+        submission_copy = dict(valid_submission)
+        # Status unchanged - keeps MITIGATED (40)
+        submission_copy["view"]["state"]["values"]["status"]["status"]["selected_option"] = {
+            "text": {"type": "plain_text", "text": "Mitigated", "emoji": True},
+            "value": "40",  # This should cause validation error with current code
+        }
+        # Change priority to P4
+        submission_copy["view"]["state"]["values"]["priority"]["priority"]["selected_option"] = {
+            "text": {"type": "plain_text", "text": "P4", "emoji": True},
+            "value": str(p4_priority.id),
+        }
+        submission_copy["view"]["private_metadata"] = str(incident.id)
+
+        modal.handle_modal_fn(
+            ack=ack, body=submission_copy, incident=incident, user=user
+        )
+
+        # Assert that ack was called successfully WITHOUT errors
+        # With the bug, this would fail with "Select a valid choice. 40 is not one of the available choices"
+        first_call_kwargs = ack.call_args_list[0][1] if ack.call_args_list else ack.call_args.kwargs
+        assert first_call_kwargs == {} or "errors" not in first_call_kwargs, \
+            f"Should allow updating priority without changing status. Got errors: {first_call_kwargs.get('errors')}"
+
+        # Verify that incident update WAS triggered (priority changed)
         trigger_incident_workflow.assert_called_once()
 
 
