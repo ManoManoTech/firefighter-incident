@@ -70,9 +70,10 @@ class UpdateStatusForm(forms.Form):
             if current_status not in allowed_statuses:
                 allowed_statuses.insert(0, current_status)
             # Convert values to strings to match what Slack sends in form submissions
-            status_field.choices = [(str(s.value), s.label) for s in allowed_statuses]  # type: ignore[attr-defined]
+            choices = [(str(s.value), s.label) for s in allowed_statuses]
+            status_field.choices = choices  # type: ignore[attr-defined]
             logger.debug(
-                f"Set status choices for incident #{incident.id}: {status_field.choices} "
+                f"Set status choices for incident #{incident.id}: {choices} "
                 f"(current_status={current_status}, requires_postmortem={requires_postmortem})"
             )
 
