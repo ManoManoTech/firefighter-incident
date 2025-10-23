@@ -17,11 +17,61 @@ import pytest
 from firefighter.incidents.forms.unified_incident import UnifiedIncidentForm
 from firefighter.incidents.models.impact import ImpactLevel, ImpactType, LevelChoices
 from firefighter.incidents.signals import create_incident_conversation
+from firefighter.slack.messages.base import SlackMessageStrategy
 from firefighter.slack.views.modals.open import OpenModal
 from firefighter.slack.views.modals.opening.details.unified import (
     OpeningUnifiedModal,
     UnifiedIncidentFormSlack,
 )
+
+
+def create_mock_slack_message(incident):
+    """Create a mock SlackMessageIncidentDeclaredAnnouncement with proper attributes."""
+    mock_slack_message_instance = MagicMock()
+    mock_slack_message_instance.strategy = SlackMessageStrategy.APPEND
+    mock_slack_message_instance.id = "test_message"
+    mock_slack_message_instance.incident = incident  # Store the real incident
+    mock_slack_message_instance.incident_update = None  # Declarations don't have incident updates
+    mock_slack_message_instance.get_slack_message_params.return_value = {
+        "text": "Test incident declared",
+        "blocks": []
+    }
+    return mock_slack_message_instance
+
+
+def setup_jira_mocks(mock_select_impact_used, mock_select_impact_source,
+                     mock_get_jira_user, mock_jira_client, mock_prepare_fields,
+                     mock_jira_ticket_model, mock_slack_announcement):
+    """Configure all Jira-related mocks for the unified workflow."""
+    # Mock SelectImpactForm - we need to configure BOTH patches
+    mock_form_instance = MagicMock()
+    mock_form_instance.save.return_value = None
+    mock_form_instance.is_valid.return_value = True
+    mock_select_impact_used.return_value = mock_form_instance
+    mock_select_impact_source.return_value = mock_form_instance
+
+    # Mock Jira user lookup
+    mock_jira_user = MagicMock()
+    mock_jira_user.id = "jira-user-123"
+    mock_get_jira_user.return_value = mock_jira_user
+
+    # Mock prepare_jira_fields
+    mock_prepare_fields.return_value = {"summary": "Test", "project": {"key": "TEST"}}
+
+    # Mock Jira API create_issue call
+    mock_jira_client.create_issue.return_value = {
+        "issue_key": "TEST-123",
+        "issue_url": "https://jira.example.com/browse/TEST-123",
+    }
+
+    # Mock JiraTicket creation
+    mock_jira_ticket = MagicMock()
+    mock_jira_ticket.url = "https://jira.example.com/browse/TEST-123"
+    mock_jira_ticket.id = "TEST-123"
+    mock_jira_ticket_model.objects.create.return_value = mock_jira_ticket
+
+    # Mock SlackMessageIncidentDeclaredAnnouncement
+    mock_slack_announcement.side_effect = create_mock_slack_message
 
 
 @pytest.mark.django_db
@@ -90,11 +140,23 @@ class TestUnifiedIncidentFormCustomFieldsPropagation:
         create_incident_conversation.connect(capture_signal, weak=False)
 
         try:
-            # Mock SelectImpactForm.save since it's not what we're testing here
-            with patch("firefighter.incidents.forms.unified_incident.SelectImpactForm") as mock_select_impact:
-                mock_form_instance = MagicMock()
-                mock_form_instance.save.return_value = None
-                mock_select_impact.return_value = mock_form_instance
+            # Mock Jira-related calls in unified workflow
+            # SelectImpactForm appears in TWO places and needs TWO patches:
+            # 1. Module-level import (line 11) → patch where it's USED: unified_incident.SelectImpactForm
+            # 2. Lazy import inside _create_jira_ticket (line 414) → patch SOURCE: select_impact.SelectImpactForm
+            # Other Jira imports are lazy, so we patch them at source modules
+            with patch("firefighter.incidents.forms.unified_incident.SelectImpactForm") as mock_select_impact_used, \
+                 patch("firefighter.incidents.forms.select_impact.SelectImpactForm") as mock_select_impact_source, \
+                 patch("firefighter.raid.service.get_jira_user_from_user") as mock_get_jira_user, \
+                 patch("firefighter.raid.client.client") as mock_jira_client, \
+                 patch("firefighter.raid.forms.prepare_jira_fields") as mock_prepare_fields, \
+                 patch("firefighter.raid.forms.set_jira_ticket_watchers_raid"), \
+                 patch("firefighter.raid.models.JiraTicket") as mock_jira_ticket_model, \
+                 patch("firefighter.slack.messages.slack_messages.SlackMessageIncidentDeclaredAnnouncement") as mock_slack_announcement:
+
+                setup_jira_mocks(mock_select_impact_used, mock_select_impact_source,
+                                mock_get_jira_user, mock_jira_client, mock_prepare_fields,
+                                mock_jira_ticket_model, mock_slack_announcement)
 
                 # Trigger workflow
                 user = user_factory()
@@ -193,11 +255,23 @@ class TestUnifiedIncidentFormCustomFieldsPropagation:
         create_incident_conversation.connect(capture_signal, weak=False)
 
         try:
-            # Mock SelectImpactForm.save since it's not what we're testing here
-            with patch("firefighter.incidents.forms.unified_incident.SelectImpactForm") as mock_select_impact:
-                mock_form_instance = MagicMock()
-                mock_form_instance.save.return_value = None
-                mock_select_impact.return_value = mock_form_instance
+            # Mock Jira-related calls in unified workflow
+            # SelectImpactForm appears in TWO places and needs TWO patches:
+            # 1. Module-level import (line 11) → patch where it's USED: unified_incident.SelectImpactForm
+            # 2. Lazy import inside _create_jira_ticket (line 414) → patch SOURCE: select_impact.SelectImpactForm
+            # Other Jira imports are lazy, so we patch them at source modules
+            with patch("firefighter.incidents.forms.unified_incident.SelectImpactForm") as mock_select_impact_used, \
+                 patch("firefighter.incidents.forms.select_impact.SelectImpactForm") as mock_select_impact_source, \
+                 patch("firefighter.raid.service.get_jira_user_from_user") as mock_get_jira_user, \
+                 patch("firefighter.raid.client.client") as mock_jira_client, \
+                 patch("firefighter.raid.forms.prepare_jira_fields") as mock_prepare_fields, \
+                 patch("firefighter.raid.forms.set_jira_ticket_watchers_raid"), \
+                 patch("firefighter.raid.models.JiraTicket") as mock_jira_ticket_model, \
+                 patch("firefighter.slack.messages.slack_messages.SlackMessageIncidentDeclaredAnnouncement") as mock_slack_announcement:
+
+                setup_jira_mocks(mock_select_impact_used, mock_select_impact_source,
+                                mock_get_jira_user, mock_jira_client, mock_prepare_fields,
+                                mock_jira_ticket_model, mock_slack_announcement)
 
                 # Trigger workflow
                 user = user_factory()
@@ -303,11 +377,23 @@ class TestUnifiedIncidentFormCustomFieldsPropagation:
         create_incident_conversation.connect(capture_signal, weak=False)
 
         try:
-            # Mock SelectImpactForm.save since it's not what we're testing here
-            with patch("firefighter.incidents.forms.unified_incident.SelectImpactForm") as mock_select_impact:
-                mock_form_instance = MagicMock()
-                mock_form_instance.save.return_value = None
-                mock_select_impact.return_value = mock_form_instance
+            # Mock Jira-related calls in unified workflow
+            # SelectImpactForm appears in TWO places and needs TWO patches:
+            # 1. Module-level import (line 11) → patch where it's USED: unified_incident.SelectImpactForm
+            # 2. Lazy import inside _create_jira_ticket (line 414) → patch SOURCE: select_impact.SelectImpactForm
+            # Other Jira imports are lazy, so we patch them at source modules
+            with patch("firefighter.incidents.forms.unified_incident.SelectImpactForm") as mock_select_impact_used, \
+                 patch("firefighter.incidents.forms.select_impact.SelectImpactForm") as mock_select_impact_source, \
+                 patch("firefighter.raid.service.get_jira_user_from_user") as mock_get_jira_user, \
+                 patch("firefighter.raid.client.client") as mock_jira_client, \
+                 patch("firefighter.raid.forms.prepare_jira_fields") as mock_prepare_fields, \
+                 patch("firefighter.raid.forms.set_jira_ticket_watchers_raid"), \
+                 patch("firefighter.raid.models.JiraTicket") as mock_jira_ticket_model, \
+                 patch("firefighter.slack.messages.slack_messages.SlackMessageIncidentDeclaredAnnouncement") as mock_slack_announcement:
+
+                setup_jira_mocks(mock_select_impact_used, mock_select_impact_source,
+                                mock_get_jira_user, mock_jira_client, mock_prepare_fields,
+                                mock_jira_ticket_model, mock_slack_announcement)
 
                 # Trigger workflow
                 user = user_factory()
@@ -396,11 +482,23 @@ class TestUnifiedIncidentFormCustomFieldsPropagation:
         create_incident_conversation.connect(capture_signal, weak=False)
 
         try:
-            # Mock SelectImpactForm.save since it's not what we're testing here
-            with patch("firefighter.incidents.forms.unified_incident.SelectImpactForm") as mock_select_impact:
-                mock_form_instance = MagicMock()
-                mock_form_instance.save.return_value = None
-                mock_select_impact.return_value = mock_form_instance
+            # Mock Jira-related calls in unified workflow
+            # SelectImpactForm appears in TWO places and needs TWO patches:
+            # 1. Module-level import (line 11) → patch where it's USED: unified_incident.SelectImpactForm
+            # 2. Lazy import inside _create_jira_ticket (line 414) → patch SOURCE: select_impact.SelectImpactForm
+            # Other Jira imports are lazy, so we patch them at source modules
+            with patch("firefighter.incidents.forms.unified_incident.SelectImpactForm") as mock_select_impact_used, \
+                 patch("firefighter.incidents.forms.select_impact.SelectImpactForm") as mock_select_impact_source, \
+                 patch("firefighter.raid.service.get_jira_user_from_user") as mock_get_jira_user, \
+                 patch("firefighter.raid.client.client") as mock_jira_client, \
+                 patch("firefighter.raid.forms.prepare_jira_fields") as mock_prepare_fields, \
+                 patch("firefighter.raid.forms.set_jira_ticket_watchers_raid"), \
+                 patch("firefighter.raid.models.JiraTicket") as mock_jira_ticket_model, \
+                 patch("firefighter.slack.messages.slack_messages.SlackMessageIncidentDeclaredAnnouncement") as mock_slack_announcement:
+
+                setup_jira_mocks(mock_select_impact_used, mock_select_impact_source,
+                                mock_get_jira_user, mock_jira_client, mock_prepare_fields,
+                                mock_jira_ticket_model, mock_slack_announcement)
 
                 # Trigger workflow
                 user = user_factory()
@@ -561,11 +659,50 @@ class TestOpenModalPreservesCustomFieldsContext:
         create_incident_conversation.connect(capture_signal, weak=False)
 
         try:
-            # Mock SelectImpactForm.save since it's not what we're testing here
-            with patch("firefighter.incidents.forms.unified_incident.SelectImpactForm") as mock_select_impact:
+            # Mock Jira-related calls in unified workflow
+            # SelectImpactForm appears in TWO places and needs TWO patches:
+            # 1. Module-level import (line 11) → patch where it's USED: unified_incident.SelectImpactForm
+            # 2. Lazy import inside _create_jira_ticket (line 414) → patch SOURCE: select_impact.SelectImpactForm
+            # Other Jira imports are lazy, so we patch them at source modules
+            with patch("firefighter.incidents.forms.unified_incident.SelectImpactForm") as mock_select_impact_used, \
+                 patch("firefighter.incidents.forms.select_impact.SelectImpactForm") as mock_select_impact_source, \
+                 patch("firefighter.raid.service.get_jira_user_from_user") as mock_get_jira_user, \
+                 patch("firefighter.raid.client.client") as mock_jira_client, \
+                 patch("firefighter.raid.forms.prepare_jira_fields") as mock_prepare_fields, \
+                 patch("firefighter.raid.forms.set_jira_ticket_watchers_raid"), \
+                 patch("firefighter.raid.models.JiraTicket") as mock_jira_ticket_model, \
+                 patch("firefighter.slack.messages.slack_messages.SlackMessageIncidentDeclaredAnnouncement") as mock_slack_announcement:
+
+                # Mock SelectImpactForm - we need to configure BOTH patches
+                # They both return the same mock instance
                 mock_form_instance = MagicMock()
                 mock_form_instance.save.return_value = None
-                mock_select_impact.return_value = mock_form_instance
+                mock_form_instance.is_valid.return_value = True
+                mock_select_impact_used.return_value = mock_form_instance
+                mock_select_impact_source.return_value = mock_form_instance
+
+                # Mock Jira user lookup
+                mock_jira_user = MagicMock()
+                mock_jira_user.id = "jira-user-123"
+                mock_get_jira_user.return_value = mock_jira_user
+
+                # Mock prepare_jira_fields to return valid fields
+                mock_prepare_fields.return_value = {"summary": "Test", "project": {"key": "TEST"}}
+
+                # Mock Jira API create_issue call
+                mock_jira_client.create_issue.return_value = {
+                    "issue_key": "TEST-123",
+                    "issue_url": "https://jira.example.com/browse/TEST-123",
+                }
+
+                # Mock JiraTicket creation - must have .url attribute for bookmarks
+                mock_jira_ticket = MagicMock()
+                mock_jira_ticket.url = "https://jira.example.com/browse/TEST-123"
+                mock_jira_ticket.id = "TEST-123"
+                mock_jira_ticket_model.objects.create.return_value = mock_jira_ticket
+
+                # Mock SlackMessageIncidentDeclaredAnnouncement
+                mock_slack_announcement.side_effect = create_mock_slack_message
 
                 user = user_factory()
                 form.trigger_incident_workflow(
