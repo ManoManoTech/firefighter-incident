@@ -77,6 +77,15 @@ class EnumChoiceField(TypedChoiceField):
         self.enum_class = enum_class
         if "choices" not in kwargs:
             kwargs["choices"] = enum_class.choices
+
+        # Customize error messages for better UX
+        if "error_messages" not in kwargs:
+            kwargs["error_messages"] = {}
+        if "invalid_choice" not in kwargs["error_messages"]:
+            kwargs["error_messages"]["invalid_choice"] = (
+                "The selected value is not valid. Please select a value from the dropdown list."
+            )
+
         super().__init__(*args, coerce=self.coerce_func, **kwargs)
 
     def validate(self, value: Any) -> None:
