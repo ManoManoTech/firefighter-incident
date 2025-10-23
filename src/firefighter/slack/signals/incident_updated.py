@@ -38,6 +38,11 @@ def incident_updated_update_status_handler(
     updated_fields: list[str],
     **kwargs: Any,
 ) -> None:
+    # Skip Slack operations for incidents without channels (e.g., P4-P5)
+    if not hasattr(incident, "conversation"):
+        logger.debug(f"Skipping Slack channel update for incident {incident.id} (no conversation)")
+        return
+
     # Update Slack channel if needed
     incident.conversation.rename_if_needed()
 
@@ -65,6 +70,10 @@ def incident_updated_check_dowmgrade_handler(
     updated_fields: list[str],
     **kwargs: Any,
 ) -> None:
+    # Skip Slack operations for incidents without channels (e.g., P4-P5)
+    if not hasattr(incident, "conversation"):
+        return
+
     # Only show downgrade hint when downgrading from critical (P1/P2/P3) to normal (P4/P5)
     old_priority: Priority | None = kwargs.get("old_priority")
 
@@ -117,6 +126,10 @@ def incident_updated_update_roles_handler(
     updated_fields: list[str],
     **kwargs: Any,
 ) -> None:
+    # Skip Slack operations for incidents without channels (e.g., P4-P5)
+    if not hasattr(incident, "conversation"):
+        return
+
     # Publish a message to the conversation
     update_roles_message = SlackMessageIncidentRolesUpdated(
         incident=incident,
@@ -149,6 +162,10 @@ def incident_updated_reinvite_handler(
     updated_fields: list[str],
     **kwargs: Any,
 ) -> None:
+    # Skip Slack operations for incidents without channels (e.g., P4-P5)
+    if not hasattr(incident, "conversation"):
+        return
+
     if incident.conversation.type == ConversationType.PRIVATE_CHANNEL:
         return
 
@@ -173,6 +190,12 @@ def incident_key_events_updated_handler(
     **kwargs: Any,
 ) -> None:
     logger.info("Received incident_key_events_updated signal")
+
+    # Skip Slack operations for incidents without channels (e.g., P4-P5)
+    if not hasattr(incident, "conversation"):
+        logger.debug(f"Skipping key events update for incident {incident.id} (no conversation)")
+        return
+
     # Skip key events for incidents closed directly
     if incident.closure_reason:
         logger.info(f"Skipping key events update for incident {incident.id} (direct closure)")
@@ -194,6 +217,11 @@ def publish_status_update(
     old_priority: Priority | None = None,
 ) -> None:
     """Publishes an update to the incident status."""
+    # Skip Slack operations for incidents without channels (e.g., P4-P5)
+    if not hasattr(incident, "conversation"):
+        logger.debug(f"Skipping status update publication for incident {incident.id} (no conversation)")
+        return
+
     message = SlackMessageIncidentStatusUpdated(
         incident=incident,
         incident_update=incident_update,

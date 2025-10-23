@@ -17,7 +17,6 @@ class RaidConfig(AppConfig):
         import firefighter.raid.tasks
         import firefighter.raid.urls
         from firefighter.raid.signals import (
-            incident_created,
             incident_updated,
         )
         from firefighter.slack.views.modals.open import INCIDENT_TYPES
