@@ -79,6 +79,11 @@ class EnumChoiceField(TypedChoiceField):
             kwargs["choices"] = enum_class.choices
         super().__init__(*args, coerce=self.coerce_func, **kwargs)
 
+    def validate(self, value: Any) -> None:
+        """Log validation for debugging."""
+        logger.debug(f"EnumChoiceField.validate: value={value!r} (type={type(value).__name__}), choices={self.choices}")
+        return super().validate(value)
+
     def to_python(self, value: Any) -> int | str | Any:
         """Return a value from the enum class."""
         if value in self.empty_values:

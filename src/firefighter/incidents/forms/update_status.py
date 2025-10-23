@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from typing import TYPE_CHECKING, Any
 
 from django import forms
@@ -10,6 +11,8 @@ from firefighter.incidents.models import IncidentCategory, Priority
 
 if TYPE_CHECKING:
     from firefighter.incidents.models import Incident
+
+logger = logging.getLogger(__name__)
 
 
 class UpdateStatusForm(forms.Form):
@@ -68,6 +71,10 @@ class UpdateStatusForm(forms.Form):
                 allowed_statuses.insert(0, current_status)
             # Convert values to strings to match what Slack sends in form submissions
             status_field.choices = [(str(s.value), s.label) for s in allowed_statuses]  # type: ignore[attr-defined]
+            logger.debug(
+                f"Set status choices for incident #{incident.id}: {status_field.choices} "
+                f"(current_status={current_status}, requires_postmortem={requires_postmortem})"
+            )
 
     def _get_allowed_statuses(
         self, current_status: IncidentStatus, *, requires_postmortem: bool
