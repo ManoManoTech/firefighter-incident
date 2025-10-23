@@ -332,18 +332,26 @@ class TestUpdateStatusModal:
 
     @staticmethod
     def test_can_close_when_all_conditions_met(mocker: MockerFixture) -> None:
-        """Test that closing is allowed when all conditions are met."""
+        """Test that closing is allowed when all conditions are met for P3+ incidents."""
         # Create a user first
         user = UserFactory.build()
         user.save()
 
-        # Create an incident in MITIGATED status with all conditions met
+        # Create a P3+ incident in MITIGATED status with all conditions met
         incident = IncidentFactory.build(
             _status=IncidentStatus.MITIGATED,
             created_by=user,
         )
         # IMPORTANT: Save the incident so it has an ID for the form to reference
         incident.save()
+
+        # Mock needs_postmortem to return False (P3+ incident)
+        mocker.patch.object(
+            type(incident),
+            "needs_postmortem",
+            new_callable=PropertyMock,
+            return_value=False
+        )
 
         # Mock can_be_closed to return True (all conditions met)
         mocker.patch.object(

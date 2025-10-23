@@ -65,7 +65,21 @@ def incident_updated_check_dowmgrade_handler(
     updated_fields: list[str],
     **kwargs: Any,
 ) -> None:
-    if not incident_update.priority or incident_update.priority.value <= 2:
+    # Only show downgrade hint when downgrading from critical (P1/P2/P3) to normal (P4/P5)
+    old_priority: Priority | None = kwargs.get("old_priority")
+
+    # Check if priority was actually changed
+    if not incident_update.priority or "priority_id" not in updated_fields:
+        return
+
+    # New priority must be P4 or P5 (normal incident)
+    new_priority_is_normal = incident_update.priority.value >= 4
+
+    # Old priority must have been P1, P2, or P3 (critical incident)
+    old_priority_was_critical = old_priority is not None and old_priority.value <= 3
+
+    # Only show hint if downgrading from critical to normal
+    if not (new_priority_is_normal and old_priority_was_critical):
         return
 
     try:
