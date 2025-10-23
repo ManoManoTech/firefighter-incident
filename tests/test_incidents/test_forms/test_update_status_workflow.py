@@ -15,6 +15,11 @@ from firefighter.incidents.models import Environment, Priority
 class TestUpdateStatusWorkflow(TestCase):
     """Test that status choices respect workflow rules."""
 
+    @staticmethod
+    def _get_available_statuses(status_choices: dict[str, str]) -> list[IncidentStatus]:
+        """Convert status_choices dict (string keys) to list of IncidentStatus enums."""
+        return [IncidentStatus(int(k)) for k in status_choices]
+
     def test_p1_p2_cannot_skip_postmortem(self):
         """P1/P2 incidents cannot go directly from Mitigated to Closed."""
 
@@ -55,8 +60,9 @@ class TestUpdateStatusWorkflow(TestCase):
 
         # Check that CLOSED is not in the choices
         status_choices = dict(form.fields["status"].choices)
-        assert IncidentStatus.CLOSED not in status_choices
-        assert IncidentStatus.POST_MORTEM in status_choices
+        available_statuses = self._get_available_statuses(status_choices)
+        assert IncidentStatus.CLOSED not in available_statuses
+        assert IncidentStatus.POST_MORTEM in available_statuses
 
     def test_p1_p2_can_close_from_postmortem(self):
         """P1/P2 incidents can go from Post-mortem to Closed."""
@@ -86,7 +92,8 @@ class TestUpdateStatusWorkflow(TestCase):
 
         # Check that CLOSED is in the choices
         status_choices = dict(form.fields["status"].choices)
-        assert IncidentStatus.CLOSED in status_choices
+        available_statuses = self._get_available_statuses(status_choices)
+        assert IncidentStatus.CLOSED in available_statuses
 
     def test_p3_plus_can_skip_postmortem(self):
         """P3+ incidents can go directly from Mitigated to Closed and should not have post-mortem."""
@@ -110,8 +117,9 @@ class TestUpdateStatusWorkflow(TestCase):
 
         # Check that CLOSED is in the choices for P3+ but POST_MORTEM is NOT
         status_choices = dict(form.fields["status"].choices)
-        assert IncidentStatus.CLOSED in status_choices
-        assert IncidentStatus.POST_MORTEM not in status_choices, "P3+ incidents should not have post-mortem status available"
+        available_statuses = self._get_available_statuses(status_choices)
+        assert IncidentStatus.CLOSED in available_statuses
+        assert IncidentStatus.POST_MORTEM not in available_statuses, "P3+ incidents should not have post-mortem status available"
 
     def test_p1_p2_cannot_skip_postmortem_from_mitigating(self):
         """P1/P2 incidents cannot go directly from Mitigating to Closed."""
@@ -141,8 +149,9 @@ class TestUpdateStatusWorkflow(TestCase):
 
         # Check that CLOSED and POST_MORTEM are not in the choices from MITIGATING status
         status_choices = dict(form.fields["status"].choices)
-        assert IncidentStatus.CLOSED not in status_choices
-        assert IncidentStatus.POST_MORTEM not in status_choices, "P1/P2 should not be able to go to post-mortem from Mitigating"
+        available_statuses = self._get_available_statuses(status_choices)
+        assert IncidentStatus.CLOSED not in available_statuses
+        assert IncidentStatus.POST_MORTEM not in available_statuses, "P1/P2 should not be able to go to post-mortem from Mitigating"
 
     def test_p3_can_skip_from_investigating_to_closed(self):
         """P3+ incidents can go directly from Investigating to Closed."""
@@ -165,8 +174,9 @@ class TestUpdateStatusWorkflow(TestCase):
 
         # Check that CLOSED is in the choices from INVESTIGATING status for P3+ but POST_MORTEM is NOT
         status_choices = dict(form.fields["status"].choices)
-        assert IncidentStatus.CLOSED in status_choices
-        assert IncidentStatus.POST_MORTEM not in status_choices, "P3+ incidents should not have post-mortem status available"
+        available_statuses = self._get_available_statuses(status_choices)
+        assert IncidentStatus.CLOSED in available_statuses
+        assert IncidentStatus.POST_MORTEM not in available_statuses, "P3+ incidents should not have post-mortem status available"
 
     def test_p1_p2_can_go_from_mitigated_to_postmortem(self):
         """P1/P2 incidents can go from Mitigated to Post-mortem."""
@@ -196,8 +206,9 @@ class TestUpdateStatusWorkflow(TestCase):
 
         # Check that POST_MORTEM is available but CLOSED is not
         status_choices = dict(form.fields["status"].choices)
-        assert IncidentStatus.POST_MORTEM in status_choices, "P1/P2 should be able to go to Post-mortem from Mitigated"
-        assert IncidentStatus.CLOSED not in status_choices, "P1/P2 should NOT be able to skip Post-mortem"
+        available_statuses = self._get_available_statuses(status_choices)
+        assert IncidentStatus.POST_MORTEM in available_statuses, "P1/P2 should be able to go to Post-mortem from Mitigated"
+        assert IncidentStatus.CLOSED not in available_statuses, "P1/P2 should NOT be able to skip Post-mortem"
 
     def test_complete_workflow_transitions_p3_plus(self):
         """Test the correct workflow for P3+: can close with reason from early statuses, normal close from Mitigated."""
@@ -225,14 +236,15 @@ class TestUpdateStatusWorkflow(TestCase):
 
             form = UpdateStatusForm(incident=incident)
             status_choices = dict(form.fields["status"].choices)
+            available_statuses = self._get_available_statuses(status_choices)
 
             if should_have_closed:
-                assert IncidentStatus.CLOSED in status_choices, f"P3+ should be able to go to Closed from {current_status.label}"
+                assert IncidentStatus.CLOSED in available_statuses, f"P3+ should be able to go to Closed from {current_status.label}"
             else:
-                assert IncidentStatus.CLOSED not in status_choices, f"P3+ should NOT be able to go to Closed from {current_status.label}"
+                assert IncidentStatus.CLOSED not in available_statuses, f"P3+ should NOT be able to go to Closed from {current_status.label}"
 
             # P3+ should NEVER have post-mortem available
-            assert IncidentStatus.POST_MORTEM not in status_choices, f"P3+ should NEVER have post-mortem available from {current_status.label}"
+            assert IncidentStatus.POST_MORTEM not in available_statuses, f"P3+ should NEVER have post-mortem available from {current_status.label}"
 
     def test_closure_reason_required_from_early_statuses(self):
         """Test that closure reason is required when closing from Opened or Investigating."""
@@ -283,17 +295,18 @@ class TestUpdateStatusWorkflow(TestCase):
 
             form = UpdateStatusForm(incident=incident)
             status_choices = dict(form.fields["status"].choices)
+            available_statuses = self._get_available_statuses(status_choices)
 
             # Should NOT have Closed option from Mitigating
-            assert IncidentStatus.CLOSED not in status_choices, f"Should NOT be able to close from Mitigating for {priority.name}"
+            assert IncidentStatus.CLOSED not in available_statuses, f"Should NOT be able to close from Mitigating for {priority.name}"
 
             # Should have Post-mortem option only for P1/P2 priorities that need postmortem
             if priority.needs_postmortem:
                 # For P1/P2, should still NOT have post-mortem from MITIGATING (Mitigating)
-                assert IncidentStatus.POST_MORTEM not in status_choices, f"P1/P2 should NOT be able to go to Post-mortem from Mitigating for {priority.name}"
+                assert IncidentStatus.POST_MORTEM not in available_statuses, f"P1/P2 should NOT be able to go to Post-mortem from Mitigating for {priority.name}"
             else:
                 # For P3+, should not have post-mortem at all
-                assert IncidentStatus.POST_MORTEM not in status_choices, f"P3+ should not have post-mortem available for {priority.name}"
+                assert IncidentStatus.POST_MORTEM not in available_statuses, f"P3+ should not have post-mortem available for {priority.name}"
 
     def test_no_incident_shows_all_statuses(self):
         """When no incident is provided, all statuses should be available."""
@@ -302,8 +315,9 @@ class TestUpdateStatusWorkflow(TestCase):
 
         # Check that all statuses including CLOSED are in the choices
         status_choices = dict(form.fields["status"].choices)
-        assert IncidentStatus.CLOSED in status_choices
-        assert IncidentStatus.POST_MORTEM in status_choices
+        available_statuses = self._get_available_statuses(status_choices)
+        assert IncidentStatus.CLOSED in available_statuses
+        assert IncidentStatus.POST_MORTEM in available_statuses
 
     def test_requires_closure_reason_non_closed_status(self):
         """Test requires_closure_reason with non-CLOSED target status."""
@@ -338,6 +352,7 @@ class TestUpdateStatusWorkflow(TestCase):
 
         form = UpdateStatusForm(incident=incident)
         status_choices = dict(form.fields["status"].choices)
+        available_statuses = self._get_available_statuses(status_choices)
 
         # Should use default choices_lte for unknown/closed status
-        assert IncidentStatus.CLOSED in status_choices
+        assert IncidentStatus.CLOSED in available_statuses

@@ -66,7 +66,8 @@ class UpdateStatusForm(forms.Form):
         if allowed_statuses:
             if current_status not in allowed_statuses:
                 allowed_statuses.insert(0, current_status)
-            status_field.choices = [(s.value, s.label) for s in allowed_statuses]  # type: ignore[attr-defined]
+            # Convert values to strings to match what Slack sends in form submissions
+            status_field.choices = [(str(s.value), s.label) for s in allowed_statuses]  # type: ignore[attr-defined]
 
     def _get_allowed_statuses(
         self, current_status: IncidentStatus, *, requires_postmortem: bool
@@ -126,11 +127,12 @@ class UpdateStatusForm(forms.Form):
         self, status_field: Any, current_status: IncidentStatus, default_choices: Any
     ) -> None:
         """Set status field choices to default, ensuring current status is included."""
-        status_field.choices = default_choices
+        # Convert default_choices to string keys to match Slack form submissions
+        status_field.choices = [(str(choice[0]), choice[1]) for choice in default_choices]
         existing_values = {choice[0] for choice in status_field.choices}
-        if current_status.value not in existing_values:
+        if str(current_status.value) not in existing_values:
             # Insert current status at the beginning
-            status_field.choices = [(current_status.value, current_status.label), *status_field.choices]
+            status_field.choices = [(str(current_status.value), current_status.label), *status_field.choices]
 
     @staticmethod
     def requires_closure_reason(incident: Incident, target_status: IncidentStatus) -> bool:

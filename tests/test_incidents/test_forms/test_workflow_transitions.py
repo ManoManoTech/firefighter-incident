@@ -63,7 +63,8 @@ class TestCompleteWorkflowTransitions(TestCase):
 
             form = UpdateStatusForm(incident=incident)
             status_choices = dict(form.fields["status"].choices)
-            available_statuses = list(status_choices.keys())
+            # Convert string keys back to enum values for comparison
+            available_statuses = [IncidentStatus(int(k)) for k in status_choices]
 
             # Remove current status from available (can't transition to same status)
             if current_status in available_statuses:
@@ -72,14 +73,14 @@ class TestCompleteWorkflowTransitions(TestCase):
             for expected_status in expected_statuses:
                 assert expected_status in available_statuses, (
                     f"P1/P2: From {current_status.label}, should be able to go to {expected_status.label}. "
-                    f"Available: {[IncidentStatus(s).label for s in available_statuses]}"
+                    f"Available: {[s.label for s in available_statuses]}"
                 )
 
             # Verify no unexpected statuses are available
             unexpected_statuses = set(available_statuses) - set(expected_statuses)
             assert not unexpected_statuses, (
                 f"P1/P2: From {current_status.label}, unexpected statuses available: "
-                f"{[IncidentStatus(s).label for s in unexpected_statuses]}"
+                f"{[s.label for s in unexpected_statuses]}"
             )
 
     def test_p3_plus_complete_workflow_transitions(self):
@@ -109,7 +110,8 @@ class TestCompleteWorkflowTransitions(TestCase):
 
             form = UpdateStatusForm(incident=incident)
             status_choices = dict(form.fields["status"].choices)
-            available_statuses = list(status_choices.keys())
+            # Convert string keys back to enum values for comparison
+            available_statuses = [IncidentStatus(int(k)) for k in status_choices]
 
             # Remove current status from available (can't transition to same status)
             if current_status in available_statuses:
@@ -118,14 +120,14 @@ class TestCompleteWorkflowTransitions(TestCase):
             for expected_status in expected_statuses:
                 assert expected_status in available_statuses, (
                     f"P3+: From {current_status.label}, should be able to go to {expected_status.label}. "
-                    f"Available: {[IncidentStatus(s).label for s in available_statuses]}"
+                    f"Available: {[s.label for s in available_statuses]}"
                 )
 
             # Verify no unexpected statuses are available (especially POST_MORTEM)
             unexpected_statuses = set(available_statuses) - set(expected_statuses)
             assert not unexpected_statuses, (
                 f"P3+: From {current_status.label}, unexpected statuses available: "
-                f"{[IncidentStatus(s).label for s in unexpected_statuses]}"
+                f"{[s.label for s in unexpected_statuses]}"
             )
 
             # Specifically verify POST_MORTEM is never available for P3+
