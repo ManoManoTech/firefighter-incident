@@ -106,6 +106,8 @@ class LandbotIssueRequestSerializer(serializers.ModelSerializer[JiraTicket]):
     labels = serializers.ListField(
         required=False,
         write_only=True,
+        allow_null=True,
+        default=list,
         child=serializers.CharField(
             max_length=128,
             allow_blank=False,
@@ -171,6 +173,23 @@ class LandbotIssueRequestSerializer(serializers.ModelSerializer[JiraTicket]):
         return value
 
     def create(self, validated_data: dict[str, Any]) -> JiraTicket:
+        """Create Incident and JiraTicket for Landbot API requests.
+
+        This method follows the unified workflow:
+        1. Create Incident in database (P4-P5 only from Landbot)
+        2. Create Jira ticket via API
+        3. Link JiraTicket to Incident
+        4. Send Slack notifications
+        """
+        from firefighter.incidents.models.environment import (  # noqa: PLC0415
+            Environment,
+        )
+        from firefighter.incidents.models.incident import Incident  # noqa: PLC0415
+        from firefighter.incidents.models.incident_category import (  # noqa: PLC0415
+            IncidentCategory,
+        )
+        from firefighter.incidents.models.priority import Priority  # noqa: PLC0415
+
         reporter_email: str = validated_data["reporter_email"]
 
         reporter_user, reporter, user_domain = get_reporter_user_from_email(
@@ -182,6 +201,71 @@ class LandbotIssueRequestSerializer(serializers.ModelSerializer[JiraTicket]):
             else ""
         )
 
+        # Step 1: Create Incident in database (UNIFIED WORKFLOW)
+        # Map priority value (1-5) to Priority object
+        priority_value = validated_data["priority"]
+        if priority_value is None:
+            priority = Priority.objects.get(default=True)  # Default to P4
+        else:
+            priority = Priority.objects.get(value=priority_value)
+
+        # Map incident_category string to IncidentCategory object
+        incident_category_name = validated_data["incident_category"]
+        if incident_category_name:
+            try:
+                incident_category = IncidentCategory.objects.get(
+                    name=incident_category_name
+                )
+            except IncidentCategory.DoesNotExist:
+                # Fallback to first category if not found
+                incident_category = IncidentCategory.objects.first()
+                if incident_category is None:
+                    raise ValueError("No IncidentCategory found in database")
+        else:
+            # Use first category when no category provided
+            incident_category = IncidentCategory.objects.first()
+            if incident_category is None:
+                raise ValueError("No IncidentCategory found in database")
+
+        # Map environments list to Environment objects
+        environments_list = validated_data["environments"]
+        if environments_list and environments_list != ["-"]:
+            # Use the highest priority environment (lowest order value)
+            env_objects = Environment.objects.filter(value__in=environments_list)
+            if env_objects.exists():
+                environment = min(env_objects, key=lambda env: env.order)
+            else:
+                environment = Environment.objects.get(default=True)
+        else:
+            environment = Environment.objects.get(default=True)
+
+        # Build custom_fields with all Jira-specific data
+        custom_fields = {
+            "zendesk_ticket_id": None,
+            "seller_contract_id": validated_data.get("seller_contract_id"),
+            "zoho_desk_ticket_id": validated_data.get("zoho"),
+            "is_key_account": None,
+            "is_seller_in_golden_list": None,
+            "suggested_team_routing": validated_data.get("suggested_team_routing"),
+            "environments": validated_data.get("environments", []),
+            "platforms": [validated_data.get("platform")] if validated_data.get("platform") else [],
+        }
+        # Remove None values
+        custom_fields = {k: v for k, v in custom_fields.items() if v is not None}
+
+        # Create Incident (always for all priorities - UNIFIED)
+        incident = Incident.objects.declare(
+            title=validated_data["summary"],
+            description=validated_data.get("description", ""),
+            priority=priority,
+            incident_category=incident_category,
+            environment=environment,
+            created_by=reporter_user,
+            custom_fields=custom_fields,
+        )
+        logger.info(f"LANDBOT API - Incident created: {incident.id} for priority {priority.value}")
+
+        # Step 2: Create Jira ticket via API (UNIFIED WORKFLOW)
         issue = jira_client.create_issue(
             issuetype=validated_data["issue_type"],
             summary=validated_data["summary"],
@@ -209,6 +293,8 @@ class LandbotIssueRequestSerializer(serializers.ModelSerializer[JiraTicket]):
         if issue_id is None:
             logger.error("Could not create Jira ticket")
             raise JiraAPIError("Could not create Jira ticket")
+
+        # Add attachments if provided
         if validated_data["attachments"] is not None:
             #  Prepare attachments and double check we don't have any empty strings
             attachments: list[str] = [
@@ -222,9 +308,12 @@ class LandbotIssueRequestSerializer(serializers.ModelSerializer[JiraTicket]):
             ]
             jira_client.add_attachments_to_issue(issue_id, attachments)
 
-        jira_ticket = JiraTicket.objects.create(**issue)
+        # Step 3: Create JiraTicket linked to Incident (UNIFIED WORKFLOW)
+        jira_ticket = JiraTicket.objects.create(**issue, incident=incident)
+        logger.info(f"LANDBOT API - JiraTicket {jira_ticket.key} linked to Incident {incident.id}")
 
-        # Send messages in the relevant Slack channels if needed and alert the reporter in DMs
+        # Step 4: Send messages in the relevant Slack channels if needed and alert the reporter in DMs
+        # This handles P4-P5 notifications (DMs + raid_alert channel)
         alert_slack_new_jira_ticket(
             jira_ticket, reporter_user=reporter_user, reporter_email=reporter_email
         )

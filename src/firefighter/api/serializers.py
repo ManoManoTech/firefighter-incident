@@ -261,7 +261,65 @@ class IncidentSerializer(TaggitSerializer, serializers.ModelSerializer[Incident]
         return None
 
     def create(self, validated_data: dict[str, Any]) -> Incident:
-        return Incident.objects.declare(**validated_data)
+        """Create Incident and JiraTicket via REST API.
+
+        This method follows the unified workflow:
+        1. Create Incident in database
+        2. Create Jira ticket via API
+        3. Link JiraTicket to Incident
+        """
+        from firefighter.raid.client import client as jira_client  # noqa: PLC0415
+        from firefighter.raid.forms import prepare_jira_fields  # noqa: PLC0415
+        from firefighter.raid.models import JiraTicket  # noqa: PLC0415
+        from firefighter.raid.service import get_jira_user_from_user  # noqa: PLC0415
+
+        # Step 1: Create Incident in database
+        incident = Incident.objects.declare(**validated_data)
+        logger.info(f"REST API - Incident created: {incident.id}")
+
+        # Step 2 & 3: Create and link JiraTicket (unified workflow)
+        # Get Jira user from created_by
+        creator = validated_data.get("created_by")
+        if creator:
+            try:
+                jira_user = get_jira_user_from_user(creator)
+
+                # Prepare Jira fields
+                jira_fields = prepare_jira_fields(
+                    title=incident.title,
+                    description=incident.description,
+                    priority=incident.priority.value,
+                    reporter=jira_user.id,
+                    incident_category=incident.incident_category.name,
+                    environments=[incident.environment.value] if incident.environment else [],
+                    platforms=[],
+                    impacts_data={},
+                    optional_fields={},
+                )
+
+                # Create Jira issue
+                issue_data = jira_client.create_issue(**jira_fields)
+                logger.info(f"REST API - Jira issue created: {issue_data.get('key')}")
+
+                # Create JiraTicket linked to Incident
+                jira_ticket = JiraTicket.objects.create(**issue_data, incident=incident)
+                logger.info(f"REST API - JiraTicket {jira_ticket.key} linked to Incident {incident.id}")
+
+                # Add link from Jira to FireFighter
+                jira_client.jira.add_simple_link(
+                    issue=str(jira_ticket.id),
+                    object={
+                        "url": incident.status_page_url,
+                        "title": f"FireFighter incident #{incident.id}",
+                    },
+                )
+            except Exception:
+                logger.exception(f"REST API - Failed to create JiraTicket for Incident {incident.id}")
+                # Don't fail the incident creation if Jira fails
+        else:
+            logger.warning(f"REST API - No creator provided for Incident {incident.id}, skipping Jira ticket creation")
+
+        return incident
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         remove_fields = get_in(kwargs, "context.remove_fields", [])

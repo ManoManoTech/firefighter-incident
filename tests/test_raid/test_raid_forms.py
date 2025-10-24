@@ -23,7 +23,6 @@ from firefighter.raid.forms import (
     get_internal_alert_conversations,
     get_partner_alert_conversations,
     initial_priority,
-    process_jira_issue,
     send_message_to_watchers,
     set_jira_ticket_watchers_raid,
 )
@@ -74,47 +73,9 @@ class TestInitialPriority:
 # Tests for the unified form should be added in a new file:
 # tests/test_incidents/test_forms/test_unified_incident.py
 
-
-@pytest.mark.django_db
-class TestProcessJiraIssue:
-    """Test process_jira_issue function."""
-
-    def setup_method(self):
-        """Set up test data."""
-        self.user = UserFactory()
-        self.jira_user = JiraUser.objects.create(id="jira-123", user=self.user)
-
-    @patch("firefighter.raid.forms.alert_slack_new_jira_ticket")
-    @patch("firefighter.raid.forms.set_jira_ticket_watchers_raid")
-    @patch("firefighter.raid.forms.SelectImpactForm")
-    def test_process_jira_issue(self, mock_impact_form, mock_set_watchers, mock_alert_slack):
-        """Test process_jira_issue function."""
-        # Given
-        issue_data = {
-            "id": "10001",
-            "key": "TEST-123",
-            "summary": "Test issue",
-            "reporter": self.jira_user,
-        }
-        impacts_data = {"business_impact": "High"}
-
-        mock_form_instance = Mock()
-        mock_impact_form.return_value = mock_form_instance
-        mock_set_watchers.return_value = None
-        mock_alert_slack.return_value = None
-
-        # When
-        process_jira_issue(issue_data, self.user, self.jira_user, impacts_data)
-
-        # Then
-        # Check that JiraTicket was created
-        assert JiraTicket.objects.filter(key="TEST-123").exists()
-
-        # Check that all functions were called
-        mock_impact_form.assert_called_once_with(impacts_data)
-        mock_form_instance.save.assert_called_once_with(incident=ANY)
-        mock_set_watchers.assert_called_once_with(ANY)
-        mock_alert_slack.assert_called_once_with(ANY)
+# NOTE: TestProcessJiraIssue has been removed as the process_jira_issue function
+# has been removed. The unified workflow now creates both Incident and JiraTicket
+# in a single flow via LandbotIssueRequestSerializer, UnifiedIncidentForm, etc.
 
 
 @pytest.mark.django_db

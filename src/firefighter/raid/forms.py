@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Any, Never
+from typing import TYPE_CHECKING, Any
 
 from django.conf import settings
 from django.db import models
@@ -19,7 +19,6 @@ from firefighter.raid.messages import (
     SlackMessageRaidCreatedIssue,
     SlackMessageRaidModifiedIssue,
 )
-from firefighter.raid.models import JiraTicket
 from firefighter.raid.utils import get_domain_from_email
 from firefighter.slack.models.conversation import Conversation
 
@@ -28,8 +27,7 @@ if TYPE_CHECKING:
 
     from firefighter.incidents.models.impact import ImpactLevel
     from firefighter.incidents.models.user import User
-    from firefighter.jira_app.models import JiraUser
-    from firefighter.raid.types import JiraObject
+    from firefighter.raid.models import JiraTicket
     from firefighter.slack.messages.base import SlackMessageSurface
 
 logger = logging.getLogger(__name__)
@@ -55,24 +53,6 @@ def initial_priority() -> Priority:
 # This handles all incident types (P1-P5) with dynamic field visibility.
 # The following utility functions remain here as they are used by the unified form
 # and by JIRA webhook handlers.
-
-
-def process_jira_issue(
-    issue_data: JiraObject,
-    user: User,
-    jira_user: JiraUser,
-    impacts_data: dict[str, ImpactLevel],
-    *args: Never,
-    **kwargs: Never,
-) -> None:
-    # XXX Deduplicate from these forms and from incident_created signal
-    jira_ticket = JiraTicket.objects.create(**issue_data)
-    impacts_form = SelectImpactForm(impacts_data)
-
-    impacts_form.save(incident=jira_ticket)
-
-    set_jira_ticket_watchers_raid(jira_ticket)
-    alert_slack_new_jira_ticket(jira_ticket)
 
 
 def set_jira_ticket_watchers_raid(jira_ticket: JiraTicket) -> None:

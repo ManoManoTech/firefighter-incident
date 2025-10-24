@@ -31,6 +31,7 @@ from firefighter.incidents.views.reports import weekly_dashboard_context
 
 if TYPE_CHECKING:
     from firefighter.firefighter.utils import HtmxHttpRequest
+    from firefighter.incidents.models.user import User
 
 logger = logging.getLogger(__name__)
 
@@ -189,9 +190,11 @@ class IncidentCreateView(LoginRequiredMixin, generic.edit.FormView[CreateInciden
     template_name = "pages/incident_create.html"
 
     def form_valid(self, form: CreateIncidentForm) -> ProcessAfterResponse:
-        incident = Incident.objects.declare(
-            **form.cleaned_data,
-            created_by=self.request.user,
+        # Use form's trigger_incident_workflow which now creates both Incident and JiraTicket
+        # LoginRequiredMixin ensures self.request.user is always a User, not AnonymousUser
+        incident = form.trigger_incident_workflow(
+            creator=cast("User", self.request.user),
+            impacts_data={},  # No impacts from simple web form
         )
         # Redirect to the new incident page:
         return ProcessAfterResponse(
