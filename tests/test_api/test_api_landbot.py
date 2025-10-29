@@ -13,6 +13,7 @@ base_valid_data = {
     "description": "Test description",
     "seller_contract_id": "123456",
     "zoho": "https://test_url.com",
+    "zendesk": "12345",
     "platform": "FR",
     "reporter_email": "test_email@example.com",
     "incident_category": "Test Area",
@@ -56,6 +57,20 @@ def test_valid_data_no_labels() -> None:
 
     # When & Then
     assert serializer.is_valid()
+    assert serializer.validated_data["labels"] == []
+
+
+def test_valid_data_labels_null() -> None:
+    # Given - labels is explicitly null in payload
+    valid_data = {
+        **base_valid_data,
+        "labels": None,
+    }
+    serializer = LandbotIssueRequestSerializer(data=valid_data)
+
+    # When & Then
+    assert serializer.is_valid()
+    assert serializer.validated_data["labels"] == []  # null transformed to empty list
 
 
 def test_valid_data_no_environments() -> None:
@@ -95,6 +110,29 @@ def test_invalid_data_label_too_long() -> None:
     # When & Then
     assert not serializer.is_valid()
     assert "labels" in serializer.errors
+
+
+def test_valid_data_with_zendesk() -> None:
+    # Given
+    valid_data = {
+        **base_valid_data,
+        "zendesk": "ZD-98765",
+    }
+    serializer = LandbotIssueRequestSerializer(data=valid_data)
+
+    # When & Then
+    assert serializer.is_valid()
+    assert serializer.validated_data["zendesk"] == "ZD-98765"
+
+
+def test_valid_data_without_zendesk() -> None:
+    # Given
+    valid_data = {**base_valid_data}
+    del valid_data["zendesk"]
+    serializer = LandbotIssueRequestSerializer(data=valid_data)
+
+    # When & Then
+    assert serializer.is_valid()
 
 
 def test_ignore_empty_string_list_field() -> None:

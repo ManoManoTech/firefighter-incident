@@ -98,6 +98,13 @@ class LandbotIssueRequestSerializer(serializers.ModelSerializer[JiraTicket]):
         allow_null=True,
         allow_blank=True,
     )
+    zendesk = serializers.CharField(
+        max_length=256,
+        write_only=True,
+        allow_null=True,
+        allow_blank=True,
+        required=False,
+    )
     platform = serializers.ChoiceField(
         write_only=True, choices=["ES", "IT", "FR", "UK", "DE", "All", "Internal"]
     )
@@ -106,6 +113,8 @@ class LandbotIssueRequestSerializer(serializers.ModelSerializer[JiraTicket]):
     labels = serializers.ListField(
         required=False,
         write_only=True,
+        allow_null=True,
+        default=list,
         child=serializers.CharField(
             max_length=128,
             allow_blank=False,
@@ -165,6 +174,12 @@ class LandbotIssueRequestSerializer(serializers.ModelSerializer[JiraTicket]):
         ],
     )
 
+    def validate_labels(self, value: list[str] | None) -> list[str]:
+        """Transform null labels to empty list."""
+        if value is None:
+            return []
+        return value
+
     def validate_environments(self, value: list[str] | None) -> list[str] | Any:
         if not value:
             return self.fields["environments"].default
@@ -198,6 +213,7 @@ class LandbotIssueRequestSerializer(serializers.ModelSerializer[JiraTicket]):
             priority=validated_data["priority"],
             seller_contract_id=validated_data["seller_contract_id"],
             zoho_desk_ticket_id=validated_data["zoho"],
+            zendesk_ticket_id=validated_data.get("zendesk"),
             platform=validated_data["platform"],
             incident_category=validated_data["incident_category"],
             business_impact=validated_data["business_impact"],
@@ -238,6 +254,7 @@ class LandbotIssueRequestSerializer(serializers.ModelSerializer[JiraTicket]):
             "description",
             "seller_contract_id",
             "zoho",
+            "zendesk",
             "platform",
             "reporter_email",
             "incident_category",
