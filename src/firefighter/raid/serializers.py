@@ -113,6 +113,8 @@ class LandbotIssueRequestSerializer(serializers.ModelSerializer[JiraTicket]):
     labels = serializers.ListField(
         required=False,
         write_only=True,
+        allow_null=True,
+        default=list,
         child=serializers.CharField(
             max_length=128,
             allow_blank=False,
@@ -171,6 +173,12 @@ class LandbotIssueRequestSerializer(serializers.ModelSerializer[JiraTicket]):
             "Feature Request",
         ],
     )
+
+    def validate_labels(self, value: list[str] | None) -> list[str]:
+        """Transform null labels to empty list."""
+        if value is None:
+            return []
+        return value
 
     def validate_environments(self, value: list[str] | None) -> list[str] | Any:
         if not value:

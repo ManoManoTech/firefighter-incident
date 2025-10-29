@@ -57,6 +57,20 @@ def test_valid_data_no_labels() -> None:
 
     # When & Then
     assert serializer.is_valid()
+    assert serializer.validated_data["labels"] == []
+
+
+def test_valid_data_labels_null() -> None:
+    # Given - labels is explicitly null in payload
+    valid_data = {
+        **base_valid_data,
+        "labels": None,
+    }
+    serializer = LandbotIssueRequestSerializer(data=valid_data)
+
+    # When & Then
+    assert serializer.is_valid()
+    assert serializer.validated_data["labels"] == []  # null transformed to empty list
 
 
 def test_valid_data_no_environments() -> None:
