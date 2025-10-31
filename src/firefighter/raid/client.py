@@ -70,8 +70,16 @@ class RaidJiraClient(JiraClient):
             priority_value = str(priority)
         if zoho_desk_ticket_id:
             extra_args["customfield_10896"] = str(zoho_desk_ticket_id)
+
+        # DEBUG: Log zendesk processing
+        logger.info(f"🔍 ZENDESK DEBUG CLIENT: zendesk_ticket_id parameter = {repr(zendesk_ticket_id)}")
+        logger.info(f"🔍 ZENDESK DEBUG CLIENT: bool(zendesk_ticket_id) = {bool(zendesk_ticket_id)}")
         if zendesk_ticket_id:
             extra_args["customfield_10895"] = str(zendesk_ticket_id)
+            logger.info(f"🔍 ZENDESK DEBUG CLIENT: Added customfield_10895 = {repr(str(zendesk_ticket_id))}")
+        else:
+            logger.warning(f"🔍 ZENDESK DEBUG CLIENT: zendesk_ticket_id is falsy, NOT adding to extra_args")
+
         if seller_contract_id:
             description_addendum.append(
                 f"Seller link to TOOLBOX: {TOOLBOX_URL}?seller_id={seller_contract_id}"
@@ -109,6 +117,11 @@ class RaidJiraClient(JiraClient):
             project = (
                 feature_team.jira_project_key if feature_team else RAID_JIRA_PROJECT_KEY
             )
+
+        # DEBUG: Log what's being sent to Jira
+        logger.info(f"🔍 ZENDESK DEBUG CLIENT: extra_args = {extra_args}")
+        logger.info(f"🔍 ZENDESK DEBUG CLIENT: 'customfield_10895' in extra_args = {'customfield_10895' in extra_args}")
+
         issue = self.jira.create_issue(
             project=project,
             summary=summary,
