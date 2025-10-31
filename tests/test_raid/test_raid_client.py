@@ -368,6 +368,38 @@ class TestRaidJiraClientBasics:
                 priority=1,
             )
 
+    def test_create_issue_zendesk_field_mapping(self, mock_jira_client):
+        """Test that zendesk_ticket_id is correctly mapped to customfield_10895."""
+        mock_issue = Mock()
+        mock_issue.raw = {
+            "id": "12355",
+            "key": "TEST-130",
+            "fields": {
+                "summary": "Test zendesk mapping",
+                "description": "Test description",
+                "reporter": {"accountId": "reporter123"},
+                "issuetype": {"name": "Bug"},
+            },
+        }
+        mock_jira_client.jira.create_issue.return_value = mock_issue
+
+        result = mock_jira_client.create_issue(
+            issuetype="Bug",
+            summary="Test zendesk mapping",
+            description="Test description",
+            assignee=None,
+            reporter="test_reporter",
+            priority=1,
+            zendesk_ticket_id="ZD-98765",
+        )
+
+        # Verify create_issue was called with customfield_10895
+        call_kwargs = mock_jira_client.jira.create_issue.call_args[1]
+        assert "customfield_10895" in call_kwargs
+        assert call_kwargs["customfield_10895"] == "ZD-98765"
+        assert result["id"] == 12355
+        assert result["key"] == "TEST-130"
+
     def test_jira_object_static_method(self):
         """Test _jira_object static method."""
         test_issue = {
