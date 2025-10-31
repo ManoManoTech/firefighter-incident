@@ -191,7 +191,7 @@ class LandbotIssueRequestSerializer(serializers.ModelSerializer[JiraTicket]):
         # DEBUG: Log zendesk value
         zendesk_value = validated_data.get("zendesk")
         logger.info(f"🔍 ZENDESK DEBUG: zendesk in validated_data.keys() = {'zendesk' in validated_data}")
-        logger.info(f"🔍 ZENDESK DEBUG: zendesk value = {repr(zendesk_value)}")
+        logger.info(f"🔍 ZENDESK DEBUG: zendesk value = {zendesk_value!r}")
         logger.info(f"🔍 ZENDESK DEBUG: zendesk type = {type(zendesk_value)}")
         logger.info(f"🔍 ZENDESK DEBUG: bool(zendesk) = {bool(zendesk_value)}")
 
