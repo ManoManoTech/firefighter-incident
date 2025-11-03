@@ -6,16 +6,12 @@ and that the logic for finding and using tagged channels works correctly.
 
 from __future__ import annotations
 
-from unittest.mock import Mock, patch
-
 import pytest
 
 from firefighter.incidents.enums import IncidentStatus
 from firefighter.incidents.factories import (
-    EnvironmentFactory,
     IncidentCategoryFactory,
     IncidentFactory,
-    PriorityFactory,
     UserFactory,
 )
 from firefighter.incidents.models.priority import Priority
