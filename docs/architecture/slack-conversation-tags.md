@@ -1,79 +1,98 @@
 # Slack Conversation Tags Reference
 
-This document provides a comprehensive reference of all Slack conversation tags used in the FireFighter system. Tags are used to identify and reference special Slack channels programmatically throughout the application.
+This document provides a comprehensive reference of the Slack conversation tag system used in FireFighter. Tags are used to identify and reference special Slack channels programmatically throughout the application.
 
 ## Overview
 
-Slack conversations (channels, DMs) can be tagged with a unique identifier string to allow the application to find and interact with them programmatically. Tags are stored in the `Conversation.tag` field and must be unique across all conversations.
+Slack conversations (channels, DMs, usergroups) can be tagged with a unique identifier string to allow the application to find and interact with them programmatically. Tags are stored in the `Conversation.tag` field and must be unique across all conversations.
 
-## Tag Categories
+## How Tags Work
 
-### Critical Incident Channels
+The tag system allows FireFighter to:
+1. Find specific channels without hardcoding Slack channel IDs
+2. Route notifications to the appropriate channels based on incident properties
+3. Support different channel configurations across organizations
+4. Maintain flexibility when channels are renamed or reorganized in Slack
+
+## Tag Reference
+
+### Critical Incident Tags
 
 #### `tech_incidents`
-- **Purpose**: General incident announcement channel for P1-P3 critical incidents
-- **Used for**:
-  - Publishing incident announcements when critical incidents (P1-P3) are opened in production environment
-  - Publishing updates when incidents are mitigated
-  - Publishing updates when priority is escalated from P4-P5 to P1-P3
-- **Conditions**: Only production environment, priority ≤ 3, non-private incidents
-- **Code references**:
-  - `slack/signals/create_incident_conversation.py:107` - Publish on incident open
-  - `slack/signals/incident_updated.py:284` - Publish on incident updates
-  - `incidents/tasks/updateoncall.py:92` - On-call updates
-  - `pagerduty/views/oncall_trigger.py:47` - PagerDuty integration
+
+**Purpose**: General incident announcement channel for P1-P3 critical incidents
+
+**When notifications are sent**:
+- Critical incidents (P1-P3) are opened in production environment
+- Incidents are mitigated
+- Priority is escalated from P4-P5 to P1-P3
+
+**Conditions**: Only production environment, priority ≤ 3, non-private incidents
+
+**Code references**:
+- `slack/signals/create_incident_conversation.py:107` - Publish on incident open
+- `slack/signals/incident_updated.py:284` - Publish on incident updates
+- `incidents/tasks/updateoncall.py:92` - On-call updates
+- `pagerduty/views/oncall_trigger.py:47` - PagerDuty integration
 
 #### `it_deploy`
-- **Purpose**: Deployment warning channel for P1 incidents affecting deployments
-- **Used for**:
-  - Publishing warnings when P1 incidents with `deploy_warning` category are created
-  - Publishing warnings when incidents are escalated to P1 with `deploy_warning`
-- **Conditions**: Production environment, priority = 1, non-private, `incident_category.deploy_warning = True`
-- **Code references**:
-  - `slack/signals/create_incident_conversation.py:127` - Publish on P1 incident
-  - `slack/signals/incident_updated.py:261` - Publish on priority escalation
+
+**Purpose**: Deployment warning channel for P1 incidents affecting deployments
+
+**When notifications are sent**:
+- P1 incidents with `deploy_warning` category are created
+- Incidents are escalated to P1 with `deploy_warning`
+
+**Conditions**: Production environment, priority = 1, non-private, `incident_category.deploy_warning = True`
+
+**Code references**:
+- `slack/signals/create_incident_conversation.py:127` - Publish on P1 incident
+- `slack/signals/incident_updated.py:261` - Publish on priority escalation
 
 #### `invited_for_all_public_p1`
-- **Purpose**: Slack usergroup automatically invited to all public P1 incidents
-- **Used for**:
-  - Automatically inviting key stakeholders to P1 incident channels
-  - Ensuring visibility of critical incidents to management/leadership
-- **Conditions**: Only for P1 incidents, non-private
-- **Code references**:
-  - `slack/signals/get_users.py:57` - Auto-invitation to P1 channels
 
-### RAID Alert Channels (P4-P5 Incidents)
+**Purpose**: Slack usergroup automatically invited to all public P1 incidents
+
+**When used**:
+- Automatically inviting key stakeholders to P1 incident channels
+- Ensuring visibility of critical incidents to management/leadership
+
+**Conditions**: Only for P1 incidents, non-private
+
+**Code references**:
+- `slack/signals/get_users.py:57` - Auto-invitation to P1 channels
+
+**Note**: This should be a Slack usergroup ID (starting with "S"), not a channel
+
+### RAID Alert Tags (P4-P5 Incidents)
 
 RAID channels receive notifications for non-critical incidents (P4-P5) that don't have dedicated Slack channels.
 
 #### Tag Pattern: `raid_alert__{project}_{impact}`
 
-This pattern allows routing P4-P5 incidents to different channels based on project and business impact.
+This pattern allows routing P4-P5 incidents to different channels based on Jira project and business impact.
 
-**Project scope**:
-- Use your Jira project keys (lowercase) to create project-specific channels
-- Use a generic fallback project name (e.g., `incidents`) for all other projects
+**Pattern components**:
+- `{project}` - Your Jira project key in lowercase (e.g., if you have a Jira project "PLATFORM", use "platform")
+- `{impact}` - Either "normal" (for low/N/A impact) or "high" (for high impact)
 
-**Impact level**:
-- `normal` - Low impact or N/A business impact
-- `high` - High business impact
+**How it works**:
+```python
+# The system builds tags dynamically based on:
+# 1. Jira project key (lowercase)
+# 2. Business impact level
 
-**Examples**:
-- `raid_alert__myproject_normal` - Normal impact incidents for "MyProject" Jira project
-- `raid_alert__myproject_high` - High impact incidents for "MyProject" Jira project
-- `raid_alert__incidents_normal` - Normal impact incidents for all other projects
-- `raid_alert__incidents_high` - High impact incidents for all other projects
+# Examples:
+# - Project "PLATFORM", impact "N/A"  → raid_alert__platform_normal
+# - Project "PLATFORM", impact "High" → raid_alert__platform_high
+# - Project "API", impact "Low"       → raid_alert__api_normal
+# - Fallback project, impact "High"   → raid_alert__incidents_high
+```
 
 **Code references**:
 - `raid/forms.py:329` - `get_internal_alert_conversations()`
 
-**How it works**:
-```python
-# The system builds tags dynamically:
-# - If jira_ticket.project_key matches your configured project: use project key
-# - Otherwise: use "incidents" as fallback
-# - If business_impact == "High": use "high", otherwise "normal"
-```
+**Configuration tip**: Create a fallback using `incidents` as the project name for any Jira projects that don't have dedicated channels.
 
 #### Tag Pattern: `raid_alert__{domain}`
 
@@ -81,154 +100,175 @@ Partner-specific alert channels based on reporter email domain.
 
 **Purpose**: Route notifications to partner or customer-specific channels
 
-**Examples**:
-- `raid_alert__partner-company.com` - Alerts for incidents reported by users @partner-company.com
-- `raid_alert__customer-domain.com` - Alerts for incidents reported by users @customer-domain.com
+**How it works**:
+- Extracts domain from reporter's email
+- Removes @ symbol and subdomains
+- Keeps TLD (e.g., `user@subdomain.example.com` → `example.com`)
+- Looks for channel with tag `raid_alert__example.com`
 
 **Code references**:
 - `raid/forms.py:322` - `get_partner_alert_conversations()`
 
-**Domain extraction**: Email domain without @ symbol, without subdomains, with TLD (e.g., `user@subdomain.example.com` → `example.com`)
-
-### Support & Development Channels
+### Support Tag
 
 #### `dev_firefighter`
-- **Purpose**: Support channel for FireFighter application issues
-- **Used for**:
-  - Error messages and support links in Slack messages
-  - Help links in modals and messages
-- **Code references**:
-  - `slack/slack_templating.py:76` - Support links
 
-## Tag Management
+**Purpose**: Support channel for FireFighter application issues
 
-### Creating Tagged Channels
+**When used**:
+- Error messages and support links in Slack messages
+- Help links in modals and messages
 
-To create a new tagged channel in the database (via Django admin or shell):
-
-```python
-from firefighter.slack.models import Conversation
-
-# Critical incident channel
-Conversation.objects.create(
-    name="your-incidents-channel",
-    channel_id="C01234ABCDE",  # Get this from Slack (right-click channel > View channel details)
-    tag="tech_incidents"
-)
-
-# RAID alert channel for a specific project
-Conversation.objects.create(
-    name="your-project-alerts",
-    channel_id="C56789FGHIJ",
-    tag="raid_alert__yourproject_normal"
-)
-
-# Partner-specific channel
-Conversation.objects.create(
-    name="partner-alerts",
-    channel_id="C99999ZZZZZ",
-    tag="raid_alert__partner-domain.com"
-)
-```
-
-### Tag Constraints
-
-- **Uniqueness**: Tags must be unique across all conversations
-- **Optional**: Tags can be empty string (but cannot have duplicates if set)
-- **Format**: No strict format validation, but conventions exist (see patterns above)
-- **Database**: Unique constraint on non-empty tags
-- **Case-sensitive**: `tech_incidents` ≠ `TECH_INCIDENTS`
-
-### Finding Conversations by Tag
-
-```python
-from firefighter.slack.models import Conversation
-
-# Exact match
-channel = Conversation.objects.get_or_none(tag="tech_incidents")
-
-# Pattern match (RAID alerts for a specific project)
-channels = Conversation.objects.filter(tag__contains="raid_alert__myproject")
-```
+**Code references**:
+- `slack/slack_templating.py:76` - Support links
 
 ## Configuration Guide
 
-### Step 1: Identify Your Needs
+### Step 1: Plan Your Channels
 
-1. **Critical incidents channel** - Where should P1-P3 incidents be announced?
-   - Create a Slack channel (e.g., `#incidents`, `#critical-alerts`)
-   - Tag it with `tech_incidents`
+Decide which Slack channels you need based on your organization's requirements:
 
-2. **Deployment warnings** (optional) - Where should P1 incidents affecting deployments be announced?
-   - Create a Slack channel (e.g., `#deployments`, `#deploy-freeze`)
-   - Tag it with `it_deploy`
+1. **Critical incidents** - Required tag: `tech_incidents`
+   - Use case: Announce all P1-P3 critical incidents
 
-3. **P1 leadership usergroup** (optional) - Who should be automatically invited to P1 incidents?
-   - Create a Slack usergroup (e.g., `@incident-responders`, `@leadership`)
-   - Tag it with `invited_for_all_public_p1`
+2. **Deployment warnings** - Optional tag: `it_deploy`
+   - Use case: Warn about P1 incidents affecting deployments
 
-4. **P4-P5 alerts** - Where should non-critical incidents be posted?
-   - Create channels per project and impact level
-   - Tag with `raid_alert__{project}_{impact}` pattern
+3. **P1 leadership notification** - Optional tag: `invited_for_all_public_p1`
+   - Use case: Auto-invite executives/leadership to P1 incidents
+   - This should be a Slack usergroup, not a channel
 
-5. **Support channel** - Where should FireFighter errors be reported?
-   - Create a Slack channel (e.g., `#firefighter-support`)
-   - Tag it with `dev_firefighter`
+4. **P4-P5 alerts** - Tags: `raid_alert__{project}_{impact}`
+   - Use case: Route non-critical incidents by project and severity
+   - You'll need multiple channels for different projects/impact levels
+
+5. **Partner alerts** - Optional tags: `raid_alert__{domain}`
+   - Use case: Route incidents to partner-specific channels
+
+6. **Support** - Optional tag: `dev_firefighter`
+   - Use case: FireFighter application support and errors
 
 ### Step 2: Create Channels in Slack
 
-Create the channels you identified above in your Slack workspace.
+Create the channels and usergroups you identified in your Slack workspace.
 
-### Step 3: Get Channel IDs
+### Step 3: Get Slack IDs
 
-For each channel:
-1. Right-click the channel in Slack
-2. Select "View channel details"
-3. Scroll to the bottom - the Channel ID is shown there (format: `C01234ABCDE`)
+For each channel or usergroup:
+1. Right-click the channel/usergroup in Slack
+2. Select "View channel details" (or "View user group details")
+3. The ID is shown at the bottom
+   - Channels start with `C` (e.g., `C01234ABCDE`)
+   - Usergroups start with `S` (e.g., `S98765ZYXWV`)
 
-### Step 4: Create Database Entries
+### Step 4: Create Conversation Objects
 
-Use Django admin or shell to create `Conversation` objects with the appropriate tags.
+Use Django admin or shell to create `Conversation` objects linking Slack IDs to tags:
+
+```python
+from firefighter.slack.models import Conversation
+
+# Example: Critical incidents channel
+Conversation.objects.create(
+    name="<your-channel-name>",  # Descriptive name for reference
+    channel_id="C01234ABCDE",    # Slack channel ID from step 3
+    tag="tech_incidents"          # Tag from documentation above
+)
+
+# Example: RAID alert for a specific Jira project
+Conversation.objects.create(
+    name="<your-channel-name>",
+    channel_id="C56789FGHIJ",
+    tag="raid_alert__yourproject_normal"  # Replace 'yourproject' with your Jira project key (lowercase)
+)
+
+# Example: Partner-specific channel
+Conversation.objects.create(
+    name="<your-channel-name>",
+    channel_id="C99999ZZZZZ",
+    tag="raid_alert__partner-domain.com"  # Replace with actual domain
+)
+
+# Example: P1 leadership usergroup
+Conversation.objects.create(
+    name="<your-usergroup-name>",
+    channel_id="S98765ZYXWV",     # Note: Usergroup ID starts with 'S'
+    tag="invited_for_all_public_p1"
+)
+```
+
+## Tag Constraints
+
+- **Uniqueness**: Tags must be unique across all conversations
+- **Optional**: Tags can be empty string (multiple channels can have no tag)
+- **Format**: No strict format validation, but follow conventions documented above
+- **Database**: Unique constraint on non-empty tags
+- **Case-sensitive**: `tech_incidents` ≠ `TECH_INCIDENTS`
+
+## Querying by Tag
+
+```python
+from firefighter.slack.models import Conversation
+
+# Find a specific channel by tag
+channel = Conversation.objects.get_or_none(tag="tech_incidents")
+
+# Find all RAID alert channels for a project
+channels = Conversation.objects.filter(tag__contains="raid_alert__myproject")
+
+# Check if a tag is configured
+if Conversation.objects.filter(tag="it_deploy").exists():
+    print("Deployment warnings are configured")
+```
 
 ## Best Practices
 
-1. **Naming Convention**: Use descriptive, lowercase tags with underscores
-2. **Documentation**: Document your organization's tag configuration
-3. **Uniqueness**: Never reuse tags for different purposes
-4. **Testing**: Always test tag-based logic in staging before production
-5. **Migration**: When changing tags, ensure backward compatibility or plan migration
-6. **Access Control**: Ensure channels have appropriate visibility in Slack
+1. **Document your configuration** - Keep a record of which tags map to which channels
+2. **Use descriptive channel names** - Make it easy to identify channel purpose
+3. **Test in staging first** - Verify tag-based routing before production
+4. **Never reuse tags** - Each tag should have one purpose only
+5. **Plan for growth** - Consider future projects when designing tag structure
+6. **Maintain consistency** - Use the same tag patterns across your organization
 
 ## Troubleshooting
 
 ### Channel Not Receiving Notifications
 
-1. **Check tag exists**: Verify channel has correct tag in database
+1. **Verify tag exists in database**:
    ```python
    from firefighter.slack.models import Conversation
    Conversation.objects.filter(tag="tech_incidents")
    ```
 
-2. **Check tag format**: Ensure tag matches exact pattern (case-sensitive)
+2. **Check tag matches exactly** (case-sensitive):
+   - `tech_incidents` ✅
+   - `Tech_Incidents` ❌
 
-3. **Check conditions**: Verify incident/ticket meets conditions (priority, environment, etc.)
+3. **Verify incident meets conditions**:
+   - For `tech_incidents`: Check priority ≤ 3, production environment, non-private
+   - For `raid_alert__*`: Check project key matches, business impact level
 
-4. **Check logs**: Search application logs for tag name to see if channel is being found
+4. **Check application logs** for tag resolution messages
 
-5. **Check Slack permissions**: Ensure FireFighter bot is a member of the channel
+5. **Verify bot permissions**:
+   - Ensure FireFighter bot is a member of the channel
+   - Check bot has necessary Slack scopes
 
-### Finding Which Channels Use a Tag
+### Finding All Tagged Channels
 
 ```sql
 SELECT name, channel_id, tag
 FROM slack_conversation
-WHERE tag LIKE '%{search_term}%';
+WHERE tag IS NOT NULL AND tag != ''
+ORDER BY tag;
 ```
 
+Or via Django ORM:
 ```python
-# Or via Django ORM
 from firefighter.slack.models import Conversation
-Conversation.objects.filter(tag__icontains="raid_alert")
+tagged_channels = Conversation.objects.exclude(tag="").order_by("tag")
+for conv in tagged_channels:
+    print(f"{conv.tag:40} → {conv.name} ({conv.channel_id})")
 ```
 
 ## Related Documentation
@@ -259,36 +299,16 @@ CREATE TABLE slack_conversation (
 );
 ```
 
-## Example Configurations
+## Tag Reference Summary
 
-### Minimal Setup
+| Tag | Type | Purpose |
+|-----|------|---------|
+| `tech_incidents` | Channel | P1-P3 critical incident announcements |
+| `it_deploy` | Channel | P1 deployment warnings |
+| `invited_for_all_public_p1` | Usergroup | Auto-invite to P1 incidents |
+| `raid_alert__{project}_normal` | Channel | P4-P5 normal impact alerts by project |
+| `raid_alert__{project}_high` | Channel | P4-P5 high impact alerts by project |
+| `raid_alert__{domain}` | Channel | Partner/customer-specific alerts |
+| `dev_firefighter` | Channel | FireFighter support and errors |
 
-```python
-# P1-P3 incidents
-Conversation.objects.create(name="incidents", channel_id="C001", tag="tech_incidents")
-
-# P4-P5 incidents
-Conversation.objects.create(name="tickets", channel_id="C002", tag="raid_alert__incidents_normal")
-```
-
-### Complete Setup
-
-```python
-# Critical incidents
-Conversation.objects.create(name="incidents", channel_id="C001", tag="tech_incidents")
-Conversation.objects.create(name="deploy-freeze", channel_id="C002", tag="it_deploy")
-
-# Leadership usergroup
-Conversation.objects.create(name="incident-leads", channel_id="S001", tag="invited_for_all_public_p1")
-
-# P4-P5 by project and impact
-Conversation.objects.create(name="platform-alerts", channel_id="C003", tag="raid_alert__platform_normal")
-Conversation.objects.create(name="platform-urgent", channel_id="C004", tag="raid_alert__platform_high")
-Conversation.objects.create(name="general-alerts", channel_id="C005", tag="raid_alert__incidents_normal")
-
-# Partner channels
-Conversation.objects.create(name="partner-x-alerts", channel_id="C006", tag="raid_alert__partner-x.com")
-
-# Support
-Conversation.objects.create(name="firefighter-support", channel_id="C007", tag="dev_firefighter")
-```
+Replace `{project}` with your Jira project key (lowercase) and `{domain}` with email domains.
