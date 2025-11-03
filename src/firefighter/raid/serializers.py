@@ -188,13 +188,6 @@ class LandbotIssueRequestSerializer(serializers.ModelSerializer[JiraTicket]):
     def create(self, validated_data: dict[str, Any]) -> JiraTicket:
         reporter_email: str = validated_data["reporter_email"]
 
-        # DEBUG: Log zendesk value
-        zendesk_value = validated_data.get("zendesk")
-        logger.info(f"🔍 ZENDESK DEBUG: zendesk in validated_data.keys() = {'zendesk' in validated_data}")
-        logger.info(f"🔍 ZENDESK DEBUG: zendesk value = {zendesk_value!r}")
-        logger.info(f"🔍 ZENDESK DEBUG: zendesk type = {type(zendesk_value)}")
-        logger.info(f"🔍 ZENDESK DEBUG: bool(zendesk) = {bool(zendesk_value)}")
-
         reporter_user, reporter, user_domain = get_reporter_user_from_email(
             reporter_email
         )
