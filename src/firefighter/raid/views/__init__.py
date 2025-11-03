@@ -35,6 +35,7 @@ if TYPE_CHECKING:
                 "description": "Description test where you want to depict your issue",
                 "seller_contract_id": "12345678",
                 "zoho": "https://crmplus.zoho.eu/mycrmlink/index.do/cxapp/agent/mycompany/all/tickets/details/123456789",
+                "zendesk": "12345",
                 "platform": "FR",
                 "reporter_email": "john.doe@mycompany.com",
                 "incident_category": "Payment Processing",

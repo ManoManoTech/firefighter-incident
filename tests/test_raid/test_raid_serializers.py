@@ -311,6 +311,53 @@ class TestLandbotIssueRequestSerializer(TestCase):
             result, reporter_user=user, reporter_email="test@external.com"
         )
 
+    @patch("firefighter.raid.serializers.alert_slack_new_jira_ticket")
+    @patch("firefighter.raid.serializers.get_reporter_user_from_email")
+    @patch("firefighter.raid.serializers.jira_client")
+    def test_create_with_zendesk_field(self, mock_jira_client, mock_get_reporter, mock_alert_slack):
+        """Test create method passes zendesk field to jira_client."""
+        # Setup mocks
+        user = UserFactory()
+        jira_user = JiraUser.objects.create(id="test-123", user=user)
+        mock_get_reporter.return_value = (user, jira_user, "manomano.com")
+        mock_alert_slack.return_value = None
+
+        mock_jira_client.create_issue.return_value = {
+            "id": "12345",
+            "key": "TEST-123",
+            "summary": "Test Issue",
+            "reporter": jira_user,
+        }
+
+        serializer = LandbotIssueRequestSerializer()
+        validated_data = {
+            "reporter_email": "test@manomano.com",
+            "issue_type": "Incident",
+            "summary": "Test Issue",
+            "description": "Test Description",
+            "labels": [],
+            "priority": 1,
+            "seller_contract_id": None,
+            "zoho": None,
+            "zendesk": "ZD-12345",  # Zendesk ticket ID
+            "platform": "FR",
+            "incident_category": None,
+            "business_impact": None,
+            "environments": ["PRD"],
+            "suggested_team_routing": "TEAM1",
+            "project": "SBI",
+            "attachments": None,
+        }
+
+        result = serializer.create(validated_data)
+
+        # Verify zendesk_ticket_id was passed to jira_client.create_issue
+        create_call = mock_jira_client.create_issue.call_args[1]
+        assert "zendesk_ticket_id" in create_call
+        assert create_call["zendesk_ticket_id"] == "ZD-12345"
+        assert isinstance(result, JiraTicket)
+        mock_alert_slack.assert_called_once()
+
 
 class TestJiraWebhookUpdateSerializer(TestCase):
     """Test JiraWebhookUpdateSerializer functionality."""

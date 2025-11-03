@@ -331,27 +331,25 @@ class TestUpdateStatusModal:
         trigger_incident_workflow.assert_not_called()
 
     @staticmethod
-    def test_can_close_when_all_conditions_met(mocker: MockerFixture) -> None:
+    def test_can_close_when_all_conditions_met(mocker: MockerFixture, priority_factory, environment_factory) -> None:
         """Test that closing is allowed when all conditions are met for P3+ incidents."""
         # Create a user first
         user = UserFactory.build()
         user.save()
 
+        # Create P3 priority (needs_postmortem=False) and non-PRD environment
+        p3_priority = priority_factory(value=3, name="P3", needs_postmortem=False)
+        stg_environment = environment_factory(value="STG", name="Staging")
+
         # Create a P3+ incident in MITIGATED status with all conditions met
         incident = IncidentFactory.build(
             _status=IncidentStatus.MITIGATED,
             created_by=user,
+            priority=p3_priority,
+            environment=stg_environment,
         )
         # IMPORTANT: Save the incident so it has an ID for the form to reference
         incident.save()
-
-        # Mock needs_postmortem to return False (P3+ incident)
-        mocker.patch.object(
-            type(incident),
-            "needs_postmortem",
-            new_callable=PropertyMock,
-            return_value=False
-        )
 
         # Mock can_be_closed to return True (all conditions met)
         mocker.patch.object(

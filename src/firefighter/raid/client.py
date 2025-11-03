@@ -72,6 +72,7 @@ class RaidJiraClient(JiraClient):
             extra_args["customfield_10896"] = str(zoho_desk_ticket_id)
         if zendesk_ticket_id:
             extra_args["customfield_10895"] = str(zendesk_ticket_id)
+
         if seller_contract_id:
             description_addendum.append(
                 f"Seller link to TOOLBOX: {TOOLBOX_URL}?seller_id={seller_contract_id}"
@@ -109,6 +110,7 @@ class RaidJiraClient(JiraClient):
             project = (
                 feature_team.jira_project_key if feature_team else RAID_JIRA_PROJECT_KEY
             )
+
         issue = self.jira.create_issue(
             project=project,
             summary=summary,
