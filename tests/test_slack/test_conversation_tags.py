@@ -7,6 +7,7 @@ and that the logic for finding and using tagged channels works correctly.
 from __future__ import annotations
 
 import pytest
+from django.db import IntegrityError
 
 from firefighter.incidents.enums import IncidentStatus
 from firefighter.incidents.factories import (
@@ -14,7 +15,11 @@ from firefighter.incidents.factories import (
     IncidentFactory,
     UserFactory,
 )
+from firefighter.incidents.models.environment import Environment
 from firefighter.incidents.models.priority import Priority
+from firefighter.jira_app.models import JiraUser
+from firefighter.raid.forms import get_internal_alert_conversations
+from firefighter.raid.models import JiraTicket
 from firefighter.slack.models.conversation import Conversation
 from firefighter.slack.rules import (
     should_publish_in_general_channel,
@@ -38,8 +43,6 @@ class TestTechIncidentsTag:
     @pytest.fixture
     def p1_prd_incident(self):
         """Create P1 incident in PRD."""
-        from firefighter.incidents.models.environment import Environment
-
         p1 = Priority.objects.get_or_create(value=1, defaults={"name": "P1"})[0]
         prd = Environment.objects.get_or_create(value="PRD", defaults={"value": "PRD"})[
             0
@@ -53,7 +56,9 @@ class TestTechIncidentsTag:
             private=False,
         )
 
-    def test_tech_incidents_channel_can_be_found(self, tech_incidents_channel):
+    def test_tech_incidents_channel_can_be_found(
+        self, tech_incidents_channel  # noqa: ARG002 - fixture creates channel in DB
+    ):
         """Test that tech_incidents channel can be retrieved by tag."""
         channel = Conversation.objects.get_or_none(tag="tech_incidents")
         assert channel is not None
@@ -69,8 +74,6 @@ class TestTechIncidentsTag:
 
     def test_should_not_publish_p4_in_tech_incidents(self):
         """Test that P4 incidents should NOT be published to tech_incidents."""
-        from firefighter.incidents.models.environment import Environment
-
         p4 = Priority.objects.get_or_create(value=4, defaults={"name": "P4"})[0]
         prd = Environment.objects.get_or_create(value="PRD", defaults={"value": "PRD"})[
             0
@@ -91,8 +94,6 @@ class TestTechIncidentsTag:
 
     def test_should_not_publish_private_incident_in_tech_incidents(self):
         """Test that private incidents should NOT be published to tech_incidents."""
-        from firefighter.incidents.models.environment import Environment
-
         p1 = Priority.objects.get_or_create(value=1, defaults={"name": "P1"})[0]
         prd = Environment.objects.get_or_create(value="PRD", defaults={"value": "PRD"})[
             0
@@ -128,7 +129,9 @@ class TestItDeployTag:
         """Create incident category with deploy_warning=True."""
         return IncidentCategoryFactory(deploy_warning=True)
 
-    def test_it_deploy_channel_can_be_found(self, it_deploy_channel):
+    def test_it_deploy_channel_can_be_found(
+        self, it_deploy_channel  # noqa: ARG002 - fixture creates channel in DB
+    ):
         """Test that it_deploy channel can be retrieved by tag."""
         channel = Conversation.objects.get_or_none(tag="it_deploy")
         assert channel is not None
@@ -139,8 +142,6 @@ class TestItDeployTag:
         self, deploy_warning_category
     ):
         """Test that P1 incidents with deploy_warning should be published to it_deploy."""
-        from firefighter.incidents.models.environment import Environment
-
         p1 = Priority.objects.get_or_create(value=1, defaults={"name": "P1"})[0]
         prd = Environment.objects.get_or_create(value="PRD", defaults={"value": "PRD"})[
             0
@@ -158,8 +159,6 @@ class TestItDeployTag:
 
     def test_should_not_publish_p2_in_it_deploy(self, deploy_warning_category):
         """Test that P2 incidents should NOT be published to it_deploy (P1 only)."""
-        from firefighter.incidents.models.environment import Environment
-
         p2 = Priority.objects.get_or_create(value=2, defaults={"name": "P2"})[0]
         prd = Environment.objects.get_or_create(value="PRD", defaults={"value": "PRD"})[
             0
@@ -177,8 +176,6 @@ class TestItDeployTag:
 
     def test_should_not_publish_p1_without_deploy_warning_in_it_deploy(self):
         """Test that P1 without deploy_warning should NOT be published to it_deploy."""
-        from firefighter.incidents.models.environment import Environment
-
         p1 = Priority.objects.get_or_create(value=1, defaults={"name": "P1"})[0]
         prd = Environment.objects.get_or_create(value="PRD", defaults={"value": "PRD"})[
             0
@@ -209,13 +206,17 @@ class TestInvitedForAllPublicP1Tag:
             tag="invited_for_all_public_p1",
         )
 
-    def test_p1_usergroup_can_be_found(self, p1_usergroup):
+    def test_p1_usergroup_can_be_found(
+        self, p1_usergroup  # noqa: ARG002 - fixture creates usergroup in DB
+    ):
         """Test that P1 usergroup can be retrieved by tag."""
         usergroup = Conversation.objects.get_or_none(tag="invited_for_all_public_p1")
         assert usergroup is not None
         assert usergroup.tag == "invited_for_all_public_p1"
 
-    def test_p1_usergroup_tag_exists_in_code(self, p1_usergroup):
+    def test_p1_usergroup_tag_exists_in_code(
+        self, p1_usergroup  # noqa: ARG002 - fixture creates usergroup in DB
+    ):
         """Test that P1 usergroup tag is referenced in codebase."""
         # Just verify the tag can be found - the actual Slack integration
         # is tested in the get_users tests
@@ -236,7 +237,9 @@ class TestDevFirefighterTag:
             tag="dev_firefighter",
         )
 
-    def test_support_channel_can_be_found(self, support_channel):
+    def test_support_channel_can_be_found(
+        self, support_channel  # noqa: ARG002 - fixture creates channel in DB
+    ):
         """Test that support channel can be retrieved by tag."""
         channel = Conversation.objects.get_or_none(tag="dev_firefighter")
         assert channel is not None
@@ -261,10 +264,6 @@ class TestRaidAlertTags:
 
     def test_raid_alert_sbi_normal_tag_format(self):
         """Test that raid_alert__sbi_normal follows correct format."""
-        from firefighter.jira_app.models import JiraUser
-        from firefighter.raid.forms import get_internal_alert_conversations
-        from firefighter.raid.models import JiraTicket
-
         # Create channel
         Conversation.objects.create(
             name="incidents", channel_id="C_INC", tag="raid_alert__sbi_normal"
@@ -287,10 +286,6 @@ class TestRaidAlertTags:
 
     def test_raid_alert_sbi_high_tag_format(self):
         """Test that raid_alert__sbi_high follows correct format."""
-        from firefighter.jira_app.models import JiraUser
-        from firefighter.raid.forms import get_internal_alert_conversations
-        from firefighter.raid.models import JiraTicket
-
         # Create channel
         Conversation.objects.create(
             name="incidents-high", channel_id="C_INC_H", tag="raid_alert__sbi_high"
@@ -322,7 +317,7 @@ class TestTagUniqueness:
             name="channel1", channel_id="C_001", tag="unique_tag"
         )
 
-        with pytest.raises(Exception):  # IntegrityError
+        with pytest.raises(IntegrityError):
             Conversation.objects.create(
                 name="channel2", channel_id="C_002", tag="unique_tag"
             )
