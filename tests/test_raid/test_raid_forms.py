@@ -195,9 +195,12 @@ class TestAlertSlackNewJiraTicket:
         )
 
     def test_alert_slack_new_jira_ticket_with_incident_raises_error(self):
-        """Test that function raises ValueError for critical incidents."""
-        # Given - Create an incident and link it to the ticket
-        incident = IncidentFactory()
+        """Test that function raises ValueError for P1-P3 critical incidents."""
+        # Given - Create a P1 incident and link it to the ticket
+        p1_priority = Priority.objects.get_or_create(value=1, defaults={"name": "P1"})[
+            0
+        ]
+        incident = IncidentFactory(priority=p1_priority)
         self.jira_ticket.incident = incident
         self.jira_ticket.save()
 
