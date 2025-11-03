@@ -205,7 +205,6 @@ WHERE tag LIKE '%{search_term}%';
 
 ## Related Documentation
 
-- [Slack Integration Architecture](slack-integration.md)
 - [JIRA Integration](jira-integration.md)
 - [Incident Workflow](incident-workflows.md)
 
