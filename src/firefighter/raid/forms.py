@@ -108,11 +108,20 @@ def alert_slack_new_jira_ticket(
     reporter_email: str | None = None,
 ) -> None:
     # These alerts are for P4-P5 incidents only, not P1-P3 critical incidents
+    logger.info(f"🔍 DEBUG alert_slack_new_jira_ticket - jira_ticket.id = {jira_ticket.id}")
+    logger.info(f"🔍 DEBUG alert_slack_new_jira_ticket - hasattr(jira_ticket, 'incident') = {hasattr(jira_ticket, 'incident')}")
+    if hasattr(jira_ticket, "incident"):
+        logger.info(f"🔍 DEBUG alert_slack_new_jira_ticket - jira_ticket.incident = {jira_ticket.incident}")
+        if jira_ticket.incident:
+            logger.info(f"🔍 DEBUG alert_slack_new_jira_ticket - jira_ticket.incident.priority = {jira_ticket.incident.priority}")
+            logger.info(f"🔍 DEBUG alert_slack_new_jira_ticket - jira_ticket.incident.priority.value = {jira_ticket.incident.priority.value}")
+
     if (
         hasattr(jira_ticket, "incident")
         and jira_ticket.incident
         and jira_ticket.incident.priority.value <= 3
     ):
+        logger.error(f"🚨 DEBUG alert_slack_new_jira_ticket - Raising ValueError because priority.value = {jira_ticket.incident.priority.value}")
         raise ValueError("This is a critical incident, not a raid incident.")
 
     # Get the reporter's email and user from ticket if not provided

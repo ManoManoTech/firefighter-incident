@@ -499,6 +499,11 @@ class UnifiedIncidentForm(CreateIncidentFormBase):
 
         # Send Slack notifications based on priority
         # P1-P3 incidents have Slack channels, P4-P5 incidents don't
+        logger.info(f"🔍 DEBUG - incident.priority = {incident.priority}, incident.priority.value = {incident.priority.value}")
+        logger.info(f"🔍 DEBUG - jira_ticket.incident = {jira_ticket.incident}")
+        if hasattr(jira_ticket, "incident") and jira_ticket.incident:
+            logger.info(f"🔍 DEBUG - jira_ticket.incident.priority = {jira_ticket.incident.priority}, value = {jira_ticket.incident.priority.value}")
+
         if incident.priority.value <= 3:
             # P1-P3: Add Jira link to Slack channel (if exists)
             if hasattr(incident, "conversation"):
