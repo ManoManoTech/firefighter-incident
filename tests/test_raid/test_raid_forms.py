@@ -553,3 +553,58 @@ class TestGetInternalAlertConversations:
 
         # Then
         assert conversation in result
+
+
+@pytest.mark.django_db
+class TestAlertSlackNewJiraTicketSlackApiError:
+    """Test SlackApiError handling in alert_slack_new_jira_ticket."""
+
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        """Set up test fixtures."""
+        self.user = UserFactory()
+        self.jira_user = JiraUser.objects.create(id="jira-slack-error", user=self.user)
+        self.jira_ticket = JiraTicket.objects.create(
+            id=88888,
+            key="SLACK-888",
+            summary="Slack error ticket",
+            reporter=self.jira_user,
+        )
+
+    @patch("firefighter.raid.forms.get_partner_alert_conversations")
+    @patch("firefighter.raid.forms.get_internal_alert_conversations")
+    @patch("firefighter.raid.forms.SlackMessageRaidCreatedIssue")
+    def test_alert_slack_new_jira_ticket_slack_api_error_on_channel_send(
+        self, mock_message_class, mock_get_internal, mock_get_partner, caplog
+    ):
+        """Test SlackApiError when sending to channel - should log exception and continue."""
+        # Given: Create a conversation that will fail to send
+        channel = Conversation.objects.create(
+            channel_id="C_FAIL_TEST",
+            name="fail-channel-test",
+            tag="raid_alert__test_fail",
+        )
+        mock_get_internal.return_value = Conversation.objects.filter(id=channel.id)
+        mock_get_partner.return_value = Conversation.objects.none()
+
+        # Mock message
+        mock_message = Mock()
+        mock_message_class.return_value = mock_message
+
+        # Mock channel.send_message_and_save to raise SlackApiError
+        with patch.object(
+            Conversation,
+            "send_message_and_save",
+            side_effect=SlackApiError(
+                message="channel_not_found",
+                response={"error": "channel_not_found"}
+            )
+        ):
+            # When
+            alert_slack_new_jira_ticket(self.jira_ticket)
+
+            # Then
+            # Should log exception about not being able to send
+            assert "Couldn't send message to channel" in caplog.text
+            assert str(self.jira_ticket.id) in caplog.text
+            # Function should continue and not raise
