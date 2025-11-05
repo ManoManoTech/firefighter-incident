@@ -258,8 +258,8 @@ class JiraClient:
         """
         watchers = self.jira.watchers(jira_issue_id).raw.get("watchers")
         if len(watchers) == 0:
-            logger.warning(
-                "Watchers not found for jira_account_id '%s'.", jira_issue_id
+            logger.debug(
+                "No watchers found for jira_issue_id '%s'.", jira_issue_id
             )
         return watchers
 
