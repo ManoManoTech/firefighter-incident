@@ -71,7 +71,7 @@ class SelectImpactForm(forms.Form):
                 if impact_name.impact_type.name == "Business Impact":
                     impact_value = impact_name.value
 
-        return LevelChoices(impact_value).label if impact_value else None
+        return str(LevelChoices(impact_value).label) if impact_value else None
 
     def save(self, incident: HasImpactProtocol) -> None:
         """Save the impact choices to the incident."""
