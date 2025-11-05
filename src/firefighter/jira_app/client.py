@@ -254,14 +254,24 @@ class JiraClient:
             ValueError: Empty issue id
 
         Returns:
-            list(JiraAPIUser): List of Jira users object
+            list(JiraAPIUser): List of Jira users object, or empty list if ticket doesn't exist
         """
-        watchers = self.jira.watchers(jira_issue_id).raw.get("watchers")
-        if len(watchers) == 0:
-            logger.debug(
-                "No watchers found for jira_issue_id '%s'.", jira_issue_id
-            )
-        return watchers
+        try:
+            watchers = self.jira.watchers(jira_issue_id).raw.get("watchers")
+        except exceptions.JIRAError as e:
+            if e.status_code == 404:
+                logger.warning(
+                    "Jira ticket %s not found or no permission to access it. Cannot fetch watchers.",
+                    jira_issue_id,
+                )
+                return []
+            raise
+        else:
+            if len(watchers) == 0:
+                logger.debug(
+                    "No watchers found for jira_issue_id '%s'.", jira_issue_id
+                )
+            return watchers
 
     @staticmethod
     def _create_user_from_jira_info(
