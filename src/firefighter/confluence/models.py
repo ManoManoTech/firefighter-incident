@@ -21,8 +21,16 @@ if TYPE_CHECKING:
     from django.db.models import QuerySet
 
     from firefighter.jira_app.models import JiraPostMortem
+    from firefighter.jira_app.service_postmortem import JiraPostMortemService
 
 logger = logging.getLogger(__name__)
+
+
+def _get_jira_postmortem_service() -> JiraPostMortemService:
+    """Lazy import to avoid circular dependency with jira_app."""
+    from firefighter.jira_app.service_postmortem import jira_postmortem_service
+
+    return jira_postmortem_service
 
 
 class PostMortemManager(models.Manager["PostMortem"]):
@@ -63,11 +71,7 @@ class PostMortemManager(models.Manager["PostMortem"]):
                     f"Incident #{incident.id} already has a Jira post-mortem"
                 )
             else:
-                from firefighter.jira_app.service_postmortem import (
-                    jira_postmortem_service,
-                )
-
-                jira_pm = jira_postmortem_service.create_postmortem_for_incident(
+                jira_pm = _get_jira_postmortem_service().create_postmortem_for_incident(
                     incident
                 )
 
