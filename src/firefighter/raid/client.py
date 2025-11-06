@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any, Final, cast
 
 from django.conf import settings
 from httpx import HTTPError
-from jira.exceptions import JIRAError
+from jira import JIRAError
 
 from firefighter.firefighter.http_client import HttpClient
 from firefighter.firefighter.utils import get_in
@@ -35,6 +35,9 @@ class JiraAttachmentError(Exception):
 
 
 class RaidJiraClient(JiraClient):
+    def __init__(self) -> None:
+        super().__init__()
+
     def create_issue(  # noqa: PLR0912, PLR0913, C901, PLR0917
         self,
         issuetype: str | None,
@@ -164,6 +167,62 @@ class RaidJiraClient(JiraClient):
         return self.transition_issue_auto(
             issue_id, TARGET_STATUS_NAME, RAID_JIRA_WORKFLOW_NAME
         )
+
+    def update_issue(
+        self,
+        issue_key: str,
+        fields: dict[str, Any],
+    ) -> bool:
+        """Update fields on a Jira issue.
+
+        Args:
+            issue_key: The Jira issue key (e.g., 'INC-123')
+            fields: Dictionary of fields to update
+
+        Returns:
+            True if update was successful, False otherwise
+        """
+        try:
+            self.jira.issue(issue_key).update(fields=fields)
+            logger.info(f"Updated Jira issue {issue_key} with fields: {list(fields.keys())}")
+        except JIRAError:
+            logger.exception(f"Failed to update Jira issue {issue_key}")
+            return False
+        else:
+            return True
+
+    def transition_issue(
+        self,
+        issue_key: str,
+        target_status: str,
+    ) -> bool:
+        """Transition a Jira issue to a target status.
+
+        Args:
+            issue_key: The Jira issue key (e.g., 'INC-123')
+            target_status: The target status name
+
+        Returns:
+            True if transition was successful, False otherwise
+        """
+        try:
+            issue = self.jira.issue(issue_key)
+            transitions = self.jira.transitions(issue)
+
+            # Find the transition that leads to the target status
+            for transition in transitions:
+                if transition["to"]["name"] == target_status:
+                    self.jira.transition_issue(issue, transition["id"])
+                    logger.info(f"Transitioned Jira issue {issue_key} to status: {target_status}")
+                    return True
+
+            logger.warning(
+                f"No transition found to status '{target_status}' for issue {issue_key}"
+            )
+        except JIRAError:
+            logger.exception(f"Failed to transition Jira issue {issue_key}")
+
+        return False
 
     def _get_project_config_workflow(
         self, project_key: str = RAID_JIRA_PROJECT_KEY
