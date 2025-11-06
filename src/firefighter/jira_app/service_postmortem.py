@@ -106,52 +106,7 @@ class JiraPostMortemService:
             f"for incident #{incident.id}"
         )
 
-        # Send Slack notification to incident channel
-        self._notify_slack_channel(incident, jira_postmortem)
-
         return jira_postmortem
-
-    def _notify_slack_channel(
-        self,
-        incident: Incident,
-        jira_postmortem: JiraPostMortem,
-    ) -> None:
-        """Send Slack notification about post-mortem creation.
-
-        Args:
-            incident: Incident the post-mortem is for
-            jira_postmortem: Created Jira post-mortem
-        """
-        from firefighter.slack.slack_app import SlackApp
-
-        try:
-            commander = incident.roles_set.filter(role_type__slug="commander").first()
-            message = (
-                f":memo: *Post-mortem created for incident #{incident.id}*\n\n"
-                f"Jira ticket: <{jira_postmortem.issue_url}|{jira_postmortem.jira_issue_key}>\n"
-            )
-
-            if commander:
-                message += f"Assigned to: {commander.user.full_name}\n"
-
-            message += "\nPlease complete the post-mortem analysis with details from the incident retrospective."
-
-            if hasattr(incident, "conversation"):
-                SlackApp().client.chat_postMessage(
-                    channel=str(incident.conversation.id),
-                    text=message,
-                )
-
-                logger.info(
-                    f"Sent Slack notification for post-mortem {jira_postmortem.jira_issue_key} "
-                    f"to channel {incident.conversation.id}"
-                )
-            else:
-                logger.warning(
-                    f"Incident #{incident.id} has no Slack conversation, skipping notification"
-                )
-        except Exception:
-            logger.exception("Failed to send Slack notification for post-mortem")
 
     def _generate_issue_fields(self, incident: Incident) -> dict[str, str | dict[str, str]]:
         """Generate Jira issue fields from incident data.
