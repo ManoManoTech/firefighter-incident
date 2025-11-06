@@ -687,7 +687,6 @@ def create_postmortem_async(incident_id: int, created_by_id: int | None = None):
 - [JIRA Integration](jira-integration.md) - General Jira integration overview
 - [Test Configuration](test-config.md) - Testing setup for Jira tests
 - [Incident Closure Workflow](incident-closure-workflow.md) - Post-mortem requirements
-- [Implementation Proposal](../../docs/sessions/2025-11-04-jira-postmortem-implementation-proposal.md) - Original design doc
 
 ## Changelog
 
