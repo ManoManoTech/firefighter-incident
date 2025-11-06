@@ -59,7 +59,8 @@ class JiraPostMortemService:
             JiraAPIError: If Jira API call fails
         """
         if hasattr(incident, "jira_postmortem_for"):
-            raise ValueError(f"Incident #{incident.id} already has a Jira post-mortem")
+            error_msg = f"Incident #{incident.id} already has a Jira post-mortem"
+            raise ValueError(error_msg)
 
         logger.info(f"Creating Jira post-mortem for incident #{incident.id}")
 
@@ -67,7 +68,7 @@ class JiraPostMortemService:
         fields = self._generate_issue_fields(incident)
 
         # Create Jira issue
-        jira_issue = self.client.create_issue(
+        jira_issue = self.client.create_postmortem_issue(
             project_key=self.project_key,
             issue_type=self.issue_type,
             fields=fields,
@@ -89,11 +90,8 @@ class JiraPostMortemService:
                     f"Assigned post-mortem {jira_issue['key']} to commander "
                     f"{commander.user.username}"
                 )
-            except Exception as e:
-                logger.warning(
-                    f"Failed to assign post-mortem to commander: {e}",
-                    exc_info=True,
-                )
+            except Exception:
+                logger.exception("Failed to assign post-mortem to commander")
 
         # Create JiraPostMortem record
         jira_postmortem = JiraPostMortem.objects.create(
@@ -152,11 +150,8 @@ class JiraPostMortemService:
                 logger.warning(
                     f"Incident #{incident.id} has no Slack conversation, skipping notification"
                 )
-        except Exception as e:
-            logger.error(
-                f"Failed to send Slack notification for post-mortem: {e}",
-                exc_info=True,
-            )
+        except Exception:
+            logger.exception("Failed to send Slack notification for post-mortem")
 
     def _generate_issue_fields(self, incident: Incident) -> dict[str, str | dict[str, str]]:
         """Generate Jira issue fields from incident data.

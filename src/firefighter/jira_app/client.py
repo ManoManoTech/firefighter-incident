@@ -461,13 +461,13 @@ class JiraClient:
 
         return statuses_info_list
 
-    def create_issue(
+    def create_postmortem_issue(
         self,
         project_key: str,
         issue_type: str,
         fields: dict[str, Any],
     ) -> dict[str, Any]:
-        """Create a Jira issue with custom fields.
+        """Create a Jira post-mortem issue with custom fields.
 
         Args:
             project_key: Jira project key (e.g., "INCIDENT")
@@ -488,19 +488,15 @@ class JiraClient:
             }
 
             issue = self.jira.create_issue(fields=issue_dict)
-
+        except exceptions.JIRAError as e:
+            logger.exception("Failed to create Jira issue in project %s", project_key)
+            error_msg = f"Failed to create Jira issue: {e.status_code} {e.text}"
+            raise JiraAPIError(error_msg) from e
+        else:
             return {
                 "key": issue.key,
                 "id": issue.id,
             }
-        except exceptions.JIRAError as e:
-            logger.error(
-                f"Failed to create Jira issue in project {project_key}: {e}",
-                exc_info=True,
-            )
-            raise JiraAPIError(
-                f"Failed to create Jira issue: {e.status_code} {e.text}"
-            ) from e
 
     def assign_issue(self, issue_key: str, account_id: str) -> None:
         """Assign a Jira issue to a user.
@@ -514,15 +510,11 @@ class JiraClient:
         """
         try:
             self.jira.assign_issue(issue_key, account_id)
-            logger.info(f"Assigned issue {issue_key} to user {account_id}")
+            logger.info("Assigned issue %s to user %s", issue_key, account_id)
         except exceptions.JIRAError as e:
-            logger.error(
-                f"Failed to assign issue {issue_key} to {account_id}: {e}",
-                exc_info=True,
-            )
-            raise JiraAPIError(
-                f"Failed to assign issue: {e.status_code} {e.text}"
-            ) from e
+            logger.exception("Failed to assign issue %s to %s", issue_key, account_id)
+            error_msg = f"Failed to assign issue: {e.status_code} {e.text}"
+            raise JiraAPIError(error_msg) from e
 
 
 client = JiraClient()
