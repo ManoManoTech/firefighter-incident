@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from django.conf import settings
 from django.db import models
 from django_stubs_ext.db.models import TypedModelMeta
 
@@ -105,6 +106,4 @@ class JiraPostMortem(models.Model):
     @property
     def issue_url(self) -> str:
         """Return Jira issue URL."""
-        from django.conf import settings
-
         return f"{settings.RAID_JIRA_API_URL}/browse/{self.jira_issue_key}"
