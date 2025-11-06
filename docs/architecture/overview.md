@@ -93,6 +93,15 @@ src/firefighter/
 
 ## 🆕 Recently Added Features
 
+### Jira Post-mortem Integration (v0.0.21)
+
+- **Dual backend support**: Create post-mortems in Jira as alternative to Confluence
+- **Auto-assignment**: Automatically assign post-mortem tickets to incident commanders
+- **Slack notifications**: Send channel notifications with direct links to Jira tickets
+- **Wiki Markup templates**: 5 pre-populated templates for structured post-mortems
+- **Flexible modes**: Support Confluence-only, Jira-only, or dual mode
+- **📖 Documentation**: [Jira Post-mortem Integration](jira-postmortem.md)
+
 ### Component → IncidentCategory Migration
 
 - **Major refactoring**: Renaming "Component" to "IncidentCategory"
