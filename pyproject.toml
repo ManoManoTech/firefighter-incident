@@ -557,6 +557,7 @@ external = [
 "**/migrations/*" = ["PLR", "D", "ANN", "ARG", "N806", "I002"]
 "stubs/*" = ["ARG", "ANN", "D", "INP", "TCH"]
 "**/apps.py" = ["F401", "PLC0415"]
+"**/models.py" = ["PLC0415"]  # Allow local imports to avoid circular dependencies
 "**/manage.py" = ["INP", "PLC0415"]
 "**/main.py" = ["INP"]
 "**/gunicorn.conf.py" = ["INP"]
