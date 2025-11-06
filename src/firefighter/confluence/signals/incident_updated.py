@@ -42,7 +42,10 @@ def incident_updated_handler(
             in {IncidentStatus.MITIGATED, IncidentStatus.POST_MORTEM}
             and incident.needs_postmortem
         ):
-            if not hasattr(incident, "postmortem_for"):
+            # Create post-mortem(s) if not already created (Confluence and/or Jira)
+            has_confluence = hasattr(incident, "postmortem_for")
+            has_jira = hasattr(incident, "jira_postmortem_for")
+            if not has_confluence or not has_jira:
                 PostMortem.objects.create_postmortem_for_incident(incident)
             publish_postmortem_reminder(incident)
         elif (
