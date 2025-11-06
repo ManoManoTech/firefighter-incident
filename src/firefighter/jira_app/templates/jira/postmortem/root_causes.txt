@@ -1,0 +1,12 @@
+h2. Root Causes
+
+_TODO: Analyze and document the root causes of this incident._
+
+h3. Contributing Factors
+
+* _TODO: Factor 1_
+* _TODO: Factor 2_
+
+h3. Why it happened
+
+_TODO: Explain why this incident occurred._

@@ -1,0 +1,8 @@
+h2. Timeline
+
+|| Time || Event ||
+| {{ incident.created_at|date:"Y-m-d H:i" }} UTC | Incident created ({{ incident.priority.name }}) |
+{% if incident.key_events.all %}{% for key_event in incident.key_events.all %}| {{ key_event.created_at|date:"Y-m-d H:i" }} UTC | {{ key_event.event_type|title }}: {{ key_event.message }} |
+{% endfor %}{% endif %}
+
+_TODO: Complete timeline with key events from Slack conversation and incident updates._

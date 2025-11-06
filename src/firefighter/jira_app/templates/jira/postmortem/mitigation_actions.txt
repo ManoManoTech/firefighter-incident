@@ -1,0 +1,15 @@
+h2. Mitigation Actions
+
+h3. Immediate Actions Taken
+
+_TODO: List the immediate actions taken to mitigate the incident._
+
+h3. Long-term Actions
+
+_TODO: List the long-term actions to prevent recurrence._
+
+h3. Follow-up Tasks
+{% if incident.jira_ticket %}
+Related Jira ticket: [{{ incident.jira_ticket.jira_issue_key }}|{{ incident.jira_ticket.jira_issue_url }}]
+{% else %}_No follow-up Jira ticket linked._
+{% endif %}

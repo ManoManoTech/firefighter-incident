@@ -1,0 +1,235 @@
+"""Service for creating and managing Jira post-mortems."""
+
+from __future__ import annotations
+
+import logging
+from typing import TYPE_CHECKING
+
+from django.conf import settings
+from django.template.loader import render_to_string
+
+from firefighter.jira_app.client import JiraClient
+from firefighter.jira_app.models import JiraPostMortem
+
+if TYPE_CHECKING:
+    from firefighter.incidents.models.incident import Incident
+    from firefighter.incidents.models.user import User
+
+logger = logging.getLogger(__name__)
+
+
+class JiraPostMortemService:
+    """Service for creating and managing Jira post-mortems."""
+
+    def __init__(self) -> None:
+        self.client = JiraClient()
+        self.project_key = getattr(
+            settings, "JIRA_POSTMORTEM_PROJECT_KEY", "INCIDENT"
+        )
+        self.issue_type = getattr(settings, "JIRA_POSTMORTEM_ISSUE_TYPE", "Post-mortem")
+        self.field_ids = getattr(
+            settings,
+            "JIRA_POSTMORTEM_FIELDS",
+            {
+                "incident_summary": "customfield_12699",
+                "timeline": "customfield_12700",
+                "root_causes": "customfield_12701",
+                "impact": "customfield_12702",
+                "mitigation_actions": "customfield_12703",
+                "incident_category": "customfield_12369",
+            },
+        )
+
+    def create_postmortem_for_incident(
+        self,
+        incident: Incident,
+        created_by: User | None = None,
+    ) -> JiraPostMortem:
+        """Create a Jira post-mortem for an incident.
+
+        Args:
+            incident: Incident to create post-mortem for
+            created_by: User creating the post-mortem
+
+        Returns:
+            JiraPostMortem instance
+
+        Raises:
+            ValueError: If incident already has a Jira post-mortem
+            JiraAPIError: If Jira API call fails
+        """
+        if hasattr(incident, "jira_postmortem_for"):
+            raise ValueError(f"Incident #{incident.id} already has a Jira post-mortem")
+
+        logger.info(f"Creating Jira post-mortem for incident #{incident.id}")
+
+        # Generate content from templates
+        fields = self._generate_issue_fields(incident)
+
+        # Create Jira issue
+        jira_issue = self.client.create_issue(
+            project_key=self.project_key,
+            issue_type=self.issue_type,
+            fields=fields,
+        )
+
+        # Assign to incident commander if available
+        commander = incident.roles_set.filter(role_type__slug="commander").first()
+        if (
+            commander
+            and hasattr(commander.user, "jira_user")
+            and commander.user.jira_user is not None
+        ):
+            try:
+                self.client.assign_issue(
+                    issue_key=jira_issue["key"],
+                    account_id=commander.user.jira_user.id,
+                )
+                logger.info(
+                    f"Assigned post-mortem {jira_issue['key']} to commander "
+                    f"{commander.user.username}"
+                )
+            except Exception as e:
+                logger.warning(
+                    f"Failed to assign post-mortem to commander: {e}",
+                    exc_info=True,
+                )
+
+        # Create JiraPostMortem record
+        jira_postmortem = JiraPostMortem.objects.create(
+            incident=incident,
+            jira_issue_key=jira_issue["key"],
+            jira_issue_id=jira_issue["id"],
+            created_by=created_by,
+        )
+
+        logger.info(
+            f"Created Jira post-mortem {jira_postmortem.jira_issue_key} "
+            f"for incident #{incident.id}"
+        )
+
+        # Send Slack notification to incident channel
+        self._notify_slack_channel(incident, jira_postmortem)
+
+        return jira_postmortem
+
+    def _notify_slack_channel(
+        self,
+        incident: Incident,
+        jira_postmortem: JiraPostMortem,
+    ) -> None:
+        """Send Slack notification about post-mortem creation.
+
+        Args:
+            incident: Incident the post-mortem is for
+            jira_postmortem: Created Jira post-mortem
+        """
+        from firefighter.slack.slack_app import SlackApp
+
+        try:
+            commander = incident.roles_set.filter(role_type__slug="commander").first()
+            message = (
+                f":memo: *Post-mortem created for incident #{incident.id}*\n\n"
+                f"Jira ticket: <{jira_postmortem.issue_url}|{jira_postmortem.jira_issue_key}>\n"
+            )
+
+            if commander:
+                message += f"Assigned to: {commander.user.full_name}\n"
+
+            message += "\nPlease complete the post-mortem analysis with details from the incident retrospective."
+
+            if hasattr(incident, "conversation"):
+                SlackApp().client.chat_postMessage(
+                    channel=str(incident.conversation.id),
+                    text=message,
+                )
+
+                logger.info(
+                    f"Sent Slack notification for post-mortem {jira_postmortem.jira_issue_key} "
+                    f"to channel {incident.conversation.id}"
+                )
+            else:
+                logger.warning(
+                    f"Incident #{incident.id} has no Slack conversation, skipping notification"
+                )
+        except Exception as e:
+            logger.error(
+                f"Failed to send Slack notification for post-mortem: {e}",
+                exc_info=True,
+            )
+
+    def _generate_issue_fields(self, incident: Incident) -> dict[str, str | dict[str, str]]:
+        """Generate Jira issue fields from incident data.
+
+        Args:
+            incident: Incident to generate fields for
+
+        Returns:
+            Dictionary of Jira field IDs to values
+        """
+        # Generate summary (standard field)
+        env = getattr(settings, "ENV", "dev")
+        topic_prefix = "" if env in {"support", "prod"} else f"[IGNORE - TEST {env}] "
+        summary = (
+            f"{topic_prefix}#{incident.slack_channel_name} "
+            f"({incident.priority.name}) {incident.title}"
+        )
+
+        # Generate content from Django templates (Jira Wiki Markup)
+        context = {
+            "incident": incident,
+            "priority": incident.priority,
+            "created_at": incident.created_at,
+            "components": [],  # No component relationship available
+        }
+
+        incident_summary = render_to_string(
+            "jira/postmortem/incident_summary.txt",
+            context,
+        )
+
+        timeline = render_to_string(
+            "jira/postmortem/timeline.txt",
+            context,
+        )
+
+        impact = render_to_string(
+            "jira/postmortem/impact.txt",
+            context,
+        )
+
+        mitigation_actions = render_to_string(
+            "jira/postmortem/mitigation_actions.txt",
+            context,
+        )
+
+        # Optional: root causes (editable placeholder for manual completion)
+        root_causes = render_to_string(
+            "jira/postmortem/root_causes.txt",
+            context,
+        )
+
+        # Build field mapping
+        fields: dict[str, str | dict[str, str]] = {
+            "summary": summary,
+            self.field_ids["incident_summary"]: incident_summary,
+            self.field_ids["timeline"]: timeline,
+            self.field_ids["impact"]: impact,
+            self.field_ids["mitigation_actions"]: mitigation_actions,
+        }
+
+        # Add optional fields if not empty
+        if root_causes.strip():
+            fields[self.field_ids["root_causes"]] = root_causes
+
+        # Add incident category if available
+        if incident.incident_category:
+            # Jira select field requires dict with value key
+            category_field_id = self.field_ids["incident_category"]
+            fields[category_field_id] = {"value": incident.incident_category.name}
+
+        return fields
+
+
+# Singleton instance
+jira_postmortem_service = JiraPostMortemService()

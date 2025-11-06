@@ -461,5 +461,68 @@ class JiraClient:
 
         return statuses_info_list
 
+    def create_issue(
+        self,
+        project_key: str,
+        issue_type: str,
+        fields: dict[str, Any],
+    ) -> dict[str, Any]:
+        """Create a Jira issue with custom fields.
+
+        Args:
+            project_key: Jira project key (e.g., "INCIDENT")
+            issue_type: Issue type name (e.g., "Post-mortem")
+            fields: Dictionary of field IDs to values
+
+        Returns:
+            Dictionary with 'key' and 'id' of created issue
+
+        Raises:
+            JiraAPIError: If issue creation fails
+        """
+        try:
+            issue_dict = {
+                "project": {"key": project_key},
+                "issuetype": {"name": issue_type},
+                **fields,
+            }
+
+            issue = self.jira.create_issue(fields=issue_dict)
+
+            return {
+                "key": issue.key,
+                "id": issue.id,
+            }
+        except exceptions.JIRAError as e:
+            logger.error(
+                f"Failed to create Jira issue in project {project_key}: {e}",
+                exc_info=True,
+            )
+            raise JiraAPIError(
+                f"Failed to create Jira issue: {e.status_code} {e.text}"
+            ) from e
+
+    def assign_issue(self, issue_key: str, account_id: str) -> None:
+        """Assign a Jira issue to a user.
+
+        Args:
+            issue_key: Jira issue key (e.g., "INCIDENT-123")
+            account_id: Jira account ID of the user
+
+        Raises:
+            JiraAPIError: If assignment fails
+        """
+        try:
+            self.jira.assign_issue(issue_key, account_id)
+            logger.info(f"Assigned issue {issue_key} to user {account_id}")
+        except exceptions.JIRAError as e:
+            logger.error(
+                f"Failed to assign issue {issue_key} to {account_id}: {e}",
+                exc_info=True,
+            )
+            raise JiraAPIError(
+                f"Failed to assign issue: {e.status_code} {e.text}"
+            ) from e
+
 
 client = JiraClient()

@@ -1,0 +1,20 @@
+h2. Impact
+
+h3. Affected Systems
+{% if components %}
+{% for component in components %}* {{ component.name }}
+{% endfor %}
+{% else %}_No components recorded._
+{% endif %}
+
+h3. User Impact
+
+_TODO: Describe the impact on users and business._
+
+h3. Duration
+
+*Opened:* {{ incident.created_at|date:"Y-m-d H:i" }} UTC
+{% if incident.closed_at %}*Closed:* {{ incident.closed_at|date:"Y-m-d H:i" }} UTC
+*Total Duration:* {{ incident.duration }}
+{% else %}*Status:* Still open
+{% endif %}
