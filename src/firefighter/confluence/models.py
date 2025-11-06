@@ -19,16 +19,74 @@ from firefighter.incidents.signals import postmortem_created
 
 if TYPE_CHECKING:
     from django.db.models import QuerySet
+
+    from firefighter.jira_app.models import JiraPostMortem
+
 logger = logging.getLogger(__name__)
 
 
 class PostMortemManager(models.Manager["PostMortem"]):
     @staticmethod
-    def create_postmortem_for_incident(incident: Incident) -> PostMortem:
-        if hasattr(incident, "postmortem_for"):
-            raise ValueError("Incident already has a post-mortem page")
+    def create_postmortem_for_incident(
+        incident: Incident,
+    ) -> tuple[PostMortem | None, JiraPostMortem | None]:
+        """Create post-mortem(s) for incident based on feature flags.
 
-        logger.info("Creating PostMortem for %s", incident)
+        Returns:
+            Tuple of (confluence_postmortem, jira_postmortem)
+            Either or both can be None depending on feature flags
+
+        Raises:
+            ValueError: If both backends are disabled or post-mortem already exists
+        """
+        confluence_pm = None
+        jira_pm = None
+
+        enable_confluence = getattr(settings, "ENABLE_CONFLUENCE", False)
+        enable_jira_postmortem = getattr(settings, "ENABLE_JIRA_POSTMORTEM", False)
+
+        # Check Confluence post-mortem
+        if enable_confluence:
+            if hasattr(incident, "postmortem_for"):
+                logger.warning(
+                    f"Incident #{incident.id} already has a Confluence post-mortem"
+                )
+            else:
+                confluence_pm = PostMortemManager._create_confluence_postmortem(
+                    incident
+                )
+
+        # Check Jira post-mortem
+        if enable_jira_postmortem:
+            if hasattr(incident, "jira_postmortem_for"):
+                logger.warning(
+                    f"Incident #{incident.id} already has a Jira post-mortem"
+                )
+            else:
+                from firefighter.jira_app.service_postmortem import (
+                    jira_postmortem_service,
+                )
+
+                jira_pm = jira_postmortem_service.create_postmortem_for_incident(
+                    incident
+                )
+
+        # Validate at least one was created
+        if confluence_pm is None and jira_pm is None:
+            if not enable_confluence and not enable_jira_postmortem:
+                raise ValueError("Both Confluence and Jira post-mortems are disabled")
+            raise ValueError("Post-mortem already exists for this incident")
+
+        # Send signal if at least one post-mortem was created
+        if confluence_pm or jira_pm:
+            postmortem_created.send_robust(sender=__name__, incident=incident)
+
+        return confluence_pm, jira_pm
+
+    @staticmethod
+    def _create_confluence_postmortem(incident: Incident) -> PostMortem:
+        """Create Confluence post-mortem (existing logic)."""
+        logger.info("Creating Confluence PostMortem for %s", incident)
 
         topic_prefix = (
             ""
@@ -57,8 +115,6 @@ class PostMortemManager(models.Manager["PostMortem"]):
             **page_info,
         )
         pm_page.save()
-
-        postmortem_created.send_robust(sender=__name__, incident=incident)
 
         previous_postmortem = (
             PostMortem.objects.exclude(id=pm_page.id)
