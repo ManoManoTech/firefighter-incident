@@ -19,7 +19,11 @@ logger = logging.getLogger(__name__)
 @receiver(signal=postmortem_created)
 # pylint: disable=unused-argument
 def postmortem_created_send(sender: Any, incident: Incident, **kwargs: Any) -> None:
-    if not hasattr(incident, "postmortem_for"):
+    # Check if at least one post-mortem exists
+    has_confluence = hasattr(incident, "postmortem_for")
+    has_jira = hasattr(incident, "jira_postmortem_for")
+
+    if not has_confluence and not has_jira:
         logger.warning(f"No PostMortem to post for incident {incident}.")
         return
 
@@ -28,9 +32,23 @@ def postmortem_created_send(sender: Any, incident: Incident, **kwargs: Any) -> N
             f"No Incident Slack channel to post PostMortem for incident {incident}."
         )
         return
+
+    # Send message with all available post-mortem links (pinned)
     incident.conversation.send_message_and_save(
         SlackMessageIncidentPostMortemCreated(incident), pin=True
     )
-    incident.conversation.add_bookmark(
-        title="Postmortem", link=incident.postmortem_for.page_url, emoji=":confluence:"
-    )
+
+    # Add bookmarks for each available post-mortem
+    if has_confluence:
+        incident.conversation.add_bookmark(
+            title="Postmortem (Confluence)",
+            link=incident.postmortem_for.page_url,
+            emoji=":confluence:",
+        )
+
+    if has_jira:
+        incident.conversation.add_bookmark(
+            title=f"Postmortem ({incident.jira_postmortem_for.jira_issue_key})",
+            link=incident.jira_postmortem_for.issue_url,
+            emoji=":jira:",
+        )

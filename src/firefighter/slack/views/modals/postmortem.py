@@ -72,7 +72,7 @@ class PostMortemModal(
         )
 
     @staticmethod
-    def handle_modal_fn(ack: Ack, **_kwargs: Any) -> None:  # type: ignore[override]
+    def handle_modal_fn(ack: Ack, **_kwargs: Any) -> None:
         # This modal is now read-only (no submit button)
         # Post-mortems are created automatically when incident reaches MITIGATED status
         ack()
