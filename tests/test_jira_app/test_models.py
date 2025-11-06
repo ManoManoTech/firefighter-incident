@@ -74,10 +74,12 @@ class TestJiraPostMortem:
         expected_url = f"{settings.RAID_JIRA_API_URL}/browse/INCIDENT-123"
         assert jira_pm.issue_url == expected_url
 
+    @pytest.mark.django_db(transaction=True)
     def test_jira_postmortem_unique_constraints(self):
         """Test uniqueness constraints on jira_issue_key and jira_issue_id."""
         incident1 = IncidentFactory()
         incident2 = IncidentFactory()
+        incident3 = IncidentFactory()
         user = UserFactory()
 
         # Create first post-mortem
@@ -100,7 +102,7 @@ class TestJiraPostMortem:
         # Try to create second post-mortem with same jira_issue_id
         with pytest.raises(IntegrityError):
             JiraPostMortem.objects.create(
-                incident=incident2,
+                incident=incident3,
                 jira_issue_key="INCIDENT-456",
                 jira_issue_id="10001",  # Duplicate ID
                 created_by=user,
