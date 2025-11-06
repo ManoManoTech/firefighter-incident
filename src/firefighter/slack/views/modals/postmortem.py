@@ -37,9 +37,7 @@ class PostMortemModal(
 
         if has_confluence or has_jira:
             blocks.append(
-                SectionBlock(
-                    text=f"Post-mortem(s) for incident #{incident.id}:"
-                )
+                SectionBlock(text=f"Post-mortem(s) for incident #{incident.id}:")
             )
 
             if has_confluence:
