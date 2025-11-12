@@ -6,19 +6,11 @@ from typing import TYPE_CHECKING, Any, Never
 from django.apps import apps
 from django.dispatch.dispatcher import receiver
 
-from firefighter.confluence.models import PostMortem
-from firefighter.incidents.enums import IncidentStatus
 from firefighter.incidents.signals import incident_updated
 
 if TYPE_CHECKING:
     from firefighter.incidents.models.incident import Incident
     from firefighter.incidents.models.incident_update import IncidentUpdate
-
-if apps.is_installed("firefighter.slack"):
-    from firefighter.slack.tasks.reminder_postmortem import (
-        publish_fixed_next_actions,
-        publish_postmortem_reminder,
-    )
 
 logger = logging.getLogger(__name__)
 
@@ -31,27 +23,14 @@ def incident_updated_handler(
     updated_fields: list[str],
     **kwargs: Never,
 ) -> None:
+    """Handle Confluence-specific incident updates.
+
+    Note: Post-mortem creation logic has been moved to jira_app.signals.postmortem_created
+    to handle both Confluence and Jira post-mortems independently of Confluence being enabled.
+    """
     if not apps.is_installed("firefighter.slack"):
         logger.error("Slack app is not installed. Skipping.")
         return
-    if sender == "update_status":
-        # Post postmortem reminder if needed
-        if (
-            "_status" in updated_fields
-            and incident_update.status
-            in {IncidentStatus.MITIGATED, IncidentStatus.POST_MORTEM}
-            and incident.needs_postmortem
-        ):
-            # Create post-mortem(s) if not already created (Confluence and/or Jira)
-            has_confluence = hasattr(incident, "postmortem_for")
-            has_jira = hasattr(incident, "jira_postmortem_for")
-            if not has_confluence or not has_jira:
-                PostMortem.objects.create_postmortem_for_incident(incident)
-            publish_postmortem_reminder(incident)
-        elif (
-            "_status" in updated_fields
-            and incident_update.status
-            in {IncidentStatus.MITIGATED, IncidentStatus.POST_MORTEM}
-            and not incident.needs_postmortem
-        ):
-            publish_fixed_next_actions(incident)
+
+    # This handler is now empty but kept for future Confluence-specific logic
+    # Post-mortem creation is handled by jira_app.signals.postmortem_created
