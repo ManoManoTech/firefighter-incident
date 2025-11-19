@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, patch
 
 import pytest
-from django.test import override_settings
 from django.utils import timezone
 
 from firefighter.incidents.enums import IncidentStatus
@@ -25,7 +24,6 @@ class TestIncidentKeyEventsSync:
     """Test syncing incident key events to Jira post-mortem timeline."""
 
     @staticmethod
-    @override_settings(ENABLE_JIRA_POSTMORTEM=True)
     @patch("firefighter.jira_app.signals.incident_key_events_updated.JiraClient")
     def test_key_events_update_syncs_to_jira_postmortem(
         mock_jira_client: MagicMock,

@@ -9,7 +9,7 @@ from pytest_mock import MockerFixture
 
 from firefighter.incidents.enums import IncidentStatus
 from firefighter.incidents.factories import IncidentFactory, UserFactory
-from firefighter.incidents.models import Incident, MilestoneType
+from firefighter.incidents.models import Incident, MilestoneType, Priority
 from firefighter.slack.views import UpdateStatusModal
 
 logger = logging.getLogger(__name__)
@@ -112,22 +112,40 @@ class TestUpdateStatusModal:
         user = UserFactory.build()
         user.save()
 
+<<<<<<< HEAD
+        # Create a P3+ incident in MITIGATED status (can go directly to CLOSED)
+        # Get P3 priority explicitly to ensure no postmortem is needed
+        p3_priority = Priority.objects.get(value=3)
+        incident = IncidentFactory.build(
+=======
         # Create P3 priority (needs_postmortem=False)
         p3_priority = priority_factory(value=3, name="P3", needs_postmortem=False)
 
         # Create a P3 incident in MITIGATED status (can go directly to CLOSED)
         # This incident will have missing milestones (detected, started)
         incident = IncidentFactory.create(
+>>>>>>> 1fa7bfa (feat(jira): comprehensive Jira post-mortem enhancements)
             _status=IncidentStatus.MITIGATED,
             created_by=user,
             priority=p3_priority,
         )
+<<<<<<< HEAD
+        incident.save()
+        # Mock can_be_closed to return False with MISSING_REQUIRED_KEY_EVENTS reason
+        mocker.patch.object(
+            type(incident),
+            "can_be_closed",
+            new_callable=PropertyMock,
+            return_value=(False, [("MISSING_REQUIRED_KEY_EVENTS", "Missing key events: detected, started")])
+        )
+=======
 
         # Verify that can_be_closed returns False due to missing milestones (real check, no mock)
         can_close, reasons = incident.can_be_closed
         assert can_close is False, f"Incident should not be closable without required milestones. Got: {can_close}, reasons: {reasons}"
         assert any("MISSING_REQUIRED_KEY_EVENTS" in reason[0] for reason in reasons), \
             f"Expected MISSING_REQUIRED_KEY_EVENTS in reasons, got: {reasons}"
+>>>>>>> 1fa7bfa (feat(jira): comprehensive Jira post-mortem enhancements)
 
         modal = UpdateStatusModal()
         trigger_incident_workflow = mocker.patch.object(
