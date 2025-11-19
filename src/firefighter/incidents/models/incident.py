@@ -69,6 +69,8 @@ if TYPE_CHECKING:
 
     if settings.ENABLE_CONFLUENCE:
         from firefighter.confluence.models import PostMortem
+    if getattr(settings, "ENABLE_JIRA_POSTMORTEM", False):
+        from firefighter.jira_app.models import JiraPostMortem
 
 
 NON_ALPHANUMERIC_CHARACTERS = re.compile(r"[^\da-zA-Z]+")
@@ -338,15 +340,25 @@ class Incident(models.Model):
 
     @property
     def needs_postmortem(self) -> bool:
-        return (
-            bool(
-                self.priority
-                and self.environment
-                and self.priority.needs_postmortem
-                and self.environment.value == "PRD"
-            )
-            if apps.is_installed("firefighter.confluence")
-            else False
+        """Check if incident requires a post-mortem based on priority and environment.
+
+        Post-mortem is required if:
+        - Priority requires it (P1/P2)
+        - Environment is PRD
+        - At least one post-mortem system is enabled (Confluence OR Jira)
+        """
+        # Check if at least one post-mortem system is enabled
+        has_confluence = apps.is_installed("firefighter.confluence")
+        has_jira_postmortem = getattr(settings, "ENABLE_JIRA_POSTMORTEM", False)
+
+        if not (has_confluence or has_jira_postmortem):
+            return False
+
+        return bool(
+            self.priority
+            and self.environment
+            and self.priority.needs_postmortem
+            and self.environment.value == "PRD"
         )
 
     @property
@@ -649,6 +661,9 @@ class Incident(models.Model):
         if settings.ENABLE_CONFLUENCE:
             postmortem_for: PostMortem
             postmortem_for_id: UUID
+        if getattr(settings, "ENABLE_JIRA_POSTMORTEM", False):
+            jira_postmortem_for: JiraPostMortem
+            jira_postmortem_for_id: UUID
         priority_id: UUID
         environment_id: UUID
         component_id: UUID
