@@ -218,6 +218,12 @@ class SlackMessageIncidentDeclaredAnnouncement(SlackMessageSurface):
         if hasattr(self.incident, "jira_ticket") and self.incident.jira_ticket:
             fields.append(f":jira_new: <{self.incident.jira_ticket.url}|*Jira ticket*>")
 
+        if hasattr(self.incident, "postmortem_for") and self.incident.postmortem_for:
+            fields.append(f":confluence: <{self.incident.postmortem_for.page_url}|*Confluence Post-mortem*>")
+
+        if hasattr(self.incident, "jira_postmortem_for") and self.incident.jira_postmortem_for:
+            fields.append(f":jira_new: <{self.incident.jira_postmortem_for.issue_url}|*Jira Post-mortem ({self.incident.jira_postmortem_for.jira_issue_key})*>")
+
         # Add custom fields if present
         if hasattr(self.incident, "custom_fields") and self.incident.custom_fields:
             custom_fields = self.incident.custom_fields

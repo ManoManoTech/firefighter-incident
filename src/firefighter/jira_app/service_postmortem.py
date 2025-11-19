@@ -64,14 +64,29 @@ class JiraPostMortemService:
 
         logger.info(f"Creating Jira post-mortem for incident #{incident.id}")
 
+        # Prefetch incident updates and jira_ticket for timeline and parent link
+        from firefighter.incidents.models.incident import Incident  # noqa: PLC0415
+
+        incident = (
+            Incident.objects.select_related("priority", "environment", "jira_ticket")
+            .prefetch_related("incidentupdate_set")
+            .get(pk=incident.pk)
+        )
+
         # Generate content from templates
         fields = self._generate_issue_fields(incident)
 
-        # Create Jira issue
+        # Get parent issue key from RAID Jira ticket if available
+        parent_issue_key = None
+        if hasattr(incident, "jira_ticket") and incident.jira_ticket:
+            parent_issue_key = incident.jira_ticket.key
+
+        # Create Jira issue with optional parent link
         jira_issue = self.client.create_postmortem_issue(
             project_key=self.project_key,
             issue_type=self.issue_type,
             fields=fields,
+            parent_issue_key=parent_issue_key,
         )
 
         # Assign to incident commander if available
@@ -81,17 +96,16 @@ class JiraPostMortemService:
             and hasattr(commander.user, "jira_user")
             and commander.user.jira_user is not None
         ):
-            try:
-                self.client.assign_issue(
-                    issue_key=jira_issue["key"],
-                    account_id=commander.user.jira_user.id,
-                )
+            assigned = self.client.assign_issue(
+                issue_key=jira_issue["key"],
+                account_id=commander.user.jira_user.id,
+            )
+            if assigned:
                 logger.info(
-                    f"Assigned post-mortem {jira_issue['key']} to commander "
-                    f"{commander.user.username}"
+                    "Assigned post-mortem %s to commander %s",
+                    jira_issue["key"],
+                    commander.user.username,
                 )
-            except Exception:
-                logger.exception("Failed to assign post-mortem to commander")
 
         # Create JiraPostMortem record
         jira_postmortem = JiraPostMortem.objects.create(

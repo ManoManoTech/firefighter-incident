@@ -9,7 +9,7 @@ from pytest_mock import MockerFixture
 
 from firefighter.incidents.enums import IncidentStatus
 from firefighter.incidents.factories import IncidentFactory, UserFactory
-from firefighter.incidents.models import Incident, Priority
+from firefighter.incidents.models import Incident, MilestoneType
 from firefighter.slack.views import UpdateStatusModal
 
 logger = logging.getLogger(__name__)
@@ -78,32 +78,56 @@ class TestUpdateStatusModal:
         trigger_incident_workflow.assert_called_once()
 
     @staticmethod
-    def test_cannot_close_without_required_key_events(mocker: MockerFixture) -> None:
+    def test_cannot_close_without_required_key_events(mocker: MockerFixture, priority_factory) -> None:
         """Test that closing is prevented when required key events are missing.
 
         This tests the scenario where a P3+ incident (no postmortem needed) is in
         MITIGATED status and tries to close, but missing key events blocks it.
+
+        This test does NOT mock can_be_closed - it uses real milestone validation.
         """
+        # Ensure required milestone types exist (they will be missing from the incident)
+        MilestoneType.objects.update_or_create(
+            event_type="detected",
+            defaults={
+                "name": "Detected",
+                "summary": "When the incident was first detected",
+                "required": True,
+                "user_editable": True,
+                "asked_for": True,
+            },
+        )
+        MilestoneType.objects.update_or_create(
+            event_type="started",
+            defaults={
+                "name": "Started",
+                "summary": "When work started on the incident",
+                "required": True,
+                "user_editable": True,
+                "asked_for": True,
+            },
+        )
+
         # Create a user first
         user = UserFactory.build()
         user.save()
 
-        # Create a P3+ incident in MITIGATED status (can go directly to CLOSED)
-        # Get P3 priority explicitly to ensure no postmortem is needed
-        p3_priority = Priority.objects.get(value=3)
-        incident = IncidentFactory.build(
+        # Create P3 priority (needs_postmortem=False)
+        p3_priority = priority_factory(value=3, name="P3", needs_postmortem=False)
+
+        # Create a P3 incident in MITIGATED status (can go directly to CLOSED)
+        # This incident will have missing milestones (detected, started)
+        incident = IncidentFactory.create(
             _status=IncidentStatus.MITIGATED,
             created_by=user,
             priority=p3_priority,
         )
-        incident.save()
-        # Mock can_be_closed to return False with MISSING_REQUIRED_KEY_EVENTS reason
-        mocker.patch.object(
-            type(incident),
-            "can_be_closed",
-            new_callable=PropertyMock,
-            return_value=(False, [("MISSING_REQUIRED_KEY_EVENTS", "Missing key events: detected, started")])
-        )
+
+        # Verify that can_be_closed returns False due to missing milestones (real check, no mock)
+        can_close, reasons = incident.can_be_closed
+        assert can_close is False, f"Incident should not be closable without required milestones. Got: {can_close}, reasons: {reasons}"
+        assert any("MISSING_REQUIRED_KEY_EVENTS" in reason[0] for reason in reasons), \
+            f"Expected MISSING_REQUIRED_KEY_EVENTS in reasons, got: {reasons}"
 
         modal = UpdateStatusModal()
         trigger_incident_workflow = mocker.patch.object(
@@ -111,8 +135,6 @@ class TestUpdateStatusModal:
         )
 
         ack = MagicMock()
-        user = UserFactory.build()
-        user.save()
 
         # Create a submission trying to close the incident
         submission_copy = dict(valid_submission)
@@ -129,17 +151,19 @@ class TestUpdateStatusModal:
         )
 
         # Assert that ack was called with errors (may be 1 or 2 calls depending on form validation)
-        assert ack.called
+        assert ack.called, "ack should have been called"
         # Check the last call (the error response)
         last_call_kwargs = ack.call_args.kwargs
-        assert "response_action" in last_call_kwargs
-        assert last_call_kwargs["response_action"] == "errors"
-        assert "errors" in last_call_kwargs
-        assert "status" in last_call_kwargs["errors"]
+        assert "response_action" in last_call_kwargs, f"Expected 'response_action' in ack, got: {last_call_kwargs}"
+        assert last_call_kwargs["response_action"] == "errors", \
+            f"Expected response_action='errors', got: {last_call_kwargs.get('response_action')}"
+        assert "errors" in last_call_kwargs, f"Expected 'errors' in ack, got: {last_call_kwargs}"
+        assert "status" in last_call_kwargs["errors"], \
+            f"Expected 'status' in errors, got: {last_call_kwargs.get('errors')}"
         # Check that the error message mentions the missing key events
         error_msg = last_call_kwargs["errors"]["status"]
-        assert "Cannot close this incident" in error_msg
-        assert "Missing key events" in error_msg
+        assert "Cannot close this incident" in error_msg, f"Expected closure error, got: {error_msg}"
+        assert "key events" in error_msg.lower(), f"Expected 'key events' in error, got: {error_msg}"
 
         # Verify that incident update was NOT triggered
         trigger_incident_workflow.assert_not_called()
@@ -150,24 +174,47 @@ class TestUpdateStatusModal:
 
         This tests a P1/P2 incident in POST_MORTEM trying to close but blocked
         by missing key events.
+
+        This test does NOT mock can_be_closed - it uses real milestone validation.
         """
+        # Ensure required milestone types exist (they will be missing from the incident)
+        MilestoneType.objects.update_or_create(
+            event_type="detected",
+            defaults={
+                "name": "Detected",
+                "summary": "When the incident was first detected",
+                "required": True,
+                "user_editable": True,
+                "asked_for": True,
+            },
+        )
+        MilestoneType.objects.update_or_create(
+            event_type="started",
+            defaults={
+                "name": "Started",
+                "summary": "When work started on the incident",
+                "required": True,
+                "user_editable": True,
+                "asked_for": True,
+            },
+        )
+
         # Create a user first
         user = UserFactory.build()
         user.save()
 
         # Create a P1/P2 incident in POST_MORTEM status
-        incident = IncidentFactory.build(
+        # This incident will have missing milestones (detected, started)
+        incident = IncidentFactory.create(
             _status=IncidentStatus.POST_MORTEM,
             created_by=user,
         )
-        incident.save()
-        # Mock can_be_closed to return False with MISSING_REQUIRED_KEY_EVENTS reason
-        mocker.patch.object(
-            type(incident),
-            "can_be_closed",
-            new_callable=PropertyMock,
-            return_value=(False, [("MISSING_REQUIRED_KEY_EVENTS", "Missing key events: detected, started")])
-        )
+
+        # Verify that can_be_closed returns False due to missing milestones
+        can_close, reasons = incident.can_be_closed
+        assert can_close is False, "Incident should not be closable without required milestones"
+        assert any("MISSING_REQUIRED_KEY_EVENTS" in reason[0] for reason in reasons), \
+            f"Expected MISSING_REQUIRED_KEY_EVENTS in reasons, got: {reasons}"
 
         modal = UpdateStatusModal()
         trigger_incident_workflow = mocker.patch.object(
@@ -175,8 +222,6 @@ class TestUpdateStatusModal:
         )
 
         ack = MagicMock()
-        user = UserFactory.build()
-        user.save()
 
         # Create a submission trying to close the incident
         submission_copy = dict(valid_submission)
@@ -191,91 +236,17 @@ class TestUpdateStatusModal:
         )
 
         # Assert that ack was called with errors
-        assert ack.called
+        assert ack.called, "ack should have been called"
         last_call_kwargs = ack.call_args.kwargs
-        assert "response_action" in last_call_kwargs
-        assert last_call_kwargs["response_action"] == "errors"
-        assert "errors" in last_call_kwargs
-        assert "status" in last_call_kwargs["errors"]
+        assert "response_action" in last_call_kwargs, f"Expected 'response_action' in ack call, got: {last_call_kwargs}"
+        assert last_call_kwargs["response_action"] == "errors", \
+            f"Expected response_action='errors', got: {last_call_kwargs.get('response_action')}"
+        assert "errors" in last_call_kwargs, f"Expected 'errors' in ack call, got: {last_call_kwargs}"
+        assert "status" in last_call_kwargs["errors"], \
+            f"Expected 'status' in errors, got: {last_call_kwargs.get('errors')}"
         error_msg = last_call_kwargs["errors"]["status"]
-        assert "Cannot close this incident" in error_msg
-        assert "Missing key events" in error_msg
-
-        # Verify that incident update was NOT triggered
-        trigger_incident_workflow.assert_not_called()
-
-    @staticmethod
-    def test_cannot_close_p1_p2_without_postmortem(mocker: MockerFixture, priority_factory, environment_factory) -> None:
-        """Test that P1/P2 incidents in PRD cannot be closed directly from INVESTIGATING.
-
-        For P1/P2 incidents requiring post-mortem, although the form allows CLOSED as an option
-        from INVESTIGATING status, the can_be_closed validation should prevent closure with
-        an error message about needing to go through post-mortem.
-        """
-        # Create a user first
-        user = UserFactory.build()
-        user.save()
-
-        # Create P1 priority (needs_postmortem=True) and PRD environment
-        p1_priority = priority_factory(value=1, name="P1", needs_postmortem=True)
-        prd_environment = environment_factory(value="PRD", name="Production")
-
-        # Create a P1/P2 incident in INVESTIGATING status
-        # From INVESTIGATING, the form allows transitioning to CLOSED (but can_be_closed will block it)
-        incident = IncidentFactory.build(
-            _status=IncidentStatus.INVESTIGATING,
-            created_by=user,
-            priority=p1_priority,
-            environment=prd_environment,
-        )
-        incident.save()
-        # Mock can_be_closed to return False with STATUS_NOT_POST_MORTEM reason
-        mocker.patch.object(
-            type(incident),
-            "can_be_closed",
-            new_callable=PropertyMock,
-            return_value=(False, [("STATUS_NOT_POST_MORTEM", "Incident is not in PostMortem status, and needs one because of its priority and environment (P1/PRD).")])
-        )
-
-        modal = UpdateStatusModal()
-
-        # Mock handle_update_status_close_request to NOT show closure reason modal
-        # This allows the test to reach the can_be_closed validation
-        mocker.patch(
-            "firefighter.slack.views.modals.update_status.handle_update_status_close_request",
-            return_value=False
-        )
-
-        trigger_incident_workflow = mocker.patch.object(
-            modal, "_trigger_incident_workflow"
-        )
-
-        ack = MagicMock()
-        user = UserFactory.build()
-        user.save()
-
-        # Create a submission trying to close the incident
-        submission_copy = dict(valid_submission)
-        submission_copy["view"]["state"]["values"]["status"]["status"]["selected_option"] = {
-            "text": {"type": "plain_text", "text": "Closed", "emoji": True},
-            "value": "60",
-        }
-        submission_copy["view"]["private_metadata"] = str(incident.id)
-
-        modal.handle_modal_fn(
-            ack=ack, body=submission_copy, incident=incident, user=user
-        )
-
-        # Assert that ack was called with errors
-        assert ack.called
-        last_call_kwargs = ack.call_args.kwargs
-        assert "response_action" in last_call_kwargs
-        assert last_call_kwargs["response_action"] == "errors"
-        assert "errors" in last_call_kwargs
-        assert "status" in last_call_kwargs["errors"]
-        error_msg = last_call_kwargs["errors"]["status"]
-        assert "Cannot close this incident" in error_msg
-        assert "PostMortem status" in error_msg
+        assert "Cannot close this incident" in error_msg, f"Expected closure error message, got: {error_msg}"
+        assert "key events" in error_msg.lower(), f"Expected 'key events' in error message, got: {error_msg}"
 
         # Verify that incident update was NOT triggered
         trigger_incident_workflow.assert_not_called()

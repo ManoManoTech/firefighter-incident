@@ -5,12 +5,18 @@ import pytest
 from firefighter.incidents.enums import IncidentStatus
 from firefighter.incidents.factories import IncidentFactory, UserFactory
 from firefighter.incidents.models import IncidentUpdate
+from firefighter.jira_app.models import JiraPostMortem
 from firefighter.slack.factories import IncidentChannelFactory
 from firefighter.slack.messages.slack_messages import (
     SlackMessageDeployWarning,
     SlackMessageIncidentDeclaredAnnouncement,
     SlackMessageIncidentStatusUpdated,
 )
+
+try:
+    from firefighter.confluence.models import PostMortem
+except ImportError:
+    PostMortem = None
 
 
 @pytest.mark.django_db
@@ -183,7 +189,7 @@ class TestSlackMessageDeployWarning:
 
         # The first block should be a HeaderBlock with "(Mitigated)" in the text
         header_block = blocks[0]
-        header_text = header_block.text.text  # type: ignore[attr-defined]
+        header_text = header_block.text.text
 
         assert "(Mitigated)" in header_text
         assert ":warning:" in header_text
@@ -204,7 +210,7 @@ class TestSlackMessageDeployWarning:
 
         # The first block should be a HeaderBlock WITHOUT "(Mitigated)"
         header_block = blocks[0]
-        header_text = header_block.text.text  # type: ignore[attr-defined]
+        header_text = header_block.text.text
 
         assert "(Mitigated)" not in header_text
         assert ":warning:" in header_text
@@ -365,3 +371,76 @@ class TestSlackMessageIncidentDeclaredAnnouncement:
         assert "Zoho Desk Ticket" not in fields_text
         assert "Key Account" not in fields_text
         assert "Golden List Seller" not in fields_text
+
+    def test_jira_postmortem_link_displayed_when_present(self) -> None:
+        """Test that Jira post-mortem link is displayed when available."""
+        # Create an incident
+        incident = IncidentFactory.create()
+        user = UserFactory.create()
+
+        # Create a Jira post-mortem for the incident
+        jira_pm = JiraPostMortem.objects.create(
+            incident=incident,
+            jira_issue_key="PM-123",
+            jira_issue_id="12345",
+            created_by=user,
+        )
+
+        # Create the message
+        message = SlackMessageIncidentDeclaredAnnouncement(incident=incident)
+
+        # Get the blocks
+        blocks = message.get_blocks()
+
+        # Find the SectionBlock with fields
+        fields_block = None
+        for block in blocks:
+            if hasattr(block, "fields") and block.fields:
+                fields_block = block
+                break
+
+        assert fields_block is not None, "Should have a block with fields"
+
+        # Convert fields to strings (access .text attribute)
+        fields_text = " ".join(field.text if hasattr(field, "text") else str(field) for field in fields_block.fields)
+
+        # Verify Jira post-mortem link is present
+        assert "Jira Post-mortem" in fields_text
+        assert "PM-123" in fields_text
+        assert jira_pm.issue_url in fields_text
+
+    def test_confluence_postmortem_link_displayed_when_present(self) -> None:
+        """Test that Confluence post-mortem link is displayed when available."""
+        if PostMortem is None:
+            pytest.skip("Confluence app not installed")
+
+        # Create an incident
+        incident = IncidentFactory.create()
+
+        # Create a Confluence post-mortem for the incident
+        confluence_pm = PostMortem.objects.create(
+            incident=incident,
+            page_id="123456",
+        )
+
+        # Create the message
+        message = SlackMessageIncidentDeclaredAnnouncement(incident=incident)
+
+        # Get the blocks
+        blocks = message.get_blocks()
+
+        # Find the SectionBlock with fields
+        fields_block = None
+        for block in blocks:
+            if hasattr(block, "fields") and block.fields:
+                fields_block = block
+                break
+
+        assert fields_block is not None, "Should have a block with fields"
+
+        # Convert fields to strings (access .text attribute)
+        fields_text = " ".join(field.text if hasattr(field, "text") else str(field) for field in fields_block.fields)
+
+        # Verify Confluence post-mortem link is present
+        assert "Confluence Post-mortem" in fields_text
+        assert confluence_pm.page_url in fields_text
