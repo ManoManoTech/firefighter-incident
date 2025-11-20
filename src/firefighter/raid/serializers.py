@@ -130,14 +130,12 @@ class LandbotIssueRequestSerializer(serializers.ModelSerializer[JiraTicket]):
         allow_blank=True,
     )
     suggested_team_routing = serializers.CharField(max_length=10, write_only=True)
-    project = serializers.ChoiceField(
+    project = serializers.CharField(
+        max_length=128,
         required=False,
         allow_blank=True,
         allow_null=True,
         default="SBI",
-        choices=[
-            "SBI",
-        ],
     )
     priority = serializers.IntegerField(
         min_value=1, max_value=5, write_only=True, allow_null=True,
