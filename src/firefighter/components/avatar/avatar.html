@@ -1,6 +1,6 @@
-{% if user.avatar %}
+{% if avatar_user.avatar %}
   <span class="rounded-full block overflow-hidden z-[1]">
-    <img src="{{ user.avatar }}" alt="{{ user.full_name }}'s avatar" height="{{ size_px }}" width="{{ size_px }}" onerror="this.style='display: none;'">
+    <img src="{{ avatar_user.avatar }}" alt="{{ avatar_user.full_name }}'s avatar" height="{{ size_px }}" width="{{ size_px }}" onerror="this.style='display: none;'">
   </span>
 {% endif %}
 {% comment %} Always display the fallback, as we don't control external CDN expiration {% endcomment %}
