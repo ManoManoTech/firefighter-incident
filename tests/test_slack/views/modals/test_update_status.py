@@ -9,7 +9,7 @@ from pytest_mock import MockerFixture
 
 from firefighter.incidents.enums import IncidentStatus
 from firefighter.incidents.factories import IncidentFactory, UserFactory
-from firefighter.incidents.models import Incident
+from firefighter.incidents.models import Incident, Priority
 from firefighter.slack.views import UpdateStatusModal
 
 logger = logging.getLogger(__name__)
@@ -89,18 +89,14 @@ class TestUpdateStatusModal:
         user.save()
 
         # Create a P3+ incident in MITIGATED status (can go directly to CLOSED)
+        # Get P3 priority explicitly to ensure no postmortem is needed
+        p3_priority = Priority.objects.get(value=3)
         incident = IncidentFactory.build(
             _status=IncidentStatus.MITIGATED,
             created_by=user,
+            priority=p3_priority,
         )
         incident.save()
-        # Mock needs_postmortem to return False (P3+ incident)
-        mocker.patch.object(
-            type(incident),
-            "needs_postmortem",
-            new_callable=PropertyMock,
-            return_value=False
-        )
         # Mock can_be_closed to return False with MISSING_REQUIRED_KEY_EVENTS reason
         mocker.patch.object(
             type(incident),
