@@ -1,0 +1,7 @@
+h2. Timeline
+
+|| Time || Event ||
+| {{ incident.created_at|date:"Y-m-d H:i" }} UTC | Incident created ({{ incident.priority.name }}) |
+{% for update in incident.incidentupdate_set.all|dictsort:"event_ts" %}{% if update.status %}| {{ update.event_ts|date:"Y-m-d H:i" }} UTC | Status changed to: {{ update.status.label }} |
+{% endif %}{% if update.event_type %}| {{ update.event_ts|date:"Y-m-d H:i" }} UTC | Key event: {{ update.event_type|title }}{% if update.message %} - {{ update.message }}{% endif %} |
+{% endif %}{% endfor %}

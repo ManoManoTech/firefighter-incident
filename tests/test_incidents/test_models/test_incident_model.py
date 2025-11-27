@@ -96,3 +96,32 @@ class TestIncidentSetStatus:
 
         assert recovered_event is not None
         assert recovered_event.event_type == "recovered"
+
+
+@pytest.mark.django_db
+class TestIncidentNeedsPostmortem:
+    """Test the needs_postmortem property logic.
+
+    NOTE: The needs_postmortem property checks if:
+    1. Priority requires postmortem (P1/P2)
+    2. Environment is PRD
+    3. At least one post-mortem system is enabled (Confluence OR Jira)
+    """
+
+    def test_p3_does_not_need_postmortem(self) -> None:
+        """Test that P3 incident does not require postmortem even in PRD."""
+        incident = IncidentFactory.create(
+            priority__value=3,  # P3
+            priority__needs_postmortem=False,
+            environment__value="PRD",
+        )
+        assert incident.needs_postmortem is False
+
+    def test_p1_non_prd_does_not_need_postmortem(self) -> None:
+        """Test that P1 incident in non-PRD environment does not require postmortem."""
+        incident = IncidentFactory.create(
+            priority__value=1,  # P1
+            priority__needs_postmortem=True,
+            environment__value="DEV",
+        )
+        assert incident.needs_postmortem is False

@@ -1,0 +1,12 @@
+h2. Root Causes
+
+*{color:red}_TODO: Analyze and document the root causes of this incident._{color}*
+
+h3. Contributing Factors
+
+* *{color:red}_TODO: Factor 1_{color}*
+* *{color:red}_TODO: Factor 2_{color}*
+
+h3. Why it happened
+
+*{color:red}_TODO: Explain why this incident occurred._{color}*

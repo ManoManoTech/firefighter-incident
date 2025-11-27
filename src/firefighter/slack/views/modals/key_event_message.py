@@ -12,6 +12,7 @@ from slack_sdk.models.blocks.basic_components import MarkdownTextObject
 from slack_sdk.models.blocks.block_elements import ButtonElement
 
 from firefighter.incidents.forms.update_key_events import IncidentUpdateKeyEventsForm
+from firefighter.incidents.signals import incident_key_events_updated
 from firefighter.slack.messages.base import SlackMessageStrategy, SlackMessageSurface
 from firefighter.slack.views.modals.base_modal.base import MessageForm
 
@@ -108,6 +109,14 @@ class KeyEvents(MessageForm[IncidentUpdateKeyEventsForm]):
             return
         self.form = form
         self.form.save()
+
+        # Send signal to update Jira post-mortem timeline if applicable
+        logger.debug("Sending signal incident_key_events_updated")
+        incident_key_events_updated.send_robust(
+            __name__,
+            incident=incident,
+        )
+
         incident.compute_metrics()
 
         self.update_with_form()

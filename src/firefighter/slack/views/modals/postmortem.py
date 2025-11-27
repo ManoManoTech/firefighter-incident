@@ -3,7 +3,6 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING, Any
 
-from django.apps import apps
 from slack_sdk.models.blocks.blocks import Block, SectionBlock
 from slack_sdk.models.views import View
 
@@ -11,9 +10,6 @@ from firefighter.slack.views.modals.base_modal.base import SlackModal
 from firefighter.slack.views.modals.base_modal.mixins import (
     IncidentSelectableModalMixin,
 )
-
-if apps.is_installed("firefighter.confluence"):
-    from firefighter.confluence.models import PostMortem
 
 if TYPE_CHECKING:
     from slack_bolt.context.ack.ack import Ack
@@ -34,54 +30,52 @@ class PostMortemModal(
 
     def build_modal_fn(self, incident: Incident, **kwargs: Any) -> View:
         blocks: list[Block] = []
-        if hasattr(incident, "postmortem_for"):
-            blocks.extend([
+
+        # Check existing post-mortems
+        has_confluence = hasattr(incident, "postmortem_for")
+        has_jira = hasattr(incident, "jira_postmortem_for")
+
+        if has_confluence or has_jira:
+            blocks.append(
                 SectionBlock(
-                    text=f"Postmortem for incident #{incident.id} has already been created."
-                ),
-                SectionBlock(
-                    text=f"See the postmortem page <{incident.postmortem_for.page_url}|on Confluence>."
-                ),
-            ])
-            submit = None
+                    text=f"Post-mortem(s) for incident #{incident.id}:"
+                )
+            )
+
+            if has_confluence:
+                blocks.append(
+                    SectionBlock(
+                        text=f"• Confluence: <{incident.postmortem_for.page_url}|View page>"
+                    )
+                )
+
+            if has_jira:
+                blocks.append(
+                    SectionBlock(
+                        text=f"• Jira: <{incident.jira_postmortem_for.issue_url}|{incident.jira_postmortem_for.jira_issue_key}>"
+                    )
+                )
         else:
-            blocks.extend([
+            blocks.append(
                 SectionBlock(
-                    text=f"Postmortem does not yet exist for incident #{incident.id}."
-                ),
-                SectionBlock(
-                    text="Click on the button to create the postmortem on Confluence."
-                ),
-            ])
-            submit = "Create postmortem"[:24]
+                    text=f"Post-mortem for incident #{incident.id} will be automatically created when the incident reaches MITIGATED status."
+                )
+            )
 
         return View(
             type="modal",
             title="Postmortem"[:24],
-            submit=submit,
+            submit=None,
             callback_id=self.callback_id,
             private_metadata=str(incident.id),
             blocks=blocks,
         )
 
     @staticmethod
-    def handle_modal_fn(ack: Ack, body: dict[str, Any], incident: Incident) -> None:  # type: ignore[override]
-        if not apps.is_installed("firefighter.confluence"):
-            ack(text="Confluence is not enabled!")
-            return
-        if hasattr(incident, "postmortem_for"):
-            ack(text="Post-mortem has already been created.")
-            return
-
-        # Check if this modal was pushed on top of another modal
-        # If yes, clear the entire stack to avoid leaving stale modals visible
-        is_pushed = body.get("view", {}).get("previous_view_id") is not None
-        if is_pushed:
-            ack(response_action="clear")
-        else:
-            ack()
-
-        PostMortem.objects.create_postmortem_for_incident(incident)
+    def handle_modal_fn(ack: Ack, **_kwargs: Any) -> None:
+        # This modal is now read-only (no submit button)
+        # Post-mortems are created automatically when incident reaches MITIGATED status
+        ack()
 
 
 modal_postmortem = PostMortemModal()

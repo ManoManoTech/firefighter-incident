@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from django.contrib import admin
 
-from firefighter.jira_app.models import JiraIssue, JiraUser
+from firefighter.jira_app.models import JiraIssue, JiraPostMortem, JiraUser
 
 
 @admin.register(JiraUser)
@@ -22,3 +22,17 @@ class JiraIssueAdmin(admin.ModelAdmin[JiraIssue]):
     search_fields = ["id", "key", "summary", "description"]
 
     autocomplete_fields = ["watchers", "assignee", "reporter"]
+
+
+@admin.register(JiraPostMortem)
+class JiraPostMortemAdmin(admin.ModelAdmin[JiraPostMortem]):
+    model = JiraPostMortem
+    list_display = ["jira_issue_key", "incident", "created_at", "created_by"]
+    list_display_links = ["jira_issue_key", "incident"]
+    search_fields = ["jira_issue_key", "jira_issue_id", "incident__id"]
+    list_select_related = ["incident", "created_by"]
+    autocomplete_fields = ["incident", "created_by"]
+    readonly_fields = ["created_at", "updated_at", "issue_url"]
+
+    def issue_url(self, obj: JiraPostMortem) -> str:
+        return obj.issue_url

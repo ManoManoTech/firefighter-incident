@@ -16,13 +16,21 @@ from firefighter.slack.views.modals.closure_reason import ClosureReasonModal
 class TestClosureReasonModalMessageTabDisabled:
     """Test ClosureReasonModal handles messages_tab_disabled gracefully."""
 
-    def test_closure_reason_handles_messages_tab_disabled(self, caplog: pytest.LogCaptureFixture) -> None:
+    def test_closure_reason_handles_messages_tab_disabled(self, caplog: pytest.LogCaptureFixture, mocker) -> None:
         """Test that messages_tab_disabled error is handled gracefully with warning log."""
         # Create test data
         user = UserFactory.build()
         user.save()
         incident = IncidentFactory.build(_status=IncidentStatus.INVESTIGATING, created_by=user)
         incident.save()
+
+        # Mock can_be_closed to return True so the closure can proceed
+        mocker.patch.object(
+            type(incident),
+            "can_be_closed",
+            new_callable=mocker.PropertyMock,
+            return_value=(True, [])
+        )
 
         # Create modal and mock
         modal = ClosureReasonModal()
@@ -83,13 +91,21 @@ class TestClosureReasonModalMessageTabDisabled:
                 for record in caplog.records
             )
 
-    def test_closure_reason_reraises_other_slack_errors(self) -> None:
+    def test_closure_reason_reraises_other_slack_errors(self, mocker) -> None:
         """Test that other Slack API errors are re-raised."""
         # Create test data
         user = UserFactory.build()
         user.save()
         incident = IncidentFactory.build(_status=IncidentStatus.INVESTIGATING, created_by=user)
         incident.save()
+
+        # Mock can_be_closed to return True so the closure can proceed
+        mocker.patch.object(
+            type(incident),
+            "can_be_closed",
+            new_callable=mocker.PropertyMock,
+            return_value=(True, [])
+        )
 
         # Create modal and mock
         modal = ClosureReasonModal()

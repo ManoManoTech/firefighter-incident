@@ -6,6 +6,7 @@ from functools import cached_property
 from typing import TYPE_CHECKING, Any
 
 from django import apps
+from django.conf import settings
 from django.contrib import admin
 from django.contrib.admin import AdminSite, helpers
 from django.contrib.admin.decorators import action
@@ -514,6 +515,8 @@ class IncidentAdmin(admin.ModelAdmin[Incident]):
         ]
         if apps.apps.is_installed("firefighter.confluence"):
             select_related.append("postmortem_for")
+        if getattr(settings, "ENABLE_JIRA_POSTMORTEM", False):
+            select_related.append("jira_postmortem_for")
         return select_related
 
 
