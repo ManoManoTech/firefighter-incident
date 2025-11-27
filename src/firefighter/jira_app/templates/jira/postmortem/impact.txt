@@ -9,12 +9,4 @@ h3. Affected Systems
 
 h3. User Impact
 
-_TODO: Describe the impact on users and business._
-
-h3. Duration
-
-*Opened:* {{ incident.created_at|date:"Y-m-d H:i" }} UTC
-{% if incident.closed_at %}*Closed:* {{ incident.closed_at|date:"Y-m-d H:i" }} UTC
-*Total Duration:* {{ incident.duration }}
-{% else %}*Status:* Still open
-{% endif %}
+*{color:red}_TODO: Describe the impact on users and business._{color}*
