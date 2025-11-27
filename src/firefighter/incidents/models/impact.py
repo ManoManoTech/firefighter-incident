@@ -12,8 +12,6 @@ from django.utils.translation import gettext_lazy as _
 from django_stubs_ext.db.models import TypedModelMeta
 
 if TYPE_CHECKING:
-    from django.db.models.fields.related import ManyToManyField
-
     from firefighter.incidents.models.incident import Incident  # noqa: F401
 
 
@@ -50,7 +48,7 @@ class LevelChoices(models.TextChoices):
             self.LOWEST: 5,
             self.NONE: 6,
         }
-        return priority_mapping.get(self, 6)  # type: ignore [call-overload]
+        return priority_mapping.get(self, 6)  # type: ignore[call-overload]
 
     @property
     def emoji(self) -> str:
@@ -64,7 +62,7 @@ class LevelChoices(models.TextChoices):
             self.LOWEST: "⏬",
             self.NONE: none_emoji,
         }
-        return emoji_mapping.get(self, none_emoji)  # type: ignore [call-overload]
+        return emoji_mapping.get(self, none_emoji)  # type: ignore[call-overload]
 
 
 class ImpactLevel(models.Model):
@@ -156,4 +154,4 @@ class IncidentImpact(models.Model):
 
 class HasImpactProtocol(Protocol):
     id: Any
-    impacts: ManyToManyField[Impact, Any]
+    impacts: Any

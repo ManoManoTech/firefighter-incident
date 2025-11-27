@@ -13,6 +13,7 @@ dependencies = [
     "django[argon2]>=4.2.8,<5.0.0",
     "celery[gevent,redis]>=5.3.6",
     "ddtrace>=2.3.3,<2.4.0",
+    "wrapt>=1.17.0",  # Required by ddtrace but not declared in its dependencies
     "django-celery-beat>=2.5.0",
     "django-filter>=23.4",
     "django-oauth2-authcodeflow>=1.0.1",
@@ -400,6 +401,7 @@ warn_no_return = true
 disallow_subclassing_any = false
 implicit_reexport = true
 warn_return_any = false
+warn_unused_ignores = false
 # XXX More aggresive type checking
 
 [[tool.mypy.overrides]]

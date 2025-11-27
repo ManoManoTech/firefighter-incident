@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 class Data(TypedDict):
-    user: User
+    avatar_user: User
     size_tailwind: int
     size_px: int
 
@@ -31,7 +31,7 @@ class Avatar(component.Component):
     def get_context_data(self, user: User, **kwargs: Any) -> Data:
         size_px, size_tailwind = (40, 10) if kwargs.get("size") == "md" else (80, 20)
         return {
-            "user": user,
+            "avatar_user": user,
             "size_tailwind": size_tailwind,
             "size_px": size_px,
         }
