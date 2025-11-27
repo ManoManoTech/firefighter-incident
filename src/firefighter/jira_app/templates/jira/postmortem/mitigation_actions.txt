@@ -7,4 +7,3 @@ h3. Immediate Actions Taken
 h3. Long-term Actions
 
 *{color:red}_TODO: List the long-term actions to prevent recurrence._{color}*
-
