@@ -3,12 +3,17 @@
 from __future__ import annotations
 
 import logging
+from datetime import datetime, timedelta
 from typing import TYPE_CHECKING
 
 from django.conf import settings
 from django.template.loader import render_to_string
 
-from firefighter.jira_app.client import JiraClient
+from firefighter.jira_app.client import (
+    JiraClient,
+    JiraUserDatabaseError,
+    JiraUserNotFoundError,
+)
 from firefighter.jira_app.models import JiraPostMortem
 
 if TYPE_CHECKING:
@@ -23,9 +28,7 @@ class JiraPostMortemService:
 
     def __init__(self) -> None:
         self.client = JiraClient()
-        self.project_key = getattr(
-            settings, "JIRA_POSTMORTEM_PROJECT_KEY", "INCIDENT"
-        )
+        self.project_key = getattr(settings, "JIRA_POSTMORTEM_PROJECT_KEY", "INCIDENT")
         self.issue_type = getattr(settings, "JIRA_POSTMORTEM_ISSUE_TYPE", "Post-mortem")
         self.field_ids = getattr(
             settings,
@@ -90,22 +93,33 @@ class JiraPostMortemService:
         )
 
         # Assign to incident commander if available
-        commander = incident.roles_set.filter(role_type__slug="commander").first()
-        if (
-            commander
-            and hasattr(commander.user, "jira_user")
-            and commander.user.jira_user is not None
-        ):
-            assigned = self.client.assign_issue(
-                issue_key=jira_issue["key"],
-                account_id=commander.user.jira_user.id,
-            )
-            if assigned:
-                logger.info(
-                    "Assigned post-mortem %s to commander %s",
-                    jira_issue["key"],
-                    commander.user.username,
+        commander = (
+            incident.roles_set.select_related("user__jira_user", "role_type")
+            .filter(role_type__slug="commander")
+            .first()
+        )
+        if commander:
+            jira_user = getattr(commander.user, "jira_user", None)
+            if jira_user is None:
+                try:
+                    jira_user = self.client.get_jira_user_from_user(commander.user)
+                except (JiraUserNotFoundError, JiraUserDatabaseError) as exc:
+                    logger.warning(
+                        "Unable to fetch Jira user for commander %s: %s",
+                        commander.user_id,
+                        exc,
+                    )
+            if jira_user is not None:
+                assigned = self.client.assign_issue(
+                    issue_key=jira_issue["key"],
+                    account_id=jira_user.id,
                 )
+                if assigned:
+                    logger.info(
+                        "Assigned post-mortem %s to commander %s",
+                        jira_issue["key"],
+                        commander.user.username,
+                    )
 
         # Create JiraPostMortem record
         jira_postmortem = JiraPostMortem.objects.create(
@@ -122,7 +136,9 @@ class JiraPostMortemService:
 
         return jira_postmortem
 
-    def _generate_issue_fields(self, incident: Incident) -> dict[str, str | dict[str, str]]:
+    def _generate_issue_fields(
+        self, incident: Incident
+    ) -> dict[str, str | dict[str, str]]:
         """Generate Jira issue fields from incident data.
 
         Args:
@@ -182,6 +198,9 @@ class JiraPostMortemService:
             self.field_ids["mitigation_actions"]: mitigation_actions,
         }
 
+        due_date = self._add_business_days(incident.created_at, 40).date()
+        fields["duedate"] = due_date.isoformat()
+
         # Add optional fields if not empty
         if root_causes.strip():
             fields[self.field_ids["root_causes"]] = root_causes
@@ -193,6 +212,16 @@ class JiraPostMortemService:
             fields[category_field_id] = {"value": incident.incident_category.name}
 
         return fields
+
+    @staticmethod
+    def _add_business_days(start: datetime, days: int) -> datetime:
+        current = start
+        added = 0
+        while added < days:
+            current += timedelta(days=1)
+            if current.weekday() < 5:
+                added += 1
+        return current
 
 
 # Singleton instance
