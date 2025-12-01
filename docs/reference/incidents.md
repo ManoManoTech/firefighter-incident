@@ -61,6 +61,24 @@ FireFighter uses a 5-level priority system (P1-P5) to categorize incident severi
 !!! note "Priority Validation"
     Invalid priority values automatically fallback to P1 to ensure critical handling.
 
+## Incident Creation by Priority
+
+When an incident is created, different resources are provisioned based on priority:
+
+| Resource | P1 | P2 | P3 | P4 | P5 |
+|----------|----|----|----|----|-----|
+| Incident object | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Jira ticket | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Slack channel | ✅ | ✅ | ✅ | ❌ | ❌ |
+| Post-mortem required | ✅ | ✅ | ❌ | ❌ | ❌ |
+| PagerDuty escalation | ✅ | ✅ | ❌ | ❌ | ❌ |
+
+**Key Points**:
+- **All priorities** (P1-P5) create both an Incident object and a Jira ticket
+- **Slack channels** are only created for P1-P3 (critical/urgent incidents)
+- **Post-mortems** are mandatory for P1-P2 incidents only, must be completed before closure
+- **PagerDuty escalation** is automatic for P1-P2 incidents to alert on-call staff
+
 ## API Reference
 
 ::: firefighter.incidents
