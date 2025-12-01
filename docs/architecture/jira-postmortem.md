@@ -133,4 +133,3 @@ See source code for implementation details.
 - [JIRA Integration](jira-integration.md) - General JIRA sync
 - [Incident Workflow](incident-workflow.md) - Post-mortem requirements
 - [Architecture Overview](overview.md) - Project structure
-
