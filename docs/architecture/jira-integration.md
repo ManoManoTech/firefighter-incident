@@ -4,6 +4,12 @@
 
 The RAID module provides comprehensive bidirectional synchronization between Impact incidents and JIRA tickets, ensuring data consistency across both platforms.
 
+✅ **Applies to all P1-P5**:
+- All priorities create both `Incident` objects AND JIRA tickets
+- The JIRA integration works identically for all priorities
+
+See [incident-workflow.md](incident-workflow.md) for architecture overview.
+
 ## Synchronization Architecture
 
 ### Core Components
