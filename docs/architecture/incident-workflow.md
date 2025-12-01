@@ -6,58 +6,36 @@
 
 ## Complete Workflow
 
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│ CREATION (All P1-P5 identical)                                              │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                                                                             │
-│ 1. User opens incident form → Selects impacts → Priority auto-determined   │
-│ 2. UnifiedIncidentForm (same for all priorities)                           │
-│ 3. Creates:                                                                │
-│    ✅ Incident object (all P1-P5)                                          │
-│    ✅ Jira ticket (all P1-P5)                                              │
-│    ✅ Slack channel (P1-P3 only)  ← Only difference in creation            │
-│                                                                             │
-└─────────────────────────────────────────────────────────────────────────────┘
-                                    ↓
-        ┌───────────────────────────┴───────────────────────────┐
-        ↓                                                       ↓
-┌────────────────────────────┐                     ┌────────────────────────────┐
-│ P1/P2 (with Post-Mortem)   │                     │ P3-P5 (no Post-Mortem)     │
-├────────────────────────────┤                     ├────────────────────────────┤
-│ OPEN                       │                     │ OPEN                       │
-│   ↓                        │                     │   ↓                        │
-│ INVESTIGATING              │                     │ INVESTIGATING              │
-│   ↓                        │                     │   ↓                        │
-│ MITIGATING                 │                     │ MITIGATING                 │
-│   ↓                        │                     │   ↓                        │
-│ MITIGATED                  │                     │ MITIGATED                  │
-│   ↓                        │                     │   ↓                        │
-│ POST_MORTEM (mandatory)    │                     │ CLOSED                     │
-│   ↓                        │                     │                            │
-│ CLOSED                     │                     │ Early closure:             │
-│                            │                     │ OPEN/INVESTIGATING         │
-│ Early closure:             │                     │  ↓ + Reason Form           │
-│ OPEN/INVESTIGATING         │                     │ CLOSED                     │
-│  ↓ + Reason Form           │                     │                            │
-│ CLOSED (with reason)       │                     │                            │
-└────────────────────────────┘                     └────────────────────────────┘
-        ↓                                                       ↓
-        └───────────────────────────┬───────────────────────────┘
-                                    ↓
-┌─────────────────────────────────────────────────────────────────────────────┐
-│ CLOSURE                                                                     │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                                                                             │
-│ Method A: Normal Closure                                                   │
-│   MITIGATED (or POST_MORTEM for P1/P2) → CLOSED                            │
-│   No reason required                                                        │
-│                                                                             │
-│ Method B: Early Closure with Reason                                        │
-│   OPEN or INVESTIGATING + Modal → CLOSED                                   │
-│   Reason: DUPLICATE, FALSE_POSITIVE, SUPERSEDED, EXTERNAL, CANCELLED       │
-│                                                                             │
-└─────────────────────────────────────────────────────────────────────────────┘
+```mermaid
+graph TD
+    A["📝 User submits form<br/>Selects impacts<br/>Priority auto-determined"] --> B["✅ UnifiedIncidentForm<br/>(same for P1-P5)"]
+
+    B --> C["📌 Creates:<br/>• Incident object<br/>• Jira ticket"]
+    C --> D{Priority?}
+
+    D -->|P1-P3| E["📱 Slack channel<br/>created"]
+    D -->|P4-P5| F["No Slack channel"]
+
+    E --> G["🔀 Status Transitions"]
+    F --> G
+
+    G --> H{Post-Mortem<br/>Required?}
+    H -->|P1/P2| I["OPEN → INVESTIGATING<br/>↓<br/>MITIGATING ↓ MITIGATED<br/>↓<br/>POST_MORTEM"]
+    H -->|P3-P5| J["OPEN → INVESTIGATING<br/>↓<br/>MITIGATING ↓ MITIGATED"]
+
+    I --> K{How to close?}
+    J --> K
+
+    K -->|Normal closure| L["From MITIGATED<br/>(or POST_MORTEM)<br/>→ CLOSED"]
+    K -->|Early closure| M["From OPEN or<br/>INVESTIGATING +<br/>Reason modal<br/>→ CLOSED"]
+
+    L --> N["✅ Incident CLOSED"]
+    M --> N
+
+    style A fill:#e1f5ff
+    style N fill:#c8e6c9
+    style I fill:#fff9c4
+    style J fill:#fff9c4
 ```
 
 ---
