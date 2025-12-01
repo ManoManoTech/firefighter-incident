@@ -84,4 +84,3 @@ See [incident-workflows.md](incident-workflows.md) for technical details on form
 
 - **JIRA Sync**: [jira-integration.md](jira-integration.md)
 - **Signals & Handlers**: [incident-workflows.md](incident-workflows.md) (technical deep-dive)
-

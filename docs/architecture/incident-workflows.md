@@ -89,4 +89,3 @@ graph TD
 - [Incident Workflow](./incident-workflow.md) - Complete workflow overview
 - [JIRA Integration](./jira-integration.md) - Sync details
 - [Architecture Overview](./overview.md) - Project structure
-
