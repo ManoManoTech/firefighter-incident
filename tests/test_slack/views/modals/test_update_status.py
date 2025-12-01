@@ -9,7 +9,7 @@ from pytest_mock import MockerFixture
 
 from firefighter.incidents.enums import IncidentStatus
 from firefighter.incidents.factories import IncidentFactory, UserFactory
-from firefighter.incidents.models import Incident, MilestoneType, Priority
+from firefighter.incidents.models import Incident, MilestoneType
 from firefighter.slack.views import UpdateStatusModal
 
 logger = logging.getLogger(__name__)
