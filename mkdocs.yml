@@ -118,11 +118,8 @@ nav:
           - JIRA Integration: architecture/jira-integration.md
           - Slack Conversation Tags: architecture/slack-conversation-tags.md
           - Test Configuration: architecture/test-config.md
+          - Incident Workflow: architecture/incident-workflow.md
           - Incident Workflows: architecture/incident-workflows.md
-          - Incident Closure Workflow: architecture/incident-closure-workflow.md
-          - Incident Status Workflow: architecture/incident-status-workflow.md
-          - Incident Opening Workflow (Unified): architecture/incident-opening-workflow-unified.md
-          - Incident Opening Workflow (Legacy): architecture/incident-opening-workflow-complete.md
           - UI Guidelines: contributing/ui.md
           - UX Guidelines: contributing/ux.md
           - Docs Guidelines: contributing/documentation.md
