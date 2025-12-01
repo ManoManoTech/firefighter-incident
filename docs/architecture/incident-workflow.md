@@ -8,34 +8,42 @@
 
 ```mermaid
 graph TD
-    A["📝 User submits form<br/>Selects impacts<br/>Priority auto-determined"] --> B["✅ UnifiedIncidentForm<br/>(same for P1-P5)"]
+    A["📝 Form Submission<br/>Selects impacts"] --> B["✅ UnifiedIncidentForm<br/>Priority auto-determined"]
 
-    B --> C["📌 Creates:<br/>• Incident object<br/>• Jira ticket"]
+    B --> C["📌 Creates:<br/>Incident + Jira"]
     C --> D{Priority?}
 
-    D -->|P1-P3| E["📱 Slack channel<br/>created"]
-    D -->|P4-P5| F["No Slack channel"]
+    D -->|P1-P3| E["📱 Slack channel"]
+    D -->|P4-P5| F["⊘ No Slack"]
 
-    E --> G["🔀 Status Transitions"]
+    E --> G["Status workflow begins"]
     F --> G
 
-    G --> H{Post-Mortem<br/>Required?}
-    H -->|P1/P2| I["OPEN → INVESTIGATING<br/>↓<br/>MITIGATING ↓ MITIGATED<br/>↓<br/>POST_MORTEM"]
-    H -->|P3-P5| J["OPEN → INVESTIGATING<br/>↓<br/>MITIGATING ↓ MITIGATED"]
+    G --> H{Post-Mortem?}
+    H -->|P1/P2| I["Path 1: P1/P2<br/>OPEN → INVESTIGATING<br/>MITIGATING → MITIGATED<br/>→ POST_MORTEM"]
+    H -->|P3-P5| J["Path 2: P3-P5<br/>OPEN → INVESTIGATING<br/>MITIGATING → MITIGATED"]
 
-    I --> K{How to close?}
+    I --> K["⚙️ Closure options"]
     J --> K
 
-    K -->|Normal closure| L["From MITIGATED<br/>(or POST_MORTEM)<br/>→ CLOSED"]
-    K -->|Early closure| M["From OPEN or<br/>INVESTIGATING +<br/>Reason modal<br/>→ CLOSED"]
+    K --> L["Option A: Normal"]
+    K --> M["Option B: Early"]
 
-    L --> N["✅ Incident CLOSED"]
-    M --> N
+    L --> L1["From MITIGATED<br/>or POST_MORTEM<br/>→ CLOSED"]
+    M --> M1["From OPEN or<br/>INVESTIGATING<br/>+ Reason modal<br/>→ CLOSED"]
 
-    style A fill:#e1f5ff
-    style N fill:#c8e6c9
-    style I fill:#fff9c4
-    style J fill:#fff9c4
+    L1 --> O["✅ CLOSED"]
+    M1 --> O
+
+    style A fill:#2196F3,stroke:#1565C0,stroke-width:2px,color:#fff
+    style B fill:#2196F3,stroke:#1565C0,stroke-width:2px,color:#fff
+    style C fill:#4CAF50,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style I fill:#FFC107,stroke:#F57F17,stroke-width:2px,color:#000
+    style J fill:#FFC107,stroke:#F57F17,stroke-width:2px,color:#000
+    style L1 fill:#FF7043,stroke:#D84315,stroke-width:2px,color:#fff
+    style M1 fill:#FF7043,stroke:#D84315,stroke-width:2px,color:#fff
+    style O fill:#4CAF50,stroke:#2E7D32,stroke-width:3px,color:#fff
+    style K fill:#9C27B0,stroke:#6A1B9A,stroke-width:2px,color:#fff
 ```
 
 ---
