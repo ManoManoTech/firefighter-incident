@@ -1,0 +1,12 @@
+h2. Impact
+
+h3. Affected Systems
+{% if components %}
+{% for component in components %}* {{ component.name }}
+{% endfor %}
+{% else %}_No components recorded._
+{% endif %}
+
+h3. User Impact
+
+*{color:red}_TODO: Describe the impact on users and business._{color}*

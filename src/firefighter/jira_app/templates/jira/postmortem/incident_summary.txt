@@ -1,0 +1,17 @@
+h2. Incident Summary
+
+*Incident:* [#{{ incident.slack_channel_name }}|{{ incident.slack_channel_url }}]
+*Priority:* {{ incident.priority.name }} (P{{ incident.priority.value }})
+{% if incident.description %}
+
+h3. Description
+
+{{ incident.description }}
+{% endif %}
+{% if components %}
+
+h3. Affected Components
+
+{% for component in components %}* {{ component.name }}
+{% endfor %}
+{% endif %}

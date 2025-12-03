@@ -104,12 +104,14 @@ class UpdateStatusModal(ModalForm[UpdateStatusFormSlack]):
                 },
                 "incident": incident,
             },
+            ack_on_success=False,  # We'll ack after custom validations
         )
         if slack_form is None:
             return
         form: UpdateStatusFormSlack = slack_form.form
         if len(form.cleaned_data) == 0:
             # XXX We should have a prompt for empty forms
+            ack()
             return
 
         # Check if user is trying to close and needs a closure reason
@@ -118,13 +120,14 @@ class UpdateStatusModal(ModalForm[UpdateStatusFormSlack]):
             if handle_update_status_close_request(ack, body, incident, target_status):
                 return
 
-            # If trying to close, validate that incident can be closed
+            # Validate that incident can be closed (check key events, post-mortem, etc.)
             if target_status == IncidentStatus.CLOSED:
                 can_close, reasons = incident.can_be_closed
                 if not can_close:
                     # Build error message from reasons
                     error_messages = [reason[1] for reason in reasons]
                     error_text = "\n".join([f"• {msg}" for msg in error_messages])
+                    logger.warning(f"Cannot close incident #{incident.id} via Update Status: {error_text}")
                     ack(
                         response_action="errors",
                         errors={
@@ -132,6 +135,9 @@ class UpdateStatusModal(ModalForm[UpdateStatusFormSlack]):
                         }
                     )
                     return
+
+        # All validations passed, acknowledge the submission
+        ack()
 
         update_kwargs: dict[str, Any] = {}
         for changed_key in form.changed_data:

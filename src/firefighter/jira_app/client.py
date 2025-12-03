@@ -461,5 +461,153 @@ class JiraClient:
 
         return statuses_info_list
 
+    def create_postmortem_issue(
+        self,
+        project_key: str,
+        issue_type: str,
+        fields: dict[str, Any],
+        parent_issue_key: str | None = None,
+    ) -> dict[str, Any]:
+        """Create a Jira post-mortem issue with custom fields.
+
+        Args:
+            project_key: Jira project key (e.g., "INCIDENT")
+            issue_type: Issue type name (e.g., "Post-mortem")
+            fields: Dictionary of field IDs to values
+            parent_issue_key: Optional parent issue key to link this post-mortem to
+
+        Returns:
+            Dictionary with 'key' and 'id' of created issue
+
+        Raises:
+            JiraAPIError: If issue creation fails
+        """
+        try:
+            issue_dict: dict[str, Any] = {
+                "project": {"key": project_key},
+                "issuetype": {"name": issue_type},
+                **fields,
+            }
+
+            # Create the issue first without parent link
+            issue = self.jira.create_issue(fields=issue_dict)
+            logger.info("Created post-mortem issue %s in project %s", issue.key, project_key)
+
+            # Create issue link to parent if provided
+            # Using link instead of parent to avoid hierarchy restrictions
+            if parent_issue_key:
+                self._create_issue_link_safe(
+                    parent_issue_key=parent_issue_key,
+                    postmortem_issue_key=issue.key,
+                )
+
+        except exceptions.JIRAError as e:
+            logger.exception("Failed to create Jira issue in project %s", project_key)
+            error_msg = f"Failed to create Jira issue: {e.status_code} {e.text}"
+            raise JiraAPIError(error_msg) from e
+        else:
+            return {
+                "key": issue.key,
+                "id": issue.id,
+            }
+
+    def _create_issue_link_safe(
+        self, parent_issue_key: str, postmortem_issue_key: str
+    ) -> None:
+        """Create an issue link between parent and post-mortem, with robust error handling.
+
+        This method tries multiple link types in order of preference:
+        1. "Relates" - Standard link type
+        2. "Blocks" - Alternative link type
+        3. "Relates to" - Another common variant
+
+        Args:
+            parent_issue_key: Parent incident issue key
+            postmortem_issue_key: Post-mortem issue key
+
+        Note:
+            This method will not raise exceptions - it logs warnings instead.
+            The post-mortem creation should succeed even if linking fails.
+        """
+        # List of link types to try, in order of preference
+        link_types = ["Relates", "Blocks", "Relates to"]
+
+        for link_type in link_types:
+            try:
+                # Validate that both issues exist before attempting link
+                try:
+                    self.jira.issue(parent_issue_key)
+                    self.jira.issue(postmortem_issue_key)
+                except exceptions.JIRAError as validation_error:
+                    logger.warning(
+                        "Issue validation failed before creating link: %s",
+                        validation_error,
+                    )
+                    return
+
+                # Create the link
+                self.jira.create_issue_link(
+                    type=link_type,
+                    inwardIssue=parent_issue_key,
+                    outwardIssue=postmortem_issue_key,
+                    comment={
+                        "body": f"Post-mortem {postmortem_issue_key} created for incident {parent_issue_key}"
+                    },
+                )
+
+            except exceptions.JIRAError as link_error:
+                logger.warning(
+                    "Failed to create issue link (%s) from %s to %s: %s",
+                    link_type,
+                    parent_issue_key,
+                    postmortem_issue_key,
+                    link_error,
+                )
+                # Continue to try next link type
+            else:
+                logger.info(
+                    "Created issue link (%s) from %s to %s",
+                    link_type,
+                    parent_issue_key,
+                    postmortem_issue_key,
+                )
+                return  # Success - exit early
+
+        # All link types failed
+        logger.error(
+            "Failed to create any issue link from %s to %s after trying all link types: %s",
+            parent_issue_key,
+            postmortem_issue_key,
+            link_types,
+        )
+
+    def assign_issue(self, issue_key: str, account_id: str) -> bool:
+        """Assign a Jira issue to a user.
+
+        Args:
+            issue_key: Jira issue key (e.g., "INCIDENT-123")
+            account_id: Jira account ID of the user
+
+        Returns:
+            True if assignment succeeded, False otherwise
+
+        Note:
+            This method does not raise exceptions. Assignment failures are logged
+            as warnings since assignment is typically an optional operation.
+        """
+        try:
+            self.jira.assign_issue(issue_key, account_id)
+        except exceptions.JIRAError as e:
+            logger.warning(
+                "Failed to assign issue %s to user %s: %s",
+                issue_key,
+                account_id,
+                e.text if hasattr(e, "text") else str(e),
+            )
+            return False
+        else:
+            logger.info("Assigned issue %s to user %s", issue_key, account_id)
+            return True
+
 
 client = JiraClient()

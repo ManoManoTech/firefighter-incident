@@ -116,6 +116,7 @@ nav:
           - Architecture Overview: contributing/0010-general_architecture.md
           - Project Architecture: architecture/overview.md
           - JIRA Integration: architecture/jira-integration.md
+          - JIRA Post-mortem: architecture/jira-postmortem.md
           - Slack Conversation Tags: architecture/slack-conversation-tags.md
           - Test Configuration: architecture/test-config.md
           - Incident Workflow: architecture/incident-workflow.md

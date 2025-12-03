@@ -1,0 +1,9 @@
+h2. Mitigation Actions
+
+h3. Immediate Actions Taken
+
+*{color:red}_TODO: List the immediate actions taken to mitigate the incident._{color}*
+
+h3. Long-term Actions
+
+*{color:red}_TODO: List the long-term actions to prevent recurrence._{color}*

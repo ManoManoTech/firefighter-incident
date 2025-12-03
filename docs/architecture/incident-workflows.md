@@ -84,8 +84,36 @@ graph TD
 
 ---
 
+## Post-Mortem Signals
+
+When creating a post-mortem (P1/P2 incidents at `MITIGATED` status):
+
+```
+User clicks "Create post-mortem" in Slack
+    ↓
+PostMortemManager.create_postmortem_for_incident()
+    ├─ Create Confluence page (if enabled)
+    ├─ Create JIRA issue (if enabled)
+    │   ├─ Call jira_postmortem_service.create_postmortem_for_incident()
+    │   ├─ Create JiraPostMortem object in DB
+    │   └─ Send postmortem_created signal
+    └─ Notify Slack channel
+    ↓
+postmortem_created signal handlers execute
+    └─ Any custom handlers registered in app config
+    ↓
+User completes PM → transitions to CLOSED
+```
+
+**Signal**: `postmortem_created` (sent when post-mortem created)
+
+See [jira-postmortem.md](./jira-postmortem.md) for full post-mortem configuration.
+
+---
+
 ## Related Documentation
 
 - [Incident Workflow](./incident-workflow.md) - Complete workflow overview
+- [JIRA Post-Mortem](./jira-postmortem.md) - PM configuration & setup
 - [JIRA Integration](./jira-integration.md) - Sync details
 - [Architecture Overview](./overview.md) - Project structure

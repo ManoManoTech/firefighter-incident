@@ -218,6 +218,12 @@ class SlackMessageIncidentDeclaredAnnouncement(SlackMessageSurface):
         if hasattr(self.incident, "jira_ticket") and self.incident.jira_ticket:
             fields.append(f":jira_new: <{self.incident.jira_ticket.url}|*Jira ticket*>")
 
+        if hasattr(self.incident, "postmortem_for") and self.incident.postmortem_for:
+            fields.append(f":confluence: <{self.incident.postmortem_for.page_url}|*Confluence Post-mortem*>")
+
+        if hasattr(self.incident, "jira_postmortem_for") and self.incident.jira_postmortem_for:
+            fields.append(f":jira_new: <{self.incident.jira_postmortem_for.issue_url}|*Jira Post-mortem ({self.incident.jira_postmortem_for.jira_issue_key})*>")
+
         # Add custom fields if present
         if hasattr(self.incident, "custom_fields") and self.incident.custom_fields:
             custom_fields = self.incident.custom_fields
@@ -573,7 +579,23 @@ class SlackMessageIncidentPostMortemCreated(SlackMessageSurface):
         super().__init__()
 
     def get_text(self) -> str:
-        return f"📔 The post-mortem has been created, you can edit it here: {self.incident.postmortem_for.page_url}."
+        """Generate text with links to all available post-mortems."""
+        parts = ["📔 The post-mortem has been created:"]
+
+        # Add Confluence link if available
+        if hasattr(self.incident, "postmortem_for"):
+            parts.append(
+                f"• Confluence: {self.incident.postmortem_for.page_url}"
+            )
+
+        # Add Jira link if available
+        if hasattr(self.incident, "jira_postmortem_for"):
+            jira_pm = self.incident.jira_postmortem_for
+            parts.append(
+                f"• Jira: {jira_pm.issue_url} ({jira_pm.jira_issue_key})"
+            )
+
+        return "\n".join(parts)
 
     def get_blocks(self) -> list[Block]:
         return [SectionBlock(text=self.get_text())]

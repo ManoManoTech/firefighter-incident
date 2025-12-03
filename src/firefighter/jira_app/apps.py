@@ -10,6 +10,9 @@ class JiraAppConfig(AppConfig):
     verbose_name = "Jira"
 
     def ready(self) -> None:
+        # Register signals
+        # E.g. usage: create PostMortem (Jira and/or Confluence) on incident_updated
+        import firefighter.jira_app.signals
         import firefighter.jira_app.tasks
 
         return super().ready()

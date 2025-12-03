@@ -150,6 +150,8 @@ class IncidentDetailView(CustomDetailView[Incident]):
     ]
     if settings.ENABLE_CONFLUENCE:
         select_related.append("postmortem_for")
+    if getattr(settings, "ENABLE_JIRA_POSTMORTEM", False):
+        select_related.append("jira_postmortem_for")
     queryset = Incident.objects.select_related(*select_related).prefetch_related(
         Prefetch(
             "incidentupdate_set",
