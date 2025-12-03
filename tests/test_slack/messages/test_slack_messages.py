@@ -15,7 +15,7 @@ from firefighter.slack.messages.slack_messages import (
 
 try:
     from firefighter.confluence.models import PostMortem
-except ImportError:
+except (ImportError, AttributeError):
     PostMortem = None
 
 
