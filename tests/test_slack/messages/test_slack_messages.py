@@ -37,9 +37,7 @@ class TestSlackMessageIncidentStatusUpdated:
         # Create an IncidentUpdate
         user = UserFactory.create()
         incident_update = IncidentUpdate.objects.create(
-            incident=incident,
-            status=IncidentStatus.MITIGATED,
-            created_by=user
+            incident=incident, status=IncidentStatus.MITIGATED, created_by=user
         )
 
         # Create the message with status_changed=True and in_channel=False
@@ -47,7 +45,7 @@ class TestSlackMessageIncidentStatusUpdated:
             incident=incident,
             incident_update=incident_update,
             in_channel=False,
-            status_changed=True
+            status_changed=True,
         )
 
         # Verify the title contains "Mitigated" (the status label)
@@ -67,9 +65,7 @@ class TestSlackMessageIncidentStatusUpdated:
         # Create an IncidentUpdate
         user = UserFactory.create()
         incident_update = IncidentUpdate.objects.create(
-            incident=incident,
-            status=IncidentStatus.INVESTIGATING,
-            created_by=user
+            incident=incident, status=IncidentStatus.INVESTIGATING, created_by=user
         )
 
         # Create the message with status_changed=True and in_channel=False
@@ -77,7 +73,7 @@ class TestSlackMessageIncidentStatusUpdated:
             incident=incident,
             incident_update=incident_update,
             in_channel=False,
-            status_changed=True
+            status_changed=True,
         )
 
         # Verify the title does NOT contain the MITIGATED-specific format
@@ -99,9 +95,7 @@ class TestSlackMessageIncidentStatusUpdated:
         # Create an IncidentUpdate with status change
         user = UserFactory.create()
         incident_update = IncidentUpdate.objects.create(
-            incident=incident,
-            status=IncidentStatus.CLOSED,
-            created_by=user
+            incident=incident, status=IncidentStatus.CLOSED, created_by=user
         )
 
         # Create the message with in_channel=True (normal case for in-channel messages)
@@ -109,7 +103,7 @@ class TestSlackMessageIncidentStatusUpdated:
             incident=incident,
             incident_update=incident_update,
             in_channel=True,
-            status_changed=True
+            status_changed=True,
         )
 
         # Get the blocks
@@ -124,7 +118,9 @@ class TestSlackMessageIncidentStatusUpdated:
 
         # If there is a status update block, verify it has NO accessory (button)
         if status_update_block:
-            assert status_update_block.accessory is None, "Update button should not be present when incident is CLOSED"
+            assert status_update_block.accessory is None, (
+                "Update button should not be present when incident is CLOSED"
+            )
 
     def test_update_button_shown_when_incident_not_closed(self) -> None:
         """Test that Update Status button IS displayed when incident is NOT CLOSED."""
@@ -137,9 +133,7 @@ class TestSlackMessageIncidentStatusUpdated:
         # Create an IncidentUpdate
         user = UserFactory.create()
         incident_update = IncidentUpdate.objects.create(
-            incident=incident,
-            status=IncidentStatus.INVESTIGATING,
-            created_by=user
+            incident=incident, status=IncidentStatus.INVESTIGATING, created_by=user
         )
 
         # Create the message with in_channel=True
@@ -147,7 +141,7 @@ class TestSlackMessageIncidentStatusUpdated:
             incident=incident,
             incident_update=incident_update,
             in_channel=True,
-            status_changed=True
+            status_changed=True,
         )
 
         # Get the blocks
@@ -162,7 +156,9 @@ class TestSlackMessageIncidentStatusUpdated:
 
         # Verify the block has an accessory (Update button)
         assert status_update_block is not None, "Should have a status update block"
-        assert status_update_block.accessory is not None, "Update button should be present when incident is not CLOSED"
+        assert status_update_block.accessory is not None, (
+            "Update button should be present when incident is not CLOSED"
+        )
         assert status_update_block.accessory.text.text == "Update"
 
 
@@ -289,7 +285,10 @@ class TestSlackMessageIncidentDeclaredAnnouncement:
         assert fields_block is not None, "Should have a block with fields"
 
         # Convert fields to strings for easier assertion (access .text attribute)
-        fields_text = " ".join(field.text if hasattr(field, "text") else str(field) for field in fields_block.fields)
+        fields_text = " ".join(
+            field.text if hasattr(field, "text") else str(field)
+            for field in fields_block.fields
+        )
 
         # Verify custom fields are present
         assert "Zendesk Ticket" in fields_text
@@ -322,7 +321,10 @@ class TestSlackMessageIncidentDeclaredAnnouncement:
         assert fields_block is not None, "Should have a block with fields"
 
         # Convert fields to strings (access .text attribute)
-        fields_text = " ".join(field.text if hasattr(field, "text") else str(field) for field in fields_block.fields)
+        fields_text = " ".join(
+            field.text if hasattr(field, "text") else str(field)
+            for field in fields_block.fields
+        )
 
         # Verify custom fields are NOT present
         assert "Zendesk Ticket" not in fields_text
@@ -360,7 +362,10 @@ class TestSlackMessageIncidentDeclaredAnnouncement:
         assert fields_block is not None, "Should have a block with fields"
 
         # Convert fields to strings (access .text attribute)
-        fields_text = " ".join(field.text if hasattr(field, "text") else str(field) for field in fields_block.fields)
+        fields_text = " ".join(
+            field.text if hasattr(field, "text") else str(field)
+            for field in fields_block.fields
+        )
 
         # Verify only zendesk_ticket_id is present
         assert "Zendesk Ticket" in fields_text
@@ -402,7 +407,10 @@ class TestSlackMessageIncidentDeclaredAnnouncement:
         assert fields_block is not None, "Should have a block with fields"
 
         # Convert fields to strings (access .text attribute)
-        fields_text = " ".join(field.text if hasattr(field, "text") else str(field) for field in fields_block.fields)
+        fields_text = " ".join(
+            field.text if hasattr(field, "text") else str(field)
+            for field in fields_block.fields
+        )
 
         # Verify Jira post-mortem link is present
         assert "Jira Post-mortem" in fields_text
@@ -439,7 +447,10 @@ class TestSlackMessageIncidentDeclaredAnnouncement:
         assert fields_block is not None, "Should have a block with fields"
 
         # Convert fields to strings (access .text attribute)
-        fields_text = " ".join(field.text if hasattr(field, "text") else str(field) for field in fields_block.fields)
+        fields_text = " ".join(
+            field.text if hasattr(field, "text") else str(field)
+            for field in fields_block.fields
+        )
 
         # Verify Confluence post-mortem link is present
         assert "Confluence Post-mortem" in fields_text

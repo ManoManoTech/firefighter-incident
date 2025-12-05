@@ -101,7 +101,9 @@ class JiraPostMortem(models.Model):
         verbose_name_plural = "Jira Post-mortems"
 
     def __str__(self) -> str:
-        return f"Jira Post-mortem {self.jira_issue_key} for incident #{self.incident.id}"
+        return (
+            f"Jira Post-mortem {self.jira_issue_key} for incident #{self.incident.id}"
+        )
 
     @property
     def issue_url(self) -> str:
