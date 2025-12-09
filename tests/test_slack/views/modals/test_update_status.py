@@ -64,7 +64,9 @@ class TestUpdateStatusModal:
         # Create a valid submission that transitions from OPEN to INVESTIGATING (valid workflow)
         valid_submission_copy = dict(valid_submission)
         # Change status to INVESTIGATING (20) which is valid from OPEN
-        valid_submission_copy["view"]["state"]["values"]["status"]["status"]["selected_option"] = {
+        valid_submission_copy["view"]["state"]["values"]["status"]["status"][
+            "selected_option"
+        ] = {
             "text": {"type": "plain_text", "text": "Investigating", "emoji": True},
             "value": "20",
         }
@@ -78,7 +80,9 @@ class TestUpdateStatusModal:
         trigger_incident_workflow.assert_called_once()
 
     @staticmethod
-    def test_cannot_close_without_required_key_events(mocker: MockerFixture, priority_factory) -> None:
+    def test_cannot_close_without_required_key_events(
+        mocker: MockerFixture, priority_factory
+    ) -> None:
         """Test that closing is prevented when required key events are missing.
 
         This tests the scenario where a P3+ incident (no postmortem needed) is in
@@ -125,9 +129,12 @@ class TestUpdateStatusModal:
 
         # Verify that can_be_closed returns False due to missing milestones (real check, no mock)
         can_close, reasons = incident.can_be_closed
-        assert can_close is False, f"Incident should not be closable without required milestones. Got: {can_close}, reasons: {reasons}"
-        assert any("MISSING_REQUIRED_KEY_EVENTS" in reason[0] for reason in reasons), \
+        assert can_close is False, (
+            f"Incident should not be closable without required milestones. Got: {can_close}, reasons: {reasons}"
+        )
+        assert any("MISSING_REQUIRED_KEY_EVENTS" in reason[0] for reason in reasons), (
             f"Expected MISSING_REQUIRED_KEY_EVENTS in reasons, got: {reasons}"
+        )
 
         modal = UpdateStatusModal()
         trigger_incident_workflow = mocker.patch.object(
@@ -139,7 +146,9 @@ class TestUpdateStatusModal:
         # Create a submission trying to close the incident
         submission_copy = dict(valid_submission)
         # Change status to CLOSED (60)
-        submission_copy["view"]["state"]["values"]["status"]["status"]["selected_option"] = {
+        submission_copy["view"]["state"]["values"]["status"]["status"][
+            "selected_option"
+        ] = {
             "text": {"type": "plain_text", "text": "Closed", "emoji": True},
             "value": "60",
         }
@@ -154,22 +163,34 @@ class TestUpdateStatusModal:
         assert ack.called, "ack should have been called"
         # Check the last call (the error response)
         last_call_kwargs = ack.call_args.kwargs
-        assert "response_action" in last_call_kwargs, f"Expected 'response_action' in ack, got: {last_call_kwargs}"
-        assert last_call_kwargs["response_action"] == "errors", \
+        assert "response_action" in last_call_kwargs, (
+            f"Expected 'response_action' in ack, got: {last_call_kwargs}"
+        )
+        assert last_call_kwargs["response_action"] == "errors", (
             f"Expected response_action='errors', got: {last_call_kwargs.get('response_action')}"
-        assert "errors" in last_call_kwargs, f"Expected 'errors' in ack, got: {last_call_kwargs}"
-        assert "status" in last_call_kwargs["errors"], \
+        )
+        assert "errors" in last_call_kwargs, (
+            f"Expected 'errors' in ack, got: {last_call_kwargs}"
+        )
+        assert "status" in last_call_kwargs["errors"], (
             f"Expected 'status' in errors, got: {last_call_kwargs.get('errors')}"
+        )
         # Check that the error message mentions the missing key events
         error_msg = last_call_kwargs["errors"]["status"]
-        assert "Cannot close this incident" in error_msg, f"Expected closure error, got: {error_msg}"
-        assert "key events" in error_msg.lower(), f"Expected 'key events' in error, got: {error_msg}"
+        assert "Cannot close this incident" in error_msg, (
+            f"Expected closure error, got: {error_msg}"
+        )
+        assert "key events" in error_msg.lower(), (
+            f"Expected 'key events' in error, got: {error_msg}"
+        )
 
         # Verify that incident update was NOT triggered
         trigger_incident_workflow.assert_not_called()
 
     @staticmethod
-    def test_cannot_close_from_postmortem_without_key_events(mocker: MockerFixture) -> None:
+    def test_cannot_close_from_postmortem_without_key_events(
+        mocker: MockerFixture,
+    ) -> None:
         """Test that closing from POST_MORTEM is prevented when key events missing.
 
         This tests a P1/P2 incident in POST_MORTEM trying to close but blocked
@@ -212,9 +233,12 @@ class TestUpdateStatusModal:
 
         # Verify that can_be_closed returns False due to missing milestones
         can_close, reasons = incident.can_be_closed
-        assert can_close is False, "Incident should not be closable without required milestones"
-        assert any("MISSING_REQUIRED_KEY_EVENTS" in reason[0] for reason in reasons), \
+        assert can_close is False, (
+            "Incident should not be closable without required milestones"
+        )
+        assert any("MISSING_REQUIRED_KEY_EVENTS" in reason[0] for reason in reasons), (
             f"Expected MISSING_REQUIRED_KEY_EVENTS in reasons, got: {reasons}"
+        )
 
         modal = UpdateStatusModal()
         trigger_incident_workflow = mocker.patch.object(
@@ -225,7 +249,9 @@ class TestUpdateStatusModal:
 
         # Create a submission trying to close the incident
         submission_copy = dict(valid_submission)
-        submission_copy["view"]["state"]["values"]["status"]["status"]["selected_option"] = {
+        submission_copy["view"]["state"]["values"]["status"]["status"][
+            "selected_option"
+        ] = {
             "text": {"type": "plain_text", "text": "Closed", "emoji": True},
             "value": "60",
         }
@@ -238,21 +264,33 @@ class TestUpdateStatusModal:
         # Assert that ack was called with errors
         assert ack.called, "ack should have been called"
         last_call_kwargs = ack.call_args.kwargs
-        assert "response_action" in last_call_kwargs, f"Expected 'response_action' in ack call, got: {last_call_kwargs}"
-        assert last_call_kwargs["response_action"] == "errors", \
+        assert "response_action" in last_call_kwargs, (
+            f"Expected 'response_action' in ack call, got: {last_call_kwargs}"
+        )
+        assert last_call_kwargs["response_action"] == "errors", (
             f"Expected response_action='errors', got: {last_call_kwargs.get('response_action')}"
-        assert "errors" in last_call_kwargs, f"Expected 'errors' in ack call, got: {last_call_kwargs}"
-        assert "status" in last_call_kwargs["errors"], \
+        )
+        assert "errors" in last_call_kwargs, (
+            f"Expected 'errors' in ack call, got: {last_call_kwargs}"
+        )
+        assert "status" in last_call_kwargs["errors"], (
             f"Expected 'status' in errors, got: {last_call_kwargs.get('errors')}"
+        )
         error_msg = last_call_kwargs["errors"]["status"]
-        assert "Cannot close this incident" in error_msg, f"Expected closure error message, got: {error_msg}"
-        assert "key events" in error_msg.lower(), f"Expected 'key events' in error message, got: {error_msg}"
+        assert "Cannot close this incident" in error_msg, (
+            f"Expected closure error message, got: {error_msg}"
+        )
+        assert "key events" in error_msg.lower(), (
+            f"Expected 'key events' in error message, got: {error_msg}"
+        )
 
         # Verify that incident update was NOT triggered
         trigger_incident_workflow.assert_not_called()
 
     @staticmethod
-    def test_closure_reason_modal_shown_when_closing_from_investigating(mocker: MockerFixture) -> None:
+    def test_closure_reason_modal_shown_when_closing_from_investigating(
+        mocker: MockerFixture,
+    ) -> None:
         """Test that closure reason modal is shown when trying to close from INVESTIGATING.
 
         This tests that handle_update_status_close_request correctly shows the
@@ -268,7 +306,7 @@ class TestUpdateStatusModal:
         # Mock handle_update_status_close_request to return True (modal shown)
         mock_handle_close = mocker.patch(
             "firefighter.slack.views.modals.update_status.handle_update_status_close_request",
-            return_value=True
+            return_value=True,
         )
 
         trigger_incident_workflow = mocker.patch.object(
@@ -281,7 +319,9 @@ class TestUpdateStatusModal:
 
         # Create a submission trying to close the incident
         submission_copy = dict(valid_submission)
-        submission_copy["view"]["state"]["values"]["status"]["status"]["selected_option"] = {
+        submission_copy["view"]["state"]["values"]["status"]["status"][
+            "selected_option"
+        ] = {
             "text": {"type": "plain_text", "text": "Closed", "emoji": True},
             "value": "60",
         }
@@ -292,13 +332,17 @@ class TestUpdateStatusModal:
         )
 
         # Verify handle_update_status_close_request was called
-        mock_handle_close.assert_called_once_with(ack, submission_copy, incident, IncidentStatus.CLOSED)
+        mock_handle_close.assert_called_once_with(
+            ack, submission_copy, incident, IncidentStatus.CLOSED
+        )
 
         # Verify that incident update was NOT triggered (because closure reason modal was shown)
         trigger_incident_workflow.assert_not_called()
 
     @staticmethod
-    def test_can_close_when_all_conditions_met(mocker: MockerFixture, priority_factory, environment_factory) -> None:
+    def test_can_close_when_all_conditions_met(
+        mocker: MockerFixture, priority_factory, environment_factory
+    ) -> None:
         """Test that closing is allowed when all conditions are met for P3+ incidents."""
         # Create a user first
         user = UserFactory.build()
@@ -323,7 +367,7 @@ class TestUpdateStatusModal:
             type(incident),
             "can_be_closed",
             new_callable=PropertyMock,
-            return_value=(True, [])
+            return_value=(True, []),
         )
 
         modal = UpdateStatusModal()
@@ -335,7 +379,9 @@ class TestUpdateStatusModal:
 
         # Create a submission to close the incident
         submission_copy = dict(valid_submission)
-        submission_copy["view"]["state"]["values"]["status"]["status"]["selected_option"] = {
+        submission_copy["view"]["state"]["values"]["status"]["status"][
+            "selected_option"
+        ] = {
             "text": {"type": "plain_text", "text": "Closed", "emoji": True},
             "value": "60",
         }
@@ -347,14 +393,18 @@ class TestUpdateStatusModal:
 
         # Assert that ack was called successfully (no errors)
         # The first call is the successful ack() without errors
-        first_call_kwargs = ack.call_args_list[0][1] if ack.call_args_list else ack.call_args.kwargs
+        first_call_kwargs = (
+            ack.call_args_list[0][1] if ack.call_args_list else ack.call_args.kwargs
+        )
         assert first_call_kwargs == {} or "errors" not in first_call_kwargs
 
         # Verify that incident update WAS triggered
         trigger_incident_workflow.assert_called_once()
 
     @staticmethod
-    def test_can_update_priority_without_changing_status(mocker: MockerFixture, priority_factory) -> None:
+    def test_can_update_priority_without_changing_status(
+        mocker: MockerFixture, priority_factory
+    ) -> None:
         """Test that priority can be updated without changing status.
 
         This reproduces the bug where trying to update only the priority of a P4
@@ -391,12 +441,16 @@ class TestUpdateStatusModal:
         # The status field will have MITIGATED (40) as initial value, but it's not in the available choices
         submission_copy = dict(valid_submission)
         # Status unchanged - keeps MITIGATED (40)
-        submission_copy["view"]["state"]["values"]["status"]["status"]["selected_option"] = {
+        submission_copy["view"]["state"]["values"]["status"]["status"][
+            "selected_option"
+        ] = {
             "text": {"type": "plain_text", "text": "Mitigated", "emoji": True},
             "value": "40",  # This should cause validation error with current code
         }
         # Change priority to P4
-        submission_copy["view"]["state"]["values"]["priority"]["priority"]["selected_option"] = {
+        submission_copy["view"]["state"]["values"]["priority"]["priority"][
+            "selected_option"
+        ] = {
             "text": {"type": "plain_text", "text": "P4", "emoji": True},
             "value": str(p4_priority.id),
         }
@@ -408,9 +462,12 @@ class TestUpdateStatusModal:
 
         # Assert that ack was called successfully WITHOUT errors
         # With the bug, this would fail with "Select a valid choice. 40 is not one of the available choices"
-        first_call_kwargs = ack.call_args_list[0][1] if ack.call_args_list else ack.call_args.kwargs
-        assert first_call_kwargs == {} or "errors" not in first_call_kwargs, \
+        first_call_kwargs = (
+            ack.call_args_list[0][1] if ack.call_args_list else ack.call_args.kwargs
+        )
+        assert first_call_kwargs == {} or "errors" not in first_call_kwargs, (
             f"Should allow updating priority without changing status. Got errors: {first_call_kwargs.get('errors')}"
+        )
 
         # Verify that incident update WAS triggered (priority changed)
         trigger_incident_workflow.assert_called_once()
@@ -610,7 +667,11 @@ valid_submission = {
             {
                 "type": "input",
                 "block_id": "incident_category",
-                "label": {"type": "plain_text", "text": "Issue category", "emoji": True},
+                "label": {
+                    "type": "plain_text",
+                    "text": "Issue category",
+                    "emoji": True,
+                },
                 "optional": False,
                 "dispatch_action": False,
                 "element": {

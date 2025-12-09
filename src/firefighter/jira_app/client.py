@@ -268,9 +268,7 @@ class JiraClient:
             raise
         else:
             if len(watchers) == 0:
-                logger.debug(
-                    "No watchers found for jira_issue_id '%s'.", jira_issue_id
-                )
+                logger.debug("No watchers found for jira_issue_id '%s'.", jira_issue_id)
             return watchers
 
     @staticmethod
@@ -491,7 +489,9 @@ class JiraClient:
 
             # Create the issue first without parent link
             issue = self.jira.create_issue(fields=issue_dict)
-            logger.info("Created post-mortem issue %s in project %s", issue.key, project_key)
+            logger.info(
+                "Created post-mortem issue %s in project %s", issue.key, project_key
+            )
 
             # Create issue link to parent if provided
             # Using link instead of parent to avoid hierarchy restrictions

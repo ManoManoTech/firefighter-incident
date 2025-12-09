@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, patch
 
@@ -10,7 +11,10 @@ from django.utils import timezone
 
 from firefighter.incidents.enums import IncidentStatus
 from firefighter.incidents.factories import IncidentFactory, UserFactory
+from firefighter.incidents.models.incident_membership import IncidentRole
+from firefighter.incidents.models.incident_role_type import IncidentRoleType
 from firefighter.incidents.models.incident_update import IncidentUpdate
+from firefighter.jira_app.client import JiraUser
 from firefighter.jira_app.service_postmortem import JiraPostMortemService
 
 if TYPE_CHECKING:
@@ -103,6 +107,24 @@ class TestJiraPostMortemService:
         assert "Incident created" in timeline
 
     @staticmethod
+    def test_generate_issue_fields_sets_due_date() -> None:
+        user: User = UserFactory.create()
+        incident: Incident = IncidentFactory.create(
+            _status=IncidentStatus.OPEN,
+            created_by=user,
+        )
+        incident.created_at = datetime(2024, 1, 1, tzinfo=UTC)
+        incident.save(update_fields=["created_at"])
+
+        service = JiraPostMortemService()
+        fields = service._generate_issue_fields(incident)
+
+        expected_due = (
+            service._add_business_days(incident.created_at, 40).date().isoformat()
+        )
+        assert fields["duedate"] == expected_due
+
+    @staticmethod
     @patch("firefighter.jira_app.service_postmortem.JiraClient")
     def test_create_postmortem_prefetches_updates(
         mock_jira_client: MagicMock,
@@ -190,3 +212,38 @@ class TestJiraPostMortemService:
 
         # Verify assignment was not attempted (no commander role)
         # or if attempted, it returned False without raising exception
+
+    @staticmethod
+    @pytest.mark.django_db
+    def test_assigns_commander_without_jira_user() -> None:
+        """Commander without Jira user should trigger lookup and assignment."""
+        service = JiraPostMortemService()
+        mock_client = MagicMock()
+        mock_client.create_postmortem_issue.return_value = {"id": "1", "key": "INC-1"}
+        mock_client.assign_issue.return_value = True
+        mock_client.get_jira_user_from_user.return_value = JiraUser(
+            id="acct-123", user=None
+        )
+        service.client = mock_client
+
+        user = UserFactory()
+        incident = IncidentFactory.create(
+            _status=IncidentStatus.POST_MORTEM,
+            created_by=user,
+        )
+        role_type, _ = IncidentRoleType.objects.get_or_create(
+            slug="commander",
+            defaults={
+                "name": "Commander",
+                "summary": "cmd",
+                "description": "Commander role",
+            },
+        )
+        IncidentRole.objects.create(incident=incident, user=user, role_type=role_type)
+
+        service.create_postmortem_for_incident(incident, created_by=user)
+
+        mock_client.get_jira_user_from_user.assert_called_once_with(user)
+        mock_client.assign_issue.assert_called_once_with(
+            issue_key="INC-1", account_id="acct-123"
+        )
