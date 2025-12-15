@@ -122,6 +122,6 @@ class TestIncidentNeedsPostmortem:
         incident = IncidentFactory.create(
             priority__value=1,  # P1
             priority__needs_postmortem=True,
-            environment__value="DEV",
+            environment__value="STG",  # Use STG instead of DEV
         )
         assert incident.needs_postmortem is False
