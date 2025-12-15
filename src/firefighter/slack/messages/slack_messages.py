@@ -208,6 +208,7 @@ class SlackMessageIncidentDeclaredAnnouncement(SlackMessageSurface):
         return f"A new {self.incident.priority} incident has been declared: {self.incident.title}"
 
     def get_blocks(self) -> list[Block]:
+        # Build main fields (keep under 10 items due to Slack limit)
         fields = [
             f"{self.incident.priority.emoji} *Priority:* {self.incident.priority.name}",
             f":package: *Incident category:* {self.incident.incident_category.name}",
@@ -218,13 +219,7 @@ class SlackMessageIncidentDeclaredAnnouncement(SlackMessageSurface):
         if hasattr(self.incident, "jira_ticket") and self.incident.jira_ticket:
             fields.append(f":jira_new: <{self.incident.jira_ticket.url}|*Jira ticket*>")
 
-        if hasattr(self.incident, "postmortem_for") and self.incident.postmortem_for:
-            fields.append(f":confluence: <{self.incident.postmortem_for.page_url}|*Confluence Post-mortem*>")
-
-        if hasattr(self.incident, "jira_postmortem_for") and self.incident.jira_postmortem_for:
-            fields.append(f":jira_new: <{self.incident.jira_postmortem_for.issue_url}|*Jira Post-mortem ({self.incident.jira_postmortem_for.jira_issue_key})*>")
-
-        # Add custom fields if present
+        # Add custom fields if present (max to avoid exceeding 10 fields limit)
         if hasattr(self.incident, "custom_fields") and self.incident.custom_fields:
             custom_fields = self.incident.custom_fields
             if custom_fields.get("zendesk_ticket_id"):
@@ -246,16 +241,35 @@ class SlackMessageIncidentDeclaredAnnouncement(SlackMessageSurface):
             slack_block_quote(self.incident.description),
             DividerBlock(),
             SectionBlock(
-                fields=fields,
+                fields=fields[:10],  # Slack limits fields to 10 items max
                 accessory=ButtonElement(
                     text="Update",
                     value=str(self.incident.id),
                     action_id=UpdateModal.open_action,
                 ),
             ),
+            *self._postmortem_blocks(),
             *self._impact_blocks(),
         ]
         return blocks
+
+    def _postmortem_blocks(self) -> list[Block]:
+        """Build post-mortem links block if any PM exists."""
+        pm_fields = []
+
+        if hasattr(self.incident, "postmortem_for") and self.incident.postmortem_for:
+            pm_fields.append(f":confluence: <{self.incident.postmortem_for.page_url}|*Confluence Post-mortem*>")
+
+        if hasattr(self.incident, "jira_postmortem_for") and self.incident.jira_postmortem_for:
+            pm_fields.append(f":jira_new: <{self.incident.jira_postmortem_for.issue_url}|*Jira Post-mortem ({self.incident.jira_postmortem_for.jira_issue_key})*>")
+
+        if not pm_fields:
+            return []
+
+        return [
+            DividerBlock(),
+            SectionBlock(fields=pm_fields),
+        ]
 
     def _impact_blocks(self) -> list[Block]:
         impacts = self.incident.impacts.all().order_by("impact_level__value")[:10]

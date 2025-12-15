@@ -397,22 +397,21 @@ class TestSlackMessageIncidentDeclaredAnnouncement:
         # Get the blocks
         blocks = message.get_blocks()
 
-        # Find the SectionBlock with fields
-        fields_block = None
+        # Collect all fields from all SectionBlocks
+        all_fields = []
         for block in blocks:
             if hasattr(block, "fields") and block.fields:
-                fields_block = block
-                break
+                all_fields.extend(block.fields)
 
-        assert fields_block is not None, "Should have a block with fields"
+        assert len(all_fields) > 0, "Should have blocks with fields"
 
         # Convert fields to strings (access .text attribute)
         fields_text = " ".join(
             field.text if hasattr(field, "text") else str(field)
-            for field in fields_block.fields
+            for field in all_fields
         )
 
-        # Verify Jira post-mortem link is present
+        # Verify Jira post-mortem link is present (now in separate PM block)
         assert "Jira Post-mortem" in fields_text
         assert "PM-123" in fields_text
         assert jira_pm.issue_url in fields_text
