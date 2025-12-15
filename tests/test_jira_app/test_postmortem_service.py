@@ -15,7 +15,9 @@ from firefighter.incidents.models.incident_membership import IncidentRole
 from firefighter.incidents.models.incident_role_type import IncidentRoleType
 from firefighter.incidents.models.incident_update import IncidentUpdate
 from firefighter.jira_app.client import JiraUser
+from firefighter.jira_app.models import JiraUser as JiraUserDB
 from firefighter.jira_app.service_postmortem import JiraPostMortemService
+from firefighter.raid.models import JiraTicket
 
 if TYPE_CHECKING:
     from firefighter.incidents.models.incident import Incident
@@ -247,3 +249,168 @@ class TestJiraPostMortemService:
         mock_client.assign_issue.assert_called_once_with(
             issue_key="INC-1", account_id="acct-123"
         )
+
+    @staticmethod
+    def test_replicate_custom_fields_all_present() -> None:
+        """Test that all custom fields are replicated when present."""
+        user: User = UserFactory.create()
+        incident: Incident = IncidentFactory.create(
+            _status=IncidentStatus.POST_MORTEM,
+            created_by=user,
+            custom_fields={
+                "zendesk_ticket_id": "12345",
+                "zoho_desk_ticket_id": "67890",
+                "seller_contract_id": "98765",
+                "platform": "platform-FR",
+                "environments": ["PRD", "STG"],
+            },
+        )
+
+        # Create a Jira user for reporter
+        jira_user = JiraUserDB.objects.create(
+            id="test-jira-user-id",
+            user=user,
+        )
+
+        # Create a Jira ticket with business_impact
+        JiraTicket.objects.create(
+            id=12345,
+            incident=incident,
+            key="TEST-123",
+            reporter=jira_user,
+            business_impact="High",
+        )
+        incident.refresh_from_db()
+
+        service = JiraPostMortemService()
+        fields = service._generate_issue_fields(incident)
+
+        # Verify Priority is replicated
+        assert "customfield_11064" in fields
+        assert fields["customfield_11064"] == {"value": str(incident.priority.value)}
+
+        # Verify Environments are replicated
+        assert "customfield_11049" in fields
+        assert fields["customfield_11049"] == [{"value": "PRD"}, {"value": "STG"}]
+
+        # Verify Zendesk ticket is replicated
+        assert "customfield_10895" in fields
+        assert fields["customfield_10895"] == "12345"
+
+        # Verify Zoho desk ticket is replicated
+        assert "customfield_10896" in fields
+        assert fields["customfield_10896"] == "67890"
+
+        # Verify Seller Contract ID is replicated
+        assert "customfield_10908" in fields
+        assert fields["customfield_10908"] == "98765"
+
+        # Verify Platform is replicated (without "platform-" prefix)
+        assert "customfield_10201" in fields
+        assert fields["customfield_10201"] == {"value": "FR"}
+
+        # Verify Business Impact is replicated
+        assert "customfield_10936" in fields
+        assert fields["customfield_10936"] == {"value": "High"}
+
+    @staticmethod
+    def test_replicate_custom_fields_empty_not_sent() -> None:
+        """Test that empty custom fields are not sent to Jira."""
+        user: User = UserFactory.create()
+        incident: Incident = IncidentFactory.create(
+            _status=IncidentStatus.POST_MORTEM,
+            created_by=user,
+            custom_fields={},  # No custom fields
+        )
+
+        service = JiraPostMortemService()
+        fields = service._generate_issue_fields(incident)
+
+        # Priority should always be present
+        assert "customfield_11064" in fields
+
+        # Other fields should not be present when empty
+        assert "customfield_11049" not in fields  # Environments
+        assert "customfield_10895" not in fields  # Zendesk
+        assert "customfield_10896" not in fields  # Zoho
+        assert "customfield_10908" not in fields  # Seller
+        assert "customfield_10201" not in fields  # Platform
+        assert "customfield_10936" not in fields  # Business Impact (no jira_ticket)
+
+    @staticmethod
+    def test_replicate_custom_fields_partial() -> None:
+        """Test that only present custom fields are replicated."""
+        user: User = UserFactory.create()
+        incident: Incident = IncidentFactory.create(
+            _status=IncidentStatus.POST_MORTEM,
+            created_by=user,
+            custom_fields={
+                "zendesk_ticket_id": "12345",
+                "environments": ["PRD"],
+                # seller_contract_id and zoho_desk_ticket_id are missing
+            },
+        )
+
+        service = JiraPostMortemService()
+        fields = service._generate_issue_fields(incident)
+
+        # Present fields should be replicated
+        assert "customfield_10895" in fields  # Zendesk
+        assert fields["customfield_10895"] == "12345"
+        assert "customfield_11049" in fields  # Environments
+        assert fields["customfield_11049"] == [{"value": "PRD"}]
+
+        # Missing fields should not be present
+        assert "customfield_10896" not in fields  # Zoho
+        assert "customfield_10908" not in fields  # Seller
+        assert "customfield_10201" not in fields  # Platform
+
+    @staticmethod
+    def test_business_impact_not_replicated_when_na() -> None:
+        """Test that business_impact is not replicated when it's 'N/A' or empty."""
+        user: User = UserFactory.create()
+        incident: Incident = IncidentFactory.create(
+            _status=IncidentStatus.POST_MORTEM,
+            created_by=user,
+        )
+
+        # Create a Jira user for reporter
+        jira_user = JiraUserDB.objects.create(
+            id="test-jira-user-id-2",
+            user=user,
+        )
+
+        # Create a Jira ticket with business_impact = "N/A"
+        JiraTicket.objects.create(
+            id=12346,
+            incident=incident,
+            key="TEST-123",
+            reporter=jira_user,
+            business_impact="N/A",
+        )
+        incident.refresh_from_db()
+
+        service = JiraPostMortemService()
+        fields = service._generate_issue_fields(incident)
+
+        # Business Impact should not be present when "N/A"
+        assert "customfield_10936" not in fields
+
+    @staticmethod
+    def test_platform_prefix_removal() -> None:
+        """Test that 'platform-' prefix is removed from platform value."""
+        user: User = UserFactory.create()
+        incident: Incident = IncidentFactory.create(
+            _status=IncidentStatus.POST_MORTEM,
+            created_by=user,
+            custom_fields={
+                "platform": "platform-DE",
+            },
+        )
+
+        service = JiraPostMortemService()
+        fields = service._generate_issue_fields(incident)
+
+        # Verify platform prefix is removed
+        assert "customfield_10201" in fields
+        assert fields["customfield_10201"] == {"value": "DE"}

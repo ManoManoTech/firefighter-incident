@@ -138,7 +138,7 @@ class JiraPostMortemService:
 
     def _generate_issue_fields(
         self, incident: Incident
-    ) -> dict[str, str | dict[str, str]]:
+    ) -> dict[str, str | dict[str, str] | list[dict[str, str]]]:
         """Generate Jira issue fields from incident data.
 
         Args:
@@ -190,7 +190,7 @@ class JiraPostMortemService:
         )
 
         # Build field mapping
-        fields: dict[str, str | dict[str, str]] = {
+        fields: dict[str, str | dict[str, str] | list[dict[str, str]]] = {
             "summary": summary,
             self.field_ids["incident_summary"]: incident_summary,
             self.field_ids["timeline"]: timeline,
@@ -211,7 +211,71 @@ class JiraPostMortemService:
             category_field_id = self.field_ids["incident_category"]
             fields[category_field_id] = {"value": incident.incident_category.name}
 
+        # Replicate custom fields from incident ticket to post-mortem
+        self._add_replicated_custom_fields(incident, fields)
+
         return fields
+
+    def _add_replicated_custom_fields(
+        self,
+        incident: Incident,
+        fields: dict[str, str | dict[str, str] | list[dict[str, str]]],
+    ) -> None:
+        """Replicate custom fields from incident ticket to post-mortem.
+
+        Replicates the following fields from the incident ticket:
+        - Priority (customfield_11064)
+        - Affected environments (customfield_11049)
+        - Zoho desk ticket (customfield_10896)
+        - Zendesk ticket (customfield_10895)
+        - Seller Contract ID (customfield_10908)
+        - Platform (customfield_10201)
+        - Business Impact (customfield_10936)
+
+        Args:
+            incident: Incident to extract fields from
+            fields: Dictionary to add fields to (modified in place)
+        """
+        custom_fields = incident.custom_fields or {}
+
+        # Priority - customfield_11064 (option field)
+        if incident.priority:
+            priority_value = str(incident.priority.value)
+            fields["customfield_11064"] = {"value": priority_value}
+
+        # Affected environments - customfield_11049 (array field)
+        environments = custom_fields.get("environments", [])
+        if environments:
+            fields["customfield_11049"] = [{"value": env} for env in environments]
+
+        # Zendesk ticket - customfield_10895 (string field)
+        zendesk_ticket_id = custom_fields.get("zendesk_ticket_id")
+        if zendesk_ticket_id:
+            fields["customfield_10895"] = str(zendesk_ticket_id)
+
+        # Zoho desk ticket - customfield_10896 (string field)
+        zoho_desk_ticket_id = custom_fields.get("zoho_desk_ticket_id")
+        if zoho_desk_ticket_id:
+            fields["customfield_10896"] = str(zoho_desk_ticket_id)
+
+        # Seller Contract ID - customfield_10908 (string field)
+        seller_contract_id = custom_fields.get("seller_contract_id")
+        if seller_contract_id:
+            fields["customfield_10908"] = str(seller_contract_id)
+
+        # Platform - customfield_10201 (option field)
+        platform = custom_fields.get("platform")
+        if platform:
+            # Remove "platform-" prefix if present
+            platform_value = platform.replace("platform-", "") if isinstance(platform, str) else platform
+            fields["customfield_10201"] = {"value": platform_value}
+
+        # Business Impact - customfield_10936 (option field)
+        # Business impact is stored in the Jira ticket, not in custom_fields
+        if hasattr(incident, "jira_ticket") and incident.jira_ticket:
+            business_impact = incident.jira_ticket.business_impact
+            if business_impact and business_impact not in {"", "N/A"}:
+                fields["customfield_10936"] = {"value": business_impact}
 
     @staticmethod
     def _add_business_days(start: datetime, days: int) -> datetime:
