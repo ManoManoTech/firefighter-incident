@@ -78,6 +78,7 @@ class IncidentViewSet(
             "environment",
             "conversation",
             "created_by",
+            "jira_ticket",
         )
         .prefetch_related(
             Prefetch(
@@ -118,6 +119,8 @@ class IncidentViewSet(
         "created_at",
         "slack_channel_name",
         "status_page_url",
+        "jira_ticket_key",
+        "jira_ticket_url",
         "metrics.*.duration_seconds",
         "costs.*.amount",
         "roles.*.email",
