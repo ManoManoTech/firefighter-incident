@@ -5,6 +5,7 @@ from __future__ import annotations
 from unittest.mock import Mock, patch
 
 import pytest
+from django.test import override_settings
 
 from firefighter.incidents.enums import IncidentStatus
 from firefighter.incidents.models.incident_update import IncidentUpdate
@@ -46,6 +47,7 @@ class TestIncidentUpdatedCloseJiraTicket:
         # Verify close_issue was called for P3+ incidents
         mock_close_issue.assert_called_once_with(issue_id=jira_ticket.id)
 
+    @override_settings(ENABLE_JIRA_POSTMORTEM=True)
     @patch("firefighter.raid.signals.incident_updated.client.close_issue")
     def test_do_not_close_jira_ticket_when_p1_mitigated(
         self, mock_close_issue: Mock, incident_factory, user_factory, jira_ticket_factory, priority_factory, environment_factory
