@@ -369,44 +369,58 @@ class Incident(models.Model):
 
         if self.ignore:
             return True, []
-        if self.needs_postmortem and self.status.value != IncidentStatus.POST_MORTEM:
-            cant_closed_reasons.append((
-                "STATUS_NOT_POST_MORTEM",
-                f"Incident is not in PostMortem status, and needs one because of its priority and environment ({self.priority.name}/{self.environment.value}).",
-            ))
-        if hasattr(self, "jira_postmortem_for"):
-            ready_status_name = getattr(
-                settings, "JIRA_POSTMORTEM_READY_STATUS_NAME", "Ready"
-            )
-            try:
-                # Lazy import to avoid circular dependency and heavy imports when not needed
-                from firefighter.jira_app.client import JiraClient  # noqa: PLC0415
+        if self.needs_postmortem:
+            if self.status.value != IncidentStatus.POST_MORTEM:
+                cant_closed_reasons.append(
+                    (
+                        "STATUS_NOT_POST_MORTEM",
+                        f"Incident is not in PostMortem status, and needs one because of its priority and environment ({self.priority.name}/{self.environment.value}).",
+                    )
+                )
+            # If a Jira post-mortem exists, ensure it is in the expected "Ready" status
+            if hasattr(self, "jira_postmortem_for"):
+                try:
+                    from firefighter.jira_app.service_postmortem import (  # noqa: PLC0415
+                        jira_postmortem_service,
+                    )
 
-                jira_client = JiraClient()
-                issue = jira_client.jira.issue(self.jira_postmortem_for.jira_issue_key)
-                jira_status_name = issue.fields.status.name
-            except (jira_exceptions.JIRAError, AttributeError) as exc:  # pragma: no cover - defensive logging
-                cant_closed_reasons.append((
-                    "JIRA_POSTMORTEM_STATUS_UNKNOWN",
-                    f"Could not verify Jira post-mortem status: {exc}",
-                ))
-            else:
-                if jira_status_name != ready_status_name:
-                    cant_closed_reasons.append((
-                        "JIRA_POSTMORTEM_NOT_READY",
-                        f"Jira post-mortem {self.jira_postmortem_for.jira_issue_key} is '{jira_status_name}', must be '{ready_status_name}'.",
-                    ))
+                    is_ready, current_status = jira_postmortem_service.is_postmortem_ready(  # type: ignore[attr-defined]
+                        self.jira_postmortem_for
+                    )
+                    if not is_ready:
+                        cant_closed_reasons.append(
+                            (
+                                "POSTMORTEM_NOT_READY",
+                                f"Jira post-mortem {self.jira_postmortem_for.jira_issue_key} is not Ready (current status: {current_status}).",
+                            )
+                        )
+                except Exception as exc:  # pragma: no cover - defensive guard
+                    logger.exception(
+                        "Failed to verify Jira post-mortem status for incident #%s: %s",
+                        self.id,
+                        exc,
+                    )
+                    cant_closed_reasons.append(
+                        (
+                            "POSTMORTEM_STATUS_UNKNOWN",
+                            "Could not verify Jira post-mortem status. Please check it in Jira.",
+                        )
+                    )
         elif self.status.value < IncidentStatus.MITIGATED:
-            cant_closed_reasons.append((
-                "STATUS_NOT_MITIGATED",
-                f"Incident is not in {IncidentStatus.MITIGATED.label} status (currently {self.status.label}).",
-            ))
+            cant_closed_reasons.append(
+                (
+                    "STATUS_NOT_MITIGATED",
+                    f"Incident is not in {IncidentStatus.MITIGATED.label} status (currently {self.status.label}).",
+                )
+            )
         missing_milestones = self.missing_milestones()
         if len(missing_milestones) > 0:
-            cant_closed_reasons.append((
-                "MISSING_REQUIRED_KEY_EVENTS",
-                f"Missing key events: {', '.join(missing_milestones)}",
-            ))
+            cant_closed_reasons.append(
+                (
+                    "MISSING_REQUIRED_KEY_EVENTS",
+                    f"Missing key events: {', '.join(missing_milestones)}",
+                )
+            )
 
         if len(cant_closed_reasons) > 0:
             return False, cant_closed_reasons

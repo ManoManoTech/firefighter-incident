@@ -214,6 +214,74 @@ class CloseModal(
                             ]
                         ),
                     ]
+                elif reason[0] == "POSTMORTEM_NOT_READY":
+                    reason_blocks += [
+                        SectionBlock(
+                            text=":warning: *Post-mortem is not Ready* :warning:\n"
+                        ),
+                        ContextBlock(
+                            elements=[
+                                MarkdownTextObject(
+                                    text="The linked Jira post-mortem must be in the *Ready* status before closing the incident.\n"
+                                    + reason[1]
+                                )
+                            ]
+                        ),
+                        ActionsBlock(
+                            elements=[
+                                ButtonElement(
+                                    text="Open Jira post-mortem",
+                                    action_id="open_link",
+                                    url=(
+                                        getattr(
+                                            incident.jira_postmortem_for,
+                                            "issue_url",
+                                            None,
+                                        )
+                                        if hasattr(incident, "jira_postmortem_for")
+                                        else None
+                                    ),
+                                    style="primary",
+                                ),
+                                ButtonElement(
+                                    text="Update status",
+                                    action_id=UpdateStatusModal.push_action,
+                                    value=str(incident.id),
+                                ),
+                            ]
+                        ),
+                    ]
+                elif reason[0] == "POSTMORTEM_STATUS_UNKNOWN":
+                    reason_blocks += [
+                        SectionBlock(
+                            text=":warning: *Could not verify post-mortem status* :warning:\n"
+                        ),
+                        ContextBlock(
+                            elements=[
+                                MarkdownTextObject(
+                                    text="We could not verify the Jira post-mortem status. Please open it in Jira to confirm it is Ready before closing."
+                                )
+                            ]
+                        ),
+                        ActionsBlock(
+                            elements=[
+                                ButtonElement(
+                                    text="Open Jira post-mortem",
+                                    action_id="open_link",
+                                    url=(
+                                        getattr(
+                                            incident.jira_postmortem_for,
+                                            "issue_url",
+                                            None,
+                                        )
+                                        if hasattr(incident, "jira_postmortem_for")
+                                        else None
+                                    ),
+                                    style="primary",
+                                ),
+                            ]
+                        ),
+                    ]
 
             return View(
                 type="modal",
@@ -263,7 +331,7 @@ class CloseModal(
 
     def handle_modal_fn(  # type: ignore[override]
         self, ack: Ack, body: dict[str, Any], incident: Incident, user: User
-    ) ->  bool | None:
+    ) -> bool | None:
         """Handle response from /incident close modal."""
         # Check if this should be handled by closure reason modal
         closure_result = handle_close_modal_callback(ack, body, incident, user)
@@ -279,7 +347,9 @@ class CloseModal(
         update_kwargs = {}
         for changed_key in form.changed_data:
             if changed_key == "incident_category":
-                update_kwargs["incident_category_id"] = form.cleaned_data[changed_key].id
+                update_kwargs["incident_category_id"] = form.cleaned_data[
+                    changed_key
+                ].id
             if changed_key in {"description", "title", "message"}:
                 update_kwargs[changed_key] = form.cleaned_data[changed_key]
         # Check can close
