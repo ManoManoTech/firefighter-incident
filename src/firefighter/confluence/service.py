@@ -319,7 +319,7 @@ if settings.CONFLUENCE_MOCK_CREATE_POSTMORTEM:
     from random import randint
 
     fake_id = str(randint(10, 99999))  # nosec: B311 # noqa: S311
-    confluence_service.create_postmortem = lambda title, _incident: {  # type: ignore
+    confluence_service.create_postmortem = lambda title: {  # type: ignore
         "id": fake_id,
         "type": "page",
         "status": "current",
