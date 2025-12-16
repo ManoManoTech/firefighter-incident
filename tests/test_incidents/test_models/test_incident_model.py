@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+from types import SimpleNamespace
 from typing import TYPE_CHECKING
+from unittest.mock import patch
 
 import pytest
 from hypothesis import given
@@ -10,6 +12,7 @@ from hypothesis.strategies import builds
 from firefighter.incidents.enums import ClosureReason, IncidentStatus
 from firefighter.incidents.factories import IncidentFactory
 from firefighter.incidents.models import IncidentUpdate
+from firefighter.jira_app.models import JiraPostMortem
 
 if TYPE_CHECKING:
     from firefighter.incidents.models import Incident
@@ -58,7 +61,9 @@ class TestIncidentCanBeClosed:
         can_close, reasons = incident.can_be_closed
 
         # Should be closable (assuming no missing milestones)
-        assert can_close is True or "STATUS_NOT_MITIGATED" not in [r[0] for r in reasons]
+        assert can_close is True or "STATUS_NOT_MITIGATED" not in [
+            r[0] for r in reasons
+        ]
 
     def test_can_close_incident_with_closure_reason(self) -> None:
         """Test that incidents with closure_reason can always be closed."""
@@ -72,6 +77,29 @@ class TestIncidentCanBeClosed:
 
         assert can_close is True
         assert reasons == []
+
+    def test_cannot_close_when_jira_postmortem_not_ready(self, settings: None) -> None:
+        """Block closure if Jira post-mortem exists but is not in Ready status."""
+        settings.ENABLE_JIRA_POSTMORTEM = True
+        incident = IncidentFactory.create(_status=IncidentStatus.POST_MORTEM)
+        JiraPostMortem.objects.create(
+            incident=incident,
+            jira_issue_key="INC-999",
+            jira_issue_id="999",
+            created_by=incident.created_by,
+        )
+
+        with patch("firefighter.incidents.models.incident.JiraClient") as mock_client:
+            issue_mock = SimpleNamespace(
+                fields=SimpleNamespace(status=SimpleNamespace(name="In Progress"))
+            )
+            mock_client.return_value.jira.issue.return_value = issue_mock
+
+            with patch.object(type(incident), "missing_milestones", return_value=[]):
+                can_close, reasons = incident.can_be_closed
+
+        assert can_close is False
+        assert any(r[0] == "JIRA_POSTMORTEM_NOT_READY" for r in reasons)
 
 
 @pytest.mark.django_db

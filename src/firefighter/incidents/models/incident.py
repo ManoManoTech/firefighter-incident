@@ -214,12 +214,8 @@ class Incident(models.Model):
         on_delete=models.PROTECT,
         help_text="Priority",
     )
-    incident_category = models.ForeignKey(
-        IncidentCategory, on_delete=models.PROTECT
-    )
-    environment = models.ForeignKey(
-        Environment, on_delete=models.PROTECT
-    )
+    incident_category = models.ForeignKey(IncidentCategory, on_delete=models.PROTECT)
+    environment = models.ForeignKey(Environment, on_delete=models.PROTECT)
     created_by = models.ForeignKey(
         User,
         on_delete=models.PROTECT,
@@ -372,29 +368,44 @@ class Incident(models.Model):
 
         if self.ignore:
             return True, []
-        if self.needs_postmortem:
-            if self.status.value != IncidentStatus.POST_MORTEM:
-                cant_closed_reasons.append(
-                    (
-                        "STATUS_NOT_POST_MORTEM",
-                        f"Incident is not in PostMortem status, and needs one because of its priority and environment ({self.priority.name}/{self.environment.value}).",
-                    )
-                )
-        elif self.status.value < IncidentStatus.MITIGATED:
-            cant_closed_reasons.append(
-                (
-                    "STATUS_NOT_MITIGATED",
-                    f"Incident is not in {IncidentStatus.MITIGATED.label} status (currently {self.status.label}).",
-                )
+        if self.needs_postmortem and self.status.value != IncidentStatus.POST_MORTEM:
+            cant_closed_reasons.append((
+                "STATUS_NOT_POST_MORTEM",
+                f"Incident is not in PostMortem status, and needs one because of its priority and environment ({self.priority.name}/{self.environment.value}).",
+            ))
+        if hasattr(self, "jira_postmortem_for"):
+            ready_status_name = getattr(
+                settings, "JIRA_POSTMORTEM_READY_STATUS_NAME", "Ready"
             )
+            try:
+                # Lazy import to avoid circular dependency and heavy imports when not needed
+                from firefighter.jira_app.client import JiraClient
+
+                jira_client = JiraClient()
+                issue = jira_client.jira.issue(self.jira_postmortem_for.jira_issue_key)
+                jira_status_name = issue.fields.status.name
+            except Exception as exc:  # pragma: no cover - defensive logging
+                cant_closed_reasons.append((
+                    "JIRA_POSTMORTEM_STATUS_UNKNOWN",
+                    f"Could not verify Jira post-mortem status: {exc}",
+                ))
+            else:
+                if jira_status_name != ready_status_name:
+                    cant_closed_reasons.append((
+                        "JIRA_POSTMORTEM_NOT_READY",
+                        f"Jira post-mortem {self.jira_postmortem_for.jira_issue_key} is '{jira_status_name}', must be '{ready_status_name}'.",
+                    ))
+        elif self.status.value < IncidentStatus.MITIGATED:
+            cant_closed_reasons.append((
+                "STATUS_NOT_MITIGATED",
+                f"Incident is not in {IncidentStatus.MITIGATED.label} status (currently {self.status.label}).",
+            ))
         missing_milestones = self.missing_milestones()
         if len(missing_milestones) > 0:
-            cant_closed_reasons.append(
-                (
-                    "MISSING_REQUIRED_KEY_EVENTS",
-                    f"Missing key events: {', '.join(missing_milestones)}",
-                )
-            )
+            cant_closed_reasons.append((
+                "MISSING_REQUIRED_KEY_EVENTS",
+                f"Missing key events: {', '.join(missing_milestones)}",
+            ))
 
         if len(cant_closed_reasons) > 0:
             return False, cant_closed_reasons
@@ -606,7 +617,9 @@ class Incident(models.Model):
 
         _update_incident_field(self, "_status", status, updated_fields)
         _update_incident_field(self, "priority_id", priority_id, updated_fields)
-        _update_incident_field(self, "incident_category_id", incident_category_id, updated_fields)
+        _update_incident_field(
+            self, "incident_category_id", incident_category_id, updated_fields
+        )
         _update_incident_field(self, "title", title, updated_fields)
         _update_incident_field(self, "description", description, updated_fields)
         _update_incident_field(self, "environment_id", environment_id, updated_fields)
@@ -706,7 +719,9 @@ class IncidentFilterSet(django_filters.FilterSet):
         widget=CustomCheckboxSelectMultiple,
     )
     group = ModelMultipleChoiceFilter(
-        queryset=Group.objects.all(), field_name="incident_category__group_id", label="Group"
+        queryset=Group.objects.all(),
+        field_name="incident_category__group_id",
+        label="Group",
     )
     incident_category = ModelMultipleChoiceFilter(
         queryset=incident_category_filter_choices_queryset,

@@ -148,6 +148,42 @@ class CloseModal(
                             ]
                         ),
                     ]
+                elif reason[0] == "JIRA_POSTMORTEM_NOT_READY":
+                    reason_blocks += [
+                        SectionBlock(
+                            text=":warning: *Jira post-mortem not ready* :warning:\n"
+                        ),
+                        ContextBlock(
+                            elements=[
+                                MarkdownTextObject(
+                                    text=f"{reason[1]}\nPlease move the Jira post-mortem to the Ready status before closing the incident."
+                                )
+                            ]
+                        ),
+                        ActionsBlock(
+                            elements=[
+                                ButtonElement(
+                                    text="Open Jira post-mortem",
+                                    action_id="open_link",
+                                    url=incident.jira_postmortem_for.issue_url,
+                                    style="primary",
+                                ),
+                            ]
+                        ),
+                    ]
+                elif reason[0] == "JIRA_POSTMORTEM_STATUS_UNKNOWN":
+                    reason_blocks += [
+                        SectionBlock(
+                            text=":warning: *Could not verify Jira post-mortem status* :warning:\n"
+                        ),
+                        ContextBlock(
+                            elements=[
+                                MarkdownTextObject(
+                                    text=f"{reason[1]}\nPlease check the Jira post-mortem status before closing the incident."
+                                )
+                            ]
+                        ),
+                    ]
                 elif reason[0] == "STATUS_NOT_MITIGATED":
                     reason_blocks += [
                         SectionBlock(
