@@ -53,6 +53,7 @@ def incident_updated_close_ticket_when_mitigated_or_postmortem(
     # POST_MORTEM status never closes the ticket - it stays open during PM phase
 
     if should_close:
-        logger.info(f"Closing Jira ticket for incident {incident.id} (status: {incident_update.status.label})")
+        status_label = incident_update.status.label if incident_update.status else "Unknown"
+        logger.info(f"Closing Jira ticket for incident {incident.id} (status: {status_label})")
         client.close_issue(issue_id=incident.jira_ticket.id)
         # XXX We may want to add a comment if there is an incident update message on close
