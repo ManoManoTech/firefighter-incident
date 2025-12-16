@@ -104,7 +104,9 @@ class CloseModal(
                             ]
                         ),
                     ]
-                elif reason[0] == "STATUS_NOT_POST_MORTEM":
+                elif reason[0] == "STATUS_NOT_POST_MORTEM" and getattr(
+                    settings, "ENABLE_CONFLUENCE", False
+                ):
                     reason_blocks += [
                         SectionBlock(
                             text=f":warning: *Status is not _{IncidentStatus.POST_MORTEM.label}_* :warning:\n"
@@ -148,7 +150,9 @@ class CloseModal(
                             ]
                         ),
                     ]
-                elif reason[0] == "JIRA_POSTMORTEM_NOT_READY":
+                elif reason[0] == "JIRA_POSTMORTEM_NOT_READY" and getattr(
+                    settings, "ENABLE_JIRA", False
+                ):
                     reason_blocks += [
                         SectionBlock(
                             text=":warning: *Jira post-mortem not ready* :warning:\n"
