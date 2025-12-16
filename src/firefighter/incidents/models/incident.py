@@ -21,6 +21,7 @@ from django_filters.filters import (
     OrderingFilter,
 )
 from django_stubs_ext.db.models import TypedModelMeta
+from jira import exceptions as jira_exceptions
 from taggit.managers import TaggableManager
 
 from firefighter.firefighter.fields_forms_widgets import (
@@ -379,12 +380,12 @@ class Incident(models.Model):
             )
             try:
                 # Lazy import to avoid circular dependency and heavy imports when not needed
-                from firefighter.jira_app.client import JiraClient
+                from firefighter.jira_app.client import JiraClient  # noqa: PLC0415
 
                 jira_client = JiraClient()
                 issue = jira_client.jira.issue(self.jira_postmortem_for.jira_issue_key)
                 jira_status_name = issue.fields.status.name
-            except Exception as exc:  # pragma: no cover - defensive logging
+            except (jira_exceptions.JIRAError, AttributeError) as exc:  # pragma: no cover - defensive logging
                 cant_closed_reasons.append((
                     "JIRA_POSTMORTEM_STATUS_UNKNOWN",
                     f"Could not verify Jira post-mortem status: {exc}",

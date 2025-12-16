@@ -89,7 +89,7 @@ class TestIncidentCanBeClosed:
             created_by=incident.created_by,
         )
 
-        with patch("firefighter.incidents.models.incident.JiraClient") as mock_client:
+        with patch("firefighter.jira_app.client.JiraClient") as mock_client:
             issue_mock = SimpleNamespace(
                 fields=SimpleNamespace(status=SimpleNamespace(name="In Progress"))
             )
