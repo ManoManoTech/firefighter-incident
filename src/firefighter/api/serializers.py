@@ -219,6 +219,8 @@ class IncidentSerializer(TaggitSerializer, serializers.ModelSerializer[Incident]
     created_by = UserSerializer(read_only=True)
     slack_channel_name = serializers.SerializerMethodField()
     postmortem_url = serializers.SerializerMethodField()
+    jira_ticket_key = serializers.SerializerMethodField()
+    jira_ticket_url = serializers.SerializerMethodField()
 
     created_by_email = CreatableSlugRelatedField[User](
         source="created_by",
@@ -260,6 +262,20 @@ class IncidentSerializer(TaggitSerializer, serializers.ModelSerializer[Incident]
             return obj.postmortem_for.page_url
         return None
 
+    @staticmethod
+    def get_jira_ticket_key(obj: Incident) -> str | None:
+        """Return the Jira ticket key if it exists."""
+        if hasattr(obj, "jira_ticket") and obj.jira_ticket:
+            return obj.jira_ticket.key
+        return None
+
+    @staticmethod
+    def get_jira_ticket_url(obj: Incident) -> str | None:
+        """Return the Jira ticket URL if it exists."""
+        if hasattr(obj, "jira_ticket") and obj.jira_ticket:
+            return obj.jira_ticket.url
+        return None
+
     def create(self, validated_data: dict[str, Any]) -> Incident:
         return Incident.objects.declare(**validated_data)
 
@@ -288,6 +304,8 @@ class IncidentSerializer(TaggitSerializer, serializers.ModelSerializer[Incident]
             "slack_channel_name",
             "status_page_url",
             "postmortem_url",
+            "jira_ticket_key",
+            "jira_ticket_url",
             "status",
             "environment_id",
             "incident_category_id",
