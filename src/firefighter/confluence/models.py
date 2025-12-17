@@ -12,7 +12,6 @@ from django.db import models
 from django.urls import reverse
 from django_filters.filters import AllValuesMultipleFilter
 
-from firefighter.confluence.service import confluence_service
 from firefighter.firefighter.fields_forms_widgets import CustomCheckboxSelectMultiple
 from firefighter.incidents.models.incident import Incident
 from firefighter.incidents.signals import postmortem_created
@@ -91,6 +90,8 @@ class PostMortemManager(models.Manager["PostMortem"]):
     def _create_confluence_postmortem(incident: Incident) -> PostMortem:
         """Create Confluence post-mortem (existing logic)."""
         logger.info("Creating Confluence PostMortem for %s", incident)
+
+        from firefighter.confluence.service import confluence_service
 
         topic_prefix = (
             ""
