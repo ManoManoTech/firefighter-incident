@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from unittest.mock import patch
+from unittest.mock import PropertyMock, patch
 
 import pytest
 from hypothesis import given
@@ -98,6 +98,12 @@ class TestIncidentCanBeClosed:
         assert hasattr(incident, "jira_postmortem_for")
 
         with (
+            patch.object(
+                type(incident),
+                "needs_postmortem",
+                new_callable=PropertyMock,
+                return_value=True,
+            ),
             patch.object(type(incident), "missing_milestones", return_value=[]),
             patch(
                 "firefighter.jira_app.service_postmortem.jira_postmortem_service.is_postmortem_ready",
@@ -143,18 +149,31 @@ class TestIncidentCanBeClosed:
     ) -> None:
         """Errors while checking Jira PM should return POSTMORTEM_STATUS_UNKNOWN."""
         settings.ENABLE_JIRA_POSTMORTEM = True
-        incident = IncidentFactory.create(_status=IncidentStatus.POST_MORTEM)
+        incident = IncidentFactory.create(
+            _status=IncidentStatus.POST_MORTEM,
+            priority__value=1,
+            priority__needs_postmortem=True,
+            environment__value="PRD",
+        )
         JiraPostMortem.objects.create(
             incident=incident,
             jira_issue_key="INC-ERR",
             jira_issue_id="124",
             created_by=incident.created_by,
         )
+        incident.refresh_from_db()
+        assert hasattr(incident, "jira_postmortem_for")
 
         mocker.patch.object(type(incident), "missing_milestones", return_value=[])
         mocker.patch(
             "firefighter.jira_app.service_postmortem.jira_postmortem_service.is_postmortem_ready",
             side_effect=Exception("boom"),
+        )
+        mocker.patch.object(
+            type(incident),
+            "needs_postmortem",
+            new_callable=PropertyMock,
+            return_value=True,
         )
 
         can_close, reasons = incident.can_be_closed
