@@ -82,20 +82,29 @@ class TestIncidentCanBeClosed:
     def test_cannot_close_when_jira_postmortem_not_ready(self, settings: None) -> None:
         """Block closure if Jira post-mortem exists but is not in Ready status."""
         settings.ENABLE_JIRA_POSTMORTEM = True
-        incident = IncidentFactory.create(_status=IncidentStatus.POST_MORTEM)
+        incident = IncidentFactory.create(
+            _status=IncidentStatus.POST_MORTEM,
+            priority__value=1,
+            priority__needs_postmortem=True,
+            environment__value="PRD",
+        )
         JiraPostMortem.objects.create(
             incident=incident,
             jira_issue_key="INC-999",
             jira_issue_id="999",
             created_by=incident.created_by,
         )
+        incident.refresh_from_db()
+        assert hasattr(incident, "jira_postmortem_for")
 
-        with patch.object(type(incident), "missing_milestones", return_value=[]):
-            with patch(
+        with (
+            patch.object(type(incident), "missing_milestones", return_value=[]),
+            patch(
                 "firefighter.jira_app.service_postmortem.jira_postmortem_service.is_postmortem_ready",
                 return_value=(False, "In Progress"),
-            ):
-                can_close, reasons = incident.can_be_closed
+            ),
+        ):
+            can_close, reasons = incident.can_be_closed
 
         assert can_close is False
         assert any(r[0] == "POSTMORTEM_NOT_READY" for r in reasons)
@@ -105,7 +114,12 @@ class TestIncidentCanBeClosed:
     ) -> None:
         """When Jira PM is Ready, can_be_closed should allow closure for PM incidents."""
         settings.ENABLE_JIRA_POSTMORTEM = True
-        incident = IncidentFactory.create(_status=IncidentStatus.POST_MORTEM)
+        incident = IncidentFactory.create(
+            _status=IncidentStatus.POST_MORTEM,
+            priority__value=1,
+            priority__needs_postmortem=True,
+            environment__value="PRD",
+        )
         JiraPostMortem.objects.create(
             incident=incident,
             jira_issue_key="INC-READY",
