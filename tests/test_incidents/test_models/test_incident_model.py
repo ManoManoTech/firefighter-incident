@@ -91,17 +91,15 @@ class TestIncidentCanBeClosed:
             created_by=incident.created_by,
         )
 
-        with patch("firefighter.jira_app.client.JiraClient") as mock_client:
-            issue_mock = SimpleNamespace(
-                fields=SimpleNamespace(status=SimpleNamespace(name="In Progress"))
-            )
-            mock_client.return_value.jira.issue.return_value = issue_mock
-
-            with patch.object(type(incident), "missing_milestones", return_value=[]):
+        with patch.object(type(incident), "missing_milestones", return_value=[]):
+            with patch(
+                "firefighter.jira_app.service_postmortem.jira_postmortem_service.is_postmortem_ready",
+                return_value=(False, "In Progress"),
+            ):
                 can_close, reasons = incident.can_be_closed
 
         assert can_close is False
-        assert any(r[0] == "JIRA_POSTMORTEM_NOT_READY" for r in reasons)
+        assert any(r[0] == "POSTMORTEM_NOT_READY" for r in reasons)
 
     def test_postmortem_ready_allows_closure(
         self, mocker: MockerFixture, settings: None
