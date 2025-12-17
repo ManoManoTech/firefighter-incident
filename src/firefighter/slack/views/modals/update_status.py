@@ -132,7 +132,7 @@ class UpdateStatusModal(ModalForm[UpdateStatusFormSlack]):
                     )
                     ack(
                         response_action="errors",
-                        errors={"status": f"Cannot close this incident:\n{error_text}"},
+                        errors={"status": f"{error_text}"},
                     )
                     return
 
