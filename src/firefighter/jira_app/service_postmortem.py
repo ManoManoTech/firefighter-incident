@@ -229,7 +229,7 @@ class JiraPostMortemService:
         - Zoho desk ticket (customfield_10896)
         - Zendesk ticket (customfield_10895)
         - Seller Contract ID (customfield_10908)
-        - Platform (customfield_10201)
+        - Platforms (customfield_10201) - first platform from list
         - Business Impact (customfield_10936)
 
         Args:
@@ -264,9 +264,10 @@ class JiraPostMortemService:
             fields["customfield_10908"] = str(seller_contract_id)
 
         # Platform - customfield_10201 (option field)
-        platform = custom_fields.get("platform")
-        if platform:
-            # Remove "platform-" prefix if present
+        platforms = custom_fields.get("platforms", [])
+        if platforms:
+            # Extract first platform and remove "platform-" prefix if present
+            platform = platforms[0] if isinstance(platforms, list) else platforms
             platform_value = platform.replace("platform-", "") if isinstance(platform, str) else platform
             fields["customfield_10201"] = {"value": platform_value}
 

@@ -261,7 +261,7 @@ class TestJiraPostMortemService:
                 "zendesk_ticket_id": "12345",
                 "zoho_desk_ticket_id": "67890",
                 "seller_contract_id": "98765",
-                "platform": "platform-FR",
+                "platforms": ["platform-FR"],
                 "environments": ["PRD", "STG"],
             },
         )
@@ -404,7 +404,7 @@ class TestJiraPostMortemService:
             _status=IncidentStatus.POST_MORTEM,
             created_by=user,
             custom_fields={
-                "platform": "platform-DE",
+                "platforms": ["platform-DE"],
             },
         )
 
