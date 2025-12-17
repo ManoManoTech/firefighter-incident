@@ -15,8 +15,9 @@ from firefighter.incidents.models import IncidentUpdate
 from firefighter.jira_app.models import JiraPostMortem
 
 if TYPE_CHECKING:
-    from firefighter.incidents.models import Incident
     from pytest_mock import MockerFixture
+
+    from firefighter.incidents.models import Incident
 
 
 @pytest.mark.django_db
