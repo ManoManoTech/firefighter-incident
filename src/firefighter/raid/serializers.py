@@ -219,7 +219,7 @@ class LandbotIssueRequestSerializer(serializers.ModelSerializer[JiraTicket]):
             suggested_team_routing=validated_data["suggested_team_routing"],
             project=validated_data["project"],
         )
-        issue_id = issue.get("id")  # type: ignore[union-attr]
+        issue_id = issue.get("id")
         if issue_id is None:
             logger.error("Could not create Jira ticket")
             raise JiraAPIError("Could not create Jira ticket")

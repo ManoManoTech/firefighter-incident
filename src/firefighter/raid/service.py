@@ -28,7 +28,7 @@ def check_issue_id(issue: JiraObject, title: str, reporter: str) -> int | str:
 
     Raises JiraAPIError if the issue ID is missing or invalid.
     """
-    issue_id = issue.get("id")  # type: ignore[union-attr]
+    issue_id = issue.get("id")
     if issue_id is None:
         logger.error(
             f"Could not create Jira ticket for the incident {title} and the reporter {reporter}"
