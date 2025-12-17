@@ -21,7 +21,6 @@ from django_filters.filters import (
     OrderingFilter,
 )
 from django_stubs_ext.db.models import TypedModelMeta
-from jira import exceptions as jira_exceptions
 from taggit.managers import TaggableManager
 
 from firefighter.firefighter.fields_forms_widgets import (
