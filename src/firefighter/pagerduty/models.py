@@ -331,13 +331,13 @@ class PagerDutySchedule(models.Model):
     pagerduty_url = models.URLField(max_length=256, null=True, blank=True)
     # TODO: Add more fields
 
-    escalation_policies = models.ManyToManyField(
+    escalation_policies: models.ManyToManyField[PagerDutyEscalationPolicy, PagerDutyEscalationPolicy] = models.ManyToManyField(
         PagerDutyEscalationPolicy, related_name="pagerduty_schedule_set", blank=True
     )
-    users = models.ManyToManyField(
+    users: models.ManyToManyField[PagerDutyUser, PagerDutyUser] = models.ManyToManyField(
         PagerDutyUser, related_name="pagerduty_schedule_set", blank=True
     )
-    teams = models.ManyToManyField(
+    teams: models.ManyToManyField[PagerDutyTeam, PagerDutyTeam] = models.ManyToManyField(
         PagerDutyTeam, related_name="pagerduty_schedule_set", blank=True
     )
 
