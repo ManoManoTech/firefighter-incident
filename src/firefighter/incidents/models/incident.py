@@ -393,11 +393,10 @@ class Incident(models.Model):
                                 f"Jira post-mortem {self.jira_postmortem_for.jira_issue_key} is not Ready (current status: {current_status}).",
                             )
                         )
-                except Exception as exc:  # pragma: no cover - defensive guard
+                except Exception:  # pragma: no cover - defensive guard
                     logger.exception(
-                        "Failed to verify Jira post-mortem status for incident #%s: %s",
+                        "Failed to verify Jira post-mortem status for incident #%s",
                         self.id,
-                        exc,
                     )
                     cant_closed_reasons.append(
                         (
