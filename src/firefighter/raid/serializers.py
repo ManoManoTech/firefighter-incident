@@ -219,11 +219,10 @@ class LandbotIssueRequestSerializer(serializers.ModelSerializer[JiraTicket]):
             suggested_team_routing=validated_data["suggested_team_routing"],
             project=validated_data["project"],
         )
-        try:
-            issue_id = issue["id"]
-        except KeyError:
-            logger.exception("Could not create Jira ticket")
-            raise JiraAPIError("Could not create Jira ticket") from None
+        issue_id = issue.get("id")  # type: ignore[union-attr]
+        if issue_id is None:
+            logger.error("Could not create Jira ticket")
+            raise JiraAPIError("Could not create Jira ticket")
         if validated_data["attachments"] is not None:
             #  Prepare attachments and double check we don't have any empty strings
             attachments: list[str] = [
