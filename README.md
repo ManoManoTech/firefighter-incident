@@ -16,6 +16,39 @@ Incidents are unplanned interruptions or reductions in quality of services, like
 
 <!--intro-end-->
 
+## ✨ Recent Updates
+
+### Streamlined Slack Experience (June 2025)
+
+We've improved the incident creation workflow in Slack:
+
+- **🚀 Faster incident creation**: Removed manual Critical/Normal selection step
+- **🎯 Automatic process determination**: P1-P3 incidents automatically get Slack channels + Jira tickets, P4-P5 get Jira tickets only
+- **✅ Consistent priority handling**: No more mismatches between calculated priority and selected process
+- **🧪 Better testing support**: Configurable for test environments without Slack usergroups
+
+The workflow is now: **Select Impacts** → **Auto-calculated Priority & Process** → **Add Details** → **Create Incident**
+
+### System Enhancements Since v0.0.2 (March 2025)
+
+**🏗️ Component & Priority System Overhaul:**
+- Complete restructuring of components and groups with 61+ Slack usergroup mappings
+- Enhanced P1-P5 priority system with clear Critical/Normal distinction
+- Advanced impact level system with business-specific categories
+- Automated component-to-usergroup mapping for better response coordination
+
+**🔧 Technical Improvements:**
+- Modern Django components with updated type annotations
+- Enhanced PDM package management and build processes
+- Flexible schema configuration system for customization
+- Improved fixture management and testing infrastructure
+
+**📊 Data & Migration:**
+- Comprehensive database migrations preserving existing incident data
+- CSV-based update system for components and groups
+- Enhanced form validation and user interaction flows
+- Better business impact calculation algorithms
+
 ## Learn more
 
 Check out our [documentation](https://manomanotech.github.io/firefighter-incident/latest/) for more details.
