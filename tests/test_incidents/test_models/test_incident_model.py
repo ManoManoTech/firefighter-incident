@@ -101,6 +101,54 @@ class TestIncidentCanBeClosed:
         assert can_close is False
         assert any(r[0] == "JIRA_POSTMORTEM_NOT_READY" for r in reasons)
 
+    def test_postmortem_ready_allows_closure(
+        self, mocker: MockerFixture, settings: None
+    ) -> None:
+        """When Jira PM is Ready, can_be_closed should allow closure for PM incidents."""
+        settings.ENABLE_JIRA_POSTMORTEM = True
+        incident = IncidentFactory.create(_status=IncidentStatus.POST_MORTEM)
+        JiraPostMortem.objects.create(
+            incident=incident,
+            jira_issue_key="INC-READY",
+            jira_issue_id="123",
+            created_by=incident.created_by,
+        )
+
+        mocker.patch.object(type(incident), "missing_milestones", return_value=[])
+        mocker.patch(
+            "firefighter.jira_app.service_postmortem.jira_postmortem_service.is_postmortem_ready",
+            return_value=(True, "Ready"),
+        )
+
+        can_close, reasons = incident.can_be_closed
+
+        assert can_close is True
+        assert reasons == []
+
+    def test_postmortem_status_unknown_sets_reason(
+        self, mocker: MockerFixture, settings: None
+    ) -> None:
+        """Errors while checking Jira PM should return POSTMORTEM_STATUS_UNKNOWN."""
+        settings.ENABLE_JIRA_POSTMORTEM = True
+        incident = IncidentFactory.create(_status=IncidentStatus.POST_MORTEM)
+        JiraPostMortem.objects.create(
+            incident=incident,
+            jira_issue_key="INC-ERR",
+            jira_issue_id="124",
+            created_by=incident.created_by,
+        )
+
+        mocker.patch.object(type(incident), "missing_milestones", return_value=[])
+        mocker.patch(
+            "firefighter.jira_app.service_postmortem.jira_postmortem_service.is_postmortem_ready",
+            side_effect=Exception("boom"),
+        )
+
+        can_close, reasons = incident.can_be_closed
+
+        assert can_close is False
+        assert any(r[0] == "POSTMORTEM_STATUS_UNKNOWN" for r in reasons)
+
 
 @pytest.mark.django_db
 class TestIncidentSetStatus:
