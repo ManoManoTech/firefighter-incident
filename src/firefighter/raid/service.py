@@ -31,7 +31,7 @@ def check_issue_id(issue: JiraObject, title: str, reporter: str) -> int | str:
     try:
         return issue["id"]
     except KeyError:
-        logger.error(
+        logger.exception(
             f"Could not create Jira ticket for the incident {title} and the reporter {reporter}"
         )
         raise JiraAPIError(error_jira_ticket_creation) from None
