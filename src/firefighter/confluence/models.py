@@ -164,6 +164,9 @@ class ConfluencePage(models.Model):
 
     version = models.JSONField(default=dict)  # We need a callable
 
+    class Meta:
+        app_label = "confluence"
+
     def __str__(self) -> str:
         return self.name
 
@@ -176,6 +179,9 @@ class PostMortem(ConfluencePage):
     incident = models.OneToOneField(
         Incident, on_delete=models.CASCADE, related_name="postmortem_for"
     )
+
+    class Meta:
+        app_label = "confluence"
 
     def __str__(self) -> str:
         return self.name
@@ -222,6 +228,9 @@ class Runbook(ConfluencePage):
     title = models.CharField(max_length=255)
     service_name = models.CharField(max_length=255)
     service_type = models.CharField(max_length=255)
+
+    class Meta:
+        app_label = "confluence"
 
     def __str__(self) -> str:
         return self.name
