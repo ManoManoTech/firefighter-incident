@@ -7,6 +7,8 @@ on:
     branches: [main]
 
 name: Python CI
+permissions:
+  contents: read
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref_name }}-${{ github.event.pull_request.number || github.sha }}
