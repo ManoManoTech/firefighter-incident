@@ -24,13 +24,17 @@ error_jira_ticket_creation = "Could not create Jira ticket"
 
 
 def check_issue_id(issue: JiraObject, title: str, reporter: str) -> int | str:
-    issue_id = issue.get("id")
-    if issue_id is None:
+    """Check and return the issue ID from a JiraObject.
+
+    Raises JiraAPIError if the issue ID is missing or invalid.
+    """
+    try:
+        return issue["id"]
+    except KeyError:
         logger.error(
             f"Could not create Jira ticket for the incident {title} and the reporter {reporter}"
         )
-        raise JiraAPIError(error_jira_ticket_creation)
-    return issue_id
+        raise JiraAPIError(error_jira_ticket_creation) from None
 
 
 def get_jira_user_from_user(user: User) -> JiraUser:
