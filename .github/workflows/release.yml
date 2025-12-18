@@ -65,6 +65,8 @@ jobs:
     runs-on: ubuntu-latest
     # If you don't set an input tag, it's a dry run (no uploads).
     if: ${{ inputs.tag }}
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
         with:
