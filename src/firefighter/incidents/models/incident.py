@@ -383,8 +383,10 @@ class Incident(models.Model):
                         jira_postmortem_service,
                     )
 
-                    is_ready, current_status = jira_postmortem_service.is_postmortem_ready(
-                        self.jira_postmortem_for
+                    is_ready, current_status = (
+                        jira_postmortem_service.is_postmortem_ready(
+                            self.jira_postmortem_for
+                        )
                     )
                     if not is_ready:
                         cant_closed_reasons.append(
