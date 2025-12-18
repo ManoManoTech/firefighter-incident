@@ -20,6 +20,8 @@ jobs:
   sdist_wheels:
     name: Build Python sdist and wheel
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
       - name: Configure git
