@@ -52,3 +52,25 @@ def should_publish_in_it_deploy_channel(incident: Incident) -> bool:
         and not incident.private
         and incident.incident_category.deploy_warning
     )
+
+
+def should_publish_pm_in_general_channel(incident: Incident) -> bool:
+    """Determine if post-mortem creation should be announced in #critical-incidents.
+
+    Post-mortems are announced for P1-P3 production incidents that are not private
+    and require a post-mortem.
+
+    Args:
+        incident: The incident for which a post-mortem was created.
+
+    Returns:
+        True if the post-mortem creation should be announced in tech_incidents channel.
+    """
+    return (
+        incident.priority is not None
+        and incident.priority.value <= 3
+        and incident.environment is not None
+        and incident.environment.value == "PRD"
+        and not incident.private
+        and incident.needs_postmortem
+    )
