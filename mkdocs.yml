@@ -119,6 +119,7 @@ nav:
           - JIRA Post-mortem: architecture/jira-postmortem.md
           - Slack Conversation Tags: architecture/slack-conversation-tags.md
           - Test Configuration: architecture/test-config.md
+          - Testing Post-mortem Reminders: contributing/testing-postmortem-reminders.md
           - Incident Workflow: architecture/incident-workflow.md
           - Incident Workflows: architecture/incident-workflows.md
           - UI Guidelines: contributing/ui.md
