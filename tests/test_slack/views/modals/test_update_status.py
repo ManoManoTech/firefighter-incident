@@ -129,12 +129,12 @@ class TestUpdateStatusModal:
 
         # Verify that can_be_closed returns False due to missing milestones (real check, no mock)
         can_close, reasons = incident.can_be_closed
-        assert can_close is False, (
-            f"Incident should not be closable without required milestones. Got: {can_close}, reasons: {reasons}"
-        )
-        assert any("MISSING_REQUIRED_KEY_EVENTS" in reason[0] for reason in reasons), (
-            f"Expected MISSING_REQUIRED_KEY_EVENTS in reasons, got: {reasons}"
-        )
+        assert (
+            can_close is False
+        ), f"Incident should not be closable without required milestones. Got: {can_close}, reasons: {reasons}"
+        assert any(
+            "MISSING_REQUIRED_KEY_EVENTS" in reason[0] for reason in reasons
+        ), f"Expected MISSING_REQUIRED_KEY_EVENTS in reasons, got: {reasons}"
 
         modal = UpdateStatusModal()
         trigger_incident_workflow = mocker.patch.object(
@@ -163,26 +163,23 @@ class TestUpdateStatusModal:
         assert ack.called, "ack should have been called"
         # Check the last call (the error response)
         last_call_kwargs = ack.call_args.kwargs
-        assert "response_action" in last_call_kwargs, (
-            f"Expected 'response_action' in ack, got: {last_call_kwargs}"
-        )
-        assert last_call_kwargs["response_action"] == "errors", (
-            f"Expected response_action='errors', got: {last_call_kwargs.get('response_action')}"
-        )
-        assert "errors" in last_call_kwargs, (
-            f"Expected 'errors' in ack, got: {last_call_kwargs}"
-        )
-        assert "status" in last_call_kwargs["errors"], (
-            f"Expected 'status' in errors, got: {last_call_kwargs.get('errors')}"
-        )
+        assert (
+            "response_action" in last_call_kwargs
+        ), f"Expected 'response_action' in ack, got: {last_call_kwargs}"
+        assert (
+            last_call_kwargs["response_action"] == "errors"
+        ), f"Expected response_action='errors', got: {last_call_kwargs.get('response_action')}"
+        assert (
+            "errors" in last_call_kwargs
+        ), f"Expected 'errors' in ack, got: {last_call_kwargs}"
+        assert (
+            "status" in last_call_kwargs["errors"]
+        ), f"Expected 'status' in errors, got: {last_call_kwargs.get('errors')}"
         # Check that the error message mentions the missing key events
         error_msg = last_call_kwargs["errors"]["status"]
-        assert "Cannot close this incident" in error_msg, (
-            f"Expected closure error, got: {error_msg}"
-        )
-        assert "key events" in error_msg.lower(), (
-            f"Expected 'key events' in error, got: {error_msg}"
-        )
+        assert (
+            "missing key events" in error_msg.lower()
+        ), f"Expected missing key events error, got: {error_msg}"
 
         # Verify that incident update was NOT triggered
         trigger_incident_workflow.assert_not_called()
@@ -233,12 +230,12 @@ class TestUpdateStatusModal:
 
         # Verify that can_be_closed returns False due to missing milestones
         can_close, reasons = incident.can_be_closed
-        assert can_close is False, (
-            "Incident should not be closable without required milestones"
-        )
-        assert any("MISSING_REQUIRED_KEY_EVENTS" in reason[0] for reason in reasons), (
-            f"Expected MISSING_REQUIRED_KEY_EVENTS in reasons, got: {reasons}"
-        )
+        assert (
+            can_close is False
+        ), "Incident should not be closable without required milestones"
+        assert any(
+            "MISSING_REQUIRED_KEY_EVENTS" in reason[0] for reason in reasons
+        ), f"Expected MISSING_REQUIRED_KEY_EVENTS in reasons, got: {reasons}"
 
         modal = UpdateStatusModal()
         trigger_incident_workflow = mocker.patch.object(
@@ -264,25 +261,22 @@ class TestUpdateStatusModal:
         # Assert that ack was called with errors
         assert ack.called, "ack should have been called"
         last_call_kwargs = ack.call_args.kwargs
-        assert "response_action" in last_call_kwargs, (
-            f"Expected 'response_action' in ack call, got: {last_call_kwargs}"
-        )
-        assert last_call_kwargs["response_action"] == "errors", (
-            f"Expected response_action='errors', got: {last_call_kwargs.get('response_action')}"
-        )
-        assert "errors" in last_call_kwargs, (
-            f"Expected 'errors' in ack call, got: {last_call_kwargs}"
-        )
-        assert "status" in last_call_kwargs["errors"], (
-            f"Expected 'status' in errors, got: {last_call_kwargs.get('errors')}"
-        )
+        assert (
+            "response_action" in last_call_kwargs
+        ), f"Expected 'response_action' in ack call, got: {last_call_kwargs}"
+        assert (
+            last_call_kwargs["response_action"] == "errors"
+        ), f"Expected response_action='errors', got: {last_call_kwargs.get('response_action')}"
+        assert (
+            "errors" in last_call_kwargs
+        ), f"Expected 'errors' in ack call, got: {last_call_kwargs}"
+        assert (
+            "status" in last_call_kwargs["errors"]
+        ), f"Expected 'status' in errors, got: {last_call_kwargs.get('errors')}"
         error_msg = last_call_kwargs["errors"]["status"]
-        assert "Cannot close this incident" in error_msg, (
-            f"Expected closure error message, got: {error_msg}"
-        )
-        assert "key events" in error_msg.lower(), (
-            f"Expected 'key events' in error message, got: {error_msg}"
-        )
+        assert (
+            "missing key events" in error_msg.lower()
+        ), f"Expected missing key events error message, got: {error_msg}"
 
         # Verify that incident update was NOT triggered
         trigger_incident_workflow.assert_not_called()
@@ -465,9 +459,9 @@ class TestUpdateStatusModal:
         first_call_kwargs = (
             ack.call_args_list[0][1] if ack.call_args_list else ack.call_args.kwargs
         )
-        assert first_call_kwargs == {} or "errors" not in first_call_kwargs, (
-            f"Should allow updating priority without changing status. Got errors: {first_call_kwargs.get('errors')}"
-        )
+        assert (
+            first_call_kwargs == {} or "errors" not in first_call_kwargs
+        ), f"Should allow updating priority without changing status. Got errors: {first_call_kwargs.get('errors')}"
 
         # Verify that incident update WAS triggered (priority changed)
         trigger_incident_workflow.assert_called_once()

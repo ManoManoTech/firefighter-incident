@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from unittest.mock import PropertyMock, patch
 
 import pytest
 from hypothesis import given
@@ -10,8 +11,11 @@ from hypothesis.strategies import builds
 from firefighter.incidents.enums import ClosureReason, IncidentStatus
 from firefighter.incidents.factories import IncidentFactory
 from firefighter.incidents.models import IncidentUpdate
+from firefighter.jira_app.models import JiraPostMortem
 
 if TYPE_CHECKING:
+    from pytest_mock import MockerFixture
+
     from firefighter.incidents.models import Incident
 
 
@@ -58,7 +62,9 @@ class TestIncidentCanBeClosed:
         can_close, reasons = incident.can_be_closed
 
         # Should be closable (assuming no missing milestones)
-        assert can_close is True or "STATUS_NOT_MITIGATED" not in [r[0] for r in reasons]
+        assert can_close is True or "STATUS_NOT_MITIGATED" not in [
+            r[0] for r in reasons
+        ]
 
     def test_can_close_incident_with_closure_reason(self) -> None:
         """Test that incidents with closure_reason can always be closed."""
@@ -72,6 +78,108 @@ class TestIncidentCanBeClosed:
 
         assert can_close is True
         assert reasons == []
+
+    def test_cannot_close_when_jira_postmortem_not_ready(self, settings: None) -> None:
+        """Block closure if Jira post-mortem exists but is not in Ready status."""
+        settings.ENABLE_JIRA_POSTMORTEM = True
+        incident = IncidentFactory.create(
+            _status=IncidentStatus.POST_MORTEM,
+            priority__value=1,
+            priority__needs_postmortem=True,
+            environment__value="PRD",
+        )
+        JiraPostMortem.objects.create(
+            incident=incident,
+            jira_issue_key="INC-999",
+            jira_issue_id="999",
+            created_by=incident.created_by,
+        )
+        incident.refresh_from_db()
+        assert hasattr(incident, "jira_postmortem_for")
+
+        with (
+            patch.object(
+                type(incident),
+                "needs_postmortem",
+                new_callable=PropertyMock,
+                return_value=True,
+            ),
+            patch.object(type(incident), "missing_milestones", return_value=[]),
+            patch(
+                "firefighter.jira_app.service_postmortem.jira_postmortem_service.is_postmortem_ready",
+                return_value=(False, "In Progress"),
+            ),
+        ):
+            can_close, reasons = incident.can_be_closed
+
+        assert can_close is False
+        assert any(r[0] == "POSTMORTEM_NOT_READY" for r in reasons)
+
+    def test_postmortem_ready_allows_closure(
+        self, mocker: MockerFixture, settings: None
+    ) -> None:
+        """When Jira PM is Ready, can_be_closed should allow closure for PM incidents."""
+        settings.ENABLE_JIRA_POSTMORTEM = True
+        incident = IncidentFactory.create(
+            _status=IncidentStatus.POST_MORTEM,
+            priority__value=1,
+            priority__needs_postmortem=True,
+            environment__value="PRD",
+        )
+        JiraPostMortem.objects.create(
+            incident=incident,
+            jira_issue_key="INC-READY",
+            jira_issue_id="123",
+            created_by=incident.created_by,
+        )
+
+        mocker.patch.object(type(incident), "missing_milestones", return_value=[])
+        mocker.patch(
+            "firefighter.jira_app.service_postmortem.jira_postmortem_service.is_postmortem_ready",
+            return_value=(True, "Ready"),
+        )
+
+        can_close, reasons = incident.can_be_closed
+
+        assert can_close is True
+        assert reasons == []
+
+    def test_postmortem_status_unknown_sets_reason(
+        self, mocker: MockerFixture, settings: None
+    ) -> None:
+        """Errors while checking Jira PM should return POSTMORTEM_STATUS_UNKNOWN."""
+        settings.ENABLE_JIRA_POSTMORTEM = True
+        incident = IncidentFactory.create(
+            _status=IncidentStatus.POST_MORTEM,
+            priority__value=1,
+            priority__needs_postmortem=True,
+            environment__value="PRD",
+        )
+        JiraPostMortem.objects.create(
+            incident=incident,
+            jira_issue_key="INC-ERR",
+            jira_issue_id="124",
+            created_by=incident.created_by,
+        )
+        incident.refresh_from_db()
+        assert hasattr(incident, "jira_postmortem_for")
+
+        mocker.patch.object(type(incident), "missing_milestones", return_value=[])
+        mocker.patch(
+            "firefighter.jira_app.service_postmortem.jira_postmortem_service.is_postmortem_ready",
+            side_effect=Exception("boom"),
+        )
+        mocker.patch.object(
+            type(incident),
+            "needs_postmortem",
+            new_callable=PropertyMock,
+            return_value=True,
+        )
+
+        can_close, reasons = incident.can_be_closed
+
+        assert can_close is False
+        assert any(r[0] == "POSTMORTEM_STATUS_UNKNOWN" for r in reasons)
 
 
 @pytest.mark.django_db

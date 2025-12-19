@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import pytest
+from django.apps import apps
 
 from firefighter.incidents.enums import IncidentStatus
 from firefighter.incidents.factories import IncidentFactory, UserFactory
@@ -17,6 +18,9 @@ try:
     from firefighter.confluence.models import PostMortem
 except (ImportError, AttributeError):
     PostMortem = None
+
+if not apps.is_installed("firefighter.confluence"):
+    pytest.skip("Confluence app not installed; skipping slack message tests", allow_module_level=True)
 
 
 @pytest.mark.django_db

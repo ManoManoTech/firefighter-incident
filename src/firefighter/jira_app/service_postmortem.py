@@ -30,6 +30,9 @@ class JiraPostMortemService:
         self.client = JiraClient()
         self.project_key = getattr(settings, "JIRA_POSTMORTEM_PROJECT_KEY", "INCIDENT")
         self.issue_type = getattr(settings, "JIRA_POSTMORTEM_ISSUE_TYPE", "Post-mortem")
+        self.ready_status_name = getattr(
+            settings, "JIRA_POSTMORTEM_READY_STATUS", "Ready"
+        )
         self.field_ids = getattr(
             settings,
             "JIRA_POSTMORTEM_FIELDS",
@@ -135,6 +138,16 @@ class JiraPostMortemService:
         )
 
         return jira_postmortem
+
+    def is_postmortem_ready(self, jira_postmortem: JiraPostMortem) -> tuple[bool, str]:
+        """Check if the Jira post-mortem issue is in the Ready status.
+
+        Returns:
+            Tuple of (is_ready, current_status_name)
+        """
+        issue = self.client.jira.issue(jira_postmortem.jira_issue_id)
+        status_name: str = getattr(issue.fields.status, "name", "")
+        return status_name == self.ready_status_name, status_name
 
     def _generate_issue_fields(
         self, incident: Incident

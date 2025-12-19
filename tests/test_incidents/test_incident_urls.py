@@ -4,6 +4,7 @@ import logging
 from typing import TYPE_CHECKING
 
 import pytest
+from django.apps import apps
 from django.urls import reverse
 
 from firefighter.incidents.factories import IncidentFactory, UserFactory
@@ -14,6 +15,9 @@ if TYPE_CHECKING:
     from firefighter.incidents.models.user import User
 
 logger = logging.getLogger(__name__)
+
+if not apps.is_installed("firefighter.confluence"):
+    pytest.skip("Confluence app not installed; skipping incident URLs tests", allow_module_level=True)
 
 
 @pytest.mark.django_db

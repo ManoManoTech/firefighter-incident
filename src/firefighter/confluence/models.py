@@ -12,7 +12,6 @@ from django.db import models
 from django.urls import reverse
 from django_filters.filters import AllValuesMultipleFilter
 
-from firefighter.confluence.service import confluence_service
 from firefighter.firefighter.fields_forms_widgets import CustomCheckboxSelectMultiple
 from firefighter.incidents.models.incident import Incident
 from firefighter.incidents.signals import postmortem_created
@@ -92,6 +91,8 @@ class PostMortemManager(models.Manager["PostMortem"]):
         """Create Confluence post-mortem (existing logic)."""
         logger.info("Creating Confluence PostMortem for %s", incident)
 
+        from firefighter.confluence.service import confluence_service
+
         topic_prefix = (
             ""
             if settings.ENV in {"support", "prod"}
@@ -163,6 +164,9 @@ class ConfluencePage(models.Model):
 
     version = models.JSONField(default=dict)  # We need a callable
 
+    class Meta:
+        app_label = "confluence"
+
     def __str__(self) -> str:
         return self.name
 
@@ -175,6 +179,9 @@ class PostMortem(ConfluencePage):
     incident = models.OneToOneField(
         Incident, on_delete=models.CASCADE, related_name="postmortem_for"
     )
+
+    class Meta:
+        app_label = "confluence"
 
     def __str__(self) -> str:
         return self.name
@@ -221,6 +228,9 @@ class Runbook(ConfluencePage):
     title = models.CharField(max_length=255)
     service_name = models.CharField(max_length=255)
     service_type = models.CharField(max_length=255)
+
+    class Meta:
+        app_label = "confluence"
 
     def __str__(self) -> str:
         return self.name

@@ -214,12 +214,8 @@ class Incident(models.Model):
         on_delete=models.PROTECT,
         help_text="Priority",
     )
-    incident_category = models.ForeignKey(
-        IncidentCategory, on_delete=models.PROTECT
-    )
-    environment = models.ForeignKey(
-        Environment, on_delete=models.PROTECT
-    )
+    incident_category = models.ForeignKey(IncidentCategory, on_delete=models.PROTECT)
+    environment = models.ForeignKey(Environment, on_delete=models.PROTECT)
     created_by = models.ForeignKey(
         User,
         on_delete=models.PROTECT,
@@ -380,6 +376,36 @@ class Incident(models.Model):
                         f"Incident is not in PostMortem status, and needs one because of its priority and environment ({self.priority.name}/{self.environment.value}).",
                     )
                 )
+            # If a Jira post-mortem exists, ensure it is in the expected "Ready" status
+            if hasattr(self, "jira_postmortem_for"):
+                try:
+                    from firefighter.jira_app.service_postmortem import (  # noqa: PLC0415
+                        jira_postmortem_service,
+                    )
+
+                    is_ready, current_status = (
+                        jira_postmortem_service.is_postmortem_ready(
+                            self.jira_postmortem_for
+                        )
+                    )
+                    if not is_ready:
+                        cant_closed_reasons.append(
+                            (
+                                "POSTMORTEM_NOT_READY",
+                                f"Jira post-mortem {self.jira_postmortem_for.jira_issue_key} is not Ready (current status: {current_status}).",
+                            )
+                        )
+                except Exception:  # pragma: no cover - defensive guard
+                    logger.exception(
+                        "Failed to verify Jira post-mortem status for incident #%s",
+                        self.id,
+                    )
+                    cant_closed_reasons.append(
+                        (
+                            "POSTMORTEM_STATUS_UNKNOWN",
+                            "Could not verify Jira post-mortem status. Please check it in Jira.",
+                        )
+                    )
         elif self.status.value < IncidentStatus.MITIGATED:
             cant_closed_reasons.append(
                 (
@@ -606,7 +632,9 @@ class Incident(models.Model):
 
         _update_incident_field(self, "_status", status, updated_fields)
         _update_incident_field(self, "priority_id", priority_id, updated_fields)
-        _update_incident_field(self, "incident_category_id", incident_category_id, updated_fields)
+        _update_incident_field(
+            self, "incident_category_id", incident_category_id, updated_fields
+        )
         _update_incident_field(self, "title", title, updated_fields)
         _update_incident_field(self, "description", description, updated_fields)
         _update_incident_field(self, "environment_id", environment_id, updated_fields)
@@ -706,7 +734,9 @@ class IncidentFilterSet(django_filters.FilterSet):
         widget=CustomCheckboxSelectMultiple,
     )
     group = ModelMultipleChoiceFilter(
-        queryset=Group.objects.all(), field_name="incident_category__group_id", label="Group"
+        queryset=Group.objects.all(),
+        field_name="incident_category__group_id",
+        label="Group",
     )
     incident_category = ModelMultipleChoiceFilter(
         queryset=incident_category_filter_choices_queryset,
