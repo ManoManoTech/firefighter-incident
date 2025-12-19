@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
-from django.core.management.base import BaseCommand
+from datetime import timedelta
+from typing import Any
+
+from django.core.management.base import BaseCommand, CommandParser
 from django.utils import timezone
 
 from firefighter.incidents.enums import IncidentStatus
@@ -18,21 +21,21 @@ class Command(BaseCommand):
 
     help = "Execute the post-mortem reminder task manually for testing"
 
-    def add_arguments(self, parser):
+    def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument(
             "--list-only",
             action="store_true",
             help="Only list eligible incidents without sending reminders",
         )
 
-    def handle(self, *args, **options):
+    def handle(self, *args: Any, **options: Any) -> None:
         list_only = options["list_only"]
 
         self.stdout.write(self.style.MIGRATE_HEADING("Post-Mortem Reminder Testing"))
         self.stdout.write("=" * 70)
 
         # Calculate cutoff date
-        cutoff_date = timezone.now() - timezone.timedelta(days=POSTMORTEM_REMINDER_DAYS)
+        cutoff_date = timezone.now() - timedelta(days=POSTMORTEM_REMINDER_DAYS)
 
         self.stdout.write(f"\n⏰ Reminder threshold: {POSTMORTEM_REMINDER_DAYS} days")
         self.stdout.write(f"📅 Cutoff date: {cutoff_date}")
@@ -42,8 +45,10 @@ class Command(BaseCommand):
         eligible_incidents = Incident.objects.filter(
             mitigated_at__lte=cutoff_date,
             mitigated_at__isnull=False,
-            _status__gte=IncidentStatus.MITIGATED.value,
-            _status__lt=IncidentStatus.CLOSED.value,
+            _status__in=[
+                IncidentStatus.MITIGATED.value,
+                IncidentStatus.POST_MORTEM.value,
+            ],
             priority__needs_postmortem=True,
             ignore=False,
         ).select_related("priority", "environment", "conversation")

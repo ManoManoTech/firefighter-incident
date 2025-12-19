@@ -51,13 +51,15 @@ def send_postmortem_reminders() -> None:
     # Get incidents that:
     # - Were mitigated at least 5 days ago
     # - Still need post-mortem (P1-P3)
-    # - Are not yet closed
+    # - Are in MITIGATED or POST_MORTEM status (not yet closed)
     # - Are not ignored
     incidents_needing_reminder = Incident.objects.filter(
         mitigated_at__lte=cutoff_date,
         mitigated_at__isnull=False,
-        _status__gte=IncidentStatus.MITIGATED.value,
-        _status__lt=IncidentStatus.CLOSED.value,
+        _status__in=[
+            IncidentStatus.MITIGATED.value,
+            IncidentStatus.POST_MORTEM.value,
+        ],
         priority__needs_postmortem=True,
         ignore=False,
     ).select_related("conversation", "priority", "environment")

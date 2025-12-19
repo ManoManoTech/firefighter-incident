@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 from datetime import timedelta
+from typing import Any
 
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandParser
 from django.utils import timezone
 
 from firefighter.incidents.models.incident import Incident
@@ -15,7 +16,7 @@ class Command(BaseCommand):
 
     help = "Backdate an incident's mitigated_at timestamp by a specified number of days"
 
-    def add_arguments(self, parser):
+    def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument(
             "incident_id",
             type=int,
@@ -33,7 +34,7 @@ class Command(BaseCommand):
             help="Reset mitigated_at to current time instead of backdating",
         )
 
-    def handle(self, *args, **options):
+    def handle(self, *args: Any, **options: Any) -> None:
         incident_id = options["incident_id"]
         days = options["days"]
         reset = options["reset"]
@@ -80,7 +81,7 @@ class Command(BaseCommand):
         if incident.needs_postmortem and days >= 5:
             self.stdout.write(
                 self.style.WARNING(
-                    f"\n⚠️  This incident should now trigger a 5-day reminder!"
+                    "\n⚠️  This incident should now trigger a 5-day reminder!"
                 )
             )
             self.stdout.write(
