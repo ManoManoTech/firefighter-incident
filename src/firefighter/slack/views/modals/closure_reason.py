@@ -115,9 +115,27 @@ class ClosureReasonModal(IncidentSelectableModalMixin, SlackModal):
         self, ack: Ack, body: dict[str, Any], incident: Incident, user: User
     ) -> bool | None:
         """Handle the closure reason modal submission."""
+        # Extract form values up-front so validation can account for the submitted reason
+        state_values = body["view"]["state"]["values"]
+        closure_reason = state_values["closure_reason"]["select_closure_reason"][
+            "selected_option"
+        ]["value"]
+        closure_reference = (
+            state_values["closure_reference"]["input_closure_reference"].get(
+                "value", ""
+            )
+            or ""
+        )
+        message = state_values["closure_message"]["input_closure_message"]["value"]
+
         # Early validation: Check if incident can be closed BEFORE calling ack()
-        # This validation happens BEFORE ack() so we can display errors in the modal
-        can_close, reasons = incident.can_be_closed
+        # Temporarily inject the submitted closure_reason so early-closure bypass applies.
+        original_closure_reason = incident.closure_reason
+        incident.closure_reason = closure_reason
+        try:
+            can_close, reasons = incident.can_be_closed
+        finally:
+            incident.closure_reason = original_closure_reason
         if not can_close:
             # Build error message from reasons
             error_messages = [reason[1] for reason in reasons]
@@ -126,24 +144,13 @@ class ClosureReasonModal(IncidentSelectableModalMixin, SlackModal):
                 response_action="errors",
                 errors={
                     "closure_message": f"Cannot close this incident:\n{error_text}"
-                }
+                },
             )
             return False
 
         # Clear ALL modals in the stack (not just this one)
         # This ensures the underlying "Update Status" modal is also closed
         ack(response_action="clear")
-
-        # Extract form values
-        state_values = body["view"]["state"]["values"]
-        closure_reason = state_values["closure_reason"]["select_closure_reason"][
-            "selected_option"
-        ]["value"]
-        closure_reference = (
-            state_values["closure_reference"]["input_closure_reference"].get("value", "")
-            or ""
-        )
-        message = state_values["closure_message"]["input_closure_message"]["value"]
 
         try:
             # Update incident with closure fields
@@ -160,9 +167,7 @@ class ClosureReasonModal(IncidentSelectableModalMixin, SlackModal):
             )
 
         except Exception:
-            logger.exception(
-                "Error closing incident #%s with reason", incident.id
-            )
+            logger.exception("Error closing incident #%s with reason", incident.id)
             respond(
                 body=body,
                 text=f"❌ Failed to close incident #{incident.id}",
@@ -177,7 +182,11 @@ class ClosureReasonModal(IncidentSelectableModalMixin, SlackModal):
                         f"✅ Incident #{incident.id} has been closed.\n"
                         f"*Reason:* {ClosureReason(closure_reason).label}\n"
                         f"*Message:* {message}"
-                        + (f"\n*Reference:* {closure_reference}" if closure_reference else "")
+                        + (
+                            f"\n*Reference:* {closure_reference}"
+                            if closure_reference
+                            else ""
+                        )
                     ),
                 )
             except SlackApiError as e:
