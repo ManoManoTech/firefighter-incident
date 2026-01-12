@@ -158,7 +158,7 @@ class TestClosureReasonModalMessageTabDisabled:
 class TestClosureReasonModalEarlyClosureBypass:
     """Test early-closure path respects submitted closure reason."""
 
-    def test_allows_early_closure_with_submitted_reason(self, settings, mocker) -> None:
+    def test_allows_early_closure_with_submitted_reason(self, settings) -> None:
         """Ensure can_be_closed passes when a closure reason is provided for early closure."""
         settings.ENABLE_JIRA_POSTMORTEM = True
 

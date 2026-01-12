@@ -501,8 +501,6 @@ ignore = [
   "A005",    # Module `*` is shadowing a Python builtin module
   "ARG001",  # XXX Enable later - No way to specify which args to ignore
   "ANN",     # XXX Enable later - More than 400 annotations errors
-  "ANN101",  # Missing type annotation for `self` in method
-  "ANN102",  # Missing type annotation for `cls` in classmethod
   "ANN401",  # Dynamically typed expressions (typing.Any) are disallowed
   "COM",     # Trailing commas
   #  Disable all `Missing docstring`
