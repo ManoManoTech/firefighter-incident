@@ -128,25 +128,45 @@ class ClosureReasonModal(IncidentSelectableModalMixin, SlackModal):
         )
         message = state_values["closure_message"]["input_closure_message"]["value"]
 
-        # Early validation: Check if incident can be closed BEFORE calling ack()
-        # Temporarily inject the submitted closure_reason so early-closure bypass applies.
-        original_closure_reason = incident.closure_reason
-        incident.closure_reason = closure_reason
-        try:
+        # For early closure (OPEN/INVESTIGATING), we bypass normal workflow checks
+        # For normal closure (MITIGATED/POST_MORTEM), we must validate key events
+        current_status = incident.status
+        is_early_closure = current_status.value in {IncidentStatus.OPEN, IncidentStatus.INVESTIGATING}
+
+        if not is_early_closure:
+            # Normal closure path - validate that incident can be closed
             can_close, reasons = incident.can_be_closed
-        finally:
-            incident.closure_reason = original_closure_reason
-        if not can_close:
-            # Build error message from reasons
-            error_messages = [reason[1] for reason in reasons]
-            error_text = "\n".join([f"• {msg}" for msg in error_messages])
-            ack(
-                response_action="errors",
-                errors={
-                    "closure_message": f"Cannot close this incident:\n{error_text}"
-                },
-            )
-            return False
+            if not can_close:
+                # Build error message from reasons
+                error_messages = [reason[1] for reason in reasons]
+                error_text = "\n".join([f"• {msg}" for msg in error_messages])
+                ack(
+                    response_action="errors",
+                    errors={
+                        "closure_message": f"Cannot close this incident:\n{error_text}"
+                    }
+                )
+                return False
+        else:
+            # Early closure path - validate with the submitted closure reason
+            # Temporarily inject the submitted closure_reason so early-closure bypass applies
+            original_closure_reason = incident.closure_reason
+            incident.closure_reason = closure_reason
+            try:
+                can_close, reasons = incident.can_be_closed
+            finally:
+                incident.closure_reason = original_closure_reason
+            if not can_close:
+                # Build error message from reasons
+                error_messages = [reason[1] for reason in reasons]
+                error_text = "\n".join([f"• {msg}" for msg in error_messages])
+                ack(
+                    response_action="errors",
+                    errors={
+                        "closure_message": f"Cannot close this incident:\n{error_text}"
+                    },
+                )
+                return False
 
         # Clear ALL modals in the stack (not just this one)
         # This ensures the underlying "Update Status" modal is also closed

@@ -20,6 +20,8 @@ jobs:
   sdist_wheels:
     name: Build Python sdist and wheel
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
       - name: Configure git
@@ -65,6 +67,8 @@ jobs:
     runs-on: ubuntu-latest
     # If you don't set an input tag, it's a dry run (no uploads).
     if: ${{ inputs.tag }}
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
         with:

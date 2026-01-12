@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TypedDict
+from typing import NotRequired, TypedDict
 
 _JiraId = int | str
 _Key = str
@@ -12,8 +12,8 @@ _BusinessImpact = str
 
 
 class JiraObject(TypedDict):
-    id: _JiraId
-    key: _Key
+    id: NotRequired[_JiraId]
+    key: NotRequired[_Key]
     assignee_id: _AssigneeId
     reporter_id: _ReporterId
     description: _Description

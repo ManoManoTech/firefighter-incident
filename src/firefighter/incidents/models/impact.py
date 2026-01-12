@@ -40,29 +40,29 @@ class LevelChoices(models.TextChoices):
     @property
     def priority(self) -> int:
         """Send level choice priority ."""
-        priority_mapping = {
-            self.HIGHEST: 1,
-            self.HIGH: 2,
-            self.MEDIUM: 3,
-            self.LOW: 4,
-            self.LOWEST: 5,
-            self.NONE: 6,
+        priority_mapping: dict[str, int] = {
+            LevelChoices.HIGHEST: 1,
+            LevelChoices.HIGH: 2,
+            LevelChoices.MEDIUM: 3,
+            LevelChoices.LOW: 4,
+            LevelChoices.LOWEST: 5,
+            LevelChoices.NONE: 6,
         }
-        return priority_mapping.get(self, 6)  # type: ignore[call-overload]
+        return priority_mapping.get(self.value, 6)
 
     @property
     def emoji(self) -> str:
         """Send emoji un function of priority."""
         none_emoji = ""
-        emoji_mapping = {
-            self.HIGHEST: "⏫",
-            self.HIGH: "🔼",
-            self.MEDIUM: "➡️",
-            self.LOW: "🔽",
-            self.LOWEST: "⏬",
-            self.NONE: none_emoji,
+        emoji_mapping: dict[str, str] = {
+            LevelChoices.HIGHEST: "⏫",
+            LevelChoices.HIGH: "🔼",
+            LevelChoices.MEDIUM: "➡️",
+            LevelChoices.LOW: "🔽",
+            LevelChoices.LOWEST: "⏬",
+            LevelChoices.NONE: none_emoji,
         }
-        return emoji_mapping.get(self, none_emoji)  # type: ignore[call-overload]
+        return emoji_mapping.get(self.value, none_emoji)
 
 
 class ImpactLevel(models.Model):
