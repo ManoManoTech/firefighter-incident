@@ -225,6 +225,11 @@ class Incident(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    mitigated_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="Timestamp when incident status changed to MITIGATED",
+    )
     closed_at = models.DateTimeField(
         null=True, blank=True
     )  # XXX-ZOR make this an event

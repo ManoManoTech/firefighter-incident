@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+import importlib
 import logging
 from typing import TYPE_CHECKING, Any, Never
 
 from django.apps import apps
 from django.conf import settings
 from django.dispatch.dispatcher import receiver
+from django.utils import timezone
 
 from firefighter.incidents.enums import IncidentStatus
 from firefighter.incidents.signals import incident_updated
@@ -21,20 +23,103 @@ logger = logging.getLogger(__name__)
 
 def _get_jira_postmortem_service() -> JiraPostMortemService:
     """Lazy import to avoid circular dependency."""
-    from firefighter.jira_app.service_postmortem import (  # noqa: PLC0415
-        jira_postmortem_service,
-    )
-
-    return jira_postmortem_service
+    module = importlib.import_module("firefighter.jira_app.service_postmortem")
+    return module.jira_postmortem_service
 
 
 def _get_confluence_postmortem_manager() -> type[PostMortemManager] | None:
     """Lazy import to avoid circular dependency with Confluence."""
     if not apps.is_installed("firefighter.confluence"):
         return None
-    from firefighter.confluence.models import PostMortemManager  # noqa: PLC0415
+    module = importlib.import_module("firefighter.confluence.models")
+    return module.PostMortemManager
 
-    return PostMortemManager
+
+def _update_mitigated_at_timestamp(
+    incident: Incident, incident_update: IncidentUpdate, updated_fields: list[str]
+) -> None:
+    """Update mitigated_at timestamp when incident status changes to MITIGATED."""
+    if (
+        "_status" in updated_fields
+        and incident_update.status == IncidentStatus.MITIGATED
+        and incident.mitigated_at is None
+    ):
+        incident.mitigated_at = timezone.now()
+        incident.save(update_fields=["mitigated_at"])
+        logger.info(f"Set mitigated_at timestamp for incident #{incident.id}")
+
+
+def _create_confluence_postmortem(incident: Incident) -> Any | None:
+    """Create Confluence post-mortem if needed."""
+    has_confluence = hasattr(incident, "postmortem_for")
+    logger.debug(f"Confluence enabled, has_confluence={has_confluence}")
+
+    if has_confluence:
+        logger.debug(f"Confluence post-mortem already exists for incident #{incident.id}")
+        return None
+
+    confluence_manager = _get_confluence_postmortem_manager()
+    if not confluence_manager:
+        return None
+
+    logger.info(f"Creating Confluence post-mortem for incident #{incident.id}")
+    try:
+        # Use the public API specifically for Confluence creation
+        return confluence_manager.create_confluence_postmortem(incident)
+    except Exception:
+        logger.exception(
+            f"Failed to create Confluence post-mortem for incident #{incident.id}"
+        )
+        return None
+
+
+def _create_jira_postmortem(incident: Incident) -> Any | None:
+    """Create Jira post-mortem if needed."""
+    has_jira = hasattr(incident, "jira_postmortem_for")
+    logger.debug(f"Jira post-mortem enabled, has_jira={has_jira}")
+
+    if has_jira:
+        logger.debug(f"Jira post-mortem already exists for incident #{incident.id}")
+        return None
+
+    logger.info(f"Creating Jira post-mortem for incident #{incident.id}")
+    try:
+        jira_service = _get_jira_postmortem_service()
+        return jira_service.create_postmortem_for_incident(incident)
+    except Exception:
+        logger.exception(
+            f"Failed to create Jira post-mortem for incident #{incident.id}"
+        )
+        return None
+
+
+def _publish_postmortem_announcement(incident: Incident) -> None:
+    """Publish post-mortem creation announcement to #critical-incidents."""
+    # Dynamic imports to avoid circular dependencies
+    slack_messages = importlib.import_module("firefighter.slack.messages.slack_messages")
+    slack_models = importlib.import_module("firefighter.slack.models.conversation")
+    slack_rules = importlib.import_module("firefighter.slack.rules")
+
+    announcement_class = slack_messages.SlackMessageIncidentPostMortemCreatedAnnouncement
+    conversation_class = slack_models.Conversation
+    should_publish_pm_in_general_channel = slack_rules.should_publish_pm_in_general_channel
+
+    if not should_publish_pm_in_general_channel(incident):
+        return
+
+    tech_incidents_conversation = conversation_class.objects.get_or_none(
+        tag="tech_incidents"
+    )
+    if tech_incidents_conversation:
+        announcement = announcement_class(incident)
+        tech_incidents_conversation.send_message_and_save(announcement)
+        logger.info(
+            f"Post-mortem creation announced in tech_incidents for incident #{incident.id}"
+        )
+    else:
+        logger.warning(
+            "Could not find tech_incidents conversation! Is there a channel with tag tech_incidents?"
+        )
 
 
 @receiver(signal=incident_updated)
@@ -62,10 +147,9 @@ def postmortem_created_handler(
         return
 
     # Import Slack tasks after apps are loaded
-    from firefighter.slack.tasks.reminder_postmortem import (  # noqa: PLC0415
-        publish_fixed_next_actions,
-        publish_postmortem_reminder,
-    )
+    slack_tasks = importlib.import_module("firefighter.slack.tasks.reminder_postmortem")
+    publish_fixed_next_actions = slack_tasks.publish_fixed_next_actions
+    publish_postmortem_reminder = slack_tasks.publish_postmortem_reminder
 
     logger.debug(f"Checking sender: sender={sender}, type={type(sender)}")
     if sender != "update_status":
@@ -73,6 +157,9 @@ def postmortem_created_handler(
         return
 
     logger.debug("Sender is update_status, checking postmortem conditions")
+
+    # Update mitigated_at timestamp
+    _update_mitigated_at_timestamp(incident, incident_update, updated_fields)
 
     # Check if we should create post-mortem(s)
     if (
@@ -106,50 +193,25 @@ def postmortem_created_handler(
     confluence_pm = None
     jira_pm = None
 
-    # Check and create Confluence post-mortem
+    # Create Confluence post-mortem if enabled
     if enable_confluence:
-        has_confluence = hasattr(incident, "postmortem_for")
-        logger.debug(f"Confluence enabled, has_confluence={has_confluence}")
-        if not has_confluence:
-            confluence_manager = _get_confluence_postmortem_manager()
-            if confluence_manager:
-                logger.info(f"Creating Confluence post-mortem for incident #{incident.id}")
-                try:
-                    confluence_pm = confluence_manager._create_confluence_postmortem(  # noqa: SLF001
-                        incident
-                    )
-                except Exception:
-                    logger.exception(
-                        f"Failed to create Confluence post-mortem for incident #{incident.id}"
-                    )
-        else:
-            logger.debug(f"Confluence post-mortem already exists for incident #{incident.id}")
+        confluence_pm = _create_confluence_postmortem(incident)
 
-    # Check and create Jira post-mortem
+    # Create Jira post-mortem if enabled
     if enable_jira_postmortem:
-        has_jira = hasattr(incident, "jira_postmortem_for")
-        logger.debug(f"Jira post-mortem enabled, has_jira={has_jira}")
-        if not has_jira:
-            logger.info(f"Creating Jira post-mortem for incident #{incident.id}")
-            try:
-                jira_service = _get_jira_postmortem_service()
-                jira_pm = jira_service.create_postmortem_for_incident(incident)
-            except Exception:
-                logger.exception(
-                    f"Failed to create Jira post-mortem for incident #{incident.id}"
-                )
-        else:
-            logger.debug(f"Jira post-mortem already exists for incident #{incident.id}")
+        jira_pm = _create_jira_postmortem(incident)
 
-    # Send signal if at least one post-mortem was created
+    # Send signal and announcements if at least one post-mortem was created
     if confluence_pm or jira_pm:
-        from firefighter.incidents.signals import postmortem_created  # noqa: PLC0415
+        signals_module = importlib.import_module("firefighter.incidents.signals")
+        postmortem_created = signals_module.postmortem_created
 
         logger.info(
             f"Post-mortem(s) created for incident #{incident.id}: "
             f"confluence={confluence_pm is not None}, jira={jira_pm is not None}"
         )
         postmortem_created.send_robust(sender=__name__, incident=incident)
+        _publish_postmortem_announcement(incident)
 
     # Publish reminder
     publish_postmortem_reminder(incident)

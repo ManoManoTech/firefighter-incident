@@ -615,6 +615,168 @@ class SlackMessageIncidentPostMortemCreated(SlackMessageSurface):
         return [SectionBlock(text=self.get_text())]
 
 
+class SlackMessageIncidentPostMortemCreatedAnnouncement(SlackMessageSurface):
+    """Message to announce post-mortem creation in #critical-incidents (tech_incidents tag)."""
+
+    id = "ff_incident_postmortem_created_announcement"
+    incident: Incident
+
+    def __init__(self, incident: Incident) -> None:
+        self.incident = incident
+        super().__init__()
+
+    def get_text(self) -> str:
+        """Generate announcement text for critical incidents channel."""
+        return f"📔 Post-mortem created for {self.incident.priority} incident #{self.incident.id}: {self.incident.title}"
+
+    def get_blocks(self) -> list[Block]:
+        fields = [
+            f"{self.incident.priority.emoji} *Priority:* {self.incident.priority.name}",
+            f":calendar: *Created at:* {date_time(self.incident.created_at)}",
+            f":slack: *Channel:* <#{self.incident.conversation.channel_id}>",
+        ]
+
+        # Add Confluence link if available
+        if hasattr(self.incident, "postmortem_for"):
+            fields.append(
+                f":confluence: <{self.incident.postmortem_for.page_url}|*Confluence Post-Mortem*>"
+            )
+
+        # Add Jira link if available
+        if hasattr(self.incident, "jira_postmortem_for"):
+            jira_pm = self.incident.jira_postmortem_for
+            fields.append(
+                f":jira_new: <{jira_pm.issue_url}|*Jira Post-Mortem ({jira_pm.jira_issue_key})*>"
+            )
+
+        blocks: list[Block] = [
+            SectionBlock(
+                text=f"📔 *Post-mortem created for incident #{self.incident.id}*"
+            ),
+            SectionBlock(text=f"*{shorten(self.incident.title, 2995, placeholder='...')}*"),
+            DividerBlock(),
+            SectionBlock(fields=fields),
+        ]
+
+        return blocks
+
+
+class SlackMessagePostMortemReminder5Days(SlackMessageSurface):
+    """Reminder message sent 5 days after incident reaches MITIGATED status.
+
+    Sent to both the incident channel and #critical-incidents (tech_incidents tag).
+    """
+
+    id = "ff_incident_postmortem_reminder_5days"
+    incident: Incident
+
+    def __init__(self, incident: Incident) -> None:
+        self.incident = incident
+        super().__init__()
+
+    def get_text(self) -> str:
+        return f"⏰ Reminder: Post-mortem for incident #{self.incident.id} needs to be completed"
+
+    def get_blocks(self) -> list[Block]:
+        blocks: list[Block] = [
+            HeaderBlock(
+                text=PlainTextObject(
+                    text="⏰ Post-mortem Reminder ⏰",
+                    emoji=True,
+                )
+            ),
+            SectionBlock(
+                text="This incident was mitigated 5 days ago. The post-mortem *must* be completed to close the incident."
+            ),
+            DividerBlock(),
+        ]
+
+        # Add links to post-mortems
+        pm_links = []
+        if hasattr(self.incident, "postmortem_for"):
+            pm_links.append(
+                ButtonElement(
+                    text="Open Confluence Post-Mortem",
+                    url=self.incident.postmortem_for.page_edit_url,
+                    action_id="open_link",
+                )
+            )
+
+        if hasattr(self.incident, "jira_postmortem_for"):
+            jira_pm = self.incident.jira_postmortem_for
+            pm_links.append(
+                ButtonElement(
+                    text=f"Open Jira Post-Mortem ({jira_pm.jira_issue_key})",
+                    url=jira_pm.issue_url,
+                    action_id="open_link",
+                )
+            )
+
+        if pm_links:
+            blocks.append(ActionsBlock(elements=pm_links))
+
+        # Add action buttons
+        blocks.extend([
+            DividerBlock(),
+            SectionBlock(
+                text="Update the incident status or close it once the post-mortem is complete.",
+                accessory=ButtonElement(
+                    text="Update status",
+                    value=str(self.incident.id),
+                    action_id=UpdateStatusModal.open_action,
+                ),
+            ),
+        ])
+
+        return blocks
+
+
+class SlackMessagePostMortemReminder5DaysAnnouncement(SlackMessageSurface):
+    """Announcement version of 5-day reminder for #critical-incidents channel."""
+
+    id = "ff_incident_postmortem_reminder_5days_announcement"
+    incident: Incident
+
+    def __init__(self, incident: Incident) -> None:
+        self.incident = incident
+        super().__init__()
+
+    def get_text(self) -> str:
+        return f"⏰ Post-mortem reminder for {self.incident.priority} incident #{self.incident.id}: {self.incident.title}"
+
+    def get_blocks(self) -> list[Block]:
+        fields = [
+            f"{self.incident.priority.emoji} *Priority:* {self.incident.priority.name}",
+            f":calendar: *Mitigated:* {date_time(self.incident.mitigated_at) if self.incident.mitigated_at else 'Unknown'}",
+            f":slack: *Channel:* <#{self.incident.conversation.channel_id}>",
+        ]
+
+        # Add post-mortem links
+        if hasattr(self.incident, "postmortem_for"):
+            fields.append(
+                f":confluence: <{self.incident.postmortem_for.page_url}|*Confluence Post-Mortem*>"
+            )
+
+        if hasattr(self.incident, "jira_postmortem_for"):
+            jira_pm = self.incident.jira_postmortem_for
+            fields.append(
+                f":jira_new: <{jira_pm.issue_url}|*Jira Post-Mortem ({jira_pm.jira_issue_key})*>"
+            )
+
+        blocks: list[Block] = [
+            SectionBlock(
+                text=f"⏰ *Post-mortem reminder for incident #{self.incident.id}*"
+            ),
+            SectionBlock(
+                text=f"*{shorten(self.incident.title, 2995, placeholder='...')}*\n_This incident was mitigated 5 days ago. Post-mortem completion is overdue._"
+            ),
+            DividerBlock(),
+            SectionBlock(fields=fields),
+        ]
+
+        return blocks
+
+
 class SlackMessageIncidentDuringOffHours(SlackMessageSurface):
     id = "ff_incident_during_off_hours"
 

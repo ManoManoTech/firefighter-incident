@@ -87,6 +87,11 @@ class PostMortemManager(models.Manager["PostMortem"]):
         return confluence_pm, jira_pm
 
     @staticmethod
+    def create_confluence_postmortem(incident: Incident) -> PostMortem:
+        """Create Confluence post-mortem (existing logic)."""
+        return PostMortemManager._create_confluence_postmortem(incident)
+
+    @staticmethod
     def _create_confluence_postmortem(incident: Incident) -> PostMortem:
         """Create Confluence post-mortem (existing logic)."""
         logger.info("Creating Confluence PostMortem for %s", incident)
