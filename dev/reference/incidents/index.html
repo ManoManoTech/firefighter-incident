@@ -1433,202 +1433,8 @@
    (firefighter.incidents.models.incident.Incident.status_page_url)" href=#firefighter.incidents.models.incident.Incident.status_page_url>status_page_url</a></code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3.12/library/stdtypes.html#str>str</a></code>) – <div class=doc-md-description> <p>Similar with <code>get_absolute_url</code> but with full domain, to be used out of the website.</p> </div> </li> </ul> <div class="doc doc-children"> <div class="doc doc-object doc-attribute"> <h5 id=firefighter.incidents.models.incident.Incident.needs_postmortem class="doc doc-heading"> <code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code> <span class="doc doc-object-name doc-attribute-name">needs_postmortem</span> <span class="doc doc-labels"> <small class="doc doc-label doc-label-property"><code>property</code></small> </span> <a href=#firefighter.incidents.models.incident.Incident.needs_postmortem class=headerlink title="Permanent link">¤</a></h5> <div class="doc-signature highlight"><pre><span></span><code><a id=__codelineno-0-1 name=__codelineno-0-1 href=#__codelineno-0-1></a><span class=n>needs_postmortem</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3.12/library/functions.html#bool>bool</a></span>
 </code></pre></div> <div class="doc doc-contents "> <p>Check if incident requires a post-mortem based on priority and environment.</p> <p>Post-mortem is required if: - Priority requires it (P1/P2) - Environment is PRD - At least one post-mortem system is enabled (Confluence OR Jira)</p> </div> </div> <div class="doc doc-object doc-attribute"> <h5 id=firefighter.incidents.models.incident.Incident.status_page_url class="doc doc-heading"> <code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code> <span class="doc doc-object-name doc-attribute-name">status_page_url</span> <span class="doc doc-labels"> <small class="doc doc-label doc-label-property"><code>property</code></small> </span> <a href=#firefighter.incidents.models.incident.Incident.status_page_url class=headerlink title="Permanent link">¤</a></h5> <div class="doc-signature highlight"><pre><span></span><code><a id=__codelineno-0-1 name=__codelineno-0-1 href=#__codelineno-0-1></a><span class=n>status_page_url</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3.12/library/stdtypes.html#str>str</a></span>
 </code></pre></div> <div class="doc doc-contents "> <p>Similar with <code>get_absolute_url</code> but with full domain, to be used out of the website.</p> </div> </div> <div class="doc doc-object doc-function"> <h5 id=firefighter.incidents.models.incident.Incident.build_invite_list class="doc doc-heading"> <code class="doc-symbol doc-symbol-heading doc-symbol-method"></code> <span class="doc doc-object-name doc-function-name">build_invite_list</span> <a href=#firefighter.incidents.models.incident.Incident.build_invite_list class=headerlink title="Permanent link">¤</a></h5> <div class="doc-signature highlight"><pre><span></span><code><a id=__codelineno-0-1 name=__codelineno-0-1 href=#__codelineno-0-1></a><span class=nf>build_invite_list</span><span class=p>()</span> <span class=o>-&gt;</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3.12/library/stdtypes.html#list>list</a></span><span class=p>[</span><span class=n><a class="autorefs autorefs-internal" title="            User (firefighter.incidents.models.user.User)" href=#firefighter.incidents.models.user.User>User</a></span><span class=p>]</span>
-</code></pre></div> <div class="doc doc-contents "> <p>Send a Django Signal to get the list of users to invite from different integrations (Slack, Confluence, PagerDuty...).</p> <p><span class=doc-section-title>Returns:</span></p> <ul> <li class="doc-section-item field-body"> <code><a class="autorefs autorefs-external" href=https://docs.python.org/3.12/library/stdtypes.html#list>list</a>[<a class="autorefs autorefs-internal" title="            User (firefighter.incidents.models.user.User)" href=#firefighter.incidents.models.user.User>User</a>]</code> – <div class=doc-md-description> <p>list[User]: Potentially non-unique list of Users to invite</p> </div> </li> </ul> <details class=quote> <summary>Source code in <code>src/firefighter/incidents/models/incident.py</code></summary> <div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal><a href=#__codelineno-0-493>493</a></span>
-<span class=normal><a href=#__codelineno-0-494>494</a></span>
-<span class=normal><a href=#__codelineno-0-495>495</a></span>
-<span class=normal><a href=#__codelineno-0-496>496</a></span>
-<span class=normal><a href=#__codelineno-0-497>497</a></span>
-<span class=normal><a href=#__codelineno-0-498>498</a></span>
-<span class=normal><a href=#__codelineno-0-499>499</a></span>
-<span class=normal><a href=#__codelineno-0-500>500</a></span>
-<span class=normal><a href=#__codelineno-0-501>501</a></span>
-<span class=normal><a href=#__codelineno-0-502>502</a></span>
-<span class=normal><a href=#__codelineno-0-503>503</a></span>
-<span class=normal><a href=#__codelineno-0-504>504</a></span>
-<span class=normal><a href=#__codelineno-0-505>505</a></span>
-<span class=normal><a href=#__codelineno-0-506>506</a></span>
-<span class=normal><a href=#__codelineno-0-507>507</a></span>
-<span class=normal><a href=#__codelineno-0-508>508</a></span>
-<span class=normal><a href=#__codelineno-0-509>509</a></span>
-<span class=normal><a href=#__codelineno-0-510>510</a></span>
-<span class=normal><a href=#__codelineno-0-511>511</a></span>
-<span class=normal><a href=#__codelineno-0-512>512</a></span>
-<span class=normal><a href=#__codelineno-0-513>513</a></span>
-<span class=normal><a href=#__codelineno-0-514>514</a></span>
-<span class=normal><a href=#__codelineno-0-515>515</a></span>
-<span class=normal><a href=#__codelineno-0-516>516</a></span>
-<span class=normal><a href=#__codelineno-0-517>517</a></span>
-<span class=normal><a href=#__codelineno-0-518>518</a></span></pre></div></td><td class=code><div><pre><span></span><code><a id=__codelineno-0-493 name=__codelineno-0-493></a><span class=k>def</span><span class=w> </span><span class=nf>build_invite_list</span><span class=p>(</span><span class=bp>self</span><span class=p>)</span> <span class=o>-&gt;</span> <span class=nb>list</span><span class=p>[</span><span class=n>User</span><span class=p>]:</span>
-<a id=__codelineno-0-494 name=__codelineno-0-494></a><span class=w>    </span><span class=sd>&quot;&quot;&quot;Send a Django Signal to get the list of users to invite from different integrations (Slack, Confluence, PagerDuty...).</span>
-<a id=__codelineno-0-495 name=__codelineno-0-495></a>
-<a id=__codelineno-0-496 name=__codelineno-0-496></a><span class=sd>    Returns:</span>
-<a id=__codelineno-0-497 name=__codelineno-0-497></a><span class=sd>        list[User]: Potentially non-unique list of Users to invite</span>
-<a id=__codelineno-0-498 name=__codelineno-0-498></a><span class=sd>    &quot;&quot;&quot;</span>
-<a id=__codelineno-0-499 name=__codelineno-0-499></a>    <span class=n>users_list</span><span class=p>:</span> <span class=nb>list</span><span class=p>[</span><span class=n>User</span><span class=p>]</span> <span class=o>=</span> <span class=p>[]</span>
-<a id=__codelineno-0-500 name=__codelineno-0-500></a>
-<a id=__codelineno-0-501 name=__codelineno-0-501></a>    <span class=c1># Send signal to modules (Confluence, PagerDuty...)</span>
-<a id=__codelineno-0-502 name=__codelineno-0-502></a>    <span class=n>result_users</span><span class=p>:</span> <span class=nb>list</span><span class=p>[</span><span class=nb>tuple</span><span class=p>[</span><span class=n>Any</span><span class=p>,</span> <span class=ne>Exception</span> <span class=o>|</span> <span class=n>Iterable</span><span class=p>[</span><span class=n>User</span><span class=p>]]]</span> <span class=o>=</span> <span class=p>(</span>
-<a id=__codelineno-0-503 name=__codelineno-0-503></a>        <span class=n>signals</span><span class=o>.</span><span class=n>get_invites</span><span class=o>.</span><span class=n>send_robust</span><span class=p>(</span><span class=n>sender</span><span class=o>=</span><span class=kc>None</span><span class=p>,</span> <span class=n>incident</span><span class=o>=</span><span class=bp>self</span><span class=p>)</span>
-<a id=__codelineno-0-504 name=__codelineno-0-504></a>    <span class=p>)</span>
-<a id=__codelineno-0-505 name=__codelineno-0-505></a>
-<a id=__codelineno-0-506 name=__codelineno-0-506></a>    <span class=c1># Aggregate the results</span>
-<a id=__codelineno-0-507 name=__codelineno-0-507></a>    <span class=k>for</span> <span class=n>provider</span> <span class=ow>in</span> <span class=n>result_users</span><span class=p>:</span>
-<a id=__codelineno-0-508 name=__codelineno-0-508></a>        <span class=k>if</span> <span class=nb>isinstance</span><span class=p>(</span><span class=n>provider</span><span class=p>[</span><span class=mi>1</span><span class=p>],</span> <span class=ne>BaseException</span><span class=p>):</span>
-<a id=__codelineno-0-509 name=__codelineno-0-509></a>            <span class=n>logger</span><span class=o>.</span><span class=n>warning</span><span class=p>(</span>
-<a id=__codelineno-0-510 name=__codelineno-0-510></a>                <span class=sa>f</span><span class=s2>&quot;Provider </span><span class=si>{</span><span class=n>provider</span><span class=p>[</span><span class=mi>0</span><span class=p>]</span><span class=si>}</span><span class=s2> returned an error getting Users to invite: </span><span class=si>{</span><span class=n>provider</span><span class=p>[</span><span class=mi>1</span><span class=p>]</span><span class=si>}</span><span class=s2>.&quot;</span>
-<a id=__codelineno-0-511 name=__codelineno-0-511></a>            <span class=p>)</span>
-<a id=__codelineno-0-512 name=__codelineno-0-512></a>            <span class=k>continue</span>
-<a id=__codelineno-0-513 name=__codelineno-0-513></a>
-<a id=__codelineno-0-514 name=__codelineno-0-514></a>        <span class=n>users_list</span><span class=o>.</span><span class=n>extend</span><span class=p>(</span><span class=n>provider</span><span class=p>[</span><span class=mi>1</span><span class=p>])</span>
-<a id=__codelineno-0-515 name=__codelineno-0-515></a>
-<a id=__codelineno-0-516 name=__codelineno-0-516></a>    <span class=n>logger</span><span class=o>.</span><span class=n>debug</span><span class=p>(</span><span class=sa>f</span><span class=s2>&quot;Get invites users list: </span><span class=si>{</span><span class=n>users_list</span><span class=si>}</span><span class=s2>&quot;</span><span class=p>)</span>
-<a id=__codelineno-0-517 name=__codelineno-0-517></a>
-<a id=__codelineno-0-518 name=__codelineno-0-518></a>    <span class=k>return</span> <span class=n>users_list</span>
-</code></pre></div></td></tr></table></div> </details> </div> </div> <div class="doc doc-object doc-function"> <h5 id=firefighter.incidents.models.incident.Incident.compute_metrics class="doc doc-heading"> <code class="doc-symbol doc-symbol-heading doc-symbol-method"></code> <span class="doc doc-object-name doc-function-name">compute_metrics</span> <a href=#firefighter.incidents.models.incident.Incident.compute_metrics class=headerlink title="Permanent link">¤</a></h5> <div class="doc-signature highlight"><pre><span></span><code><a id=__codelineno-0-1 name=__codelineno-0-1 href=#__codelineno-0-1></a><span class=nf>compute_metrics</span><span class=p>(</span><span class=o>*</span><span class=p>,</span> <span class=n>purge</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3.12/library/functions.html#bool>bool</a></span> <span class=o>=</span> <span class=kc>False</span><span class=p>)</span> <span class=o>-&gt;</span> <span class=kc>None</span>
-</code></pre></div> <div class="doc doc-contents "> <p>Compute all metrics (time to fix, ...) from events.</p> <details class=quote> <summary>Source code in <code>src/firefighter/incidents/models/incident.py</code></summary> <div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal><a href=#__codelineno-0-447>447</a></span>
-<span class=normal><a href=#__codelineno-0-448>448</a></span>
-<span class=normal><a href=#__codelineno-0-449>449</a></span>
-<span class=normal><a href=#__codelineno-0-450>450</a></span>
-<span class=normal><a href=#__codelineno-0-451>451</a></span>
-<span class=normal><a href=#__codelineno-0-452>452</a></span>
-<span class=normal><a href=#__codelineno-0-453>453</a></span>
-<span class=normal><a href=#__codelineno-0-454>454</a></span>
-<span class=normal><a href=#__codelineno-0-455>455</a></span>
-<span class=normal><a href=#__codelineno-0-456>456</a></span>
-<span class=normal><a href=#__codelineno-0-457>457</a></span>
-<span class=normal><a href=#__codelineno-0-458>458</a></span>
-<span class=normal><a href=#__codelineno-0-459>459</a></span>
-<span class=normal><a href=#__codelineno-0-460>460</a></span>
-<span class=normal><a href=#__codelineno-0-461>461</a></span>
-<span class=normal><a href=#__codelineno-0-462>462</a></span>
-<span class=normal><a href=#__codelineno-0-463>463</a></span>
-<span class=normal><a href=#__codelineno-0-464>464</a></span>
-<span class=normal><a href=#__codelineno-0-465>465</a></span>
-<span class=normal><a href=#__codelineno-0-466>466</a></span>
-<span class=normal><a href=#__codelineno-0-467>467</a></span>
-<span class=normal><a href=#__codelineno-0-468>468</a></span>
-<span class=normal><a href=#__codelineno-0-469>469</a></span>
-<span class=normal><a href=#__codelineno-0-470>470</a></span>
-<span class=normal><a href=#__codelineno-0-471>471</a></span>
-<span class=normal><a href=#__codelineno-0-472>472</a></span>
-<span class=normal><a href=#__codelineno-0-473>473</a></span>
-<span class=normal><a href=#__codelineno-0-474>474</a></span>
-<span class=normal><a href=#__codelineno-0-475>475</a></span>
-<span class=normal><a href=#__codelineno-0-476>476</a></span>
-<span class=normal><a href=#__codelineno-0-477>477</a></span>
-<span class=normal><a href=#__codelineno-0-478>478</a></span>
-<span class=normal><a href=#__codelineno-0-479>479</a></span>
-<span class=normal><a href=#__codelineno-0-480>480</a></span>
-<span class=normal><a href=#__codelineno-0-481>481</a></span>
-<span class=normal><a href=#__codelineno-0-482>482</a></span>
-<span class=normal><a href=#__codelineno-0-483>483</a></span>
-<span class=normal><a href=#__codelineno-0-484>484</a></span>
-<span class=normal><a href=#__codelineno-0-485>485</a></span>
-<span class=normal><a href=#__codelineno-0-486>486</a></span>
-<span class=normal><a href=#__codelineno-0-487>487</a></span>
-<span class=normal><a href=#__codelineno-0-488>488</a></span>
-<span class=normal><a href=#__codelineno-0-489>489</a></span>
-<span class=normal><a href=#__codelineno-0-490>490</a></span>
-<span class=normal><a href=#__codelineno-0-491>491</a></span></pre></div></td><td class=code><div><pre><span></span><code><a id=__codelineno-0-447 name=__codelineno-0-447></a><span class=k>def</span><span class=w> </span><span class=nf>compute_metrics</span><span class=p>(</span><span class=bp>self</span><span class=p>,</span> <span class=o>*</span><span class=p>,</span> <span class=n>purge</span><span class=p>:</span> <span class=nb>bool</span> <span class=o>=</span> <span class=kc>False</span><span class=p>)</span> <span class=o>-&gt;</span> <span class=kc>None</span><span class=p>:</span>
-<a id=__codelineno-0-448 name=__codelineno-0-448></a><span class=w>    </span><span class=sd>&quot;&quot;&quot;Compute all metrics (time to fix, ...) from events.&quot;&quot;&quot;</span>
-<a id=__codelineno-0-449 name=__codelineno-0-449></a>    <span class=n>latest_updates_by_type</span> <span class=o>=</span> <span class=bp>self</span><span class=o>.</span><span class=n>latest_updates_by_type</span>
-<a id=__codelineno-0-450 name=__codelineno-0-450></a>
-<a id=__codelineno-0-451 name=__codelineno-0-451></a>    <span class=k>for</span> <span class=n>metric_type</span> <span class=ow>in</span> <span class=n>MetricType</span><span class=o>.</span><span class=n>objects</span><span class=o>.</span><span class=n>all</span><span class=p>():</span>
-<a id=__codelineno-0-452 name=__codelineno-0-452></a>        <span class=n>lhs_type</span> <span class=o>=</span> <span class=n>metric_type</span><span class=o>.</span><span class=n>milestone_lhs</span><span class=o>.</span><span class=n>event_type</span>
-<a id=__codelineno-0-453 name=__codelineno-0-453></a>        <span class=n>rhs_type</span> <span class=o>=</span> <span class=n>metric_type</span><span class=o>.</span><span class=n>milestone_rhs</span><span class=o>.</span><span class=n>event_type</span>
-<a id=__codelineno-0-454 name=__codelineno-0-454></a>
-<a id=__codelineno-0-455 name=__codelineno-0-455></a>        <span class=n>lhs</span> <span class=o>=</span> <span class=n>latest_updates_by_type</span><span class=o>.</span><span class=n>get</span><span class=p>(</span><span class=n>lhs_type</span><span class=p>,</span> <span class=kc>None</span><span class=p>)</span>
-<a id=__codelineno-0-456 name=__codelineno-0-456></a>        <span class=n>rhs</span> <span class=o>=</span> <span class=n>latest_updates_by_type</span><span class=o>.</span><span class=n>get</span><span class=p>(</span><span class=n>rhs_type</span><span class=p>,</span> <span class=kc>None</span><span class=p>)</span>
-<a id=__codelineno-0-457 name=__codelineno-0-457></a>
-<a id=__codelineno-0-458 name=__codelineno-0-458></a>        <span class=k>if</span> <span class=ow>not</span> <span class=n>lhs</span> <span class=ow>or</span> <span class=ow>not</span> <span class=n>lhs</span><span class=o>.</span><span class=n>event_ts</span><span class=p>:</span>
-<a id=__codelineno-0-459 name=__codelineno-0-459></a>            <span class=n>logger</span><span class=o>.</span><span class=n>info</span><span class=p>(</span>
-<a id=__codelineno-0-460 name=__codelineno-0-460></a>                <span class=sa>f</span><span class=s2>&quot;Missing operand &#39;</span><span class=si>{</span><span class=n>lhs_type</span><span class=si>}</span><span class=s2>&#39; on metric </span><span class=si>{</span><span class=n>metric_type</span><span class=o>.</span><span class=n>type</span><span class=si>}</span><span class=s2> for #</span><span class=si>{</span><span class=bp>self</span><span class=o>.</span><span class=n>id</span><span class=si>}</span><span class=s2>&quot;</span>
-<a id=__codelineno-0-461 name=__codelineno-0-461></a>            <span class=p>)</span>
-<a id=__codelineno-0-462 name=__codelineno-0-462></a>            <span class=k>if</span> <span class=n>purge</span><span class=p>:</span>
-<a id=__codelineno-0-463 name=__codelineno-0-463></a>                <span class=n>IncidentMetric</span><span class=o>.</span><span class=n>objects</span><span class=o>.</span><span class=n>filter</span><span class=p>(</span>
-<a id=__codelineno-0-464 name=__codelineno-0-464></a>                    <span class=n>incident</span><span class=o>=</span><span class=bp>self</span><span class=p>,</span> <span class=n>metric_type</span><span class=o>=</span><span class=n>metric_type</span>
-<a id=__codelineno-0-465 name=__codelineno-0-465></a>                <span class=p>)</span><span class=o>.</span><span class=n>delete</span><span class=p>()</span>
-<a id=__codelineno-0-466 name=__codelineno-0-466></a>            <span class=k>continue</span>
-<a id=__codelineno-0-467 name=__codelineno-0-467></a>        <span class=k>if</span> <span class=ow>not</span> <span class=n>rhs</span> <span class=ow>or</span> <span class=ow>not</span> <span class=n>rhs</span><span class=o>.</span><span class=n>event_ts</span><span class=p>:</span>
-<a id=__codelineno-0-468 name=__codelineno-0-468></a>            <span class=n>logger</span><span class=o>.</span><span class=n>info</span><span class=p>(</span>
-<a id=__codelineno-0-469 name=__codelineno-0-469></a>                <span class=sa>f</span><span class=s2>&quot;Missing operand &#39;</span><span class=si>{</span><span class=n>rhs_type</span><span class=si>}</span><span class=s2>&#39; on metric </span><span class=si>{</span><span class=n>metric_type</span><span class=o>.</span><span class=n>type</span><span class=si>}</span><span class=s2> for #</span><span class=si>{</span><span class=bp>self</span><span class=o>.</span><span class=n>id</span><span class=si>}</span><span class=s2>&quot;</span>
-<a id=__codelineno-0-470 name=__codelineno-0-470></a>            <span class=p>)</span>
-<a id=__codelineno-0-471 name=__codelineno-0-471></a>            <span class=k>if</span> <span class=n>purge</span><span class=p>:</span>
-<a id=__codelineno-0-472 name=__codelineno-0-472></a>                <span class=n>IncidentMetric</span><span class=o>.</span><span class=n>objects</span><span class=o>.</span><span class=n>filter</span><span class=p>(</span>
-<a id=__codelineno-0-473 name=__codelineno-0-473></a>                    <span class=n>incident</span><span class=o>=</span><span class=bp>self</span><span class=p>,</span> <span class=n>metric_type</span><span class=o>=</span><span class=n>metric_type</span>
-<a id=__codelineno-0-474 name=__codelineno-0-474></a>                <span class=p>)</span><span class=o>.</span><span class=n>delete</span><span class=p>()</span>
-<a id=__codelineno-0-475 name=__codelineno-0-475></a>            <span class=k>continue</span>
-<a id=__codelineno-0-476 name=__codelineno-0-476></a>        <span class=n>duration</span> <span class=o>=</span> <span class=n>lhs</span><span class=o>.</span><span class=n>event_ts</span> <span class=o>-</span> <span class=n>rhs</span><span class=o>.</span><span class=n>event_ts</span>
-<a id=__codelineno-0-477 name=__codelineno-0-477></a>        <span class=k>if</span> <span class=n>duration</span> <span class=o>&lt;</span> <span class=n>TD0</span><span class=p>:</span>
-<a id=__codelineno-0-478 name=__codelineno-0-478></a>            <span class=n>logger</span><span class=o>.</span><span class=n>warning</span><span class=p>(</span>
-<a id=__codelineno-0-479 name=__codelineno-0-479></a>                <span class=sa>f</span><span class=s2>&quot;Tried to compute a negative metric! Metric </span><span class=si>{</span><span class=n>metric_type</span><span class=o>.</span><span class=n>type</span><span class=si>}</span><span class=s2> for #</span><span class=si>{</span><span class=bp>self</span><span class=o>.</span><span class=n>id</span><span class=si>}</span><span class=s2> has a duration of </span><span class=si>{</span><span class=n>duration</span><span class=si>}</span><span class=s2> (</span><span class=si>{</span><span class=n>lhs</span><span class=o>.</span><span class=n>event_type</span><span class=si>}</span><span class=s2>:</span><span class=si>{</span><span class=n>lhs</span><span class=o>.</span><span class=n>event_ts</span><span class=si>}</span><span class=s2> - </span><span class=si>{</span><span class=n>rhs</span><span class=o>.</span><span class=n>event_type</span><span class=si>}</span><span class=s2>:</span><span class=si>{</span><span class=n>rhs</span><span class=o>.</span><span class=n>event_ts</span><span class=si>}</span><span class=s2>)&quot;</span>
-<a id=__codelineno-0-480 name=__codelineno-0-480></a>            <span class=p>)</span>
-<a id=__codelineno-0-481 name=__codelineno-0-481></a>            <span class=k>if</span> <span class=n>purge</span><span class=p>:</span>
-<a id=__codelineno-0-482 name=__codelineno-0-482></a>                <span class=n>IncidentMetric</span><span class=o>.</span><span class=n>objects</span><span class=o>.</span><span class=n>filter</span><span class=p>(</span>
-<a id=__codelineno-0-483 name=__codelineno-0-483></a>                    <span class=n>incident</span><span class=o>=</span><span class=bp>self</span><span class=p>,</span> <span class=n>metric_type</span><span class=o>=</span><span class=n>metric_type</span>
-<a id=__codelineno-0-484 name=__codelineno-0-484></a>                <span class=p>)</span><span class=o>.</span><span class=n>delete</span><span class=p>()</span>
-<a id=__codelineno-0-485 name=__codelineno-0-485></a>            <span class=k>continue</span>
-<a id=__codelineno-0-486 name=__codelineno-0-486></a>        <span class=n>IncidentMetric</span><span class=o>.</span><span class=n>objects</span><span class=o>.</span><span class=n>update_or_create</span><span class=p>(</span>
-<a id=__codelineno-0-487 name=__codelineno-0-487></a>            <span class=n>incident</span><span class=o>=</span><span class=bp>self</span><span class=p>,</span>
-<a id=__codelineno-0-488 name=__codelineno-0-488></a>            <span class=n>metric_type</span><span class=o>=</span><span class=n>metric_type</span><span class=p>,</span>
-<a id=__codelineno-0-489 name=__codelineno-0-489></a>            <span class=n>defaults</span><span class=o>=</span><span class=p>{</span><span class=s2>&quot;duration&quot;</span><span class=p>:</span> <span class=n>duration</span><span class=p>},</span>
-<a id=__codelineno-0-490 name=__codelineno-0-490></a>        <span class=p>)</span>
-<a id=__codelineno-0-491 name=__codelineno-0-491></a>    <span class=bp>self</span><span class=o>.</span><span class=n>save</span><span class=p>()</span>
-</code></pre></div></td></tr></table></div> </details> </div> </div> <div class="doc doc-object doc-function"> <h5 id=firefighter.incidents.models.incident.Incident.missing_milestones class="doc doc-heading"> <code class="doc-symbol doc-symbol-heading doc-symbol-method"></code> <span class="doc doc-object-name doc-function-name">missing_milestones</span> <a href=#firefighter.incidents.models.incident.Incident.missing_milestones class=headerlink title="Permanent link">¤</a></h5> <div class="doc-signature highlight"><pre><span></span><code><a id=__codelineno-0-1 name=__codelineno-0-1 href=#__codelineno-0-1></a><span class=nf>missing_milestones</span><span class=p>()</span> <span class=o>-&gt;</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3.12/library/stdtypes.html#list>list</a></span><span class=p>[</span><span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3.12/library/stdtypes.html#str>str</a></span><span class=p>]</span>
-</code></pre></div> <div class="doc doc-contents "> <p>Returns all required Milestones still needed to compute the metrics.</p> <details class=quote> <summary>Source code in <code>src/firefighter/incidents/models/incident.py</code></summary> <div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal><a href=#__codelineno-0-408>408</a></span>
-<span class=normal><a href=#__codelineno-0-409>409</a></span>
-<span class=normal><a href=#__codelineno-0-410>410</a></span>
-<span class=normal><a href=#__codelineno-0-411>411</a></span>
-<span class=normal><a href=#__codelineno-0-412>412</a></span>
-<span class=normal><a href=#__codelineno-0-413>413</a></span>
-<span class=normal><a href=#__codelineno-0-414>414</a></span>
-<span class=normal><a href=#__codelineno-0-415>415</a></span>
-<span class=normal><a href=#__codelineno-0-416>416</a></span>
-<span class=normal><a href=#__codelineno-0-417>417</a></span>
-<span class=normal><a href=#__codelineno-0-418>418</a></span>
-<span class=normal><a href=#__codelineno-0-419>419</a></span>
-<span class=normal><a href=#__codelineno-0-420>420</a></span>
-<span class=normal><a href=#__codelineno-0-421>421</a></span>
-<span class=normal><a href=#__codelineno-0-422>422</a></span>
-<span class=normal><a href=#__codelineno-0-423>423</a></span>
-<span class=normal><a href=#__codelineno-0-424>424</a></span>
-<span class=normal><a href=#__codelineno-0-425>425</a></span>
-<span class=normal><a href=#__codelineno-0-426>426</a></span>
-<span class=normal><a href=#__codelineno-0-427>427</a></span>
-<span class=normal><a href=#__codelineno-0-428>428</a></span>
-<span class=normal><a href=#__codelineno-0-429>429</a></span>
-<span class=normal><a href=#__codelineno-0-430>430</a></span>
-<span class=normal><a href=#__codelineno-0-431>431</a></span></pre></div></td><td class=code><div><pre><span></span><code><a id=__codelineno-0-408 name=__codelineno-0-408></a><span class=k>def</span><span class=w> </span><span class=nf>missing_milestones</span><span class=p>(</span><span class=bp>self</span><span class=p>)</span> <span class=o>-&gt;</span> <span class=nb>list</span><span class=p>[</span><span class=nb>str</span><span class=p>]:</span>
-<a id=__codelineno-0-409 name=__codelineno-0-409></a><span class=w>    </span><span class=sd>&quot;&quot;&quot;Returns all required Milestones still needed to compute the metrics.&quot;&quot;&quot;</span>
-<a id=__codelineno-0-410 name=__codelineno-0-410></a>    <span class=k>if</span> <span class=bp>self</span><span class=o>.</span><span class=n>ignore</span><span class=p>:</span>
-<a id=__codelineno-0-411 name=__codelineno-0-411></a>        <span class=k>return</span> <span class=p>[]</span>
-<a id=__codelineno-0-412 name=__codelineno-0-412></a>
-<a id=__codelineno-0-413 name=__codelineno-0-413></a>    <span class=c1># We get a list of all event_type of IncidentUpdates...</span>
-<a id=__codelineno-0-414 name=__codelineno-0-414></a>    <span class=n>milestones_list</span> <span class=o>=</span> <span class=p>(</span>
-<a id=__codelineno-0-415 name=__codelineno-0-415></a>        <span class=n>IncidentUpdate</span><span class=o>.</span><span class=n>objects</span><span class=o>.</span><span class=n>filter</span><span class=p>(</span>
-<a id=__codelineno-0-416 name=__codelineno-0-416></a>            <span class=n>incident_id</span><span class=o>=</span><span class=bp>self</span><span class=o>.</span><span class=n>id</span><span class=p>,</span>
-<a id=__codelineno-0-417 name=__codelineno-0-417></a>            <span class=n>event_ts__isnull</span><span class=o>=</span><span class=kc>False</span><span class=p>,</span>
-<a id=__codelineno-0-418 name=__codelineno-0-418></a>            <span class=n>event_type__isnull</span><span class=o>=</span><span class=kc>False</span><span class=p>,</span>
-<a id=__codelineno-0-419 name=__codelineno-0-419></a>        <span class=p>)</span>
-<a id=__codelineno-0-420 name=__codelineno-0-420></a>        <span class=o>.</span><span class=n>aggregate</span><span class=p>(</span><span class=n>milestone_list</span><span class=o>=</span><span class=n>ArrayAgg</span><span class=p>(</span><span class=s2>&quot;event_type&quot;</span><span class=p>,</span> <span class=n>distinct</span><span class=o>=</span><span class=kc>True</span><span class=p>,</span> <span class=n>default</span><span class=o>=</span><span class=p>[]))</span>
-<a id=__codelineno-0-421 name=__codelineno-0-421></a>        <span class=o>.</span><span class=n>get</span><span class=p>(</span><span class=s2>&quot;milestone_list&quot;</span><span class=p>,</span> <span class=p>[])</span>
-<a id=__codelineno-0-422 name=__codelineno-0-422></a>    <span class=p>)</span>
-<a id=__codelineno-0-423 name=__codelineno-0-423></a>
-<a id=__codelineno-0-424 name=__codelineno-0-424></a>    <span class=n>incident_milestones</span><span class=p>:</span> <span class=nb>set</span><span class=p>[</span><span class=nb>str</span><span class=p>]</span> <span class=o>=</span> <span class=nb>set</span><span class=p>(</span><span class=n>cast</span><span class=p>(</span><span class=s1>&#39;list[&quot;str&quot;]&#39;</span><span class=p>,</span> <span class=n>milestones_list</span><span class=p>))</span>
-<a id=__codelineno-0-425 name=__codelineno-0-425></a>    <span class=n>required_milestone_types</span> <span class=o>=</span> <span class=nb>set</span><span class=p>(</span>
-<a id=__codelineno-0-426 name=__codelineno-0-426></a>        <span class=n>MilestoneType</span><span class=o>.</span><span class=n>objects</span><span class=o>.</span><span class=n>filter</span><span class=p>(</span><span class=n>required</span><span class=o>=</span><span class=kc>True</span><span class=p>)</span><span class=o>.</span><span class=n>values_list</span><span class=p>(</span>
-<a id=__codelineno-0-427 name=__codelineno-0-427></a>            <span class=s2>&quot;event_type&quot;</span><span class=p>,</span> <span class=n>flat</span><span class=o>=</span><span class=kc>True</span>
-<a id=__codelineno-0-428 name=__codelineno-0-428></a>        <span class=p>)</span>
-<a id=__codelineno-0-429 name=__codelineno-0-429></a>    <span class=p>)</span>
-<a id=__codelineno-0-430 name=__codelineno-0-430></a>    <span class=c1># And we make the differences of the sets</span>
-<a id=__codelineno-0-431 name=__codelineno-0-431></a>    <span class=k>return</span> <span class=nb>list</span><span class=p>(</span><span class=n>required_milestone_types</span> <span class=o>-</span> <span class=n>incident_milestones</span><span class=p>)</span>
-</code></pre></div></td></tr></table></div> </details> </div> </div> <div class="doc doc-object doc-function"> <h5 id=firefighter.incidents.models.incident.Incident.update_roles class="doc doc-heading"> <code class="doc-symbol doc-symbol-heading doc-symbol-method"></code> <span class="doc doc-object-name doc-function-name">update_roles</span> <a href=#firefighter.incidents.models.incident.Incident.update_roles class=headerlink title="Permanent link">¤</a></h5> <div class="doc-signature highlight"><pre><span></span><code><a id=__codelineno-0-1 name=__codelineno-0-1 href=#__codelineno-0-1></a><span class=nf>update_roles</span><span class=p>(</span><span class=n>updater</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-internal" title="            User (firefighter.incidents.models.user.User)" href=#firefighter.incidents.models.user.User>User</a></span><span class=p>,</span> <span class=n>roles_mapping</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3.12/library/stdtypes.html#dict>dict</a></span><span class=p>[</span><span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3.12/library/stdtypes.html#str>str</a></span><span class=p>,</span> <span class=n><a class="autorefs autorefs-internal" title="            User (firefighter.incidents.models.user.User)" href=#firefighter.incidents.models.user.User>User</a></span> <span class=o>|</span> <span class=kc>None</span><span class=p>]</span> <span class=o>|</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3.12/library/stdtypes.html#dict>dict</a></span><span class=p>[</span><span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3.12/library/stdtypes.html#str>str</a></span><span class=p>,</span> <span class=n><a class="autorefs autorefs-internal" title="            User (firefighter.incidents.models.user.User)" href=#firefighter.incidents.models.user.User>User</a></span><span class=p>])</span> <span class=o>-&gt;</span> <span class=n><a class="autorefs autorefs-internal" title="            IncidentUpdate (firefighter.incidents.models.incident_update.IncidentUpdate)" href=#firefighter.incidents.models.incident_update.IncidentUpdate>IncidentUpdate</a></span>
-</code></pre></div> <div class="doc doc-contents "> <p>Update the roles related to an incident, and create an IncidentUpdate. For each role, provide a User or None.</p> <p>This function will update the incident, create an <a class="autorefs autorefs-internal" title="            IncidentUpdate" href=#firefighter.incidents.models.incident_update.IncidentUpdate>IncidentUpdate</a>, and trigger the <a class="autorefs autorefs-internal" title="            incident_updated
-
-
-  
-      module-attribute
-  " href=#firefighter.incidents.signals.incident_updated>incident_updated</a> signal, with <code>update_roles</code> sender.</p> <p><span class=doc-section-title>Parameters:</span></p> <ul> <li class="doc-section-item field-body"> <b><code>updater</code></b> (<code><a class="autorefs autorefs-internal" title="            User (firefighter.incidents.models.user.User)" href=#firefighter.incidents.models.user.User>User</a></code>) – <div class=doc-md-description> <p>The user who is updating the roles.</p> </div> </li> <li class="doc-section-item field-body"> <b><code>roles_mapping</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3.12/library/stdtypes.html#dict>dict</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3.12/library/stdtypes.html#str>str</a>, <a class="autorefs autorefs-internal" title="            User (firefighter.incidents.models.user.User)" href=#firefighter.incidents.models.user.User>User</a> | None]</code>) – <div class=doc-md-description> <p>A dict of roles to update, with the new User or None. Defaults to None.</p> </div> </li> </ul> <p><span class=doc-section-title>Returns:</span></p> <ul> <li class="doc-section-item field-body"> <b><code>IncidentUpdate</code></b> ( <code><a class="autorefs autorefs-internal" title="            IncidentUpdate (firefighter.incidents.models.incident_update.IncidentUpdate)" href=#firefighter.incidents.models.incident_update.IncidentUpdate>IncidentUpdate</a></code> ) – <div class=doc-md-description> <p>The created IncidentUpdate with the updated roles.</p> </div> </li> </ul> <details class=quote> <summary>Source code in <code>src/firefighter/incidents/models/incident.py</code></summary> <div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal><a href=#__codelineno-0-520>520</a></span>
+</code></pre></div> <div class="doc doc-contents "> <p>Send a Django Signal to get the list of users to invite from different integrations (Slack, Confluence, PagerDuty...).</p> <p><span class=doc-section-title>Returns:</span></p> <ul> <li class="doc-section-item field-body"> <code><a class="autorefs autorefs-external" href=https://docs.python.org/3.12/library/stdtypes.html#list>list</a>[<a class="autorefs autorefs-internal" title="            User (firefighter.incidents.models.user.User)" href=#firefighter.incidents.models.user.User>User</a>]</code> – <div class=doc-md-description> <p>list[User]: Potentially non-unique list of Users to invite</p> </div> </li> </ul> <details class=quote> <summary>Source code in <code>src/firefighter/incidents/models/incident.py</code></summary> <div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal><a href=#__codelineno-0-519>519</a></span>
+<span class=normal><a href=#__codelineno-0-520>520</a></span>
 <span class=normal><a href=#__codelineno-0-521>521</a></span>
 <span class=normal><a href=#__codelineno-0-522>522</a></span>
 <span class=normal><a href=#__codelineno-0-523>523</a></span>
@@ -1652,9 +1458,177 @@
 <span class=normal><a href=#__codelineno-0-541>541</a></span>
 <span class=normal><a href=#__codelineno-0-542>542</a></span>
 <span class=normal><a href=#__codelineno-0-543>543</a></span>
-<span class=normal><a href=#__codelineno-0-544>544</a></span>
-<span class=normal><a href=#__codelineno-0-545>545</a></span>
-<span class=normal><a href=#__codelineno-0-546>546</a></span>
+<span class=normal><a href=#__codelineno-0-544>544</a></span></pre></div></td><td class=code><div><pre><span></span><code><a id=__codelineno-0-519 name=__codelineno-0-519></a><span class=k>def</span><span class=w> </span><span class=nf>build_invite_list</span><span class=p>(</span><span class=bp>self</span><span class=p>)</span> <span class=o>-&gt;</span> <span class=nb>list</span><span class=p>[</span><span class=n>User</span><span class=p>]:</span>
+<a id=__codelineno-0-520 name=__codelineno-0-520></a><span class=w>    </span><span class=sd>&quot;&quot;&quot;Send a Django Signal to get the list of users to invite from different integrations (Slack, Confluence, PagerDuty...).</span>
+<a id=__codelineno-0-521 name=__codelineno-0-521></a>
+<a id=__codelineno-0-522 name=__codelineno-0-522></a><span class=sd>    Returns:</span>
+<a id=__codelineno-0-523 name=__codelineno-0-523></a><span class=sd>        list[User]: Potentially non-unique list of Users to invite</span>
+<a id=__codelineno-0-524 name=__codelineno-0-524></a><span class=sd>    &quot;&quot;&quot;</span>
+<a id=__codelineno-0-525 name=__codelineno-0-525></a>    <span class=n>users_list</span><span class=p>:</span> <span class=nb>list</span><span class=p>[</span><span class=n>User</span><span class=p>]</span> <span class=o>=</span> <span class=p>[]</span>
+<a id=__codelineno-0-526 name=__codelineno-0-526></a>
+<a id=__codelineno-0-527 name=__codelineno-0-527></a>    <span class=c1># Send signal to modules (Confluence, PagerDuty...)</span>
+<a id=__codelineno-0-528 name=__codelineno-0-528></a>    <span class=n>result_users</span><span class=p>:</span> <span class=nb>list</span><span class=p>[</span><span class=nb>tuple</span><span class=p>[</span><span class=n>Any</span><span class=p>,</span> <span class=ne>Exception</span> <span class=o>|</span> <span class=n>Iterable</span><span class=p>[</span><span class=n>User</span><span class=p>]]]</span> <span class=o>=</span> <span class=p>(</span>
+<a id=__codelineno-0-529 name=__codelineno-0-529></a>        <span class=n>signals</span><span class=o>.</span><span class=n>get_invites</span><span class=o>.</span><span class=n>send_robust</span><span class=p>(</span><span class=n>sender</span><span class=o>=</span><span class=kc>None</span><span class=p>,</span> <span class=n>incident</span><span class=o>=</span><span class=bp>self</span><span class=p>)</span>
+<a id=__codelineno-0-530 name=__codelineno-0-530></a>    <span class=p>)</span>
+<a id=__codelineno-0-531 name=__codelineno-0-531></a>
+<a id=__codelineno-0-532 name=__codelineno-0-532></a>    <span class=c1># Aggregate the results</span>
+<a id=__codelineno-0-533 name=__codelineno-0-533></a>    <span class=k>for</span> <span class=n>provider</span> <span class=ow>in</span> <span class=n>result_users</span><span class=p>:</span>
+<a id=__codelineno-0-534 name=__codelineno-0-534></a>        <span class=k>if</span> <span class=nb>isinstance</span><span class=p>(</span><span class=n>provider</span><span class=p>[</span><span class=mi>1</span><span class=p>],</span> <span class=ne>BaseException</span><span class=p>):</span>
+<a id=__codelineno-0-535 name=__codelineno-0-535></a>            <span class=n>logger</span><span class=o>.</span><span class=n>warning</span><span class=p>(</span>
+<a id=__codelineno-0-536 name=__codelineno-0-536></a>                <span class=sa>f</span><span class=s2>&quot;Provider </span><span class=si>{</span><span class=n>provider</span><span class=p>[</span><span class=mi>0</span><span class=p>]</span><span class=si>}</span><span class=s2> returned an error getting Users to invite: </span><span class=si>{</span><span class=n>provider</span><span class=p>[</span><span class=mi>1</span><span class=p>]</span><span class=si>}</span><span class=s2>.&quot;</span>
+<a id=__codelineno-0-537 name=__codelineno-0-537></a>            <span class=p>)</span>
+<a id=__codelineno-0-538 name=__codelineno-0-538></a>            <span class=k>continue</span>
+<a id=__codelineno-0-539 name=__codelineno-0-539></a>
+<a id=__codelineno-0-540 name=__codelineno-0-540></a>        <span class=n>users_list</span><span class=o>.</span><span class=n>extend</span><span class=p>(</span><span class=n>provider</span><span class=p>[</span><span class=mi>1</span><span class=p>])</span>
+<a id=__codelineno-0-541 name=__codelineno-0-541></a>
+<a id=__codelineno-0-542 name=__codelineno-0-542></a>    <span class=n>logger</span><span class=o>.</span><span class=n>debug</span><span class=p>(</span><span class=sa>f</span><span class=s2>&quot;Get invites users list: </span><span class=si>{</span><span class=n>users_list</span><span class=si>}</span><span class=s2>&quot;</span><span class=p>)</span>
+<a id=__codelineno-0-543 name=__codelineno-0-543></a>
+<a id=__codelineno-0-544 name=__codelineno-0-544></a>    <span class=k>return</span> <span class=n>users_list</span>
+</code></pre></div></td></tr></table></div> </details> </div> </div> <div class="doc doc-object doc-function"> <h5 id=firefighter.incidents.models.incident.Incident.compute_metrics class="doc doc-heading"> <code class="doc-symbol doc-symbol-heading doc-symbol-method"></code> <span class="doc doc-object-name doc-function-name">compute_metrics</span> <a href=#firefighter.incidents.models.incident.Incident.compute_metrics class=headerlink title="Permanent link">¤</a></h5> <div class="doc-signature highlight"><pre><span></span><code><a id=__codelineno-0-1 name=__codelineno-0-1 href=#__codelineno-0-1></a><span class=nf>compute_metrics</span><span class=p>(</span><span class=o>*</span><span class=p>,</span> <span class=n>purge</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3.12/library/functions.html#bool>bool</a></span> <span class=o>=</span> <span class=kc>False</span><span class=p>)</span> <span class=o>-&gt;</span> <span class=kc>None</span>
+</code></pre></div> <div class="doc doc-contents "> <p>Compute all metrics (time to fix, ...) from events.</p> <details class=quote> <summary>Source code in <code>src/firefighter/incidents/models/incident.py</code></summary> <div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal><a href=#__codelineno-0-473>473</a></span>
+<span class=normal><a href=#__codelineno-0-474>474</a></span>
+<span class=normal><a href=#__codelineno-0-475>475</a></span>
+<span class=normal><a href=#__codelineno-0-476>476</a></span>
+<span class=normal><a href=#__codelineno-0-477>477</a></span>
+<span class=normal><a href=#__codelineno-0-478>478</a></span>
+<span class=normal><a href=#__codelineno-0-479>479</a></span>
+<span class=normal><a href=#__codelineno-0-480>480</a></span>
+<span class=normal><a href=#__codelineno-0-481>481</a></span>
+<span class=normal><a href=#__codelineno-0-482>482</a></span>
+<span class=normal><a href=#__codelineno-0-483>483</a></span>
+<span class=normal><a href=#__codelineno-0-484>484</a></span>
+<span class=normal><a href=#__codelineno-0-485>485</a></span>
+<span class=normal><a href=#__codelineno-0-486>486</a></span>
+<span class=normal><a href=#__codelineno-0-487>487</a></span>
+<span class=normal><a href=#__codelineno-0-488>488</a></span>
+<span class=normal><a href=#__codelineno-0-489>489</a></span>
+<span class=normal><a href=#__codelineno-0-490>490</a></span>
+<span class=normal><a href=#__codelineno-0-491>491</a></span>
+<span class=normal><a href=#__codelineno-0-492>492</a></span>
+<span class=normal><a href=#__codelineno-0-493>493</a></span>
+<span class=normal><a href=#__codelineno-0-494>494</a></span>
+<span class=normal><a href=#__codelineno-0-495>495</a></span>
+<span class=normal><a href=#__codelineno-0-496>496</a></span>
+<span class=normal><a href=#__codelineno-0-497>497</a></span>
+<span class=normal><a href=#__codelineno-0-498>498</a></span>
+<span class=normal><a href=#__codelineno-0-499>499</a></span>
+<span class=normal><a href=#__codelineno-0-500>500</a></span>
+<span class=normal><a href=#__codelineno-0-501>501</a></span>
+<span class=normal><a href=#__codelineno-0-502>502</a></span>
+<span class=normal><a href=#__codelineno-0-503>503</a></span>
+<span class=normal><a href=#__codelineno-0-504>504</a></span>
+<span class=normal><a href=#__codelineno-0-505>505</a></span>
+<span class=normal><a href=#__codelineno-0-506>506</a></span>
+<span class=normal><a href=#__codelineno-0-507>507</a></span>
+<span class=normal><a href=#__codelineno-0-508>508</a></span>
+<span class=normal><a href=#__codelineno-0-509>509</a></span>
+<span class=normal><a href=#__codelineno-0-510>510</a></span>
+<span class=normal><a href=#__codelineno-0-511>511</a></span>
+<span class=normal><a href=#__codelineno-0-512>512</a></span>
+<span class=normal><a href=#__codelineno-0-513>513</a></span>
+<span class=normal><a href=#__codelineno-0-514>514</a></span>
+<span class=normal><a href=#__codelineno-0-515>515</a></span>
+<span class=normal><a href=#__codelineno-0-516>516</a></span>
+<span class=normal><a href=#__codelineno-0-517>517</a></span></pre></div></td><td class=code><div><pre><span></span><code><a id=__codelineno-0-473 name=__codelineno-0-473></a><span class=k>def</span><span class=w> </span><span class=nf>compute_metrics</span><span class=p>(</span><span class=bp>self</span><span class=p>,</span> <span class=o>*</span><span class=p>,</span> <span class=n>purge</span><span class=p>:</span> <span class=nb>bool</span> <span class=o>=</span> <span class=kc>False</span><span class=p>)</span> <span class=o>-&gt;</span> <span class=kc>None</span><span class=p>:</span>
+<a id=__codelineno-0-474 name=__codelineno-0-474></a><span class=w>    </span><span class=sd>&quot;&quot;&quot;Compute all metrics (time to fix, ...) from events.&quot;&quot;&quot;</span>
+<a id=__codelineno-0-475 name=__codelineno-0-475></a>    <span class=n>latest_updates_by_type</span> <span class=o>=</span> <span class=bp>self</span><span class=o>.</span><span class=n>latest_updates_by_type</span>
+<a id=__codelineno-0-476 name=__codelineno-0-476></a>
+<a id=__codelineno-0-477 name=__codelineno-0-477></a>    <span class=k>for</span> <span class=n>metric_type</span> <span class=ow>in</span> <span class=n>MetricType</span><span class=o>.</span><span class=n>objects</span><span class=o>.</span><span class=n>all</span><span class=p>():</span>
+<a id=__codelineno-0-478 name=__codelineno-0-478></a>        <span class=n>lhs_type</span> <span class=o>=</span> <span class=n>metric_type</span><span class=o>.</span><span class=n>milestone_lhs</span><span class=o>.</span><span class=n>event_type</span>
+<a id=__codelineno-0-479 name=__codelineno-0-479></a>        <span class=n>rhs_type</span> <span class=o>=</span> <span class=n>metric_type</span><span class=o>.</span><span class=n>milestone_rhs</span><span class=o>.</span><span class=n>event_type</span>
+<a id=__codelineno-0-480 name=__codelineno-0-480></a>
+<a id=__codelineno-0-481 name=__codelineno-0-481></a>        <span class=n>lhs</span> <span class=o>=</span> <span class=n>latest_updates_by_type</span><span class=o>.</span><span class=n>get</span><span class=p>(</span><span class=n>lhs_type</span><span class=p>,</span> <span class=kc>None</span><span class=p>)</span>
+<a id=__codelineno-0-482 name=__codelineno-0-482></a>        <span class=n>rhs</span> <span class=o>=</span> <span class=n>latest_updates_by_type</span><span class=o>.</span><span class=n>get</span><span class=p>(</span><span class=n>rhs_type</span><span class=p>,</span> <span class=kc>None</span><span class=p>)</span>
+<a id=__codelineno-0-483 name=__codelineno-0-483></a>
+<a id=__codelineno-0-484 name=__codelineno-0-484></a>        <span class=k>if</span> <span class=ow>not</span> <span class=n>lhs</span> <span class=ow>or</span> <span class=ow>not</span> <span class=n>lhs</span><span class=o>.</span><span class=n>event_ts</span><span class=p>:</span>
+<a id=__codelineno-0-485 name=__codelineno-0-485></a>            <span class=n>logger</span><span class=o>.</span><span class=n>info</span><span class=p>(</span>
+<a id=__codelineno-0-486 name=__codelineno-0-486></a>                <span class=sa>f</span><span class=s2>&quot;Missing operand &#39;</span><span class=si>{</span><span class=n>lhs_type</span><span class=si>}</span><span class=s2>&#39; on metric </span><span class=si>{</span><span class=n>metric_type</span><span class=o>.</span><span class=n>type</span><span class=si>}</span><span class=s2> for #</span><span class=si>{</span><span class=bp>self</span><span class=o>.</span><span class=n>id</span><span class=si>}</span><span class=s2>&quot;</span>
+<a id=__codelineno-0-487 name=__codelineno-0-487></a>            <span class=p>)</span>
+<a id=__codelineno-0-488 name=__codelineno-0-488></a>            <span class=k>if</span> <span class=n>purge</span><span class=p>:</span>
+<a id=__codelineno-0-489 name=__codelineno-0-489></a>                <span class=n>IncidentMetric</span><span class=o>.</span><span class=n>objects</span><span class=o>.</span><span class=n>filter</span><span class=p>(</span>
+<a id=__codelineno-0-490 name=__codelineno-0-490></a>                    <span class=n>incident</span><span class=o>=</span><span class=bp>self</span><span class=p>,</span> <span class=n>metric_type</span><span class=o>=</span><span class=n>metric_type</span>
+<a id=__codelineno-0-491 name=__codelineno-0-491></a>                <span class=p>)</span><span class=o>.</span><span class=n>delete</span><span class=p>()</span>
+<a id=__codelineno-0-492 name=__codelineno-0-492></a>            <span class=k>continue</span>
+<a id=__codelineno-0-493 name=__codelineno-0-493></a>        <span class=k>if</span> <span class=ow>not</span> <span class=n>rhs</span> <span class=ow>or</span> <span class=ow>not</span> <span class=n>rhs</span><span class=o>.</span><span class=n>event_ts</span><span class=p>:</span>
+<a id=__codelineno-0-494 name=__codelineno-0-494></a>            <span class=n>logger</span><span class=o>.</span><span class=n>info</span><span class=p>(</span>
+<a id=__codelineno-0-495 name=__codelineno-0-495></a>                <span class=sa>f</span><span class=s2>&quot;Missing operand &#39;</span><span class=si>{</span><span class=n>rhs_type</span><span class=si>}</span><span class=s2>&#39; on metric </span><span class=si>{</span><span class=n>metric_type</span><span class=o>.</span><span class=n>type</span><span class=si>}</span><span class=s2> for #</span><span class=si>{</span><span class=bp>self</span><span class=o>.</span><span class=n>id</span><span class=si>}</span><span class=s2>&quot;</span>
+<a id=__codelineno-0-496 name=__codelineno-0-496></a>            <span class=p>)</span>
+<a id=__codelineno-0-497 name=__codelineno-0-497></a>            <span class=k>if</span> <span class=n>purge</span><span class=p>:</span>
+<a id=__codelineno-0-498 name=__codelineno-0-498></a>                <span class=n>IncidentMetric</span><span class=o>.</span><span class=n>objects</span><span class=o>.</span><span class=n>filter</span><span class=p>(</span>
+<a id=__codelineno-0-499 name=__codelineno-0-499></a>                    <span class=n>incident</span><span class=o>=</span><span class=bp>self</span><span class=p>,</span> <span class=n>metric_type</span><span class=o>=</span><span class=n>metric_type</span>
+<a id=__codelineno-0-500 name=__codelineno-0-500></a>                <span class=p>)</span><span class=o>.</span><span class=n>delete</span><span class=p>()</span>
+<a id=__codelineno-0-501 name=__codelineno-0-501></a>            <span class=k>continue</span>
+<a id=__codelineno-0-502 name=__codelineno-0-502></a>        <span class=n>duration</span> <span class=o>=</span> <span class=n>lhs</span><span class=o>.</span><span class=n>event_ts</span> <span class=o>-</span> <span class=n>rhs</span><span class=o>.</span><span class=n>event_ts</span>
+<a id=__codelineno-0-503 name=__codelineno-0-503></a>        <span class=k>if</span> <span class=n>duration</span> <span class=o>&lt;</span> <span class=n>TD0</span><span class=p>:</span>
+<a id=__codelineno-0-504 name=__codelineno-0-504></a>            <span class=n>logger</span><span class=o>.</span><span class=n>warning</span><span class=p>(</span>
+<a id=__codelineno-0-505 name=__codelineno-0-505></a>                <span class=sa>f</span><span class=s2>&quot;Tried to compute a negative metric! Metric </span><span class=si>{</span><span class=n>metric_type</span><span class=o>.</span><span class=n>type</span><span class=si>}</span><span class=s2> for #</span><span class=si>{</span><span class=bp>self</span><span class=o>.</span><span class=n>id</span><span class=si>}</span><span class=s2> has a duration of </span><span class=si>{</span><span class=n>duration</span><span class=si>}</span><span class=s2> (</span><span class=si>{</span><span class=n>lhs</span><span class=o>.</span><span class=n>event_type</span><span class=si>}</span><span class=s2>:</span><span class=si>{</span><span class=n>lhs</span><span class=o>.</span><span class=n>event_ts</span><span class=si>}</span><span class=s2> - </span><span class=si>{</span><span class=n>rhs</span><span class=o>.</span><span class=n>event_type</span><span class=si>}</span><span class=s2>:</span><span class=si>{</span><span class=n>rhs</span><span class=o>.</span><span class=n>event_ts</span><span class=si>}</span><span class=s2>)&quot;</span>
+<a id=__codelineno-0-506 name=__codelineno-0-506></a>            <span class=p>)</span>
+<a id=__codelineno-0-507 name=__codelineno-0-507></a>            <span class=k>if</span> <span class=n>purge</span><span class=p>:</span>
+<a id=__codelineno-0-508 name=__codelineno-0-508></a>                <span class=n>IncidentMetric</span><span class=o>.</span><span class=n>objects</span><span class=o>.</span><span class=n>filter</span><span class=p>(</span>
+<a id=__codelineno-0-509 name=__codelineno-0-509></a>                    <span class=n>incident</span><span class=o>=</span><span class=bp>self</span><span class=p>,</span> <span class=n>metric_type</span><span class=o>=</span><span class=n>metric_type</span>
+<a id=__codelineno-0-510 name=__codelineno-0-510></a>                <span class=p>)</span><span class=o>.</span><span class=n>delete</span><span class=p>()</span>
+<a id=__codelineno-0-511 name=__codelineno-0-511></a>            <span class=k>continue</span>
+<a id=__codelineno-0-512 name=__codelineno-0-512></a>        <span class=n>IncidentMetric</span><span class=o>.</span><span class=n>objects</span><span class=o>.</span><span class=n>update_or_create</span><span class=p>(</span>
+<a id=__codelineno-0-513 name=__codelineno-0-513></a>            <span class=n>incident</span><span class=o>=</span><span class=bp>self</span><span class=p>,</span>
+<a id=__codelineno-0-514 name=__codelineno-0-514></a>            <span class=n>metric_type</span><span class=o>=</span><span class=n>metric_type</span><span class=p>,</span>
+<a id=__codelineno-0-515 name=__codelineno-0-515></a>            <span class=n>defaults</span><span class=o>=</span><span class=p>{</span><span class=s2>&quot;duration&quot;</span><span class=p>:</span> <span class=n>duration</span><span class=p>},</span>
+<a id=__codelineno-0-516 name=__codelineno-0-516></a>        <span class=p>)</span>
+<a id=__codelineno-0-517 name=__codelineno-0-517></a>    <span class=bp>self</span><span class=o>.</span><span class=n>save</span><span class=p>()</span>
+</code></pre></div></td></tr></table></div> </details> </div> </div> <div class="doc doc-object doc-function"> <h5 id=firefighter.incidents.models.incident.Incident.missing_milestones class="doc doc-heading"> <code class="doc-symbol doc-symbol-heading doc-symbol-method"></code> <span class="doc doc-object-name doc-function-name">missing_milestones</span> <a href=#firefighter.incidents.models.incident.Incident.missing_milestones class=headerlink title="Permanent link">¤</a></h5> <div class="doc-signature highlight"><pre><span></span><code><a id=__codelineno-0-1 name=__codelineno-0-1 href=#__codelineno-0-1></a><span class=nf>missing_milestones</span><span class=p>()</span> <span class=o>-&gt;</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3.12/library/stdtypes.html#list>list</a></span><span class=p>[</span><span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3.12/library/stdtypes.html#str>str</a></span><span class=p>]</span>
+</code></pre></div> <div class="doc doc-contents "> <p>Returns all required Milestones still needed to compute the metrics.</p> <details class=quote> <summary>Source code in <code>src/firefighter/incidents/models/incident.py</code></summary> <div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal><a href=#__codelineno-0-434>434</a></span>
+<span class=normal><a href=#__codelineno-0-435>435</a></span>
+<span class=normal><a href=#__codelineno-0-436>436</a></span>
+<span class=normal><a href=#__codelineno-0-437>437</a></span>
+<span class=normal><a href=#__codelineno-0-438>438</a></span>
+<span class=normal><a href=#__codelineno-0-439>439</a></span>
+<span class=normal><a href=#__codelineno-0-440>440</a></span>
+<span class=normal><a href=#__codelineno-0-441>441</a></span>
+<span class=normal><a href=#__codelineno-0-442>442</a></span>
+<span class=normal><a href=#__codelineno-0-443>443</a></span>
+<span class=normal><a href=#__codelineno-0-444>444</a></span>
+<span class=normal><a href=#__codelineno-0-445>445</a></span>
+<span class=normal><a href=#__codelineno-0-446>446</a></span>
+<span class=normal><a href=#__codelineno-0-447>447</a></span>
+<span class=normal><a href=#__codelineno-0-448>448</a></span>
+<span class=normal><a href=#__codelineno-0-449>449</a></span>
+<span class=normal><a href=#__codelineno-0-450>450</a></span>
+<span class=normal><a href=#__codelineno-0-451>451</a></span>
+<span class=normal><a href=#__codelineno-0-452>452</a></span>
+<span class=normal><a href=#__codelineno-0-453>453</a></span>
+<span class=normal><a href=#__codelineno-0-454>454</a></span>
+<span class=normal><a href=#__codelineno-0-455>455</a></span>
+<span class=normal><a href=#__codelineno-0-456>456</a></span>
+<span class=normal><a href=#__codelineno-0-457>457</a></span></pre></div></td><td class=code><div><pre><span></span><code><a id=__codelineno-0-434 name=__codelineno-0-434></a><span class=k>def</span><span class=w> </span><span class=nf>missing_milestones</span><span class=p>(</span><span class=bp>self</span><span class=p>)</span> <span class=o>-&gt;</span> <span class=nb>list</span><span class=p>[</span><span class=nb>str</span><span class=p>]:</span>
+<a id=__codelineno-0-435 name=__codelineno-0-435></a><span class=w>    </span><span class=sd>&quot;&quot;&quot;Returns all required Milestones still needed to compute the metrics.&quot;&quot;&quot;</span>
+<a id=__codelineno-0-436 name=__codelineno-0-436></a>    <span class=k>if</span> <span class=bp>self</span><span class=o>.</span><span class=n>ignore</span><span class=p>:</span>
+<a id=__codelineno-0-437 name=__codelineno-0-437></a>        <span class=k>return</span> <span class=p>[]</span>
+<a id=__codelineno-0-438 name=__codelineno-0-438></a>
+<a id=__codelineno-0-439 name=__codelineno-0-439></a>    <span class=c1># We get a list of all event_type of IncidentUpdates...</span>
+<a id=__codelineno-0-440 name=__codelineno-0-440></a>    <span class=n>milestones_list</span> <span class=o>=</span> <span class=p>(</span>
+<a id=__codelineno-0-441 name=__codelineno-0-441></a>        <span class=n>IncidentUpdate</span><span class=o>.</span><span class=n>objects</span><span class=o>.</span><span class=n>filter</span><span class=p>(</span>
+<a id=__codelineno-0-442 name=__codelineno-0-442></a>            <span class=n>incident_id</span><span class=o>=</span><span class=bp>self</span><span class=o>.</span><span class=n>id</span><span class=p>,</span>
+<a id=__codelineno-0-443 name=__codelineno-0-443></a>            <span class=n>event_ts__isnull</span><span class=o>=</span><span class=kc>False</span><span class=p>,</span>
+<a id=__codelineno-0-444 name=__codelineno-0-444></a>            <span class=n>event_type__isnull</span><span class=o>=</span><span class=kc>False</span><span class=p>,</span>
+<a id=__codelineno-0-445 name=__codelineno-0-445></a>        <span class=p>)</span>
+<a id=__codelineno-0-446 name=__codelineno-0-446></a>        <span class=o>.</span><span class=n>aggregate</span><span class=p>(</span><span class=n>milestone_list</span><span class=o>=</span><span class=n>ArrayAgg</span><span class=p>(</span><span class=s2>&quot;event_type&quot;</span><span class=p>,</span> <span class=n>distinct</span><span class=o>=</span><span class=kc>True</span><span class=p>,</span> <span class=n>default</span><span class=o>=</span><span class=p>[]))</span>
+<a id=__codelineno-0-447 name=__codelineno-0-447></a>        <span class=o>.</span><span class=n>get</span><span class=p>(</span><span class=s2>&quot;milestone_list&quot;</span><span class=p>,</span> <span class=p>[])</span>
+<a id=__codelineno-0-448 name=__codelineno-0-448></a>    <span class=p>)</span>
+<a id=__codelineno-0-449 name=__codelineno-0-449></a>
+<a id=__codelineno-0-450 name=__codelineno-0-450></a>    <span class=n>incident_milestones</span><span class=p>:</span> <span class=nb>set</span><span class=p>[</span><span class=nb>str</span><span class=p>]</span> <span class=o>=</span> <span class=nb>set</span><span class=p>(</span><span class=n>cast</span><span class=p>(</span><span class=s1>&#39;list[&quot;str&quot;]&#39;</span><span class=p>,</span> <span class=n>milestones_list</span><span class=p>))</span>
+<a id=__codelineno-0-451 name=__codelineno-0-451></a>    <span class=n>required_milestone_types</span> <span class=o>=</span> <span class=nb>set</span><span class=p>(</span>
+<a id=__codelineno-0-452 name=__codelineno-0-452></a>        <span class=n>MilestoneType</span><span class=o>.</span><span class=n>objects</span><span class=o>.</span><span class=n>filter</span><span class=p>(</span><span class=n>required</span><span class=o>=</span><span class=kc>True</span><span class=p>)</span><span class=o>.</span><span class=n>values_list</span><span class=p>(</span>
+<a id=__codelineno-0-453 name=__codelineno-0-453></a>            <span class=s2>&quot;event_type&quot;</span><span class=p>,</span> <span class=n>flat</span><span class=o>=</span><span class=kc>True</span>
+<a id=__codelineno-0-454 name=__codelineno-0-454></a>        <span class=p>)</span>
+<a id=__codelineno-0-455 name=__codelineno-0-455></a>    <span class=p>)</span>
+<a id=__codelineno-0-456 name=__codelineno-0-456></a>    <span class=c1># And we make the differences of the sets</span>
+<a id=__codelineno-0-457 name=__codelineno-0-457></a>    <span class=k>return</span> <span class=nb>list</span><span class=p>(</span><span class=n>required_milestone_types</span> <span class=o>-</span> <span class=n>incident_milestones</span><span class=p>)</span>
+</code></pre></div></td></tr></table></div> </details> </div> </div> <div class="doc doc-object doc-function"> <h5 id=firefighter.incidents.models.incident.Incident.update_roles class="doc doc-heading"> <code class="doc-symbol doc-symbol-heading doc-symbol-method"></code> <span class="doc doc-object-name doc-function-name">update_roles</span> <a href=#firefighter.incidents.models.incident.Incident.update_roles class=headerlink title="Permanent link">¤</a></h5> <div class="doc-signature highlight"><pre><span></span><code><a id=__codelineno-0-1 name=__codelineno-0-1 href=#__codelineno-0-1></a><span class=nf>update_roles</span><span class=p>(</span><span class=n>updater</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-internal" title="            User (firefighter.incidents.models.user.User)" href=#firefighter.incidents.models.user.User>User</a></span><span class=p>,</span> <span class=n>roles_mapping</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3.12/library/stdtypes.html#dict>dict</a></span><span class=p>[</span><span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3.12/library/stdtypes.html#str>str</a></span><span class=p>,</span> <span class=n><a class="autorefs autorefs-internal" title="            User (firefighter.incidents.models.user.User)" href=#firefighter.incidents.models.user.User>User</a></span> <span class=o>|</span> <span class=kc>None</span><span class=p>]</span> <span class=o>|</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3.12/library/stdtypes.html#dict>dict</a></span><span class=p>[</span><span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3.12/library/stdtypes.html#str>str</a></span><span class=p>,</span> <span class=n><a class="autorefs autorefs-internal" title="            User (firefighter.incidents.models.user.User)" href=#firefighter.incidents.models.user.User>User</a></span><span class=p>])</span> <span class=o>-&gt;</span> <span class=n><a class="autorefs autorefs-internal" title="            IncidentUpdate (firefighter.incidents.models.incident_update.IncidentUpdate)" href=#firefighter.incidents.models.incident_update.IncidentUpdate>IncidentUpdate</a></span>
+</code></pre></div> <div class="doc doc-contents "> <p>Update the roles related to an incident, and create an IncidentUpdate. For each role, provide a User or None.</p> <p>This function will update the incident, create an <a class="autorefs autorefs-internal" title="            IncidentUpdate" href=#firefighter.incidents.models.incident_update.IncidentUpdate>IncidentUpdate</a>, and trigger the <a class="autorefs autorefs-internal" title="            incident_updated
+
+
+  
+      module-attribute
+  " href=#firefighter.incidents.signals.incident_updated>incident_updated</a> signal, with <code>update_roles</code> sender.</p> <p><span class=doc-section-title>Parameters:</span></p> <ul> <li class="doc-section-item field-body"> <b><code>updater</code></b> (<code><a class="autorefs autorefs-internal" title="            User (firefighter.incidents.models.user.User)" href=#firefighter.incidents.models.user.User>User</a></code>) – <div class=doc-md-description> <p>The user who is updating the roles.</p> </div> </li> <li class="doc-section-item field-body"> <b><code>roles_mapping</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3.12/library/stdtypes.html#dict>dict</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3.12/library/stdtypes.html#str>str</a>, <a class="autorefs autorefs-internal" title="            User (firefighter.incidents.models.user.User)" href=#firefighter.incidents.models.user.User>User</a> | None]</code>) – <div class=doc-md-description> <p>A dict of roles to update, with the new User or None. Defaults to None.</p> </div> </li> </ul> <p><span class=doc-section-title>Returns:</span></p> <ul> <li class="doc-section-item field-body"> <b><code>IncidentUpdate</code></b> ( <code><a class="autorefs autorefs-internal" title="            IncidentUpdate (firefighter.incidents.models.incident_update.IncidentUpdate)" href=#firefighter.incidents.models.incident_update.IncidentUpdate>IncidentUpdate</a></code> ) – <div class=doc-md-description> <p>The created IncidentUpdate with the updated roles.</p> </div> </li> </ul> <details class=quote> <summary>Source code in <code>src/firefighter/incidents/models/incident.py</code></summary> <div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal><a href=#__codelineno-0-546>546</a></span>
 <span class=normal><a href=#__codelineno-0-547>547</a></span>
 <span class=normal><a href=#__codelineno-0-548>548</a></span>
 <span class=normal><a href=#__codelineno-0-549>549</a></span>
@@ -1688,102 +1662,128 @@
 <span class=normal><a href=#__codelineno-0-577>577</a></span>
 <span class=normal><a href=#__codelineno-0-578>578</a></span>
 <span class=normal><a href=#__codelineno-0-579>579</a></span>
-<span class=normal><a href=#__codelineno-0-580>580</a></span></pre></div></td><td class=code><div><pre><span></span><code><a id=__codelineno-0-520 name=__codelineno-0-520></a><span class=k>def</span><span class=w> </span><span class=nf>update_roles</span><span class=p>(</span>
-<a id=__codelineno-0-521 name=__codelineno-0-521></a>    <span class=bp>self</span><span class=p>,</span>
-<a id=__codelineno-0-522 name=__codelineno-0-522></a>    <span class=n>updater</span><span class=p>:</span> <span class=n>User</span><span class=p>,</span>
-<a id=__codelineno-0-523 name=__codelineno-0-523></a>    <span class=n>roles_mapping</span><span class=p>:</span> <span class=nb>dict</span><span class=p>[</span><span class=nb>str</span><span class=p>,</span> <span class=n>User</span> <span class=o>|</span> <span class=kc>None</span><span class=p>]</span> <span class=o>|</span> <span class=nb>dict</span><span class=p>[</span><span class=nb>str</span><span class=p>,</span> <span class=n>User</span><span class=p>],</span>
-<a id=__codelineno-0-524 name=__codelineno-0-524></a><span class=p>)</span> <span class=o>-&gt;</span> <span class=n>IncidentUpdate</span><span class=p>:</span>
-<a id=__codelineno-0-525 name=__codelineno-0-525></a><span class=w>    </span><span class=sd>&quot;&quot;&quot;Update the roles related to an incident, and create an IncidentUpdate.</span>
-<a id=__codelineno-0-526 name=__codelineno-0-526></a><span class=sd>    For each role, provide a User or None.</span>
-<a id=__codelineno-0-527 name=__codelineno-0-527></a>
-<a id=__codelineno-0-528 name=__codelineno-0-528></a><span class=sd>    This function will update the incident, create an [IncidentUpdate][firefighter.incidents.models.incident_update.IncidentUpdate], and trigger the [incident_updated][firefighter.incidents.signals.incident_updated] signal, with `update_roles` sender.</span>
-<a id=__codelineno-0-529 name=__codelineno-0-529></a>
-<a id=__codelineno-0-530 name=__codelineno-0-530></a><span class=sd>    Args:</span>
-<a id=__codelineno-0-531 name=__codelineno-0-531></a><span class=sd>        updater (User): The user who is updating the roles.</span>
-<a id=__codelineno-0-532 name=__codelineno-0-532></a><span class=sd>        roles_mapping (dict[str, User | None], optional): A dict of roles to update, with the new User or None. Defaults to None.</span>
-<a id=__codelineno-0-533 name=__codelineno-0-533></a>
-<a id=__codelineno-0-534 name=__codelineno-0-534></a><span class=sd>    Returns:</span>
-<a id=__codelineno-0-535 name=__codelineno-0-535></a><span class=sd>        IncidentUpdate: The created IncidentUpdate with the updated roles.</span>
-<a id=__codelineno-0-536 name=__codelineno-0-536></a><span class=sd>    &quot;&quot;&quot;</span>
-<a id=__codelineno-0-537 name=__codelineno-0-537></a>    <span class=n>updated_fields</span><span class=p>:</span> <span class=nb>list</span><span class=p>[</span><span class=nb>str</span><span class=p>]</span> <span class=o>=</span> <span class=p>[]</span>
-<a id=__codelineno-0-538 name=__codelineno-0-538></a>
-<a id=__codelineno-0-539 name=__codelineno-0-539></a>    <span class=c1># Handle roles</span>
-<a id=__codelineno-0-540 name=__codelineno-0-540></a>    <span class=k>for</span> <span class=n>role_slug</span><span class=p>,</span> <span class=n>assigned_user</span> <span class=ow>in</span> <span class=n>roles_mapping</span><span class=o>.</span><span class=n>items</span><span class=p>():</span>
-<a id=__codelineno-0-541 name=__codelineno-0-541></a>        <span class=k>try</span><span class=p>:</span>
-<a id=__codelineno-0-542 name=__codelineno-0-542></a>            <span class=n>role_type</span> <span class=o>=</span> <span class=n>IncidentRoleType</span><span class=o>.</span><span class=n>objects</span><span class=o>.</span><span class=n>get</span><span class=p>(</span><span class=n>slug</span><span class=o>=</span><span class=n>role_slug</span><span class=p>)</span>
-<a id=__codelineno-0-543 name=__codelineno-0-543></a>        <span class=k>except</span> <span class=n>IncidentRoleType</span><span class=o>.</span><span class=n>DoesNotExist</span><span class=p>:</span>
-<a id=__codelineno-0-544 name=__codelineno-0-544></a>            <span class=n>logger</span><span class=o>.</span><span class=n>warning</span><span class=p>(</span><span class=sa>f</span><span class=s2>&quot;Unknown role type: </span><span class=si>{</span><span class=n>role_slug</span><span class=si>}</span><span class=s2>&quot;</span><span class=p>)</span>
-<a id=__codelineno-0-545 name=__codelineno-0-545></a>            <span class=k>continue</span>
-<a id=__codelineno-0-546 name=__codelineno-0-546></a>        <span class=k>if</span> <span class=n>assigned_user</span> <span class=ow>is</span> <span class=ow>not</span> <span class=kc>None</span><span class=p>:</span>
-<a id=__codelineno-0-547 name=__codelineno-0-547></a>            <span class=n>IncidentRole</span><span class=o>.</span><span class=n>objects</span><span class=o>.</span><span class=n>update_or_create</span><span class=p>(</span>
-<a id=__codelineno-0-548 name=__codelineno-0-548></a>                <span class=n>incident</span><span class=o>=</span><span class=bp>self</span><span class=p>,</span>
-<a id=__codelineno-0-549 name=__codelineno-0-549></a>                <span class=n>role_type</span><span class=o>=</span><span class=n>role_type</span><span class=p>,</span>
-<a id=__codelineno-0-550 name=__codelineno-0-550></a>                <span class=n>defaults</span><span class=o>=</span><span class=p>{</span><span class=s2>&quot;user&quot;</span><span class=p>:</span> <span class=n>assigned_user</span><span class=p>},</span>
-<a id=__codelineno-0-551 name=__codelineno-0-551></a>            <span class=p>)</span>
-<a id=__codelineno-0-552 name=__codelineno-0-552></a>            <span class=n>logger</span><span class=o>.</span><span class=n>debug</span><span class=p>(</span>
-<a id=__codelineno-0-553 name=__codelineno-0-553></a>                <span class=sa>f</span><span class=s2>&quot;Updated role </span><span class=si>{</span><span class=n>role_slug</span><span class=si>}</span><span class=s2> to user ID=</span><span class=si>{</span><span class=n>assigned_user</span><span class=o>.</span><span class=n>id</span><span class=si>}</span><span class=s2> for #</span><span class=si>{</span><span class=bp>self</span><span class=o>.</span><span class=n>id</span><span class=si>}</span><span class=s2>&quot;</span>
-<a id=__codelineno-0-554 name=__codelineno-0-554></a>            <span class=p>)</span>
-<a id=__codelineno-0-555 name=__codelineno-0-555></a>            <span class=n>updated_fields</span><span class=o>.</span><span class=n>append</span><span class=p>(</span><span class=sa>f</span><span class=s2>&quot;</span><span class=si>{</span><span class=n>role_slug</span><span class=si>}</span><span class=s2>_id&quot;</span><span class=p>)</span>
-<a id=__codelineno-0-556 name=__codelineno-0-556></a>        <span class=k>elif</span> <span class=n>role_type</span><span class=o>.</span><span class=n>required</span><span class=p>:</span>
-<a id=__codelineno-0-557 name=__codelineno-0-557></a>            <span class=n>logger</span><span class=o>.</span><span class=n>warning</span><span class=p>(</span><span class=sa>f</span><span class=s2>&quot;Cannot remove required role: </span><span class=si>{</span><span class=n>role_slug</span><span class=si>}</span><span class=s2>&quot;</span><span class=p>)</span>
-<a id=__codelineno-0-558 name=__codelineno-0-558></a>        <span class=k>else</span><span class=p>:</span>
-<a id=__codelineno-0-559 name=__codelineno-0-559></a>            <span class=n>IncidentRole</span><span class=o>.</span><span class=n>objects</span><span class=o>.</span><span class=n>filter</span><span class=p>(</span><span class=n>incident</span><span class=o>=</span><span class=bp>self</span><span class=p>,</span> <span class=n>role_type</span><span class=o>=</span><span class=n>role_type</span><span class=p>)</span><span class=o>.</span><span class=n>delete</span><span class=p>()</span>
-<a id=__codelineno-0-560 name=__codelineno-0-560></a>            <span class=n>updated_fields</span><span class=o>.</span><span class=n>append</span><span class=p>(</span><span class=sa>f</span><span class=s2>&quot;</span><span class=si>{</span><span class=n>role_slug</span><span class=si>}</span><span class=s2>_id&quot;</span><span class=p>)</span>
-<a id=__codelineno-0-561 name=__codelineno-0-561></a>
-<a id=__codelineno-0-562 name=__codelineno-0-562></a>    <span class=c1># Handle legacy roles with IncidentUpdate</span>
-<a id=__codelineno-0-563 name=__codelineno-0-563></a>    <span class=c1># XXX(dugab): Custom roles are not saved in IncidentUpdate at the moment</span>
+<span class=normal><a href=#__codelineno-0-580>580</a></span>
+<span class=normal><a href=#__codelineno-0-581>581</a></span>
+<span class=normal><a href=#__codelineno-0-582>582</a></span>
+<span class=normal><a href=#__codelineno-0-583>583</a></span>
+<span class=normal><a href=#__codelineno-0-584>584</a></span>
+<span class=normal><a href=#__codelineno-0-585>585</a></span>
+<span class=normal><a href=#__codelineno-0-586>586</a></span>
+<span class=normal><a href=#__codelineno-0-587>587</a></span>
+<span class=normal><a href=#__codelineno-0-588>588</a></span>
+<span class=normal><a href=#__codelineno-0-589>589</a></span>
+<span class=normal><a href=#__codelineno-0-590>590</a></span>
+<span class=normal><a href=#__codelineno-0-591>591</a></span>
+<span class=normal><a href=#__codelineno-0-592>592</a></span>
+<span class=normal><a href=#__codelineno-0-593>593</a></span>
+<span class=normal><a href=#__codelineno-0-594>594</a></span>
+<span class=normal><a href=#__codelineno-0-595>595</a></span>
+<span class=normal><a href=#__codelineno-0-596>596</a></span>
+<span class=normal><a href=#__codelineno-0-597>597</a></span>
+<span class=normal><a href=#__codelineno-0-598>598</a></span>
+<span class=normal><a href=#__codelineno-0-599>599</a></span>
+<span class=normal><a href=#__codelineno-0-600>600</a></span>
+<span class=normal><a href=#__codelineno-0-601>601</a></span>
+<span class=normal><a href=#__codelineno-0-602>602</a></span>
+<span class=normal><a href=#__codelineno-0-603>603</a></span>
+<span class=normal><a href=#__codelineno-0-604>604</a></span>
+<span class=normal><a href=#__codelineno-0-605>605</a></span>
+<span class=normal><a href=#__codelineno-0-606>606</a></span></pre></div></td><td class=code><div><pre><span></span><code><a id=__codelineno-0-546 name=__codelineno-0-546></a><span class=k>def</span><span class=w> </span><span class=nf>update_roles</span><span class=p>(</span>
+<a id=__codelineno-0-547 name=__codelineno-0-547></a>    <span class=bp>self</span><span class=p>,</span>
+<a id=__codelineno-0-548 name=__codelineno-0-548></a>    <span class=n>updater</span><span class=p>:</span> <span class=n>User</span><span class=p>,</span>
+<a id=__codelineno-0-549 name=__codelineno-0-549></a>    <span class=n>roles_mapping</span><span class=p>:</span> <span class=nb>dict</span><span class=p>[</span><span class=nb>str</span><span class=p>,</span> <span class=n>User</span> <span class=o>|</span> <span class=kc>None</span><span class=p>]</span> <span class=o>|</span> <span class=nb>dict</span><span class=p>[</span><span class=nb>str</span><span class=p>,</span> <span class=n>User</span><span class=p>],</span>
+<a id=__codelineno-0-550 name=__codelineno-0-550></a><span class=p>)</span> <span class=o>-&gt;</span> <span class=n>IncidentUpdate</span><span class=p>:</span>
+<a id=__codelineno-0-551 name=__codelineno-0-551></a><span class=w>    </span><span class=sd>&quot;&quot;&quot;Update the roles related to an incident, and create an IncidentUpdate.</span>
+<a id=__codelineno-0-552 name=__codelineno-0-552></a><span class=sd>    For each role, provide a User or None.</span>
+<a id=__codelineno-0-553 name=__codelineno-0-553></a>
+<a id=__codelineno-0-554 name=__codelineno-0-554></a><span class=sd>    This function will update the incident, create an [IncidentUpdate][firefighter.incidents.models.incident_update.IncidentUpdate], and trigger the [incident_updated][firefighter.incidents.signals.incident_updated] signal, with `update_roles` sender.</span>
+<a id=__codelineno-0-555 name=__codelineno-0-555></a>
+<a id=__codelineno-0-556 name=__codelineno-0-556></a><span class=sd>    Args:</span>
+<a id=__codelineno-0-557 name=__codelineno-0-557></a><span class=sd>        updater (User): The user who is updating the roles.</span>
+<a id=__codelineno-0-558 name=__codelineno-0-558></a><span class=sd>        roles_mapping (dict[str, User | None], optional): A dict of roles to update, with the new User or None. Defaults to None.</span>
+<a id=__codelineno-0-559 name=__codelineno-0-559></a>
+<a id=__codelineno-0-560 name=__codelineno-0-560></a><span class=sd>    Returns:</span>
+<a id=__codelineno-0-561 name=__codelineno-0-561></a><span class=sd>        IncidentUpdate: The created IncidentUpdate with the updated roles.</span>
+<a id=__codelineno-0-562 name=__codelineno-0-562></a><span class=sd>    &quot;&quot;&quot;</span>
+<a id=__codelineno-0-563 name=__codelineno-0-563></a>    <span class=n>updated_fields</span><span class=p>:</span> <span class=nb>list</span><span class=p>[</span><span class=nb>str</span><span class=p>]</span> <span class=o>=</span> <span class=p>[]</span>
 <a id=__codelineno-0-564 name=__codelineno-0-564></a>
-<a id=__codelineno-0-565 name=__codelineno-0-565></a>    <span class=n>incident_update</span> <span class=o>=</span> <span class=n>IncidentUpdate</span><span class=p>(</span>
-<a id=__codelineno-0-566 name=__codelineno-0-566></a>        <span class=n>incident</span><span class=o>=</span><span class=bp>self</span><span class=p>,</span>
-<a id=__codelineno-0-567 name=__codelineno-0-567></a>        <span class=n>created_by</span><span class=o>=</span><span class=n>updater</span><span class=p>,</span>
-<a id=__codelineno-0-568 name=__codelineno-0-568></a>        <span class=n>commander</span><span class=o>=</span><span class=n>roles_mapping</span><span class=o>.</span><span class=n>get</span><span class=p>(</span><span class=s2>&quot;commander&quot;</span><span class=p>),</span>
-<a id=__codelineno-0-569 name=__codelineno-0-569></a>        <span class=n>communication_lead</span><span class=o>=</span><span class=n>roles_mapping</span><span class=o>.</span><span class=n>get</span><span class=p>(</span><span class=s2>&quot;communication_lead&quot;</span><span class=p>),</span>
-<a id=__codelineno-0-570 name=__codelineno-0-570></a>    <span class=p>)</span>
-<a id=__codelineno-0-571 name=__codelineno-0-571></a>    <span class=n>incident_update</span><span class=o>.</span><span class=n>save</span><span class=p>()</span>
-<a id=__codelineno-0-572 name=__codelineno-0-572></a>
-<a id=__codelineno-0-573 name=__codelineno-0-573></a>    <span class=n>incident_updated</span><span class=o>.</span><span class=n>send_robust</span><span class=p>(</span>
-<a id=__codelineno-0-574 name=__codelineno-0-574></a>        <span class=s2>&quot;update_roles&quot;</span><span class=p>,</span>
-<a id=__codelineno-0-575 name=__codelineno-0-575></a>        <span class=n>incident</span><span class=o>=</span><span class=bp>self</span><span class=p>,</span>
-<a id=__codelineno-0-576 name=__codelineno-0-576></a>        <span class=n>incident_update</span><span class=o>=</span><span class=n>incident_update</span><span class=p>,</span>
-<a id=__codelineno-0-577 name=__codelineno-0-577></a>        <span class=n>updated_fields</span><span class=o>=</span><span class=n>updated_fields</span><span class=p>,</span>
-<a id=__codelineno-0-578 name=__codelineno-0-578></a>    <span class=p>)</span>
-<a id=__codelineno-0-579 name=__codelineno-0-579></a>
-<a id=__codelineno-0-580 name=__codelineno-0-580></a>    <span class=k>return</span> <span class=n>incident_update</span>
+<a id=__codelineno-0-565 name=__codelineno-0-565></a>    <span class=c1># Handle roles</span>
+<a id=__codelineno-0-566 name=__codelineno-0-566></a>    <span class=k>for</span> <span class=n>role_slug</span><span class=p>,</span> <span class=n>assigned_user</span> <span class=ow>in</span> <span class=n>roles_mapping</span><span class=o>.</span><span class=n>items</span><span class=p>():</span>
+<a id=__codelineno-0-567 name=__codelineno-0-567></a>        <span class=k>try</span><span class=p>:</span>
+<a id=__codelineno-0-568 name=__codelineno-0-568></a>            <span class=n>role_type</span> <span class=o>=</span> <span class=n>IncidentRoleType</span><span class=o>.</span><span class=n>objects</span><span class=o>.</span><span class=n>get</span><span class=p>(</span><span class=n>slug</span><span class=o>=</span><span class=n>role_slug</span><span class=p>)</span>
+<a id=__codelineno-0-569 name=__codelineno-0-569></a>        <span class=k>except</span> <span class=n>IncidentRoleType</span><span class=o>.</span><span class=n>DoesNotExist</span><span class=p>:</span>
+<a id=__codelineno-0-570 name=__codelineno-0-570></a>            <span class=n>logger</span><span class=o>.</span><span class=n>warning</span><span class=p>(</span><span class=sa>f</span><span class=s2>&quot;Unknown role type: </span><span class=si>{</span><span class=n>role_slug</span><span class=si>}</span><span class=s2>&quot;</span><span class=p>)</span>
+<a id=__codelineno-0-571 name=__codelineno-0-571></a>            <span class=k>continue</span>
+<a id=__codelineno-0-572 name=__codelineno-0-572></a>        <span class=k>if</span> <span class=n>assigned_user</span> <span class=ow>is</span> <span class=ow>not</span> <span class=kc>None</span><span class=p>:</span>
+<a id=__codelineno-0-573 name=__codelineno-0-573></a>            <span class=n>IncidentRole</span><span class=o>.</span><span class=n>objects</span><span class=o>.</span><span class=n>update_or_create</span><span class=p>(</span>
+<a id=__codelineno-0-574 name=__codelineno-0-574></a>                <span class=n>incident</span><span class=o>=</span><span class=bp>self</span><span class=p>,</span>
+<a id=__codelineno-0-575 name=__codelineno-0-575></a>                <span class=n>role_type</span><span class=o>=</span><span class=n>role_type</span><span class=p>,</span>
+<a id=__codelineno-0-576 name=__codelineno-0-576></a>                <span class=n>defaults</span><span class=o>=</span><span class=p>{</span><span class=s2>&quot;user&quot;</span><span class=p>:</span> <span class=n>assigned_user</span><span class=p>},</span>
+<a id=__codelineno-0-577 name=__codelineno-0-577></a>            <span class=p>)</span>
+<a id=__codelineno-0-578 name=__codelineno-0-578></a>            <span class=n>logger</span><span class=o>.</span><span class=n>debug</span><span class=p>(</span>
+<a id=__codelineno-0-579 name=__codelineno-0-579></a>                <span class=sa>f</span><span class=s2>&quot;Updated role </span><span class=si>{</span><span class=n>role_slug</span><span class=si>}</span><span class=s2> to user ID=</span><span class=si>{</span><span class=n>assigned_user</span><span class=o>.</span><span class=n>id</span><span class=si>}</span><span class=s2> for #</span><span class=si>{</span><span class=bp>self</span><span class=o>.</span><span class=n>id</span><span class=si>}</span><span class=s2>&quot;</span>
+<a id=__codelineno-0-580 name=__codelineno-0-580></a>            <span class=p>)</span>
+<a id=__codelineno-0-581 name=__codelineno-0-581></a>            <span class=n>updated_fields</span><span class=o>.</span><span class=n>append</span><span class=p>(</span><span class=sa>f</span><span class=s2>&quot;</span><span class=si>{</span><span class=n>role_slug</span><span class=si>}</span><span class=s2>_id&quot;</span><span class=p>)</span>
+<a id=__codelineno-0-582 name=__codelineno-0-582></a>        <span class=k>elif</span> <span class=n>role_type</span><span class=o>.</span><span class=n>required</span><span class=p>:</span>
+<a id=__codelineno-0-583 name=__codelineno-0-583></a>            <span class=n>logger</span><span class=o>.</span><span class=n>warning</span><span class=p>(</span><span class=sa>f</span><span class=s2>&quot;Cannot remove required role: </span><span class=si>{</span><span class=n>role_slug</span><span class=si>}</span><span class=s2>&quot;</span><span class=p>)</span>
+<a id=__codelineno-0-584 name=__codelineno-0-584></a>        <span class=k>else</span><span class=p>:</span>
+<a id=__codelineno-0-585 name=__codelineno-0-585></a>            <span class=n>IncidentRole</span><span class=o>.</span><span class=n>objects</span><span class=o>.</span><span class=n>filter</span><span class=p>(</span><span class=n>incident</span><span class=o>=</span><span class=bp>self</span><span class=p>,</span> <span class=n>role_type</span><span class=o>=</span><span class=n>role_type</span><span class=p>)</span><span class=o>.</span><span class=n>delete</span><span class=p>()</span>
+<a id=__codelineno-0-586 name=__codelineno-0-586></a>            <span class=n>updated_fields</span><span class=o>.</span><span class=n>append</span><span class=p>(</span><span class=sa>f</span><span class=s2>&quot;</span><span class=si>{</span><span class=n>role_slug</span><span class=si>}</span><span class=s2>_id&quot;</span><span class=p>)</span>
+<a id=__codelineno-0-587 name=__codelineno-0-587></a>
+<a id=__codelineno-0-588 name=__codelineno-0-588></a>    <span class=c1># Handle legacy roles with IncidentUpdate</span>
+<a id=__codelineno-0-589 name=__codelineno-0-589></a>    <span class=c1># XXX(dugab): Custom roles are not saved in IncidentUpdate at the moment</span>
+<a id=__codelineno-0-590 name=__codelineno-0-590></a>
+<a id=__codelineno-0-591 name=__codelineno-0-591></a>    <span class=n>incident_update</span> <span class=o>=</span> <span class=n>IncidentUpdate</span><span class=p>(</span>
+<a id=__codelineno-0-592 name=__codelineno-0-592></a>        <span class=n>incident</span><span class=o>=</span><span class=bp>self</span><span class=p>,</span>
+<a id=__codelineno-0-593 name=__codelineno-0-593></a>        <span class=n>created_by</span><span class=o>=</span><span class=n>updater</span><span class=p>,</span>
+<a id=__codelineno-0-594 name=__codelineno-0-594></a>        <span class=n>commander</span><span class=o>=</span><span class=n>roles_mapping</span><span class=o>.</span><span class=n>get</span><span class=p>(</span><span class=s2>&quot;commander&quot;</span><span class=p>),</span>
+<a id=__codelineno-0-595 name=__codelineno-0-595></a>        <span class=n>communication_lead</span><span class=o>=</span><span class=n>roles_mapping</span><span class=o>.</span><span class=n>get</span><span class=p>(</span><span class=s2>&quot;communication_lead&quot;</span><span class=p>),</span>
+<a id=__codelineno-0-596 name=__codelineno-0-596></a>    <span class=p>)</span>
+<a id=__codelineno-0-597 name=__codelineno-0-597></a>    <span class=n>incident_update</span><span class=o>.</span><span class=n>save</span><span class=p>()</span>
+<a id=__codelineno-0-598 name=__codelineno-0-598></a>
+<a id=__codelineno-0-599 name=__codelineno-0-599></a>    <span class=n>incident_updated</span><span class=o>.</span><span class=n>send_robust</span><span class=p>(</span>
+<a id=__codelineno-0-600 name=__codelineno-0-600></a>        <span class=s2>&quot;update_roles&quot;</span><span class=p>,</span>
+<a id=__codelineno-0-601 name=__codelineno-0-601></a>        <span class=n>incident</span><span class=o>=</span><span class=bp>self</span><span class=p>,</span>
+<a id=__codelineno-0-602 name=__codelineno-0-602></a>        <span class=n>incident_update</span><span class=o>=</span><span class=n>incident_update</span><span class=p>,</span>
+<a id=__codelineno-0-603 name=__codelineno-0-603></a>        <span class=n>updated_fields</span><span class=o>=</span><span class=n>updated_fields</span><span class=p>,</span>
+<a id=__codelineno-0-604 name=__codelineno-0-604></a>    <span class=p>)</span>
+<a id=__codelineno-0-605 name=__codelineno-0-605></a>
+<a id=__codelineno-0-606 name=__codelineno-0-606></a>    <span class=k>return</span> <span class=n>incident_update</span>
 </code></pre></div></td></tr></table></div> </details> </div> </div> </div> </div> </div> <div class="doc doc-object doc-class"> <h4 id=firefighter.incidents.models.incident.IncidentFilterSet class="doc doc-heading"> <code class="doc-symbol doc-symbol-heading doc-symbol-class"></code> <span class="doc doc-object-name doc-class-name">IncidentFilterSet</span> <a href=#firefighter.incidents.models.incident.IncidentFilterSet class=headerlink title="Permanent link">¤</a></h4> <div class="doc doc-contents "> <p class="doc doc-class-bases"> Bases: <code><span title=django_filters.FilterSet>FilterSet</span></code></p> <p>Set of filters for incidents, shared by Web UI and API.</p> <p><span class=doc-section-title>Methods:</span></p> <ul> <li class="doc-section-item field-body"> <b><code><a class="autorefs autorefs-internal" title="            incident_search
 
 
   
       staticmethod
    (firefighter.incidents.models.incident.IncidentFilterSet.incident_search)" href=#firefighter.incidents.models.incident.IncidentFilterSet.incident_search>incident_search</a></code></b> – <div class=doc-md-description> <p>Search incidents by title, description, and ID.</p> </div> </li> </ul> <div class="doc doc-children"> <div class="doc doc-object doc-function"> <h5 id=firefighter.incidents.models.incident.IncidentFilterSet.incident_search class="doc doc-heading"> <code class="doc-symbol doc-symbol-heading doc-symbol-method"></code> <span class="doc doc-object-name doc-function-name">incident_search</span> <span class="doc doc-labels"> <small class="doc doc-label doc-label-staticmethod"><code>staticmethod</code></small> </span> <a href=#firefighter.incidents.models.incident.IncidentFilterSet.incident_search class=headerlink title="Permanent link">¤</a></h5> <div class="doc-signature highlight"><pre><span></span><code><a id=__codelineno-0-1 name=__codelineno-0-1 href=#__codelineno-0-1></a><span class=nf>incident_search</span><span class=p>(</span><span class=n>queryset</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" title=django.db.models.query.QuerySet href=https://docs.djangoproject.com/en/4.2/ref/models/querysets/#django.db.models.query.QuerySet>QuerySet</a></span><span class=p>[</span><span class=n><a class="autorefs autorefs-internal" title="            Incident (firefighter.incidents.models.incident.Incident)" href=#firefighter.incidents.models.incident.Incident>Incident</a></span><span class=p>],</span> <span class=n>_name</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3.12/library/stdtypes.html#str>str</a></span><span class=p>,</span> <span class=n>value</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3.12/library/stdtypes.html#str>str</a></span><span class=p>)</span> <span class=o>-&gt;</span> <span class=n><a class="autorefs autorefs-external" title=django.db.models.query.QuerySet href=https://docs.djangoproject.com/en/4.2/ref/models/querysets/#django.db.models.query.QuerySet>QuerySet</a></span><span class=p>[</span><span class=n><a class="autorefs autorefs-internal" title="            Incident (firefighter.incidents.models.incident.Incident)" href=#firefighter.incidents.models.incident.Incident>Incident</a></span><span class=p>]</span>
-</code></pre></div> <div class="doc doc-contents "> <p>Search incidents by title, description, and ID.</p> <p><span class=doc-section-title>Parameters:</span></p> <ul> <li class="doc-section-item field-body"> <b><code>queryset</code></b> (<code><a class="autorefs autorefs-external" title=django.db.models.query.QuerySet href=https://docs.djangoproject.com/en/4.2/ref/models/querysets/#django.db.models.query.QuerySet>QuerySet</a>[<a class="autorefs autorefs-internal" title="            Incident (firefighter.incidents.models.incident.Incident)" href=#firefighter.incidents.models.incident.Incident>Incident</a>]</code>) – <div class=doc-md-description> <p>Queryset to search in.</p> </div> </li> <li class="doc-section-item field-body"> <b><code>_name</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3.12/library/stdtypes.html#str>str</a></code>) – <div class=doc-md-description> </div> </li> <li class="doc-section-item field-body"> <b><code>value</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3.12/library/stdtypes.html#str>str</a></code>) – <div class=doc-md-description> <p>Value to search for.</p> </div> </li> </ul> <p><span class=doc-section-title>Returns:</span></p> <ul> <li class="doc-section-item field-body"> <code><a class="autorefs autorefs-external" title=django.db.models.query.QuerySet href=https://docs.djangoproject.com/en/4.2/ref/models/querysets/#django.db.models.query.QuerySet>QuerySet</a>[<a class="autorefs autorefs-internal" title="            Incident (firefighter.incidents.models.incident.Incident)" href=#firefighter.incidents.models.incident.Incident>Incident</a>]</code> – <div class=doc-md-description> <p>QuerySet[Incident]: Search results.</p> </div> </li> </ul> <details class=quote> <summary>Source code in <code>src/firefighter/incidents/models/incident.py</code></summary> <div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal><a href=#__codelineno-0-728>728</a></span>
-<span class=normal><a href=#__codelineno-0-729>729</a></span>
-<span class=normal><a href=#__codelineno-0-730>730</a></span>
-<span class=normal><a href=#__codelineno-0-731>731</a></span>
-<span class=normal><a href=#__codelineno-0-732>732</a></span>
-<span class=normal><a href=#__codelineno-0-733>733</a></span>
-<span class=normal><a href=#__codelineno-0-734>734</a></span>
-<span class=normal><a href=#__codelineno-0-735>735</a></span>
-<span class=normal><a href=#__codelineno-0-736>736</a></span>
-<span class=normal><a href=#__codelineno-0-737>737</a></span>
-<span class=normal><a href=#__codelineno-0-738>738</a></span>
-<span class=normal><a href=#__codelineno-0-739>739</a></span>
-<span class=normal><a href=#__codelineno-0-740>740</a></span>
-<span class=normal><a href=#__codelineno-0-741>741</a></span>
-<span class=normal><a href=#__codelineno-0-742>742</a></span></pre></div></td><td class=code><div><pre><span></span><code><a id=__codelineno-0-728 name=__codelineno-0-728></a><span class=nd>@staticmethod</span>
-<a id=__codelineno-0-729 name=__codelineno-0-729></a><span class=k>def</span><span class=w> </span><span class=nf>incident_search</span><span class=p>(</span>
-<a id=__codelineno-0-730 name=__codelineno-0-730></a>    <span class=n>queryset</span><span class=p>:</span> <span class=n>QuerySet</span><span class=p>[</span><span class=n>Incident</span><span class=p>],</span> <span class=n>_name</span><span class=p>:</span> <span class=nb>str</span><span class=p>,</span> <span class=n>value</span><span class=p>:</span> <span class=nb>str</span>
-<a id=__codelineno-0-731 name=__codelineno-0-731></a><span class=p>)</span> <span class=o>-&gt;</span> <span class=n>QuerySet</span><span class=p>[</span><span class=n>Incident</span><span class=p>]:</span>
-<a id=__codelineno-0-732 name=__codelineno-0-732></a><span class=w>    </span><span class=sd>&quot;&quot;&quot;Search incidents by title, description, and ID.</span>
-<a id=__codelineno-0-733 name=__codelineno-0-733></a>
-<a id=__codelineno-0-734 name=__codelineno-0-734></a><span class=sd>    Args:</span>
-<a id=__codelineno-0-735 name=__codelineno-0-735></a><span class=sd>        queryset (QuerySet[Incident]): Queryset to search in.</span>
-<a id=__codelineno-0-736 name=__codelineno-0-736></a><span class=sd>        _name:</span>
-<a id=__codelineno-0-737 name=__codelineno-0-737></a><span class=sd>        value (str): Value to search for.</span>
-<a id=__codelineno-0-738 name=__codelineno-0-738></a>
-<a id=__codelineno-0-739 name=__codelineno-0-739></a><span class=sd>    Returns:</span>
-<a id=__codelineno-0-740 name=__codelineno-0-740></a><span class=sd>        QuerySet[Incident]: Search results.</span>
-<a id=__codelineno-0-741 name=__codelineno-0-741></a><span class=sd>    &quot;&quot;&quot;</span>
-<a id=__codelineno-0-742 name=__codelineno-0-742></a>    <span class=k>return</span> <span class=n>Incident</span><span class=o>.</span><span class=n>objects</span><span class=o>.</span><span class=n>search</span><span class=p>(</span><span class=n>queryset</span><span class=o>=</span><span class=n>queryset</span><span class=p>,</span> <span class=n>search_term</span><span class=o>=</span><span class=n>value</span><span class=p>)[</span><span class=mi>0</span><span class=p>]</span>
+</code></pre></div> <div class="doc doc-contents "> <p>Search incidents by title, description, and ID.</p> <p><span class=doc-section-title>Parameters:</span></p> <ul> <li class="doc-section-item field-body"> <b><code>queryset</code></b> (<code><a class="autorefs autorefs-external" title=django.db.models.query.QuerySet href=https://docs.djangoproject.com/en/4.2/ref/models/querysets/#django.db.models.query.QuerySet>QuerySet</a>[<a class="autorefs autorefs-internal" title="            Incident (firefighter.incidents.models.incident.Incident)" href=#firefighter.incidents.models.incident.Incident>Incident</a>]</code>) – <div class=doc-md-description> <p>Queryset to search in.</p> </div> </li> <li class="doc-section-item field-body"> <b><code>_name</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3.12/library/stdtypes.html#str>str</a></code>) – <div class=doc-md-description> </div> </li> <li class="doc-section-item field-body"> <b><code>value</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3.12/library/stdtypes.html#str>str</a></code>) – <div class=doc-md-description> <p>Value to search for.</p> </div> </li> </ul> <p><span class=doc-section-title>Returns:</span></p> <ul> <li class="doc-section-item field-body"> <code><a class="autorefs autorefs-external" title=django.db.models.query.QuerySet href=https://docs.djangoproject.com/en/4.2/ref/models/querysets/#django.db.models.query.QuerySet>QuerySet</a>[<a class="autorefs autorefs-internal" title="            Incident (firefighter.incidents.models.incident.Incident)" href=#firefighter.incidents.models.incident.Incident>Incident</a>]</code> – <div class=doc-md-description> <p>QuerySet[Incident]: Search results.</p> </div> </li> </ul> <details class=quote> <summary>Source code in <code>src/firefighter/incidents/models/incident.py</code></summary> <div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal><a href=#__codelineno-0-758>758</a></span>
+<span class=normal><a href=#__codelineno-0-759>759</a></span>
+<span class=normal><a href=#__codelineno-0-760>760</a></span>
+<span class=normal><a href=#__codelineno-0-761>761</a></span>
+<span class=normal><a href=#__codelineno-0-762>762</a></span>
+<span class=normal><a href=#__codelineno-0-763>763</a></span>
+<span class=normal><a href=#__codelineno-0-764>764</a></span>
+<span class=normal><a href=#__codelineno-0-765>765</a></span>
+<span class=normal><a href=#__codelineno-0-766>766</a></span>
+<span class=normal><a href=#__codelineno-0-767>767</a></span>
+<span class=normal><a href=#__codelineno-0-768>768</a></span>
+<span class=normal><a href=#__codelineno-0-769>769</a></span>
+<span class=normal><a href=#__codelineno-0-770>770</a></span>
+<span class=normal><a href=#__codelineno-0-771>771</a></span>
+<span class=normal><a href=#__codelineno-0-772>772</a></span></pre></div></td><td class=code><div><pre><span></span><code><a id=__codelineno-0-758 name=__codelineno-0-758></a><span class=nd>@staticmethod</span>
+<a id=__codelineno-0-759 name=__codelineno-0-759></a><span class=k>def</span><span class=w> </span><span class=nf>incident_search</span><span class=p>(</span>
+<a id=__codelineno-0-760 name=__codelineno-0-760></a>    <span class=n>queryset</span><span class=p>:</span> <span class=n>QuerySet</span><span class=p>[</span><span class=n>Incident</span><span class=p>],</span> <span class=n>_name</span><span class=p>:</span> <span class=nb>str</span><span class=p>,</span> <span class=n>value</span><span class=p>:</span> <span class=nb>str</span>
+<a id=__codelineno-0-761 name=__codelineno-0-761></a><span class=p>)</span> <span class=o>-&gt;</span> <span class=n>QuerySet</span><span class=p>[</span><span class=n>Incident</span><span class=p>]:</span>
+<a id=__codelineno-0-762 name=__codelineno-0-762></a><span class=w>    </span><span class=sd>&quot;&quot;&quot;Search incidents by title, description, and ID.</span>
+<a id=__codelineno-0-763 name=__codelineno-0-763></a>
+<a id=__codelineno-0-764 name=__codelineno-0-764></a><span class=sd>    Args:</span>
+<a id=__codelineno-0-765 name=__codelineno-0-765></a><span class=sd>        queryset (QuerySet[Incident]): Queryset to search in.</span>
+<a id=__codelineno-0-766 name=__codelineno-0-766></a><span class=sd>        _name:</span>
+<a id=__codelineno-0-767 name=__codelineno-0-767></a><span class=sd>        value (str): Value to search for.</span>
+<a id=__codelineno-0-768 name=__codelineno-0-768></a>
+<a id=__codelineno-0-769 name=__codelineno-0-769></a><span class=sd>    Returns:</span>
+<a id=__codelineno-0-770 name=__codelineno-0-770></a><span class=sd>        QuerySet[Incident]: Search results.</span>
+<a id=__codelineno-0-771 name=__codelineno-0-771></a><span class=sd>    &quot;&quot;&quot;</span>
+<a id=__codelineno-0-772 name=__codelineno-0-772></a>    <span class=k>return</span> <span class=n>Incident</span><span class=o>.</span><span class=n>objects</span><span class=o>.</span><span class=n>search</span><span class=p>(</span><span class=n>queryset</span><span class=o>=</span><span class=n>queryset</span><span class=p>,</span> <span class=n>search_term</span><span class=o>=</span><span class=n>value</span><span class=p>)[</span><span class=mi>0</span><span class=p>]</span>
 </code></pre></div></td></tr></table></div> </details> </div> </div> </div> </div> </div> <div class="doc doc-object doc-class"> <h4 id=firefighter.incidents.models.incident.IncidentManager class="doc doc-heading"> <code class="doc-symbol doc-symbol-heading doc-symbol-class"></code> <span class="doc doc-object-name doc-class-name">IncidentManager</span> <a href=#firefighter.incidents.models.incident.IncidentManager class=headerlink title="Permanent link">¤</a></h4> <div class="doc doc-contents "> <p class="doc doc-class-bases"> Bases: <code><a class="autorefs autorefs-external" title=django.db.models.Manager href=https://docs.djangoproject.com/en/4.2/topics/db/managers/#django.db.models.Manager>Manager</a>[&#39;Incident&#39;]</code></p> <p><span class=doc-section-title>Methods:</span></p> <ul> <li class="doc-section-item field-body"> <b><code><a class="autorefs autorefs-internal" title="            declare (firefighter.incidents.models.incident.IncidentManager.declare)" href=#firefighter.incidents.models.incident.IncidentManager.declare>declare</a></code></b> – <div class=doc-md-description> <p>Create an Incident and its first IncidentUpdate.</p> </div> </li> <li class="doc-section-item field-body"> <b><code><a class="autorefs autorefs-internal" title="            search
 
 
@@ -1982,29 +1982,29 @@
 <a id=__codelineno-0-183 name=__codelineno-0-183></a>
 <a id=__codelineno-0-184 name=__codelineno-0-184></a>    <span class=k>return</span> <span class=n>queryset</span><span class=p>,</span> <span class=kc>False</span>
 </code></pre></div></td></tr></table></div> </details> </div> </div> </div> </div> </div> <div class="doc doc-object doc-function"> <h4 id=firefighter.incidents.models.incident.incident_category_filter_choices_queryset class="doc doc-heading"> <code class="doc-symbol doc-symbol-heading doc-symbol-function"></code> <span class="doc doc-object-name doc-function-name">incident_category_filter_choices_queryset</span> <a href=#firefighter.incidents.models.incident.incident_category_filter_choices_queryset class=headerlink title="Permanent link">¤</a></h4> <div class="doc-signature highlight"><pre><span></span><code><a id=__codelineno-0-1 name=__codelineno-0-1 href=#__codelineno-0-1></a><span class=nf>incident_category_filter_choices_queryset</span><span class=p>(</span><span class=n>_</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" title=typing.Any href=https://docs.python.org/3.12/library/typing.html#typing.Any>Any</a></span><span class=p>)</span> <span class=o>-&gt;</span> <span class=n><a class="autorefs autorefs-external" title=django.db.models.query.QuerySet href=https://docs.djangoproject.com/en/4.2/ref/models/querysets/#django.db.models.query.QuerySet>QuerySet</a></span><span class=p>[</span><span class=n><span title=firefighter.incidents.models.incident_category.IncidentCategory>IncidentCategory</span></span><span class=p>]</span>
-</code></pre></div> <div class="doc doc-contents "> <p>Queryset for choices of IncidentCategories in IncidentFilterSet. Moved it as a function because models are not loaded when creating filters.</p> <details class=quote> <summary>Source code in <code>src/firefighter/incidents/models/incident.py</code></summary> <div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal><a href=#__codelineno-0-674>674</a></span>
-<span class=normal><a href=#__codelineno-0-675>675</a></span>
-<span class=normal><a href=#__codelineno-0-676>676</a></span>
-<span class=normal><a href=#__codelineno-0-677>677</a></span>
-<span class=normal><a href=#__codelineno-0-678>678</a></span>
-<span class=normal><a href=#__codelineno-0-679>679</a></span>
-<span class=normal><a href=#__codelineno-0-680>680</a></span>
-<span class=normal><a href=#__codelineno-0-681>681</a></span>
-<span class=normal><a href=#__codelineno-0-682>682</a></span>
-<span class=normal><a href=#__codelineno-0-683>683</a></span>
-<span class=normal><a href=#__codelineno-0-684>684</a></span>
-<span class=normal><a href=#__codelineno-0-685>685</a></span></pre></div></td><td class=code><div><pre><span></span><code><a id=__codelineno-0-674 name=__codelineno-0-674></a><span class=k>def</span><span class=w> </span><span class=nf>incident_category_filter_choices_queryset</span><span class=p>(</span><span class=n>_</span><span class=p>:</span> <span class=n>Any</span><span class=p>)</span> <span class=o>-&gt;</span> <span class=n>QuerySet</span><span class=p>[</span><span class=n>IncidentCategory</span><span class=p>]:</span>
-<a id=__codelineno-0-675 name=__codelineno-0-675></a><span class=w>    </span><span class=sd>&quot;&quot;&quot;Queryset for choices of IncidentCategories in IncidentFilterSet.</span>
-<a id=__codelineno-0-676 name=__codelineno-0-676></a><span class=sd>    Moved it as a function because models are not loaded when creating filters.</span>
-<a id=__codelineno-0-677 name=__codelineno-0-677></a><span class=sd>    &quot;&quot;&quot;</span>
-<a id=__codelineno-0-678 name=__codelineno-0-678></a>    <span class=k>return</span> <span class=p>(</span>
-<a id=__codelineno-0-679 name=__codelineno-0-679></a>        <span class=n>IncidentCategory</span><span class=o>.</span><span class=n>objects</span><span class=o>.</span><span class=n>all</span><span class=p>()</span>
-<a id=__codelineno-0-680 name=__codelineno-0-680></a>        <span class=o>.</span><span class=n>select_related</span><span class=p>(</span><span class=s2>&quot;group&quot;</span><span class=p>)</span>
-<a id=__codelineno-0-681 name=__codelineno-0-681></a>        <span class=o>.</span><span class=n>order_by</span><span class=p>(</span>
-<a id=__codelineno-0-682 name=__codelineno-0-682></a>            <span class=s2>&quot;group__order&quot;</span><span class=p>,</span>
-<a id=__codelineno-0-683 name=__codelineno-0-683></a>            <span class=s2>&quot;name&quot;</span><span class=p>,</span>
-<a id=__codelineno-0-684 name=__codelineno-0-684></a>        <span class=p>)</span>
-<a id=__codelineno-0-685 name=__codelineno-0-685></a>    <span class=p>)</span>
+</code></pre></div> <div class="doc doc-contents "> <p>Queryset for choices of IncidentCategories in IncidentFilterSet. Moved it as a function because models are not loaded when creating filters.</p> <details class=quote> <summary>Source code in <code>src/firefighter/incidents/models/incident.py</code></summary> <div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal><a href=#__codelineno-0-702>702</a></span>
+<span class=normal><a href=#__codelineno-0-703>703</a></span>
+<span class=normal><a href=#__codelineno-0-704>704</a></span>
+<span class=normal><a href=#__codelineno-0-705>705</a></span>
+<span class=normal><a href=#__codelineno-0-706>706</a></span>
+<span class=normal><a href=#__codelineno-0-707>707</a></span>
+<span class=normal><a href=#__codelineno-0-708>708</a></span>
+<span class=normal><a href=#__codelineno-0-709>709</a></span>
+<span class=normal><a href=#__codelineno-0-710>710</a></span>
+<span class=normal><a href=#__codelineno-0-711>711</a></span>
+<span class=normal><a href=#__codelineno-0-712>712</a></span>
+<span class=normal><a href=#__codelineno-0-713>713</a></span></pre></div></td><td class=code><div><pre><span></span><code><a id=__codelineno-0-702 name=__codelineno-0-702></a><span class=k>def</span><span class=w> </span><span class=nf>incident_category_filter_choices_queryset</span><span class=p>(</span><span class=n>_</span><span class=p>:</span> <span class=n>Any</span><span class=p>)</span> <span class=o>-&gt;</span> <span class=n>QuerySet</span><span class=p>[</span><span class=n>IncidentCategory</span><span class=p>]:</span>
+<a id=__codelineno-0-703 name=__codelineno-0-703></a><span class=w>    </span><span class=sd>&quot;&quot;&quot;Queryset for choices of IncidentCategories in IncidentFilterSet.</span>
+<a id=__codelineno-0-704 name=__codelineno-0-704></a><span class=sd>    Moved it as a function because models are not loaded when creating filters.</span>
+<a id=__codelineno-0-705 name=__codelineno-0-705></a><span class=sd>    &quot;&quot;&quot;</span>
+<a id=__codelineno-0-706 name=__codelineno-0-706></a>    <span class=k>return</span> <span class=p>(</span>
+<a id=__codelineno-0-707 name=__codelineno-0-707></a>        <span class=n>IncidentCategory</span><span class=o>.</span><span class=n>objects</span><span class=o>.</span><span class=n>all</span><span class=p>()</span>
+<a id=__codelineno-0-708 name=__codelineno-0-708></a>        <span class=o>.</span><span class=n>select_related</span><span class=p>(</span><span class=s2>&quot;group&quot;</span><span class=p>)</span>
+<a id=__codelineno-0-709 name=__codelineno-0-709></a>        <span class=o>.</span><span class=n>order_by</span><span class=p>(</span>
+<a id=__codelineno-0-710 name=__codelineno-0-710></a>            <span class=s2>&quot;group__order&quot;</span><span class=p>,</span>
+<a id=__codelineno-0-711 name=__codelineno-0-711></a>            <span class=s2>&quot;name&quot;</span><span class=p>,</span>
+<a id=__codelineno-0-712 name=__codelineno-0-712></a>        <span class=p>)</span>
+<a id=__codelineno-0-713 name=__codelineno-0-713></a>    <span class=p>)</span>
 </code></pre></div></td></tr></table></div> </details> </div> </div> </div> </div> </div> <div class="doc doc-object doc-module"> <h3 id=firefighter.incidents.models.incident_category class="doc doc-heading"> <code class="doc-symbol doc-symbol-heading doc-symbol-module"></code> <span class="doc doc-object-name doc-module-name">incident_category</span> <a href=#firefighter.incidents.models.incident_category class=headerlink title="Permanent link">¤</a></h3> <div class="doc doc-contents "> <p><span class=doc-section-title>Classes:</span></p> <ul> <li class="doc-section-item field-body"> <b><code><a class="autorefs autorefs-internal" title="            IncidentCategoryFilterSet (firefighter.incidents.models.incident_category.IncidentCategoryFilterSet)" href=#firefighter.incidents.models.incident_category.IncidentCategoryFilterSet>IncidentCategoryFilterSet</a></code></b> – <div class=doc-md-description> <p>Set of filters for IncidentCategory, share by Web UI and API.</p> </div> </li> <li class="doc-section-item field-body"> <b><code><a class="autorefs autorefs-internal" title="            IncidentCategoryManager (firefighter.incidents.models.incident_category.IncidentCategoryManager)" href=#firefighter.incidents.models.incident_category.IncidentCategoryManager>IncidentCategoryManager</a></code></b> – <div class=doc-md-description> </div> </li> </ul> <div class="doc doc-children"> <div class="doc doc-object doc-class"> <h4 id=firefighter.incidents.models.incident_category.IncidentCategoryFilterSet class="doc doc-heading"> <code class="doc-symbol doc-symbol-heading doc-symbol-class"></code> <span class="doc doc-object-name doc-class-name">IncidentCategoryFilterSet</span> <a href=#firefighter.incidents.models.incident_category.IncidentCategoryFilterSet class=headerlink title="Permanent link">¤</a></h4> <div class="doc doc-contents "> <p class="doc doc-class-bases"> Bases: <code><span title=django_filters.FilterSet>FilterSet</span></code></p> <p>Set of filters for IncidentCategory, share by Web UI and API.</p> <p><span class=doc-section-title>Methods:</span></p> <ul> <li class="doc-section-item field-body"> <b><code><a class="autorefs autorefs-internal" title="            incident_category_search
 
 
