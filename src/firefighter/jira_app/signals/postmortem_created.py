@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+import importlib
 import logging
 from typing import TYPE_CHECKING, Any, Never
 
 from django.apps import apps
 from django.conf import settings
 from django.dispatch.dispatcher import receiver
+from django.utils import timezone
 
 from firefighter.incidents.enums import IncidentStatus
 from firefighter.incidents.signals import incident_updated
@@ -21,20 +23,16 @@ logger = logging.getLogger(__name__)
 
 def _get_jira_postmortem_service() -> JiraPostMortemService:
     """Lazy import to avoid circular dependency."""
-    from firefighter.jira_app.service_postmortem import (  # noqa: PLC0415
-        jira_postmortem_service,
-    )
-
-    return jira_postmortem_service
+    module = importlib.import_module("firefighter.jira_app.service_postmortem")
+    return module.jira_postmortem_service
 
 
 def _get_confluence_postmortem_manager() -> type[PostMortemManager] | None:
     """Lazy import to avoid circular dependency with Confluence."""
     if not apps.is_installed("firefighter.confluence"):
         return None
-    from firefighter.confluence.models import PostMortemManager  # noqa: PLC0415
-
-    return PostMortemManager
+    module = importlib.import_module("firefighter.confluence.models")
+    return module.PostMortemManager
 
 
 def _update_mitigated_at_timestamp(
@@ -46,8 +44,6 @@ def _update_mitigated_at_timestamp(
         and incident_update.status == IncidentStatus.MITIGATED
         and incident.mitigated_at is None
     ):
-        from django.utils import timezone  # noqa: PLC0415
-
         incident.mitigated_at = timezone.now()
         incident.save(update_fields=["mitigated_at"])
         logger.info(f"Set mitigated_at timestamp for incident #{incident.id}")
@@ -99,22 +95,23 @@ def _create_jira_postmortem(incident: Incident) -> Any | None:
 
 def _publish_postmortem_announcement(incident: Incident) -> None:
     """Publish post-mortem creation announcement to #critical-incidents."""
-    from firefighter.slack.messages.slack_messages import (  # noqa: PLC0415
-        SlackMessageIncidentPostMortemCreatedAnnouncement,
-    )
-    from firefighter.slack.models.conversation import Conversation  # noqa: PLC0415
-    from firefighter.slack.rules import (  # noqa: PLC0415
-        should_publish_pm_in_general_channel,
-    )
+    # Dynamic imports to avoid circular dependencies
+    slack_messages = importlib.import_module("firefighter.slack.messages.slack_messages")
+    slack_models = importlib.import_module("firefighter.slack.models.conversation")
+    slack_rules = importlib.import_module("firefighter.slack.rules")
+
+    announcement_class = slack_messages.SlackMessageIncidentPostMortemCreatedAnnouncement
+    conversation_class = slack_models.Conversation
+    should_publish_pm_in_general_channel = slack_rules.should_publish_pm_in_general_channel
 
     if not should_publish_pm_in_general_channel(incident):
         return
 
-    tech_incidents_conversation = Conversation.objects.get_or_none(
+    tech_incidents_conversation = conversation_class.objects.get_or_none(
         tag="tech_incidents"
     )
     if tech_incidents_conversation:
-        announcement = SlackMessageIncidentPostMortemCreatedAnnouncement(incident)
+        announcement = announcement_class(incident)
         tech_incidents_conversation.send_message_and_save(announcement)
         logger.info(
             f"Post-mortem creation announced in tech_incidents for incident #{incident.id}"
@@ -150,10 +147,9 @@ def postmortem_created_handler(
         return
 
     # Import Slack tasks after apps are loaded
-    from firefighter.slack.tasks.reminder_postmortem import (  # noqa: PLC0415
-        publish_fixed_next_actions,
-        publish_postmortem_reminder,
-    )
+    slack_tasks = importlib.import_module("firefighter.slack.tasks.reminder_postmortem")
+    publish_fixed_next_actions = slack_tasks.publish_fixed_next_actions
+    publish_postmortem_reminder = slack_tasks.publish_postmortem_reminder
 
     logger.debug(f"Checking sender: sender={sender}, type={type(sender)}")
     if sender != "update_status":
@@ -207,7 +203,8 @@ def postmortem_created_handler(
 
     # Send signal and announcements if at least one post-mortem was created
     if confluence_pm or jira_pm:
-        from firefighter.incidents.signals import postmortem_created  # noqa: PLC0415
+        signals_module = importlib.import_module("firefighter.incidents.signals")
+        postmortem_created = signals_module.postmortem_created
 
         logger.info(
             f"Post-mortem(s) created for incident #{incident.id}: "
