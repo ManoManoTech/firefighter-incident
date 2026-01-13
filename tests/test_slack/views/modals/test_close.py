@@ -5,6 +5,7 @@ from copy import deepcopy
 from unittest.mock import MagicMock, PropertyMock
 
 import pytest
+from django.apps import apps
 from pytest_mock import MockerFixture
 
 from firefighter.incidents.enums import IncidentStatus
@@ -13,6 +14,9 @@ from firefighter.incidents.models.incident import Incident
 from firefighter.slack.views import CloseModal
 
 logger = logging.getLogger(__name__)
+
+if not apps.is_installed("firefighter.confluence"):
+    pytest.skip("Confluence app not installed; skipping close modal tests", allow_module_level=True)
 
 
 @pytest.mark.django_db
