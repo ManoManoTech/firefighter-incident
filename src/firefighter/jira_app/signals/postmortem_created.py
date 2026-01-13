@@ -68,7 +68,8 @@ def _create_confluence_postmortem(incident: Incident) -> Any | None:
 
     logger.info(f"Creating Confluence post-mortem for incident #{incident.id}")
     try:
-        return confluence_manager._create_confluence_postmortem(incident)  # noqa: SLF001
+        # Use the public API specifically for Confluence creation
+        return confluence_manager.create_confluence_postmortem(incident)
     except Exception:
         logger.exception(
             f"Failed to create Confluence post-mortem for incident #{incident.id}"
