@@ -31,6 +31,10 @@ def incident_updated_close_ticket_when_mitigated_or_postmortem(
     - P3+ (no postmortem): Close when incident is MITIGATED or CLOSED
     - POST_MORTEM status never closes the ticket (it remains open during PM phase)
     """
+    # Skip if this update was produced by Jira webhook sync to avoid redundant close calls
+    if incident_update.event_type == "jira_status_sync":
+        return
+
     if "_status" not in updated_fields:
         return
 

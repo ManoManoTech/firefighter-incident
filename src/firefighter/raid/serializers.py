@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Any
 from django.conf import settings
 from rest_framework import serializers
 
+from firefighter.incidents.enums import IncidentStatus
 from firefighter.incidents.models.user import User
 from firefighter.jira_app.client import (
     JiraAPIError,
@@ -27,6 +28,13 @@ if TYPE_CHECKING:
 
 
 JIRA_USER_IDS: dict[str, str] = settings.RAID_JIRA_USER_IDS
+JIRA_TO_IMPACT_STATUS_MAP: dict[str, IncidentStatus] = {
+    "Incoming": IncidentStatus.OPEN,
+    "Pending resolution": IncidentStatus.OPEN,
+    "In Progress": IncidentStatus.MITIGATING,
+    "Reporter validation": IncidentStatus.MITIGATED,
+    "Closed": IncidentStatus.CLOSED,
+}
 
 logger = logging.getLogger(__name__)
 
@@ -138,8 +146,11 @@ class LandbotIssueRequestSerializer(serializers.ModelSerializer[JiraTicket]):
         default="SBI",
     )
     priority = serializers.IntegerField(
-        min_value=1, max_value=5, write_only=True, allow_null=True,
-        help_text="Priority level 1-5 (1=Critical, 2=High, 3=Medium, 4=Low, 5=Lowest)"
+        min_value=1,
+        max_value=5,
+        write_only=True,
+        allow_null=True,
+        help_text="Priority level 1-5 (1=Critical, 2=High, 3=Medium, 4=Low, 5=Lowest)",
     )
     business_impact = serializers.ChoiceField(
         write_only=True, choices=["High", "Medium", "Low"], allow_null=True
@@ -304,6 +315,85 @@ class JiraWebhookUpdateSerializer(serializers.Serializer[Any]):
                     f"Could not alert in Slack for the update/s in the Jira ticket {jira_ticket_key}"
                 )
                 raise SlackNotificationError("Could not alert in Slack")
+
+            # Sync status from Jira → Impact when status changed to a mapped value
+            if jira_field_modified == "status":
+                jira_status_to = (
+                    validated_data["changelog"].get("items")[0].get("toString") or ""
+                )
+                impact_status = JIRA_TO_IMPACT_STATUS_MAP.get(jira_status_to)
+                if impact_status is None:
+                    logger.debug(
+                        "Jira status '%s' has no Impact mapping; skipping incident sync",
+                        jira_status_to,
+                    )
+                    return True
+
+                try:
+                    jira_ticket = JiraTicket.objects.select_related("incident").get(
+                        key=jira_ticket_key
+                    )
+                except JiraTicket.DoesNotExist:
+                    logger.warning(
+                        "Received Jira status webhook for %s but no JiraTicket found; skipping",
+                        jira_ticket_key,
+                    )
+                    return True
+
+                incident = getattr(jira_ticket, "incident", None)
+                if incident is None:
+                    logger.warning(
+                        "Jira ticket %s not linked to an incident; skipping status sync",
+                        jira_ticket_key,
+                    )
+                    return True
+
+                if incident.status == impact_status:
+                    logger.debug(
+                        "Incident %s already at status %s from Jira webhook; no-op",
+                        incident.id,
+                        incident.status.label,
+                    )
+                    return True
+
+                if incident.needs_postmortem and impact_status == IncidentStatus.CLOSED:
+                    if not hasattr(incident, "jira_postmortem_for"):
+                        logger.warning(
+                            "Skipping Jira→Impact close for incident %s: postmortem is required but no Jira PM linked.",
+                            incident.id,
+                        )
+                        return True
+                    try:
+                        from firefighter.jira_app.service_postmortem import (  # noqa: PLC0415
+                            jira_postmortem_service,
+                        )
+
+                        is_ready, current_status = (
+                            jira_postmortem_service.is_postmortem_ready(
+                                incident.jira_postmortem_for
+                            )
+                        )
+                        if not is_ready:
+                            logger.warning(
+                                "Skipping Jira→Impact close for incident %s: Jira PM %s not ready (status=%s).",
+                                incident.id,
+                                incident.jira_postmortem_for.jira_issue_key,
+                                current_status,
+                            )
+                            return True
+                    except Exception:
+                        logger.exception(
+                            "Failed to verify Jira post-mortem readiness for incident %s; skipping close sync",
+                            incident.id,
+                        )
+                        return True
+
+                incident.create_incident_update(
+                    created_by=None,
+                    status=impact_status,
+                    message=f"Status synced from Jira ({jira_status_to})",
+                    event_type="jira_status_sync",
+                )
 
         return True
 

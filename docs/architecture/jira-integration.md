@@ -103,16 +103,11 @@ Centralizes all JIRA field preparation for both P1-P3 and P4-P5 workflows.
 **JIRA → Impact**:
 ```python
 JIRA_TO_IMPACT_STATUS_MAP = {
-    "Open": IncidentStatus.INVESTIGATING,
-    "To Do": IncidentStatus.INVESTIGATING,
+    "Incoming": IncidentStatus.Open,
+    "Pending resolution": IncidentStatus.Open,
     "In Progress": IncidentStatus.MITIGATING,
-    "In Review": IncidentStatus.MITIGATING,
-    "Resolved": IncidentStatus.MITIGATED,
-    "Done": IncidentStatus.MITIGATED,
-    "Closed": IncidentStatus.POST_MORTEM,
-    "Reopened": IncidentStatus.INVESTIGATING,
-    "Blocked": IncidentStatus.MITIGATING,
-    "Waiting": IncidentStatus.MITIGATING,
+    "Reporter validation": IncidentStatus.MITIGATED,
+    "Closed": IncidentStatus.Closed,
 }
 ```
 
@@ -122,8 +117,8 @@ IMPACT_TO_JIRA_STATUS_MAP = {
     IncidentStatus.OPEN: "Open",
     IncidentStatus.INVESTIGATING: "In Progress",
     IncidentStatus.MITIGATING: "In Progress",
-    IncidentStatus.MITIGATED: "Resolved",
-    IncidentStatus.POST_MORTEM: "Closed",
+    IncidentStatus.MITIGATED: "Reporter validation",
+    IncidentStatus.POST_MORTEM: "Reporter validation",
     IncidentStatus.CLOSED: "Closed",
 }
 ```
