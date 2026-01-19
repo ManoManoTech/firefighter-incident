@@ -55,6 +55,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: jdx/mise-action@v3
+        with:
+          experimental: true
+      - name: Verify tool versions
+        run: |
+          echo "=== Mise tools ==="
+          mise list
+          echo "=== PDM version ==="
+          pdm --version
+          echo "=== Python version ==="
+          python --version
       - name: Configure git
         run: |
           git config --global user.email "firefighter@manomano.com"
@@ -67,7 +77,7 @@ jobs:
           git commit -a -m "chore(act): fake commit"
           git log
       - name: Install dependencies
-        run: pdm install -v && pdm info
+        run: pdm install --dev --frozen-lockfile -v && pdm info
       - name: Run Tests
         run: |
           cp .env.example .env
