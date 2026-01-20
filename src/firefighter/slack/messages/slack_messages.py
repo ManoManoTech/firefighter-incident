@@ -109,15 +109,36 @@ class SlackMessageIncidentPostMortemReminder(SlackMessageSurface):
                     action_id=UpdateStatusModal.open_action,
                 ),
             ),
-            SectionBlock(
-                text="2. Edit your post-mortem on Confluence",
-                accessory=ButtonElement(
-                    text="Edit post-mortem",
-                    value=self.incident.postmortem_for.page_edit_url,
-                    url=self.incident.postmortem_for.page_edit_url,
-                    action_id="open_link",
-                ),
-            ),
+        ]
+
+        # Add post-mortem editing options based on available services
+        if hasattr(self.incident, "postmortem_for") and self.incident.postmortem_for:
+            blocks.append(
+                SectionBlock(
+                    text="2. Edit your post-mortem on Confluence",
+                    accessory=ButtonElement(
+                        text="Edit post-mortem",
+                        value=self.incident.postmortem_for.page_edit_url,
+                        url=self.incident.postmortem_for.page_edit_url,
+                        action_id="open_link",
+                    ),
+                )
+            )
+        elif hasattr(self.incident, "jira_postmortem_for") and self.incident.jira_postmortem_for:
+            jira_pm = self.incident.jira_postmortem_for
+            blocks.append(
+                SectionBlock(
+                    text="2. Edit your post-mortem on Jira",
+                    accessory=ButtonElement(
+                        text=f"Edit Jira post-mortem ({jira_pm.jira_issue_key})",
+                        url=jira_pm.issue_url,
+                        action_id="open_link",
+                    ),
+                )
+            )
+
+        # Continue with remaining steps
+        blocks.extend([
             SectionBlock(
                 text=f"3. Submit the key events to {APP_DISPLAY_NAME}",
                 **accessory_kwargs,
@@ -138,7 +159,8 @@ class SlackMessageIncidentPostMortemReminder(SlackMessageSurface):
                     )
                 ]
             ),
-        ]
+        ])
+
         if POSTMORTEM_HELP_URL:
             blocks.insert(
                 4,
@@ -184,14 +206,30 @@ class SlackMessageIncidentFixedNextActions(SlackMessageSurface):
                 ),
             ),
             DividerBlock(),
-            ContextBlock(
-                elements=[
-                    MarkdownTextObject(
-                        text="A post-mortem is *not* required for this incident.\nIf you want to create one, use `/incident postmortem` to create a new post-mortem page on Confluence."
-                    )
-                ]
-            ),
         ]
+
+        # Add post-mortem context message if any post-mortem service is enabled
+        enable_confluence = getattr(settings, "ENABLE_CONFLUENCE", False)
+        enable_jira_postmortem = getattr(settings, "ENABLE_JIRA_POSTMORTEM", False)
+
+        if enable_confluence or enable_jira_postmortem:
+            postmortem_text = "A post-mortem is *not* required for this incident.\nIf you want to create one, use `/incident postmortem` to create a new post-mortem page"
+
+            if enable_confluence and enable_jira_postmortem:
+                postmortem_text += " on Confluence or Jira."
+            elif enable_confluence:
+                postmortem_text += " on Confluence."
+            elif enable_jira_postmortem:
+                postmortem_text += " on Jira."
+
+            blocks.append(
+                ContextBlock(
+                    elements=[
+                        MarkdownTextObject(text=postmortem_text)
+                    ]
+                )
+            )
+
         return blocks
 
 
@@ -612,7 +650,23 @@ class SlackMessageIncidentPostMortemCreated(SlackMessageSurface):
         return "\n".join(parts)
 
     def get_blocks(self) -> list[Block]:
-        return [SectionBlock(text=self.get_text())]
+        blocks: list[Block] = [SectionBlock(text=self.get_text())]
+
+        # Add documentation link if Jira post-mortem exists
+        if hasattr(self.incident, "jira_postmortem_for") and self.incident.jira_postmortem_for:
+            blocks.append(
+                SectionBlock(
+                    text="Need guidance on how to fill Post-Mortems in Jira? See our documentation",
+                    accessory=ButtonElement(
+                        text="Open documentation",
+                        url="https://manomano.atlassian.net/wiki/spaces/TC/pages/5639635000/How+to+fill+Post-Mortems+in+Jira",
+                        value="jira_postmortem_documentation",
+                        action_id="open_link",
+                    ),
+                )
+            )
+
+        return blocks
 
 
 class SlackMessageIncidentPostMortemCreatedAnnouncement(SlackMessageSurface):
@@ -696,7 +750,7 @@ class SlackMessagePostMortemReminder5Days(SlackMessageSurface):
         if hasattr(self.incident, "postmortem_for"):
             pm_links.append(
                 ButtonElement(
-                    text="Open Confluence Post-Mortem",
+                    text="Open Post-Mortem (Confluence)",
                     url=self.incident.postmortem_for.page_edit_url,
                     action_id="open_link",
                 )
