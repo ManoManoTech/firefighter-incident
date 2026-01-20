@@ -53,4 +53,3 @@ class TestPostMortemModal:
 
         action_ids = [el.get("action_id") for el in TestPostMortemModal._get_action_elements(view_dict)]
         assert "incident_create_postmortem_now" in action_ids
-
