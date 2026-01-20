@@ -634,14 +634,18 @@ class SlackMessageIncidentPostMortemCreated(SlackMessageSurface):
         """Generate text with links to all available post-mortems."""
         parts = ["📔 The post-mortem has been created:"]
 
-        # Add Confluence link if available
-        if hasattr(self.incident, "postmortem_for"):
+        # Check settings flags
+        enable_confluence = getattr(settings, "ENABLE_CONFLUENCE", False)
+        enable_jira_postmortem = getattr(settings, "ENABLE_JIRA_POSTMORTEM", False)
+
+        # Add Confluence link if enabled AND post-mortem exists
+        if enable_confluence and hasattr(self.incident, "postmortem_for"):
             parts.append(
                 f"• Confluence: {self.incident.postmortem_for.page_url}"
             )
 
-        # Add Jira link if available
-        if hasattr(self.incident, "jira_postmortem_for"):
+        # Add Jira link if enabled AND post-mortem exists
+        if enable_jira_postmortem and hasattr(self.incident, "jira_postmortem_for"):
             jira_pm = self.incident.jira_postmortem_for
             parts.append(
                 f"• Jira: {jira_pm.issue_url} ({jira_pm.jira_issue_key})"
@@ -652,8 +656,13 @@ class SlackMessageIncidentPostMortemCreated(SlackMessageSurface):
     def get_blocks(self) -> list[Block]:
         blocks: list[Block] = [SectionBlock(text=self.get_text())]
 
-        # Add documentation link if Jira post-mortem exists
-        if hasattr(self.incident, "jira_postmortem_for") and self.incident.jira_postmortem_for:
+        # Check settings flags
+        enable_jira_postmortem = getattr(settings, "ENABLE_JIRA_POSTMORTEM", False)
+
+        # Add documentation link if Jira is enabled AND post-mortem exists
+        if (enable_jira_postmortem and 
+            hasattr(self.incident, "jira_postmortem_for") and 
+            self.incident.jira_postmortem_for):
             blocks.append(
                 SectionBlock(
                     text="Need guidance on how to fill Post-Mortems in Jira? See our documentation",
