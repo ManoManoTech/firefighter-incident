@@ -418,14 +418,17 @@ class Incident(models.Model):
                     f"Incident is not in {IncidentStatus.MITIGATED.label} status (currently {self.status.label}).",
                 )
             )
-        missing_milestones = self.missing_milestones()
-        if len(missing_milestones) > 0:
-            cant_closed_reasons.append(
-                (
-                    "MISSING_REQUIRED_KEY_EVENTS",
-                    f"Missing key events: {', '.join(missing_milestones)}",
+        # Require key events only for P1-P3; P4+ can close without them.
+        require_milestones = not (self.priority and self.priority.value >= 4)
+        if require_milestones:
+            missing_milestones = self.missing_milestones()
+            if len(missing_milestones) > 0:
+                cant_closed_reasons.append(
+                    (
+                        "MISSING_REQUIRED_KEY_EVENTS",
+                        f"Missing key events: {', '.join(missing_milestones)}",
+                    )
                 )
-            )
 
         if len(cant_closed_reasons) > 0:
             return False, cant_closed_reasons

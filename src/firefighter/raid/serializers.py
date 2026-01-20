@@ -31,7 +31,7 @@ JIRA_USER_IDS: dict[str, str] = settings.RAID_JIRA_USER_IDS
 JIRA_TO_IMPACT_STATUS_MAP: dict[str, IncidentStatus] = {
     "Incoming": IncidentStatus.OPEN,
     "Pending resolution": IncidentStatus.OPEN,
-    "In Progress": IncidentStatus.MITIGATING,
+    "in progress": IncidentStatus.MITIGATING,
     "Reporter validation": IncidentStatus.MITIGATED,
     "Closed": IncidentStatus.CLOSED,
 }
