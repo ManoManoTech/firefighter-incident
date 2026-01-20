@@ -148,10 +148,22 @@ class IncidentDetailView(CustomDetailView[Incident]):
         "conversation",
         "created_by",
     ]
-    if settings.ENABLE_CONFLUENCE:
-        select_related.append("postmortem_for")
-    if getattr(settings, "ENABLE_JIRA_POSTMORTEM", False):
-        select_related.append("jira_postmortem_for")
+    
+    # Always load post-mortem relationships to display existing data
+    # even if creation is disabled
+    try:
+        # Only add if confluence app is installed
+        if "firefighter.confluence" in settings.INSTALLED_APPS:
+            select_related.append("postmortem_for")
+    except ImportError:
+        pass
+        
+    try:
+        # Only add if jira_app is installed
+        if "firefighter.jira_app" in settings.INSTALLED_APPS:
+            select_related.append("jira_postmortem_for")
+    except ImportError:
+        pass
     queryset = Incident.objects.select_related(*select_related).prefetch_related(
         Prefetch(
             "incidentupdate_set",
