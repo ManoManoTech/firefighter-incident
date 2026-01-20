@@ -148,7 +148,7 @@ class IncidentDetailView(CustomDetailView[Incident]):
         "conversation",
         "created_by",
     ]
-    
+
     # Always load post-mortem relationships to display existing data
     # even if creation is disabled
     try:
@@ -157,7 +157,7 @@ class IncidentDetailView(CustomDetailView[Incident]):
             select_related.append("postmortem_for")
     except ImportError:
         pass
-        
+
     try:
         # Only add if jira_app is installed
         if "firefighter.jira_app" in settings.INSTALLED_APPS:
