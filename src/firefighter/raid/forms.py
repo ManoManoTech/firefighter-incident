@@ -165,6 +165,66 @@ def alert_slack_new_jira_ticket(
             )
 
 
+def send_message_to_incident_channel(
+    jira_ticket_id: int,
+    jira_field_modified: str,
+    message: SlackMessageSurface
+) -> bool:
+    """Send notification to incident channel for critical Jira changes.
+
+    Only sends notifications for critical fields that warrant incident team attention:
+    - status: Status changes affect incident workflow
+    - Priority: Priority changes affect urgency and response
+
+    Args:
+        jira_ticket_id: The Jira ticket ID
+        jira_field_modified: The field that was modified
+        message: The Slack message to send
+
+    Returns:
+        True if successful or no channel to notify, False if failed
+    """
+    # Only notify incident channel for critical changes
+    critical_fields = {"status", "Priority"}
+    if jira_field_modified not in critical_fields:
+        logger.debug(
+            f"Field '{jira_field_modified}' is not critical, skipping incident channel notification"
+        )
+        return True
+
+    try:
+        jira_ticket = JiraTicket.objects.select_related("incident").get(id=jira_ticket_id)
+
+        # Check if ticket is linked to an incident
+        if not jira_ticket.incident:
+            logger.debug(f"Jira ticket {jira_ticket_id} has no linked incident")
+            return True
+
+        # Check if incident has a Slack channel
+        channel = getattr(jira_ticket.incident, "incidentchannel", None)
+        if channel is None:
+            logger.debug(f"Incident {jira_ticket.incident.id} has no Slack channel")
+            return True
+
+        # Send message to incident channel
+        channel.send_message_and_save(message)
+        logger.info(
+            f"Sent Jira update notification to incident channel {channel.name} "
+            f"for ticket {jira_ticket.key} (field: {jira_field_modified})"
+        )
+
+    except JiraTicket.DoesNotExist:
+        logger.warning(f"Jira ticket with ID {jira_ticket_id} not found")
+        return False
+    except Exception:
+        logger.exception(
+            f"Failed to send message to incident channel for ticket {jira_ticket_id}"
+        )
+        return False
+    else:
+        return True
+
+
 def alert_slack_update_ticket(
     jira_ticket_id: int,
     jira_ticket_key: str,
@@ -180,7 +240,14 @@ def alert_slack_update_ticket(
         jira_field_from=jira_field_from,
         jira_field_to=jira_field_to,
     )
-    return send_message_to_watchers(jira_issue_id=jira_ticket_id, message=message)
+
+    # Send notifications to watchers (existing behavior)
+    watchers_success = send_message_to_watchers(jira_issue_id=jira_ticket_id, message=message)
+
+    # Send notification to incident channel for critical changes
+    channel_success = send_message_to_incident_channel(jira_ticket_id, jira_field_modified, message)
+
+    return watchers_success and channel_success
 
 
 def alert_slack_comment_ticket(
