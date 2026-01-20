@@ -3,18 +3,20 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING, Any
 
-from slack_sdk.models.blocks.blocks import Block, SectionBlock
+from slack_sdk.models.blocks.block_elements import ButtonElement
+from slack_sdk.models.blocks.blocks import ActionsBlock, Block, SectionBlock
 from slack_sdk.models.views import View
 
-from firefighter.slack.views.modals.base_modal.base import SlackModal
+from firefighter.confluence.models import PostMortemManager
+from firefighter.incidents.models.incident import Incident
+from firefighter.slack.utils import respond
+from firefighter.slack.views.modals.base_modal.base import SlackModal, app
 from firefighter.slack.views.modals.base_modal.mixins import (
     IncidentSelectableModalMixin,
 )
 
 if TYPE_CHECKING:
     from slack_bolt.context.ack.ack import Ack
-
-    from firefighter.incidents.models.incident import Incident
 
 
 logger = logging.getLogger(__name__)
@@ -53,11 +55,28 @@ class PostMortemModal(
                         text=f"• Jira: <{incident.jira_postmortem_for.issue_url}|{incident.jira_postmortem_for.jira_issue_key}>"
                     )
                 )
-        else:
+        elif incident.needs_postmortem:
             blocks.append(
                 SectionBlock(
                     text=f"Post-mortem for incident #{incident.id} will be automatically created when the incident reaches MITIGATED status."
                 )
+            )
+        else:
+            blocks.extend(
+                [
+                    SectionBlock(
+                        text="P3 incident post-mortem is not mandatory. You can still have one if you think is necessary by clicking on the button below."
+                    ),
+                    ActionsBlock(
+                        elements=[
+                            ButtonElement(
+                                text="Create post-mortem now",
+                                action_id="incident_create_postmortem_now",
+                                value=str(incident.id),
+                            )
+                        ]
+                    ),
+                ]
             )
 
         return View(
@@ -74,6 +93,40 @@ class PostMortemModal(
         # This modal is now read-only (no submit button)
         # Post-mortems are created automatically when incident reaches MITIGATED status
         ack()
+
+
+@app.action("incident_create_postmortem_now")
+def handle_create_postmortem_action(ack: Ack, body: dict[str, Any]) -> None:
+    """Create post-mortem(s) on demand from the modal (e.g. P3+ incidents)."""
+    ack()
+
+    incident_id = str(body.get("actions", [{}])[0].get("value", "")).strip()
+    try:
+        incident = Incident.objects.get(pk=incident_id)
+    except Incident.DoesNotExist:
+        respond(body, text=":x: Incident not found.")
+        return
+
+    try:
+        confluence_pm, jira_pm = PostMortemManager.create_postmortem_for_incident(
+            incident
+        )
+    except Exception:
+        logger.exception("Failed to create post-mortem for incident #%s", incident_id)
+        respond(body, text=":x: Failed to create post-mortem. Please try again.")
+        return
+
+    created_targets: list[str] = []
+    if confluence_pm:
+        created_targets.append("Confluence")
+    if jira_pm:
+        created_targets.append("Jira")
+
+    if created_targets:
+        targets = " and ".join(created_targets)
+        respond(body, text=f":white_check_mark: {targets} post-mortem created.")
+    else:
+        respond(body, text=":warning: No post-mortem was created.")
 
 
 modal_postmortem = PostMortemModal()
