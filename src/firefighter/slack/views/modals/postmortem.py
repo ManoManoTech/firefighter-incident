@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING, Any
 
+from django.core.exceptions import ObjectDoesNotExist
 from slack_sdk.models.blocks.block_elements import ButtonElement
 from slack_sdk.models.blocks.blocks import ActionsBlock, Block, SectionBlock
 from slack_sdk.models.views import View
@@ -34,8 +35,8 @@ class PostMortemModal(
         blocks: list[Block] = []
 
         # Check existing post-mortems
-        has_confluence = hasattr(incident, "postmortem_for")
-        has_jira = hasattr(incident, "jira_postmortem_for")
+        has_confluence = _safe_has_relation(incident, "postmortem_for")
+        has_jira = _safe_has_relation(incident, "jira_postmortem_for")
 
         if has_confluence or has_jira:
             blocks.append(
@@ -130,3 +131,17 @@ def handle_create_postmortem_action(ack: Ack, body: dict[str, Any]) -> None:
 
 
 modal_postmortem = PostMortemModal()
+
+
+def _safe_has_relation(instance: Incident, attr: str) -> bool:
+    """Safely check if a reverse relation exists without triggering KeyError in cache.
+
+    Django's reverse OneToOne descriptor can raise KeyError when using hasattr
+    on unsaved or freshly created instances. We guard against that here.
+    """
+    try:
+        getattr(instance, attr)
+    except (AttributeError, ObjectDoesNotExist, KeyError):
+        return False
+    else:
+        return True
