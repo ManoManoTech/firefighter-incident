@@ -98,6 +98,66 @@ See [GitHub help](https://help.github.com/articles/syncing-a-fork) for more info
 
 Check all available commands using `pdm run --list`.
 
+### Package Management
+
+We use PDM with specific scripts for different environments:
+
+**Local Development:**
+```shell
+# Install for local development (includes dev dependencies)
+pdm install
+
+# Build local package for testing
+pdm build
+
+# Install built package locally
+pip install dist/firefighter_incident-*.whl
+```
+
+**Production Package:**
+```shell
+# Build production package
+pdm run build-web  # Build frontend assets first
+pdm build --no-sdist  # Build wheel only
+
+# Publish to PyPI (maintainers only)
+pdm publish
+```
+
+### Web Assets Development
+
+FireFighter includes frontend assets (CSS/JS) that need to be built:
+
+```shell
+# Build CSS/JS assets for development
+pdm run build-web
+
+# Watch for changes (if you're working on frontend)
+npm run dev  # or directly: rollup -c --watch
+```
+
+**Asset Pipeline:**
+- **CSS**: Tailwind CSS → PostCSS → Minified CSS
+- **JavaScript**: ES6+ → Rollup → Bundled JS
+- **Assets**: Copied to `src/firefighter/static/`
+
+### Environment Scripts
+
+**Development Environment:**
+```shell
+pdm run dev-env-setup    # Complete setup (recommended for first time)
+pdm run dev-env-start    # Start services only
+pdm run dev-env-stop     # Stop services
+pdm run dev-env-destroy  # ⚠️ Nuclear option - destroys DB!
+```
+
+**Application:**
+```shell
+pdm run runserver       # Django development server
+pdm run celery-worker   # Background task worker
+pdm run celery-beat     # Task scheduler
+```
+
 ### Formatting
 
 We use `ruff`. You can run `pdm run fmt` or `ruff format .` in the project root to format every file.
