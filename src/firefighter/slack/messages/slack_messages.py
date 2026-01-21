@@ -124,7 +124,10 @@ class SlackMessageIncidentPostMortemReminder(SlackMessageSurface):
                     ),
                 )
             )
-        elif hasattr(self.incident, "jira_postmortem_for") and self.incident.jira_postmortem_for:
+        elif (
+            hasattr(self.incident, "jira_postmortem_for")
+            and self.incident.jira_postmortem_for
+        ):
             jira_pm = self.incident.jira_postmortem_for
             blocks.append(
                 SectionBlock(
@@ -138,28 +141,30 @@ class SlackMessageIncidentPostMortemReminder(SlackMessageSurface):
             )
 
         # Continue with remaining steps
-        blocks.extend([
-            SectionBlock(
-                text=f"3. Submit the key events to {APP_DISPLAY_NAME}",
-                **accessory_kwargs,
-            ),
-            SectionBlock(
-                text="4. Once everything has been submitted, close the incident",
-                accessory=ButtonElement(
-                    text="Close incident",
-                    value=str(self.incident.id),
-                    action_id=CloseModal.open_action,
+        blocks.extend(
+            [
+                SectionBlock(
+                    text=f"3. Submit the key events to {APP_DISPLAY_NAME}",
+                    **accessory_kwargs,
                 ),
-            ),
-            DividerBlock(),
-            ContextBlock(
-                elements=[
-                    MarkdownTextObject(
-                        text=":bulb: Updating the status and creating a post-mortem is crucial for the Platform Operations Report presented during the Tech Weekly."
-                    )
-                ]
-            ),
-        ])
+                SectionBlock(
+                    text="4. Once everything has been submitted, close the incident",
+                    accessory=ButtonElement(
+                        text="Close incident",
+                        value=str(self.incident.id),
+                        action_id=CloseModal.open_action,
+                    ),
+                ),
+                DividerBlock(),
+                ContextBlock(
+                    elements=[
+                        MarkdownTextObject(
+                            text=":bulb: Updating the status and creating a post-mortem is crucial for the Platform Operations Report presented during the Tech Weekly."
+                        )
+                    ]
+                ),
+            ]
+        )
 
         if POSTMORTEM_HELP_URL:
             blocks.insert(
@@ -223,11 +228,7 @@ class SlackMessageIncidentFixedNextActions(SlackMessageSurface):
                 postmortem_text += " on Jira."
 
             blocks.append(
-                ContextBlock(
-                    elements=[
-                        MarkdownTextObject(text=postmortem_text)
-                    ]
-                )
+                ContextBlock(elements=[MarkdownTextObject(text=postmortem_text)])
             )
 
         return blocks
@@ -261,11 +262,17 @@ class SlackMessageIncidentDeclaredAnnouncement(SlackMessageSurface):
         if hasattr(self.incident, "custom_fields") and self.incident.custom_fields:
             custom_fields = self.incident.custom_fields
             if custom_fields.get("zendesk_ticket_id"):
-                fields.append(f":ticket: *Zendesk Ticket:* {custom_fields['zendesk_ticket_id']}")
+                fields.append(
+                    f":ticket: *Zendesk Ticket:* {custom_fields['zendesk_ticket_id']}"
+                )
             if custom_fields.get("seller_contract_id"):
-                fields.append(f":memo: *Seller Contract:* {custom_fields['seller_contract_id']}")
+                fields.append(
+                    f":memo: *Seller Contract:* {custom_fields['seller_contract_id']}"
+                )
             if custom_fields.get("zoho_desk_ticket_id"):
-                fields.append(f":ticket: *Zoho Desk Ticket:* {custom_fields['zoho_desk_ticket_id']}")
+                fields.append(
+                    f":ticket: *Zoho Desk Ticket:* {custom_fields['zoho_desk_ticket_id']}"
+                )
             if custom_fields.get("is_key_account") is True:
                 fields.append(":star: *Key Account*")
             if custom_fields.get("is_seller_in_golden_list") is True:
@@ -296,10 +303,17 @@ class SlackMessageIncidentDeclaredAnnouncement(SlackMessageSurface):
         pm_fields = []
 
         if hasattr(self.incident, "postmortem_for") and self.incident.postmortem_for:
-            pm_fields.append(f":confluence: <{self.incident.postmortem_for.page_url}|*Confluence Post-mortem*>")
+            pm_fields.append(
+                f":confluence: <{self.incident.postmortem_for.page_url}|*Confluence Post-mortem*>"
+            )
 
-        if hasattr(self.incident, "jira_postmortem_for") and self.incident.jira_postmortem_for:
-            pm_fields.append(f":jira_new: <{self.incident.jira_postmortem_for.issue_url}|*Jira Post-mortem ({self.incident.jira_postmortem_for.jira_issue_key})*>")
+        if (
+            hasattr(self.incident, "jira_postmortem_for")
+            and self.incident.jira_postmortem_for
+        ):
+            pm_fields.append(
+                f":jira_new: <{self.incident.jira_postmortem_for.issue_url}|*Jira Post-mortem ({self.incident.jira_postmortem_for.jira_issue_key})*>"
+            )
 
         if not pm_fields:
             return []
@@ -582,7 +596,8 @@ class SlackMessageIncidentStatusUpdated(SlackMessageSurface):
                                 value=str(self.incident.id),
                                 action_id=UpdateStatusModal.open_action,
                             )
-                            if self.in_channel and self.incident.status != IncidentStatus.CLOSED
+                            if self.in_channel
+                            and self.incident.status != IncidentStatus.CLOSED
                             else None
                         ),
                     ),
@@ -636,16 +651,12 @@ class SlackMessageIncidentPostMortemCreated(SlackMessageSurface):
 
         # Add Confluence link if available
         if hasattr(self.incident, "postmortem_for"):
-            parts.append(
-                f"• Confluence: {self.incident.postmortem_for.page_url}"
-            )
+            parts.append(f"• Confluence: {self.incident.postmortem_for.page_url}")
 
         # Add Jira link if available
         if hasattr(self.incident, "jira_postmortem_for"):
             jira_pm = self.incident.jira_postmortem_for
-            parts.append(
-                f"• Jira: {jira_pm.issue_url} ({jira_pm.jira_issue_key})"
-            )
+            parts.append(f"• Jira: {jira_pm.issue_url} ({jira_pm.jira_issue_key})")
 
         return "\n".join(parts)
 
@@ -653,7 +664,10 @@ class SlackMessageIncidentPostMortemCreated(SlackMessageSurface):
         blocks: list[Block] = [SectionBlock(text=self.get_text())]
 
         # Add documentation link if Jira post-mortem exists
-        if hasattr(self.incident, "jira_postmortem_for") and self.incident.jira_postmortem_for:
+        if (
+            hasattr(self.incident, "jira_postmortem_for")
+            and self.incident.jira_postmortem_for
+        ):
             blocks.append(
                 SectionBlock(
                     text="Need guidance on how to fill Post-Mortems in Jira? See our documentation",
@@ -707,7 +721,9 @@ class SlackMessageIncidentPostMortemCreatedAnnouncement(SlackMessageSurface):
             SectionBlock(
                 text=f"📔 *Post-mortem created for incident #{self.incident.id}*"
             ),
-            SectionBlock(text=f"*{shorten(self.incident.title, 2995, placeholder='...')}*"),
+            SectionBlock(
+                text=f"*{shorten(self.incident.title, 2995, placeholder='...')}*"
+            ),
             DividerBlock(),
             SectionBlock(fields=fields),
         ]
@@ -770,17 +786,19 @@ class SlackMessagePostMortemReminder5Days(SlackMessageSurface):
             blocks.append(ActionsBlock(elements=pm_links))
 
         # Add action buttons
-        blocks.extend([
-            DividerBlock(),
-            SectionBlock(
-                text="Update the incident status or close it once the post-mortem is complete.",
-                accessory=ButtonElement(
-                    text="Update status",
-                    value=str(self.incident.id),
-                    action_id=UpdateStatusModal.open_action,
+        blocks.extend(
+            [
+                DividerBlock(),
+                SectionBlock(
+                    text="Update the incident status or close it once the post-mortem is complete.",
+                    accessory=ButtonElement(
+                        text="Update status",
+                        value=str(self.incident.id),
+                        action_id=UpdateStatusModal.open_action,
+                    ),
                 ),
-            ),
-        ])
+            ]
+        )
 
         return blocks
 

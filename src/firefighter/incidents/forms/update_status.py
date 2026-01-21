@@ -43,8 +43,13 @@ class UpdateStatusForm(forms.Form):
         ),
     )
 
-    def __init__(self, *args: Any, incident: Incident | None = None, **kwargs: Any) -> None:
+    def __init__(
+        self, *args: Any, incident: Incident | None = None, **kwargs: Any
+    ) -> None:
         super().__init__(*args, **kwargs)
+
+        # Store incident for later use in clean()
+        self.incident = incident
 
         # Dynamically adjust status choices based on incident requirements
         if incident:
@@ -56,14 +61,29 @@ class UpdateStatusForm(forms.Form):
         status_field = self.fields["status"]
 
         # Check if incident requires post-mortem (P1/P2 in PRD)
+        logger.debug(f"DEBUG: incident.priority={incident.priority}")
+        logger.debug(f"DEBUG: incident.environment={incident.environment}")
+        if incident.priority:
+            logger.debug(f"DEBUG: incident.priority.needs_postmortem={incident.priority.needs_postmortem}")
+            logger.debug(f"DEBUG: incident.priority.value={incident.priority.value}")
+        if incident.environment:
+            logger.debug(f"DEBUG: incident.environment.value={incident.environment.value}")
         requires_postmortem = bool(
             incident.priority
             and incident.environment
             and incident.priority.needs_postmortem
             and incident.environment.value == "PRD"
         )
-
-        allowed_statuses = self._get_allowed_statuses(current_status, requires_postmortem=requires_postmortem)
+        logger.debug(f"DEBUG PRINT: About to call _get_allowed_statuses with current_status={current_status}, requires_postmortem={requires_postmortem}")
+        allowed_statuses = self._get_allowed_statuses(
+            current_status, requires_postmortem=requires_postmortem
+        )
+        
+        logger.debug(f"DEBUG PRINT: _get_allowed_statuses returned {allowed_statuses} for current_status={current_status}, requires_postmortem={requires_postmortem}")
+        logger.debug(
+            f"DEBUG: _get_allowed_statuses returned {allowed_statuses} for "
+            f"current_status={current_status}, requires_postmortem={requires_postmortem}"
+        )
 
         # If we got a list of enum values, convert to choices and include current status
         if allowed_statuses:
@@ -75,6 +95,10 @@ class UpdateStatusForm(forms.Form):
             logger.debug(
                 f"Set status choices for incident #{incident.id}: {choices} "
                 f"(current_status={current_status}, requires_postmortem={requires_postmortem})"
+            )
+        else:
+            logger.debug(
+                f"No allowed_statuses returned, keeping default choices for incident #{incident.id}"
             )
 
     def _get_allowed_statuses(
@@ -96,7 +120,7 @@ class UpdateStatusForm(forms.Form):
     def _get_postmortem_allowed_statuses(
         self, current_status: IncidentStatus, status_field: Any
     ) -> list[IncidentStatus] | None:
-        """Get allowed statuses for incidents requiring postmortem."""
+        """Get allowed statuses for incidents requiring postmortem (P1/P2)."""
         if current_status == IncidentStatus.OPEN:
             return [IncidentStatus.INVESTIGATING, IncidentStatus.CLOSED]
         if current_status == IncidentStatus.INVESTIGATING:
@@ -104,18 +128,22 @@ class UpdateStatusForm(forms.Form):
         if current_status == IncidentStatus.MITIGATING:
             return [IncidentStatus.MITIGATED]
         if current_status == IncidentStatus.MITIGATED:
-            return [IncidentStatus.POST_MORTEM]
+            # P1/P2 can: go to POST_MORTEM (required) OR reopen to INVESTIGATING/MITIGATING (with reason)
+            return [
+                IncidentStatus.POST_MORTEM,      # Required next step
+                IncidentStatus.INVESTIGATING,   # Reopen option (with reason)
+                IncidentStatus.MITIGATING,      # Reopen option (with reason)
+            ]
         if current_status == IncidentStatus.POST_MORTEM:
             return [IncidentStatus.CLOSED]
 
-        # Default: all statuses up to closed
-        self._set_default_choices(status_field, current_status, IncidentStatus.choices_lte(IncidentStatus.CLOSED))
+        # For any other status, return None to use the default choices
         return None
 
     def _get_no_postmortem_allowed_statuses(
         self, current_status: IncidentStatus, status_field: Any
     ) -> list[IncidentStatus] | None:
-        """Get allowed statuses for incidents not requiring postmortem."""
+        """Get allowed statuses for incidents not requiring postmortem (P3/P4/P5)."""
         if current_status == IncidentStatus.OPEN:
             return [IncidentStatus.INVESTIGATING, IncidentStatus.CLOSED]
         if current_status == IncidentStatus.INVESTIGATING:
@@ -123,12 +151,15 @@ class UpdateStatusForm(forms.Form):
         if current_status == IncidentStatus.MITIGATING:
             return [IncidentStatus.MITIGATED]
         if current_status == IncidentStatus.MITIGATED:
-            return [IncidentStatus.CLOSED]
+            # P3/P4/P5 can: go to CLOSED (normal next step) OR reopen to INVESTIGATING/MITIGATING (with reason)
+            return [
+                IncidentStatus.CLOSED,          # Normal next step for P3+
+                IncidentStatus.INVESTIGATING,   # Reopen option (with reason)
+                IncidentStatus.MITIGATING,      # Reopen option (with reason)
+            ]
 
-        # Default fallback
-        self._set_default_choices(
-            status_field, current_status, IncidentStatus.choices_lte_skip_postmortem(IncidentStatus.CLOSED)
-        )
+        # For any other status, return None to use the default choices
+        print(f"DEBUG: _get_no_postmortem_allowed_statuses returning None for status {current_status}")
         return None
 
     def _set_default_choices(
@@ -136,14 +167,21 @@ class UpdateStatusForm(forms.Form):
     ) -> None:
         """Set status field choices to default, ensuring current status is included."""
         # Convert default_choices to string keys to match Slack form submissions
-        status_field.choices = [(str(choice[0]), choice[1]) for choice in default_choices]
+        status_field.choices = [
+            (str(choice[0]), choice[1]) for choice in default_choices
+        ]
         existing_values = {choice[0] for choice in status_field.choices}
         if str(current_status.value) not in existing_values:
             # Insert current status at the beginning
-            status_field.choices = [(str(current_status.value), current_status.label), *status_field.choices]
+            status_field.choices = [
+                (str(current_status.value), current_status.label),
+                *status_field.choices,
+            ]
 
     @staticmethod
-    def requires_closure_reason(incident: Incident, target_status: IncidentStatus) -> bool:
+    def requires_closure_reason(
+        incident: Incident, target_status: IncidentStatus
+    ) -> bool:
         """Check if closing this incident to the target status requires a closure reason.
 
         Based on the workflow diagram:
@@ -155,4 +193,49 @@ class UpdateStatusForm(forms.Form):
         current_status = incident.status
 
         # Require reason if closing from Opened or Investigating (for any priority)
-        return current_status.value in {IncidentStatus.OPEN, IncidentStatus.INVESTIGATING}
+        return current_status.value in {
+            IncidentStatus.OPEN,
+            IncidentStatus.INVESTIGATING,
+        }
+
+    @staticmethod
+    def requires_reopening_reason(
+        incident: Incident, target_status: IncidentStatus
+    ) -> bool:
+        """Check if reopening this incident from MITIGATED requires a reason.
+
+        Require justification when going back from MITIGATED to previous states.
+        """
+        if incident.status != IncidentStatus.MITIGATED:
+            return False
+
+        # Require reason if returning from MITIGATED to previous states
+        return target_status.value in {
+            IncidentStatus.INVESTIGATING,
+            IncidentStatus.MITIGATING,
+        }
+
+    def clean(self) -> dict[str, Any]:
+        """Validate the form data, especially message requirements."""
+        cleaned_data = super().clean()
+
+        # Check if we need a message for reopening from MITIGATED
+        if self.incident:
+            status = cleaned_data.get("status")
+            if status and isinstance(status, IncidentStatus):
+                if self.requires_reopening_reason(self.incident, status):
+                    message = cleaned_data.get("message", "").strip()
+                    if not message:
+                        raise forms.ValidationError(
+                            {
+                                "message": "A justification message is required when reopening an incident from Mitigated status."
+                            }
+                        )
+                    if len(message) < 10:
+                        raise forms.ValidationError(
+                            {
+                                "message": "Justification message must be at least 10 characters when reopening from Mitigated status."
+                            }
+                        )
+
+        return cleaned_data
