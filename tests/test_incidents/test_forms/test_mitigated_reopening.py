@@ -1,13 +1,14 @@
 from __future__ import annotations
 
-import pytest
 import uuid
+
+import pytest
 from django.test import TestCase
 
 from firefighter.incidents.enums import IncidentStatus
 from firefighter.incidents.factories import IncidentFactory
 from firefighter.incidents.forms.update_status import UpdateStatusForm
-from firefighter.incidents.models import Priority, Environment
+from firefighter.incidents.models import Environment, Priority
 
 
 def create_unique_priority(value: int, needs_postmortem: bool = False) -> Priority:
@@ -23,7 +24,7 @@ def create_unique_priority(value: int, needs_postmortem: bool = False) -> Priori
 
 def create_unique_environment(value: str, exact_value: bool = False) -> Environment:
     """Create an Environment with unique constraints handled properly.
-    
+
     Args:
         value: Base value for the environment
         exact_value: If True, use the value exactly and get_or_create (for testing specific logic)
@@ -35,18 +36,17 @@ def create_unique_environment(value: str, exact_value: bool = False) -> Environm
         environment, created = Environment.objects.get_or_create(
             value=value,  # Exact value needed for logic testing
             defaults={
-                'name': f"Environment {value} {unique_suffix}",
-                'description': f"Test environment {value} {unique_suffix}"
+                "name": f"Environment {value} {unique_suffix}",
+                "description": f"Test environment {value} {unique_suffix}"
             }
         )
         return environment
-    else:
-        unique_suffix = uuid.uuid4().hex[:8]
-        return Environment.objects.create(
-            value=f"{value}-{unique_suffix}",
-            name=f"Environment {value} {unique_suffix}",
-            description=f"Test environment {value} {unique_suffix}"
-        )
+    unique_suffix = uuid.uuid4().hex[:8]
+    return Environment.objects.create(
+        value=f"{value}-{unique_suffix}",
+        name=f"Environment {value} {unique_suffix}",
+        description=f"Test environment {value} {unique_suffix}"
+    )
 
 
 @pytest.mark.django_db
@@ -59,9 +59,9 @@ class TestMitigatedReopeningWorkflow(TestCase):
         priority = create_unique_priority(value=1001, needs_postmortem=True)
         # IMPORTANT: Use exact "PRD" value for environment since requires_postmortem logic checks for exact match
         environment = create_unique_environment("PRD", exact_value=True)
-        
+
         incident = IncidentFactory.create(
-            _status=IncidentStatus.MITIGATED, 
+            _status=IncidentStatus.MITIGATED,
             priority=priority,
             environment=environment
         )
@@ -69,7 +69,7 @@ class TestMitigatedReopeningWorkflow(TestCase):
 
         # Get available statuses
         status_choices = dict(form.fields["status"].choices)
-        available_statuses = {IncidentStatus(int(k)) for k in status_choices.keys()}
+        available_statuses = {IncidentStatus(int(k)) for k in status_choices}
 
         # P1 incidents should have POST_MORTEM (required for P1/P2)
         assert IncidentStatus.POST_MORTEM in available_statuses
@@ -81,9 +81,9 @@ class TestMitigatedReopeningWorkflow(TestCase):
         """P3 incidents can return from MITIGATED to MITIGATING."""
         priority = create_unique_priority(value=3001, needs_postmortem=False)
         environment = create_unique_environment("STG")
-        
+
         incident = IncidentFactory.create(
-            _status=IncidentStatus.MITIGATED, 
+            _status=IncidentStatus.MITIGATED,
             priority=priority,
             environment=environment
         )
@@ -91,7 +91,7 @@ class TestMitigatedReopeningWorkflow(TestCase):
 
         # Get available statuses
         status_choices = dict(form.fields["status"].choices)
-        available_statuses = {IncidentStatus(int(k)) for k in status_choices.keys()}
+        available_statuses = {IncidentStatus(int(k)) for k in status_choices}
 
         # Should include both return options and CLOSED
         assert IncidentStatus.INVESTIGATING in available_statuses
@@ -104,7 +104,7 @@ class TestMitigatedReopeningWorkflow(TestCase):
         """Reopening from MITIGATED to INVESTIGATING requires a reason."""
         priority = create_unique_priority(value=4001, needs_postmortem=False)
         environment = create_unique_environment("QA")
-        
+
         incident = IncidentFactory.create(
             _status=IncidentStatus.MITIGATED,
             priority=priority,
@@ -164,7 +164,7 @@ class TestMitigatedReopeningWorkflow(TestCase):
         """Form validation requires message when reopening from MITIGATED."""
         priority = create_unique_priority(value=5001, needs_postmortem=False)
         environment = create_unique_environment("INT")
-        
+
         incident = IncidentFactory.create(
             _status=IncidentStatus.MITIGATED,
             priority=priority,
@@ -190,7 +190,7 @@ class TestMitigatedReopeningWorkflow(TestCase):
         """Form validation requires minimum 10 characters for reopening message."""
         priority = create_unique_priority(value=6001, needs_postmortem=False)
         environment = create_unique_environment("DEVTEST")
-        
+
         incident = IncidentFactory.create(
             _status=IncidentStatus.MITIGATED,
             priority=priority,
@@ -216,7 +216,7 @@ class TestMitigatedReopeningWorkflow(TestCase):
         """Form validation accepts valid message when reopening from MITIGATED."""
         priority = create_unique_priority(value=7001, needs_postmortem=False)
         environment = create_unique_environment("VALID")
-        
+
         incident = IncidentFactory.create(
             _status=IncidentStatus.MITIGATED,
             priority=priority,
@@ -242,7 +242,7 @@ class TestMitigatedReopeningWorkflow(TestCase):
         # Use PRD environment since POST_MORTEM requires both needs_postmortem=True AND environment='PRD'
         priority = create_unique_priority(value=8001, needs_postmortem=True)
         environment = create_unique_environment("PRD", exact_value=True)
-        
+
         incident = IncidentFactory.create(
             _status=IncidentStatus.MITIGATED,
             priority=priority,

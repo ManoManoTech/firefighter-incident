@@ -78,7 +78,7 @@ class UpdateStatusForm(forms.Form):
         allowed_statuses = self._get_allowed_statuses(
             current_status, requires_postmortem=requires_postmortem
         )
-        
+
         logger.debug(f"DEBUG PRINT: _get_allowed_statuses returned {allowed_statuses} for current_status={current_status}, requires_postmortem={requires_postmortem}")
         logger.debug(
             f"DEBUG: _get_allowed_statuses returned {allowed_statuses} for "
