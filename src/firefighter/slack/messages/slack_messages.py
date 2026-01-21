@@ -615,6 +615,32 @@ class SlackMessageIncidentStatusUpdated(SlackMessageSurface):
                     ]
                 )
             )
+
+        # Add post mortem reminder if incident is back to MITIGATED and a post mortem already exists
+        if (self.incident.status == IncidentStatus.MITIGATED
+            and hasattr(self.incident, "jira_postmortem_for")
+            and self.incident.jira_postmortem_for):
+            jira_pm = self.incident.jira_postmortem_for
+            blocks.extend([
+                DividerBlock(),
+                SectionBlock(
+                    text=(
+                        f":memo: *Reminder:* This incident already has an existing post mortem:\n"
+                        f"• Jira: <{jira_pm.issue_url}|{jira_pm.jira_issue_key}>\n\n"
+                        f"Please update it with any new findings from this reopening."
+                    )
+                ),
+                SectionBlock(
+                    text="Need guidance on how to fill Post-Mortems in Jira?",
+                    accessory=ButtonElement(
+                        text="Open documentation",
+                        url="https://manomano.atlassian.net/wiki/spaces/TC/pages/5639635000/How+to+fill+Post-Mortems+in+Jira",
+                        value="jira_postmortem_documentation",
+                        action_id="open_link",
+                    ),
+                )
+            ])
+
         return blocks
 
     def get_metadata(self) -> Metadata:
