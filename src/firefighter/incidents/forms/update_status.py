@@ -108,17 +108,15 @@ class UpdateStatusForm(forms.Form):
 
         Returns None if choices should be set directly (for default fallback cases).
         """
-        status_field = self.fields["status"]
-
         # For incidents requiring post-mortem (P1/P2 in PRD)
         if requires_postmortem:
-            return self._get_postmortem_allowed_statuses(current_status, status_field)
+            return self._get_postmortem_allowed_statuses(current_status)
 
         # For P3+ incidents (no post-mortem needed)
-        return self._get_no_postmortem_allowed_statuses(current_status, status_field)
+        return self._get_no_postmortem_allowed_statuses(current_status)
 
     def _get_postmortem_allowed_statuses(
-        self, current_status: IncidentStatus, status_field: Any
+        self, current_status: IncidentStatus
     ) -> list[IncidentStatus] | None:
         """Get allowed statuses for incidents requiring postmortem (P1/P2)."""
         if current_status == IncidentStatus.OPEN:
@@ -141,7 +139,7 @@ class UpdateStatusForm(forms.Form):
         return None
 
     def _get_no_postmortem_allowed_statuses(
-        self, current_status: IncidentStatus, status_field: Any
+        self, current_status: IncidentStatus
     ) -> list[IncidentStatus] | None:
         """Get allowed statuses for incidents not requiring postmortem (P3/P4/P5)."""
         if current_status == IncidentStatus.OPEN:
@@ -159,7 +157,6 @@ class UpdateStatusForm(forms.Form):
             ]
 
         # For any other status, return None to use the default choices
-        print(f"DEBUG: _get_no_postmortem_allowed_statuses returning None for status {current_status}")
         return None
 
     def _set_default_choices(
@@ -198,44 +195,34 @@ class UpdateStatusForm(forms.Form):
             IncidentStatus.INVESTIGATING,
         }
 
-    @staticmethod
-    def requires_reopening_reason(
-        incident: Incident, target_status: IncidentStatus
-    ) -> bool:
-        """Check if reopening this incident from MITIGATED requires a reason.
+    def clean(self) -> dict[str, Any]:
+        """Validate the form, ensuring reopening from MITIGATED has sufficient justification."""
+        cleaned_data = super().clean()
+        if cleaned_data is None:
+            return {}
 
-        Require justification when going back from MITIGATED to previous states.
-        """
-        if incident.status != IncidentStatus.MITIGATED:
-            return False
+        status = cleaned_data.get("status")
+        message = cleaned_data.get("message", "").strip()
 
-        # Require reason if returning from MITIGATED to previous states
-        return target_status.value in {
+        if not status:
+            return cleaned_data
+
+        # Get the incident from form initialization
+        incident = getattr(self, "_incident", None)
+        if not incident:
+            return cleaned_data
+
+        current_status = incident.status
+
+        # If reopening from MITIGATED to earlier phases, require substantial justification
+        if (current_status == IncidentStatus.MITIGATED and status in {
             IncidentStatus.INVESTIGATING,
             IncidentStatus.MITIGATING,
-        }
-
-    def clean(self) -> dict[str, Any]:
-        """Validate the form data, especially message requirements."""
-        cleaned_data = super().clean()
-
-        # Check if we need a message for reopening from MITIGATED
-        if self.incident:
-            status = cleaned_data.get("status")
-            if status and isinstance(status, IncidentStatus):
-                if self.requires_reopening_reason(self.incident, status):
-                    message = cleaned_data.get("message", "").strip()
-                    if not message:
-                        raise forms.ValidationError(
-                            {
-                                "message": "A justification message is required when reopening an incident from Mitigated status."
-                            }
-                        )
-                    if len(message) < 10:
-                        raise forms.ValidationError(
-                            {
-                                "message": "Justification message must be at least 10 characters when reopening from Mitigated status."
-                            }
-                        )
+        } and len(message) < 10):
+            self.add_error(
+                "message",
+                "A detailed justification (minimum 10 characters) is required when reopening "
+                "an incident from MITIGATED status back to investigation phases.",
+            )
 
         return cleaned_data

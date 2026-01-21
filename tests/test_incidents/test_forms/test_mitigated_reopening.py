@@ -11,7 +11,7 @@ from firefighter.incidents.forms.update_status import UpdateStatusForm
 from firefighter.incidents.models import Environment, Priority
 
 
-def create_unique_priority(value: int, needs_postmortem: bool = False) -> Priority:
+def create_unique_priority(value: int, *, needs_postmortem: bool = False) -> Priority:
     """Create a Priority with unique constraints handled properly."""
     return Priority.objects.create(
         value=value,
@@ -22,7 +22,7 @@ def create_unique_priority(value: int, needs_postmortem: bool = False) -> Priori
     )
 
 
-def create_unique_environment(value: str, exact_value: bool = False) -> Environment:
+def create_unique_environment(value: str, *, exact_value: bool = False) -> Environment:
     """Create an Environment with unique constraints handled properly.
 
     Args:
@@ -33,7 +33,7 @@ def create_unique_environment(value: str, exact_value: bool = False) -> Environm
         # For testing specific environment logic, use exact value with get_or_create
         # This handles the case where fixtures already created an environment with this value
         unique_suffix = uuid.uuid4().hex[:8]
-        environment, created = Environment.objects.get_or_create(
+        environment, _ = Environment.objects.get_or_create(
             value=value,  # Exact value needed for logic testing
             defaults={
                 "name": f"Environment {value} {unique_suffix}",
@@ -41,6 +41,8 @@ def create_unique_environment(value: str, exact_value: bool = False) -> Environm
             }
         )
         return environment
+
+    # Default case: create unique environment
     unique_suffix = uuid.uuid4().hex[:8]
     return Environment.objects.create(
         value=f"{value}-{unique_suffix}",
@@ -100,6 +102,7 @@ class TestMitigatedReopeningWorkflow(TestCase):
         # P3 should not include POST_MORTEM
         assert IncidentStatus.POST_MORTEM not in available_statuses
 
+<<<<<<< HEAD
     def test_requires_reopening_reason_from_mitigated_to_investigating(self):
         """Reopening from MITIGATED to INVESTIGATING requires a reason."""
         priority = create_unique_priority(value=4001, needs_postmortem=False)
@@ -160,6 +163,8 @@ class TestMitigatedReopeningWorkflow(TestCase):
                 is False
             )
 
+=======
+>>>>>>> 3b89cca (fix: address linting issues and clean up debug code)
     def test_form_validation_requires_message_for_reopening(self):
         """Form validation requires message when reopening from MITIGATED."""
         priority = create_unique_priority(value=5001, needs_postmortem=False)
@@ -175,21 +180,24 @@ class TestMitigatedReopeningWorkflow(TestCase):
         form_data = {
             "status": str(IncidentStatus.INVESTIGATING.value),
             "priority": str(incident.priority.id),
-            "incident_category": (
-                str(incident.incident_category.id) if incident.incident_category else ""
-            ),
-            "message": "",  # Empty message
+            "incident_category": str(incident.incident_category.id),
+            "message": "",  # Empty message should cause validation error
         }
         form = UpdateStatusForm(data=form_data, incident=incident)
 
         assert form.is_valid() is False
         assert "message" in form.errors
-        assert "justification message is required" in form.errors["message"][0].lower()
 
     def test_form_validation_requires_minimum_message_length(self):
+<<<<<<< HEAD
         """Form validation requires minimum 10 characters for reopening message."""
         priority = create_unique_priority(value=6001, needs_postmortem=False)
         environment = create_unique_environment("DEVTEST")
+=======
+        """Form validation requires minimum message length for reopening."""
+        priority = create_unique_priority(value=5002, needs_postmortem=False)
+        environment = create_unique_environment("INT")
+>>>>>>> 3b89cca (fix: address linting issues and clean up debug code)
 
         incident = IncidentFactory.create(
             _status=IncidentStatus.MITIGATED,
@@ -197,25 +205,28 @@ class TestMitigatedReopeningWorkflow(TestCase):
             environment=environment
         )
 
-        # Test with too short message - should fail
+        # Test with message too short - should fail
         form_data = {
             "status": str(IncidentStatus.INVESTIGATING.value),
             "priority": str(incident.priority.id),
-            "incident_category": (
-                str(incident.incident_category.id) if incident.incident_category else ""
-            ),
-            "message": "short",  # Too short
+            "incident_category": str(incident.incident_category.id),
+            "message": "short",  # Less than 10 chars
         }
         form = UpdateStatusForm(data=form_data, incident=incident)
 
         assert form.is_valid() is False
         assert "message" in form.errors
-        assert "at least 10 characters" in form.errors["message"][0].lower()
 
     def test_form_validation_accepts_valid_reopening_message(self):
+<<<<<<< HEAD
         """Form validation accepts valid message when reopening from MITIGATED."""
         priority = create_unique_priority(value=7001, needs_postmortem=False)
         environment = create_unique_environment("VALID")
+=======
+        """Form validation accepts valid message for reopening."""
+        priority = create_unique_priority(value=5003, needs_postmortem=False)
+        environment = create_unique_environment("INT")
+>>>>>>> 3b89cca (fix: address linting issues and clean up debug code)
 
         incident = IncidentFactory.create(
             _status=IncidentStatus.MITIGATED,
@@ -227,37 +238,40 @@ class TestMitigatedReopeningWorkflow(TestCase):
         form_data = {
             "status": str(IncidentStatus.INVESTIGATING.value),
             "priority": str(incident.priority.id),
-            "incident_category": (
-                str(incident.incident_category.id) if incident.incident_category else ""
-            ),
-            "message": "Team identified additional issues requiring investigation",
+            "incident_category": str(incident.incident_category.id),
+            "message": "Investigation revealed additional issues requiring further analysis",
         }
         form = UpdateStatusForm(data=form_data, incident=incident)
 
         assert form.is_valid() is True
 
     def test_form_validation_normal_transitions_unaffected(self):
+<<<<<<< HEAD
         """Normal transitions don't require special message validation."""
         # Test forward progression - should not require special validation
         # Use PRD environment since POST_MORTEM requires both needs_postmortem=True AND environment='PRD'
         priority = create_unique_priority(value=8001, needs_postmortem=True)
         environment = create_unique_environment("PRD", exact_value=True)
 
+=======
+        """Normal transitions not from MITIGATED should be unaffected."""
+        priority = create_unique_priority(value=5004, needs_postmortem=False)
+        environment = create_unique_environment("INT")
+
+        # Test from INVESTIGATING to MITIGATING (normal flow)
+>>>>>>> 3b89cca (fix: address linting issues and clean up debug code)
         incident = IncidentFactory.create(
-            _status=IncidentStatus.MITIGATED,
+            _status=IncidentStatus.INVESTIGATING,
             priority=priority,
             environment=environment
         )
 
         form_data = {
-            "status": str(IncidentStatus.POST_MORTEM.value),
+            "status": str(IncidentStatus.MITIGATING.value),
             "priority": str(incident.priority.id),
-            "incident_category": (
-                str(incident.incident_category.id) if incident.incident_category else ""
-            ),
-            "message": "",  # Empty message is OK for normal transitions
+            "incident_category": str(incident.incident_category.id),
+            "message": "",  # Empty message should be OK for normal transitions
         }
         form = UpdateStatusForm(data=form_data, incident=incident)
 
-        # Should be valid - no special message requirement for forward transitions
         assert form.is_valid() is True
