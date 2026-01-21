@@ -61,28 +61,14 @@ class UpdateStatusForm(forms.Form):
         status_field = self.fields["status"]
 
         # Check if incident requires post-mortem (P1/P2 in PRD)
-        logger.debug(f"DEBUG: incident.priority={incident.priority}")
-        logger.debug(f"DEBUG: incident.environment={incident.environment}")
-        if incident.priority:
-            logger.debug(f"DEBUG: incident.priority.needs_postmortem={incident.priority.needs_postmortem}")
-            logger.debug(f"DEBUG: incident.priority.value={incident.priority.value}")
-        if incident.environment:
-            logger.debug(f"DEBUG: incident.environment.value={incident.environment.value}")
         requires_postmortem = bool(
             incident.priority
             and incident.environment
             and incident.priority.needs_postmortem
             and incident.environment.value == "PRD"
         )
-        logger.debug(f"DEBUG PRINT: About to call _get_allowed_statuses with current_status={current_status}, requires_postmortem={requires_postmortem}")
         allowed_statuses = self._get_allowed_statuses(
             current_status, requires_postmortem=requires_postmortem
-        )
-
-        logger.debug(f"DEBUG PRINT: _get_allowed_statuses returned {allowed_statuses} for current_status={current_status}, requires_postmortem={requires_postmortem}")
-        logger.debug(
-            f"DEBUG: _get_allowed_statuses returned {allowed_statuses} for "
-            f"current_status={current_status}, requires_postmortem={requires_postmortem}"
         )
 
         # If we got a list of enum values, convert to choices and include current status
@@ -92,14 +78,6 @@ class UpdateStatusForm(forms.Form):
             # Convert values to strings to match what Slack sends in form submissions
             choices = [(str(s.value), s.label) for s in allowed_statuses]
             status_field.choices = choices  # type: ignore[attr-defined]
-            logger.debug(
-                f"Set status choices for incident #{incident.id}: {choices} "
-                f"(current_status={current_status}, requires_postmortem={requires_postmortem})"
-            )
-        else:
-            logger.debug(
-                f"No allowed_statuses returned, keeping default choices for incident #{incident.id}"
-            )
 
     def _get_allowed_statuses(
         self, current_status: IncidentStatus, *, requires_postmortem: bool
@@ -195,34 +173,34 @@ class UpdateStatusForm(forms.Form):
             IncidentStatus.INVESTIGATING,
         }
 
-    def clean(self) -> dict[str, Any]:
-        """Validate the form, ensuring reopening from MITIGATED has sufficient justification."""
-        cleaned_data = super().clean()
-        if cleaned_data is None:
-            return {}
+    def clean_message(self) -> str:
+        """Validate message field, ensuring reopening from MITIGATED has sufficient justification."""
+        message = self.cleaned_data.get("message", "").strip()
 
-        status = cleaned_data.get("status")
-        message = cleaned_data.get("message", "").strip()
+        # Get the incident and status from form data/initialization
+        incident = getattr(self, "incident", None)
+        status_value = self.data.get("status")  # Use raw form data as cleaned_data may not be ready yet
 
-        if not status:
-            return cleaned_data
+        if incident and status_value:
+            current_status = incident.status
 
-        # Get the incident from form initialization
-        incident = getattr(self, "_incident", None)
-        if not incident:
-            return cleaned_data
+            # Convert status value to enum if it's a string/number
+            try:
+                if isinstance(status_value, str):
+                    status = IncidentStatus(int(status_value))
+                else:
+                    status = IncidentStatus(status_value)
+            except (ValueError, TypeError):
+                # Invalid status value, let other validation handle it
+                return message
 
-        current_status = incident.status
+            # If reopening from MITIGATED to earlier phases, require substantial justification
+            if (current_status == IncidentStatus.MITIGATED and
+                status in {IncidentStatus.INVESTIGATING, IncidentStatus.MITIGATING} and
+                len(message) < 10):
+                raise forms.ValidationError(
+                    "A detailed justification (minimum 10 characters) is required when reopening "
+                    "an incident from MITIGATED status."
+                )
 
-        # If reopening from MITIGATED to earlier phases, require substantial justification
-        if (current_status == IncidentStatus.MITIGATED and status in {
-            IncidentStatus.INVESTIGATING,
-            IncidentStatus.MITIGATING,
-        } and len(message) < 10):
-            self.add_error(
-                "message",
-                "A detailed justification (minimum 10 characters) is required when reopening "
-                "an incident from MITIGATED status back to investigation phases.",
-            )
-
-        return cleaned_data
+        return message

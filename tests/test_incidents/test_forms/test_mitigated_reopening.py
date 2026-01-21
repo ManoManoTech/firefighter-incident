@@ -102,69 +102,6 @@ class TestMitigatedReopeningWorkflow(TestCase):
         # P3 should not include POST_MORTEM
         assert IncidentStatus.POST_MORTEM not in available_statuses
 
-<<<<<<< HEAD
-    def test_requires_reopening_reason_from_mitigated_to_investigating(self):
-        """Reopening from MITIGATED to INVESTIGATING requires a reason."""
-        priority = create_unique_priority(value=4001, needs_postmortem=False)
-        environment = create_unique_environment("QA")
-
-        incident = IncidentFactory.create(
-            _status=IncidentStatus.MITIGATED,
-            priority=priority,
-            environment=environment
-        )
-
-        # Should require reason
-        assert (
-            UpdateStatusForm.requires_reopening_reason(
-                incident, IncidentStatus.INVESTIGATING
-            )
-            is True
-        )
-        assert (
-            UpdateStatusForm.requires_reopening_reason(
-                incident, IncidentStatus.MITIGATING
-            )
-            is True
-        )
-
-        # Should NOT require reason for other transitions
-        assert (
-            UpdateStatusForm.requires_reopening_reason(
-                incident, IncidentStatus.POST_MORTEM
-            )
-            is False
-        )
-        assert (
-            UpdateStatusForm.requires_reopening_reason(incident, IncidentStatus.CLOSED)
-            is False
-        )
-
-    def test_requires_reopening_reason_only_from_mitigated(self):
-        """Reopening reason is only required from MITIGATED status."""
-        # Test from other statuses - should NOT require reason
-        for status in [
-            IncidentStatus.OPEN,
-            IncidentStatus.INVESTIGATING,
-            IncidentStatus.MITIGATING,
-        ]:
-            # Create unique values for each iteration
-            priority = create_unique_priority(value=5000 + status.value, needs_postmortem=False)
-            environment = create_unique_environment(f"TEST-{status.value}")
-            incident = IncidentFactory.create(
-                _status=status,
-                priority=priority,
-                environment=environment
-            )
-            assert (
-                UpdateStatusForm.requires_reopening_reason(
-                    incident, IncidentStatus.INVESTIGATING
-                )
-                is False
-            )
-
-=======
->>>>>>> 3b89cca (fix: address linting issues and clean up debug code)
     def test_form_validation_requires_message_for_reopening(self):
         """Form validation requires message when reopening from MITIGATED."""
         priority = create_unique_priority(value=5001, needs_postmortem=False)
@@ -185,19 +122,13 @@ class TestMitigatedReopeningWorkflow(TestCase):
         }
         form = UpdateStatusForm(data=form_data, incident=incident)
 
-        assert form.is_valid() is False
+        assert form.is_valid() is False, f"Form should be invalid but got valid=True, errors={form.errors}"
         assert "message" in form.errors
 
     def test_form_validation_requires_minimum_message_length(self):
-<<<<<<< HEAD
-        """Form validation requires minimum 10 characters for reopening message."""
-        priority = create_unique_priority(value=6001, needs_postmortem=False)
-        environment = create_unique_environment("DEVTEST")
-=======
         """Form validation requires minimum message length for reopening."""
         priority = create_unique_priority(value=5002, needs_postmortem=False)
         environment = create_unique_environment("INT")
->>>>>>> 3b89cca (fix: address linting issues and clean up debug code)
 
         incident = IncidentFactory.create(
             _status=IncidentStatus.MITIGATED,
@@ -218,15 +149,9 @@ class TestMitigatedReopeningWorkflow(TestCase):
         assert "message" in form.errors
 
     def test_form_validation_accepts_valid_reopening_message(self):
-<<<<<<< HEAD
-        """Form validation accepts valid message when reopening from MITIGATED."""
-        priority = create_unique_priority(value=7001, needs_postmortem=False)
-        environment = create_unique_environment("VALID")
-=======
         """Form validation accepts valid message for reopening."""
         priority = create_unique_priority(value=5003, needs_postmortem=False)
         environment = create_unique_environment("INT")
->>>>>>> 3b89cca (fix: address linting issues and clean up debug code)
 
         incident = IncidentFactory.create(
             _status=IncidentStatus.MITIGATED,
@@ -246,20 +171,11 @@ class TestMitigatedReopeningWorkflow(TestCase):
         assert form.is_valid() is True
 
     def test_form_validation_normal_transitions_unaffected(self):
-<<<<<<< HEAD
-        """Normal transitions don't require special message validation."""
-        # Test forward progression - should not require special validation
-        # Use PRD environment since POST_MORTEM requires both needs_postmortem=True AND environment='PRD'
-        priority = create_unique_priority(value=8001, needs_postmortem=True)
-        environment = create_unique_environment("PRD", exact_value=True)
-
-=======
         """Normal transitions not from MITIGATED should be unaffected."""
         priority = create_unique_priority(value=5004, needs_postmortem=False)
         environment = create_unique_environment("INT")
 
         # Test from INVESTIGATING to MITIGATING (normal flow)
->>>>>>> 3b89cca (fix: address linting issues and clean up debug code)
         incident = IncidentFactory.create(
             _status=IncidentStatus.INVESTIGATING,
             priority=priority,
