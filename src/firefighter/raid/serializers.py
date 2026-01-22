@@ -4,9 +4,11 @@ import logging
 from typing import TYPE_CHECKING, Any
 
 from django.conf import settings
+from django.core.cache import cache
 from rest_framework import serializers
 
 from firefighter.incidents.enums import IncidentStatus
+from firefighter.incidents.models.priority import Priority
 from firefighter.incidents.models.user import User
 from firefighter.jira_app.client import (
     JiraAPIError,
@@ -24,6 +26,9 @@ from firefighter.raid.utils import get_domain_from_email
 from firefighter.slack.models.user import SlackUser
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
+    from firefighter.incidents.models.incident import Incident
     from firefighter.jira_app.models import JiraUser
 
 
@@ -34,6 +39,13 @@ JIRA_TO_IMPACT_STATUS_MAP: dict[str, IncidentStatus] = {
     "in progress": IncidentStatus.MITIGATING,
     "Reporter validation": IncidentStatus.MITIGATED,
     "Closed": IncidentStatus.CLOSED,
+}
+JIRA_TO_IMPACT_PRIORITY_MAP: dict[str, int] = {
+    "Highest": 1,  # legacy Jira name → P1
+    "High": 2,  # legacy Jira name → P2
+    "Medium": 3,  # legacy Jira name → P3
+    "Low": 4,  # legacy Jira name → P4
+    "Lowest": 5,  # legacy Jira name → P5
 }
 
 logger = logging.getLogger(__name__)
@@ -290,112 +302,241 @@ class JiraWebhookUpdateSerializer(serializers.Serializer[Any]):
     )
 
     def create(self, validated_data: dict[str, Any]) -> bool:
-        jira_field_modified = validated_data["changelog"].get("items")[0].get("field")
-        if jira_field_modified in {
-            "Priority",
-            "project",
-            "description",
-            "status",
-        }:
-            jira_ticket_key = validated_data["issue"].get("key")
-            status = alert_slack_update_ticket(
-                jira_ticket_id=validated_data["issue"].get("id"),
-                jira_ticket_key=jira_ticket_key,
-                jira_author_name=validated_data["user"].get("displayName"),
-                jira_field_modified=jira_field_modified,
-                jira_field_from=validated_data["changelog"]
-                .get("items")[0]
-                .get("fromString"),
-                jira_field_to=validated_data["changelog"]
-                .get("items")[0]
-                .get("toString"),
-            )
-            if status is not True:
-                logger.error(
-                    f"Could not alert in Slack for the update/s in the Jira ticket {jira_ticket_key}"
+        changes = validated_data.get("changelog", {}).get("items") or []
+        if not changes:
+            logger.debug("Jira webhook had no changelog items; skipping.")
+            return True
+
+        jira_ticket_key = validated_data["issue"].get("key")
+
+        for change_item in changes:
+            field = (change_item.get("field") or "").lower()
+            handler: Callable[[dict[str, Any], dict[str, Any]], bool] | None = None
+
+            if field == "status":
+                handler = self._handle_status_update
+            else:
+                # Detect priority change even if Jira uses a custom field name
+                to_val = change_item.get("toString")
+                from_val = change_item.get("fromString")
+                if (
+                    self._parse_priority_value(to_val) is not None
+                    or self._parse_priority_value(from_val) is not None
+                ):
+                    handler = self._handle_priority_update
+
+            if handler is None:
+                continue
+
+            # Loop prevention: skip if this exact change was just sent Impact -> Jira
+            if self._skip_due_to_recent_impact_change(
+                jira_ticket_key, field, change_item
+            ):
+                logger.debug(
+                    "Skipping Jira→Impact sync for %s on %s due to recent Impact change",
+                    field,
+                    jira_ticket_key,
                 )
+                continue
+
+            if not self._alert_slack_update(
+                validated_data, jira_ticket_key, change_item
+            ):
                 raise SlackNotificationError("Could not alert in Slack")
 
-            # Sync status from Jira → Impact when status changed to a mapped value
-            if jira_field_modified == "status":
-                jira_status_to = (
-                    validated_data["changelog"].get("items")[0].get("toString") or ""
-                )
-                impact_status = JIRA_TO_IMPACT_STATUS_MAP.get(jira_status_to)
-                if impact_status is None:
-                    logger.debug(
-                        "Jira status '%s' has no Impact mapping; skipping incident sync",
-                        jira_status_to,
-                    )
-                    return True
-
-                try:
-                    jira_ticket = JiraTicket.objects.select_related("incident").get(
-                        key=jira_ticket_key
-                    )
-                except JiraTicket.DoesNotExist:
-                    logger.warning(
-                        "Received Jira status webhook for %s but no JiraTicket found; skipping",
-                        jira_ticket_key,
-                    )
-                    return True
-
-                incident = getattr(jira_ticket, "incident", None)
-                if incident is None:
-                    logger.warning(
-                        "Jira ticket %s not linked to an incident; skipping status sync",
-                        jira_ticket_key,
-                    )
-                    return True
-
-                if incident.status == impact_status:
-                    logger.debug(
-                        "Incident %s already at status %s from Jira webhook; no-op",
-                        incident.id,
-                        incident.status.label,
-                    )
-                    return True
-
-                if incident.needs_postmortem and impact_status == IncidentStatus.CLOSED:
-                    if not hasattr(incident, "jira_postmortem_for"):
-                        logger.warning(
-                            "Skipping Jira→Impact close for incident %s: postmortem is required but no Jira PM linked.",
-                            incident.id,
-                        )
-                        return True
-                    try:
-                        from firefighter.jira_app.service_postmortem import (  # noqa: PLC0415
-                            jira_postmortem_service,
-                        )
-
-                        is_ready, current_status = (
-                            jira_postmortem_service.is_postmortem_ready(
-                                incident.jira_postmortem_for
-                            )
-                        )
-                        if not is_ready:
-                            logger.warning(
-                                "Skipping Jira→Impact close for incident %s: Jira PM %s not ready (status=%s).",
-                                incident.id,
-                                incident.jira_postmortem_for.jira_issue_key,
-                                current_status,
-                            )
-                            return True
-                    except Exception:
-                        logger.exception(
-                            "Failed to verify Jira post-mortem readiness for incident %s; skipping close sync",
-                            incident.id,
-                        )
-                        return True
-
-                incident.create_incident_update(
-                    created_by=None,
-                    status=impact_status,
-                    message=f"Status synced from Jira ({jira_status_to})",
-                    event_type="jira_status_sync",
-                )
+            handler(validated_data, change_item)
 
         return True
+
+    @staticmethod
+    def _alert_slack_update(
+        validated_data: dict[str, Any],
+        jira_ticket_key: str | None,
+        change_item: dict[str, Any],
+    ) -> bool:
+        status = alert_slack_update_ticket(
+            jira_ticket_id=validated_data["issue"].get("id"),
+            jira_ticket_key=jira_ticket_key,
+            jira_author_name=validated_data["user"].get("displayName"),
+            jira_field_modified=change_item.get("field"),
+            jira_field_from=change_item.get("fromString"),
+            jira_field_to=change_item.get("toString"),
+        )
+        if status is not True:
+            logger.error(
+                "Could not alert in Slack for the update/s in the Jira ticket %s",
+                jira_ticket_key,
+            )
+            return False
+        return True
+
+    @staticmethod
+    def _get_incident_from_jira_ticket(jira_ticket_key: str) -> Incident | None:
+        try:
+            jira_ticket = JiraTicket.objects.select_related("incident").get(
+                key=jira_ticket_key
+            )
+        except JiraTicket.DoesNotExist:
+            logger.warning(
+                "Received Jira webhook for %s but no JiraTicket found; skipping",
+                jira_ticket_key,
+            )
+            return None
+
+        incident = getattr(jira_ticket, "incident", None)
+        if incident is None:
+            logger.warning(
+                "Jira ticket %s not linked to an incident; skipping sync",
+                jira_ticket_key,
+            )
+            return None
+
+        return incident
+
+    def _handle_status_update(
+        self, validated_data: dict[str, Any], change_item: dict[str, Any]
+    ) -> bool:
+        jira_ticket_key = validated_data["issue"].get("key")
+        jira_status_to = change_item.get("toString") or ""
+        impact_status = JIRA_TO_IMPACT_STATUS_MAP.get(jira_status_to)
+        if impact_status is None:
+            logger.debug(
+                "Jira status '%s' has no Impact mapping; skipping incident sync",
+                jira_status_to,
+            )
+            return True
+
+        incident = self._get_incident_from_jira_ticket(jira_ticket_key)
+        if incident is None:
+            return True
+
+        if incident.status == impact_status:
+            logger.debug(
+                "Incident %s already at status %s from Jira webhook; no-op",
+                incident.id,
+                incident.status.label,
+            )
+            return True
+
+        if incident.needs_postmortem and impact_status == IncidentStatus.CLOSED:
+            if not hasattr(incident, "jira_postmortem_for"):
+                logger.warning(
+                    "Skipping Jira→Impact close for incident %s: postmortem is required but no Jira PM linked.",
+                    incident.id,
+                )
+                return True
+            try:
+                from firefighter.jira_app.service_postmortem import (  # noqa: PLC0415
+                    jira_postmortem_service,
+                )
+
+                is_ready, current_status = jira_postmortem_service.is_postmortem_ready(
+                    incident.jira_postmortem_for
+                )
+                if not is_ready:
+                    logger.warning(
+                        "Skipping Jira→Impact close for incident %s: Jira PM %s not ready (status=%s).",
+                        incident.id,
+                        incident.jira_postmortem_for.jira_issue_key,
+                        current_status,
+                    )
+                    return True
+            except Exception:
+                logger.exception(
+                    "Failed to verify Jira post-mortem readiness for incident %s; skipping close sync",
+                    incident.id,
+                )
+                return True
+
+        incident.create_incident_update(
+            created_by=None,
+            status=impact_status,
+            message=f"Status synced from Jira ({jira_status_to})",
+            event_type="jira_status_sync",
+        )
+        return True
+
+    def _handle_priority_update(
+        self, validated_data: dict[str, Any], change_item: dict[str, Any]
+    ) -> bool:
+        jira_ticket_key = validated_data["issue"].get("key")
+        jira_priority_to = change_item.get("toString") or ""
+
+        impact_priority_value = self._parse_priority_value(jira_priority_to)
+
+        if impact_priority_value is None:
+            logger.debug(
+                "Jira priority '%s' has no Impact mapping; skipping incident sync",
+                jira_priority_to,
+            )
+            return True
+
+        incident = self._get_incident_from_jira_ticket(jira_ticket_key)
+        if incident is None:
+            return True
+
+        if incident.priority and incident.priority.value == impact_priority_value:
+            logger.debug(
+                "Incident %s already at priority %s from Jira webhook; no-op",
+                incident.id,
+                incident.priority.value,
+            )
+            return True
+
+        try:
+            impact_priority = Priority.objects.get(value=impact_priority_value)
+        except Priority.DoesNotExist:
+            logger.warning(
+                "No Impact priority with value %s; skipping Jira→Impact priority sync",
+                impact_priority_value,
+            )
+            return True
+
+        incident.create_incident_update(
+            created_by=None,
+            priority_id=impact_priority.id,
+            message=f"Priority synced from Jira ({jira_priority_to})",
+            event_type="jira_priority_sync",
+        )
+        return True
+
+    @staticmethod
+    def _skip_due_to_recent_impact_change(
+        jira_ticket_key: str | None, field: str, change_item: dict[str, Any]
+    ) -> bool:
+        if not jira_ticket_key:
+            return False
+        try:
+            jira_ticket = JiraTicket.objects.select_related("incident").get(
+                key=jira_ticket_key
+            )
+        except JiraTicket.DoesNotExist:
+            return False
+
+        incident = getattr(jira_ticket, "incident", None)
+        if not incident:
+            return False
+
+        value = change_item.get("toString")
+        cache_key = f"sync:impact_to_jira:{incident.id}:{field}:{value}"
+        if cache.get(cache_key):
+            cache.delete(cache_key)
+            return True
+        return False
+
+    @staticmethod
+    def _parse_priority_value(raw: Any) -> int | None:
+        """Try to extract a priority value (1-5) from Jira changelog strings."""
+        if raw is None:
+            return None
+        try:
+            parsed = int(raw)
+            if 1 <= parsed <= 5:
+                return parsed
+        except (TypeError, ValueError):
+            pass
+
+        return JIRA_TO_IMPACT_PRIORITY_MAP.get(str(raw))
 
     def update(self, instance: Any, validated_data: Any) -> Any:
         raise NotImplementedError

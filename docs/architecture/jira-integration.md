@@ -8,6 +8,12 @@ The RAID module provides comprehensive bidirectional synchronization between Imp
 - All priorities create both `Incident` objects AND JIRA tickets
 - The JIRA integration works identically for all priorities
 
+✅ **Double sync (both directions)**:
+
+- Impact → Jira: on incident updates (status, priority, title, description, commander) via `incident_updated` signals; admin saves fall back to post_save handlers for status/priority
+- Jira → Impact: on Jira webhooks (status, priority, mapped fields) via webhook handlers
+- Loop-prevention cache ensures a change coming from one side is not re-sent back immediately
+
 See [incident-workflow.md](incident-workflow.md) for architecture overview.
 
 ## Synchronization Architecture
@@ -66,22 +72,22 @@ Centralizes all JIRA field preparation for both P1-P3 and P4-P5 workflows.
 
 ### Impact → JIRA Sync
 
-**Trigger**: Incident field updates in Impact
-**Handler**: `sync_incident_changes_to_jira()`
+**Trigger**: Incident field updates in Impact (via `incident_updated` with `updated_fields`), plus admin saves via post_save fallbacks for status/priority.
+**Handlers**: `incident_updated_close_ticket_when_mitigated_or_postmortem` (status), `incident_updated_sync_priority_to_jira` (priority), post_save fallbacks for both.
 
 **Syncable Fields**:
 - `title` → `summary`
 - `description` → `description`
-- `priority` → `priority` (with value mapping)
-- `status` → `status` (with transitions)
+- `priority` → Jira `customfield_11064` (numeric 1–5, or mapped option)
+- `status` → Jira status (transitions via workflow)
 - `commander` → `assignee`
 
 **Process**:
 1. Check if RAID is enabled
-2. Validate update_fields parameter
-3. Filter for syncable fields only
-4. Apply loop prevention cache
-5. Call `sync_incident_to_jira()`
+2. Validate/update_fields
+3. Apply loop prevention
+4. Push status (Impact→Jira map)
+5. Push priority to Jira `customfield_11064`
 
 ### JIRA → Impact Sync
 
@@ -103,25 +109,27 @@ Centralizes all JIRA field preparation for both P1-P3 and P4-P5 workflows.
 **JIRA → Impact**:
 ```python
 JIRA_TO_IMPACT_STATUS_MAP = {
-    "Incoming": IncidentStatus.Open,
-    "Pending resolution": IncidentStatus.Open,
-    "In Progress": IncidentStatus.MITIGATING,
+    "Incoming": IncidentStatus.OPEN,
+    "Pending resolution": IncidentStatus.OPEN,
+    "in progress": IncidentStatus.MITIGATING,  # change to INVESTIGATING if desired
     "Reporter validation": IncidentStatus.MITIGATED,
-    "Closed": IncidentStatus.Closed,
+    "Closed": IncidentStatus.CLOSED,
 }
 ```
 
 **Impact → JIRA**:
 ```python
 IMPACT_TO_JIRA_STATUS_MAP = {
-    IncidentStatus.OPEN: "Open",
-    IncidentStatus.INVESTIGATING: "In Progress",
-    IncidentStatus.MITIGATING: "In Progress",
+    IncidentStatus.OPEN: "Incoming",
+    IncidentStatus.INVESTIGATING: "in progress",
+    IncidentStatus.MITIGATING: "in progress",
     IncidentStatus.MITIGATED: "Reporter validation",
     IncidentStatus.POST_MORTEM: "Reporter validation",
     IncidentStatus.CLOSED: "Closed",
 }
 ```
+
+**Status override note**: If Jira “In Progress” should map to Impact INVESTIGATING (instead of MITIGATING), update the `JIRA_TO_IMPACT_STATUS_MAP` accordingly.
 
 ### Priority Mapping
 
@@ -136,6 +144,9 @@ JIRA_TO_IMPACT_PRIORITY_MAP = {
 }
 ```
 
+**Impact → JIRA**:
+Uses the numeric Impact priority (1–5) and writes to Jira `customfield_11064` (custom priority field). Admin saves and UI edits both sync via signals/post_save fallback.
+
 ## Loop Prevention
 
 ### Cache-Based Mechanism
@@ -148,6 +159,8 @@ JIRA_TO_IMPACT_PRIORITY_MAP = {
 1. Check if sync recently performed
 2. Set cache flag during sync
 3. Automatic expiration prevents permanent blocks
+
+**Webhook bounce guard**: Impact→Jira writes a short-lived cache key per change (`sync:impact_to_jira:{incident_id}:{field}:{value}`). Jira webhook processing checks and clears that key to skip the mirrored change, preventing loops for status and priority (including `customfield_11064`).
 
 ### Sync Directions
 

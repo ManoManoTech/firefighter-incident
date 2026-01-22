@@ -204,11 +204,7 @@ class Incident(models.Model):
         null=True,
         blank=True,
     )
-    severity.system_check_deprecated_details = {
-        "msg": "The Incident.severity field has been deprecated.",
-        "hint": "Use Incident.priority instead.",
-        "id": "fields.W921",
-    }
+    severity.system_check_deprecated_details = None
     priority = models.ForeignKey(
         Priority,
         on_delete=models.PROTECT,
@@ -292,7 +288,8 @@ class Incident(models.Model):
             ),
             models.CheckConstraint(
                 name="%(app_label)s_%(class)s_closure_reason_valid",
-                check=models.Q(closure_reason__in=[*ClosureReason.values, None]),
+                check=models.Q(closure_reason__in=[*ClosureReason.values, ""])
+                | models.Q(closure_reason__isnull=True),
             ),
         ]
 
@@ -647,8 +644,20 @@ class Incident(models.Model):
         _update_incident_field(self, "description", description, updated_fields)
         _update_incident_field(self, "environment_id", environment_id, updated_fields)
 
+        skip_priority_sync = "priority_id" in updated_fields
+        skip_status_sync = "_status" in updated_fields
+
         if updated_fields:
+            # Mark to skip post_save priority sync (prevents double push to Jira)
+            if skip_priority_sync:
+                self._skip_priority_sync = True
+            if skip_status_sync:
+                self._skip_status_sync = True
             self.save(update_fields=[*updated_fields, "updated_at"])
+            if skip_priority_sync and hasattr(self, "_skip_priority_sync"):
+                del self._skip_priority_sync
+            if skip_status_sync and hasattr(self, "_skip_status_sync"):
+                del self._skip_status_sync
 
         if not (updated_fields or message):
             raise ValueError("No updated fields or message provided.")
