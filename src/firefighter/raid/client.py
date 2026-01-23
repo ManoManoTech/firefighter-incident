@@ -126,6 +126,11 @@ class RaidJiraClient(JiraClient):
     def get_projects(self) -> list[Project]:
         return self.jira.projects()
 
+    def update_issue_fields(self, issue_id: str | int, **fields: Any) -> None:
+        """Update Jira issue fields (supports custom fields like customfield_11064)."""
+        issue = self.jira.issue(str(issue_id))
+        issue.update(fields=fields)
+
     @staticmethod
     def add_attachments_to_issue(issue_id: str | int, urls: list[str]) -> None:
         """Add attachments to a Jira issue.

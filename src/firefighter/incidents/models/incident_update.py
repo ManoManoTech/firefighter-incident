@@ -58,11 +58,7 @@ class IncidentUpdate(models.Model):
         on_delete=models.SET(Severity.get_default),
         help_text="Superseded by priority",
     )
-    severity.system_check_deprecated_details = {
-        "msg": "The IncidentUpdate.severity field has been deprecated.",
-        "hint": "Use IncidentUpdate.priority instead.",
-        "id": "fields.W920",
-    }
+    severity.system_check_deprecated_details = None
     priority = models.ForeignKey(
         Priority, null=True, blank=True, on_delete=models.SET(Priority.get_default)
     )
@@ -72,9 +68,7 @@ class IncidentUpdate(models.Model):
         blank=True,
         on_delete=models.SET(Environment.get_default),
     )
-    incident = models.ForeignKey(
-        "Incident", on_delete=models.CASCADE
-    )
+    incident = models.ForeignKey("Incident", on_delete=models.CASCADE)
     incident_category = models.ForeignKey(
         IncidentCategory, null=True, blank=True, on_delete=models.SET_NULL
     )
