@@ -45,7 +45,7 @@ def _set_impact_to_jira_cache(
     cache_key = (
         f"sync:impact_to_jira:{incident_id}:{field}:{_normalize_cache_value(value)}"
     )
-    cache.set(cache_key, True, timeout=timeout)
+    cache.set(cache_key, value=True, timeout=timeout)
 
 
 @receiver(signal=incident_updated, sender="update_status")
@@ -244,6 +244,7 @@ def incident_updated_sync_priority_to_jira(
 def incident_priority_post_save_fallback(
     sender: Any,
     instance: Incident,
+    *,
     created: bool,
     update_fields: set[str] | None,
     **kwargs: Any,
@@ -299,6 +300,7 @@ def incident_priority_post_save_fallback(
 def incident_status_post_save_fallback(
     sender: Any,
     instance: Incident,
+    *,
     created: bool,
     update_fields: set[str] | None,
     **kwargs: Any,
