@@ -26,8 +26,6 @@ from firefighter.raid.utils import get_domain_from_email
 from firefighter.slack.models.user import SlackUser
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
-
     from firefighter.incidents.models.incident import Incident
     from firefighter.jira_app.models import JiraUser
 
@@ -41,11 +39,17 @@ JIRA_TO_IMPACT_STATUS_MAP: dict[str, IncidentStatus] = {
     "Closed": IncidentStatus.CLOSED,
 }
 JIRA_TO_IMPACT_PRIORITY_MAP: dict[str, int] = {
-    "Highest": 1,  # legacy Jira name → P1
-    "High": 2,  # legacy Jira name → P2
-    "Medium": 3,  # legacy Jira name → P3
-    "Low": 4,  # legacy Jira name → P4
-    "Lowest": 5,  # legacy Jira name → P5
+    "1": 1,
+    "2": 2,
+    "3": 3,
+    "4": 4,
+    "5": 5,
+    # Legacy Jira names still supported
+    "Highest": 1,
+    "High": 2,
+    "Medium": 3,
+    "Low": 4,
+    "Lowest": 5,
 }
 
 logger = logging.getLogger(__name__)
@@ -322,41 +326,10 @@ class JiraWebhookUpdateSerializer(serializers.Serializer[Any]):
         jira_ticket_key = validated_data["issue"].get("key")
 
         for change_item in changes:
-            field = (change_item.get("field") or "").lower()
-            handler: Callable[[dict[str, Any], dict[str, Any]], bool] | None = None
-
-            if field == "status":
-                handler = self._handle_status_update
-            else:
-                # Detect priority change even if Jira uses a custom field name
-                to_val = change_item.get("toString")
-                from_val = change_item.get("fromString")
-                if (
-                    self._parse_priority_value(to_val) is not None
-                    or self._parse_priority_value(from_val) is not None
-                ):
-                    handler = self._handle_priority_update
-
-            if handler is None:
-                continue
-
-            # Loop prevention: skip if this exact change was just sent Impact -> Jira
-            if self._skip_due_to_recent_impact_change(
-                jira_ticket_key, field, change_item
-            ):
-                logger.debug(
-                    "Skipping Jira→Impact sync for %s on %s due to recent Impact change",
-                    field,
-                    jira_ticket_key,
-                )
-                continue
-
-            if not self._alert_slack_update(
+            if not self._sync_jira_fields_to_incident(
                 validated_data, jira_ticket_key, change_item
             ):
-                raise SlackNotificationError("Could not alert in Slack")
-
-            handler(validated_data, change_item)
+                continue
 
         return True
 
@@ -381,6 +354,45 @@ class JiraWebhookUpdateSerializer(serializers.Serializer[Any]):
             )
             return False
         return True
+
+    def _sync_jira_fields_to_incident(
+        self,
+        validated_data: dict[str, Any],
+        jira_ticket_key: str | None,
+        change_item: dict[str, Any],
+    ) -> bool:
+        field = (change_item.get("field") or "").lower()
+
+        # Loop prevention: skip if this exact change was just sent Impact -> Jira
+        if self._skip_due_to_recent_impact_change(jira_ticket_key, field, change_item):
+            logger.debug(
+                "Skipping Jira→Impact sync for %s on %s due to recent Impact change",
+                field,
+                jira_ticket_key,
+            )
+            return False
+
+        # Detect and apply status/priority updates only
+        if field == "status":
+            if not self._alert_slack_update(
+                validated_data, jira_ticket_key, change_item
+            ):
+                raise SlackNotificationError("Could not alert in Slack")
+            return self._handle_status_update(validated_data, change_item)
+
+        to_val = change_item.get("toString")
+        from_val = change_item.get("fromString")
+        if (
+            self._parse_priority_value(to_val) is not None
+            or self._parse_priority_value(from_val) is not None
+        ):
+            if not self._alert_slack_update(
+                validated_data, jira_ticket_key, change_item
+            ):
+                raise SlackNotificationError("Could not alert in Slack")
+            return self._handle_priority_update(validated_data, change_item)
+
+        return False
 
     @staticmethod
     def _get_incident_from_jira_ticket(jira_ticket_key: str) -> Incident | None:
