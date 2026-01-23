@@ -88,7 +88,8 @@ def incident_updated_close_ticket_when_mitigated_or_postmortem(
 
     if not hasattr(incident, "jira_ticket") or incident.jira_ticket is None:
         logger.debug(
-            f"Trying to close Jira ticket for incident {incident.id} but no Jira ticket found"
+            "Trying to close Jira ticket for incident %s but no Jira ticket found",
+            getattr(incident, "id", "unknown"),
         )
         return
 
@@ -113,7 +114,7 @@ def incident_updated_close_ticket_when_mitigated_or_postmortem(
                     "Failed to transition Jira ticket %s to %s for incident %s",
                     incident.jira_ticket.id,
                     step,
-                    incident.id,
+                    getattr(incident, "id", "unknown"),
                 )
                 return
         logger.info(
@@ -141,7 +142,9 @@ def incident_updated_close_ticket_when_mitigated_or_postmortem(
         return
 
     try:
-        _set_impact_to_jira_cache(incident.id, "status", target_jira_status)
+        incident_id = getattr(incident, "id", None)
+        if incident_id is not None:
+            _set_impact_to_jira_cache(incident_id, "status", target_jira_status)
         logger.debug(
             "Transitioning Jira ticket %s via workflow %s to status %s (incident #%s, impact status %s)",
             incident.jira_ticket.id,
@@ -164,7 +167,7 @@ def incident_updated_close_ticket_when_mitigated_or_postmortem(
             "Failed to transition Jira ticket %s to %s for incident %s",
             incident.jira_ticket.id,
             target_jira_status,
-            incident.id,
+            getattr(incident, "id", "unknown"),
         )
 
 
@@ -219,7 +222,9 @@ def incident_updated_sync_priority_to_jira(
         return
 
     try:
-        _set_impact_to_jira_cache(incident.id, "priority", incident.priority.value)
+        incident_id = getattr(incident, "id", None)
+        if incident_id is not None:
+            _set_impact_to_jira_cache(incident_id, "priority", incident.priority.value)
         client.update_issue_fields(
             incident.jira_ticket.id,
             customfield_11064={"value": str(incident.priority.value)},

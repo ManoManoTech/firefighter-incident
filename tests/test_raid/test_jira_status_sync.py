@@ -4,9 +4,15 @@ from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 import pytest
+from django.test.utils import override_settings
 
 from firefighter.incidents.enums import IncidentStatus
+from firefighter.incidents.models.environment import Environment
+from firefighter.incidents.models.group import Group
 from firefighter.incidents.models.incident import Incident
+from firefighter.incidents.models.incident_category import IncidentCategory
+from firefighter.incidents.models.priority import Priority
+from firefighter.incidents.models.user import User
 from firefighter.raid.serializers import JiraWebhookUpdateSerializer
 from firefighter.raid.signals.incident_updated import (
     IMPACT_TO_JIRA_STATUS_MAP,
@@ -15,15 +21,30 @@ from firefighter.raid.signals.incident_updated import (
 
 
 @pytest.mark.django_db
+@override_settings(MIGRATION_MODULES={"incidents": None})
 def test_jira_webhook_status_maps_and_sets_event_type(mocker) -> None:
     """Jira → Impact: status change maps and sets event_type=jira_status_sync."""
+    creator = User.objects.create(
+        email="creator@example.com",
+        username="creator",
+        first_name="c",
+        last_name="u",
+    )
+    category = IncidentCategory.objects.first()
+    if category is None:
+        group = Group.objects.first() or Group.objects.create(
+            name="Default Group", description="grp", order=0
+        )
+        category = IncidentCategory.objects.create(
+            name="Default Category", description="", order=0, group=group
+        )
     incident = Incident.objects.create(
         title="inc",
         description="desc",
-        priority_id=None,  # priority not required for status set
-        incident_category_id=None,
-        environment_id=None,
-        created_by_id=None,
+        priority=Priority.get_default(),  # required by model
+        incident_category=category,
+        environment=Environment.get_default(),
+        created_by=creator,
     )
     incident.create_incident_update = MagicMock()
 
@@ -96,8 +117,13 @@ def test_signal_transitions_non_close_status(mocker) -> None:
         updated_fields=["_status"],
     )
 
-    target = IMPACT_TO_JIRA_STATUS_MAP[IncidentStatus.MITIGATING]
-    mock_transition.assert_called_once_with("123", target, mocker.ANY)
+    # Mitigating triggers two steps: Pending resolution then in progress
+    mock_transition.assert_has_calls(
+        [
+            mocker.call("123", "Pending resolution", mocker.ANY),
+            mocker.call("123", "in progress", mocker.ANY),
+        ]
+    )
 
 
 @pytest.mark.django_db
