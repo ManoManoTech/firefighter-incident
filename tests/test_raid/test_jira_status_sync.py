@@ -20,6 +20,14 @@ from firefighter.raid.signals.incident_updated import (
 )
 
 
+@pytest.fixture(autouse=True)
+def patch_alert_slack_update_ticket(mocker: pytest.MockFixture) -> MagicMock:
+    """Avoid real Slack/Jira watcher calls during webhook status tests."""
+    return mocker.patch(
+        "firefighter.raid.serializers.alert_slack_update_ticket", return_value=True
+    )
+
+
 @pytest.mark.django_db
 @override_settings(MIGRATION_MODULES={"incidents": None})
 def test_jira_webhook_status_maps_and_sets_event_type(mocker) -> None:
