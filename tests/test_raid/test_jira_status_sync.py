@@ -65,7 +65,9 @@ def test_signal_skips_when_event_from_jira(mocker) -> None:
     incident_update = SimpleNamespace(
         status=IncidentStatus.CLOSED, event_type="jira_status_sync"
     )
-    mock_close = mocker.patch("firefighter.raid.signals.incident_updated.client.close_issue")
+    mock_close = mocker.patch(
+        "firefighter.raid.signals.incident_updated.client.close_issue"
+    )
     incident_updated_close_ticket_when_mitigated_or_postmortem(
         sender="update_status",
         incident=incident,
@@ -82,9 +84,7 @@ def test_signal_transitions_non_close_status(mocker) -> None:
         jira_ticket=SimpleNamespace(id="123"),
         needs_postmortem=False,
     )
-    incident_update = SimpleNamespace(
-        status=IncidentStatus.MITIGATING, event_type=None
-    )
+    incident_update = SimpleNamespace(status=IncidentStatus.MITIGATING, event_type=None)
     mock_transition = mocker.patch(
         "firefighter.raid.signals.incident_updated.client.transition_issue_auto"
     )
@@ -107,9 +107,7 @@ def test_signal_transitions_mitigated_closes_for_p3_plus(mocker) -> None:
         jira_ticket=SimpleNamespace(id="123"),
         needs_postmortem=False,
     )
-    incident_update = SimpleNamespace(
-        status=IncidentStatus.MITIGATED, event_type=None
-    )
+    incident_update = SimpleNamespace(status=IncidentStatus.MITIGATED, event_type=None)
     mock_transition = mocker.patch(
         "firefighter.raid.signals.incident_updated.client.transition_issue_auto"
     )
@@ -133,9 +131,7 @@ def test_signal_mitigated_needs_postmortem_does_not_close(mocker) -> None:
         jira_ticket=SimpleNamespace(id="123"),
         needs_postmortem=True,
     )
-    incident_update = SimpleNamespace(
-        status=IncidentStatus.MITIGATED, event_type=None
-    )
+    incident_update = SimpleNamespace(status=IncidentStatus.MITIGATED, event_type=None)
     mock_transition = mocker.patch(
         "firefighter.raid.signals.incident_updated.client.transition_issue_auto"
     )
@@ -159,9 +155,7 @@ def test_signal_mitigating_runs_two_transitions(mocker) -> None:
         jira_ticket=SimpleNamespace(id="123"),
         needs_postmortem=False,
     )
-    incident_update = SimpleNamespace(
-        status=IncidentStatus.MITIGATING, event_type=None
-    )
+    incident_update = SimpleNamespace(status=IncidentStatus.MITIGATING, event_type=None)
     mock_transition = mocker.patch(
         "firefighter.raid.signals.incident_updated.client.transition_issue_auto"
     )
@@ -179,4 +173,3 @@ def test_signal_mitigating_runs_two_transitions(mocker) -> None:
             mocker.call("123", "in progress", mocker.ANY),
         ]
     )
-

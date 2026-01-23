@@ -8,10 +8,9 @@ from django.db.models.signals import post_save
 from django.dispatch.dispatcher import receiver
 
 from firefighter.incidents.enums import IncidentStatus
+from firefighter.incidents.models.incident import Incident
 from firefighter.incidents.signals import incident_updated
 from firefighter.raid.client import RAID_JIRA_WORKFLOW_NAME, client
-
-from firefighter.incidents.models.incident import Incident
 
 if TYPE_CHECKING:
     from firefighter.incidents.models.incident_update import IncidentUpdate
@@ -25,6 +24,28 @@ IMPACT_TO_JIRA_STATUS_MAP: dict[IncidentStatus, str] = {
     IncidentStatus.POST_MORTEM: "Reporter validation",
     IncidentStatus.CLOSED: "Closed",
 }
+
+
+def _normalize_cache_value(value: Any) -> str:
+    """Normalize cache values for loop-prevention keys."""
+    if value is None:
+        return ""
+    # Lowercase strings for status consistency; leave numbers as stringified ints.
+    if isinstance(value, str):
+        return value.strip().lower()
+    try:
+        return str(int(value))
+    except (TypeError, ValueError):
+        return str(value).strip().lower()
+
+
+def _set_impact_to_jira_cache(
+    incident_id: Any, field: str, value: Any, timeout: int = 30
+) -> None:
+    cache_key = (
+        f"sync:impact_to_jira:{incident_id}:{field}:{_normalize_cache_value(value)}"
+    )
+    cache.set(cache_key, True, timeout=timeout)
 
 
 @receiver(signal=incident_updated, sender="update_status")
@@ -120,11 +141,7 @@ def incident_updated_close_ticket_when_mitigated_or_postmortem(
         return
 
     try:
-        cache.set(
-            f"sync:impact_to_jira:{incident.id}:status:{target_jira_status}",
-            True,
-            timeout=30,
-        )
+        _set_impact_to_jira_cache(incident.id, "status", target_jira_status)
         logger.debug(
             "Transitioning Jira ticket %s via workflow %s to status %s (incident #%s, impact status %s)",
             incident.jira_ticket.id,
@@ -203,11 +220,7 @@ def incident_updated_sync_priority_to_jira(
         return
 
     try:
-        cache.set(
-            f"sync:impact_to_jira:{incident.id}:priority:{incident.priority.value}",
-            True,
-            timeout=30,
-        )
+        _set_impact_to_jira_cache(incident.id, "priority", incident.priority.value)
         client.update_issue_fields(
             incident.jira_ticket.id,
             customfield_11064={"value": str(incident.priority.value)},
@@ -264,6 +277,7 @@ def incident_priority_post_save_fallback(
         return
 
     try:
+        _set_impact_to_jira_cache(instance.id, "priority", instance.priority.value)
         client.update_issue_fields(
             instance.jira_ticket.id,
             customfield_11064={"value": str(instance.priority.value)},
@@ -297,7 +311,11 @@ def incident_status_post_save_fallback(
     """
     if created:
         return
-    if update_fields and "_status" not in update_fields and "status" not in update_fields:
+    if (
+        update_fields
+        and "_status" not in update_fields
+        and "status" not in update_fields
+    ):
         return
     if getattr(instance, "_skip_status_sync", False):
         logger.debug(
@@ -320,6 +338,7 @@ def incident_status_post_save_fallback(
         )
         return
     try:
+        _set_impact_to_jira_cache(instance.id, "status", target_jira_status)
         client.transition_issue_auto(
             instance.jira_ticket.id, target_jira_status, RAID_JIRA_WORKFLOW_NAME
         )

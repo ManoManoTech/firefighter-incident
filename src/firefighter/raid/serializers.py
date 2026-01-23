@@ -51,6 +51,18 @@ JIRA_TO_IMPACT_PRIORITY_MAP: dict[str, int] = {
 logger = logging.getLogger(__name__)
 
 
+def _normalize_cache_value(value: Any) -> str:
+    """Normalize cache values for loop-prevention keys."""
+    if value is None:
+        return ""
+    if isinstance(value, str):
+        return value.strip().lower()
+    try:
+        return str(int(value))
+    except (TypeError, ValueError):
+        return str(value).strip().lower()
+
+
 class IgnoreEmptyStringListField(serializers.ListField):
     def to_internal_value(self, data: list[Any] | Any) -> list[str]:
         # Check if data is a list
@@ -517,8 +529,15 @@ class JiraWebhookUpdateSerializer(serializers.Serializer[Any]):
         if not incident:
             return False
 
-        value = change_item.get("toString")
-        cache_key = f"sync:impact_to_jira:{incident.id}:{field}:{value}"
+        raw_value = change_item.get("toString")
+        # Normalize value consistently with Impact→Jira writes
+        if field == "status":
+            value_for_cache = raw_value
+        else:
+            parsed = JiraWebhookUpdateSerializer._parse_priority_value(raw_value)
+            value_for_cache = parsed if parsed is not None else raw_value
+
+        cache_key = f"sync:impact_to_jira:{incident.id}:{field}:{_normalize_cache_value(value_for_cache)}"
         if cache.get(cache_key):
             cache.delete(cache_key)
             return True
