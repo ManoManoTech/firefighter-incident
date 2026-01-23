@@ -177,8 +177,7 @@ def incident_updated_sync_priority_to_jira(
     updated_fields: list[str],
     **kwargs: Any,
 ) -> None:
-    """
-    Push Impact priority changes to Jira custom priority field (customfield_11064).
+    """Push Impact priority changes to Jira custom priority field (customfield_11064).
     Skips if change originated from Jira (event_type='jira_priority_sync') to avoid loops.
     """
     logger.debug(
@@ -249,8 +248,7 @@ def incident_priority_post_save_fallback(
     update_fields: set[str] | None,
     **kwargs: Any,
 ) -> None:
-    """
-    Fallback to push priority to Jira when Incident saves with priority_id in update_fields
+    """Fallback to push priority to Jira when Incident saves with priority_id in update_fields
     but no incident_updated signal fired (e.g., admin edits). Skips when marked to avoid loops.
     """
     if created:
@@ -305,8 +303,7 @@ def incident_status_post_save_fallback(
     update_fields: set[str] | None,
     **kwargs: Any,
 ) -> None:
-    """
-    Fallback to push status to Jira when Incident saves with status in update_fields
+    """Fallback to push status to Jira when Incident saves with status in update_fields
     but no incident_updated signal fired (e.g., admin edits). Skips when marked to avoid loops.
     """
     if created:
