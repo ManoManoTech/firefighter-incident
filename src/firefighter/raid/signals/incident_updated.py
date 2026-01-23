@@ -127,11 +127,19 @@ def incident_updated_close_ticket_when_mitigated_or_postmortem(
     # Decide target Jira status based on Impact status and postmortem requirement.
     # P3+ (no postmortem): close Jira when Impact reaches MITIGATED or CLOSED.
     # P1/P2 (needs_postmortem): close Jira only when Impact reaches CLOSED.
+    incident_status = incident_update.status
+    if incident_status is None:
+        logger.info(
+            "Skipping Jira transition: incident #%s status is None",
+            getattr(incident, "id", "unknown"),
+        )
+        return
+
     target_jira_status: str | None = None
-    if incident_update.status == IncidentStatus.CLOSED:
+    if incident_status == IncidentStatus.CLOSED:
         target_jira_status = "Closed"
     else:
-        target_jira_status = IMPACT_TO_JIRA_STATUS_MAP.get(incident_update.status)
+        target_jira_status = IMPACT_TO_JIRA_STATUS_MAP.get(incident_status)
 
     if target_jira_status is None:
         logger.info(

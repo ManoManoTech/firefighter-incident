@@ -339,18 +339,34 @@ class JiraWebhookUpdateSerializer(serializers.Serializer[Any]):
         jira_ticket_key: str | None,
         change_item: dict[str, Any],
     ) -> bool:
+        ticket_id = validated_data["issue"].get("id")
+        ticket_key = jira_ticket_key or ""
+        jira_author_name = str(validated_data["user"].get("displayName") or "")
+        jira_field_modified = str(change_item.get("field") or "")
+        jira_field_from = str(change_item.get("fromString") or "")
+        jira_field_to = str(change_item.get("toString") or "")
+
+        if ticket_id is None or ticket_key == "" or jira_field_modified == "":
+            logger.error(
+                "Missing required Jira changelog data: id=%s key=%s field=%s",
+                ticket_id,
+                jira_ticket_key,
+                change_item.get("field"),
+            )
+            return False
+
         status = alert_slack_update_ticket(
-            jira_ticket_id=validated_data["issue"].get("id"),
-            jira_ticket_key=jira_ticket_key,
-            jira_author_name=validated_data["user"].get("displayName"),
-            jira_field_modified=change_item.get("field"),
-            jira_field_from=change_item.get("fromString"),
-            jira_field_to=change_item.get("toString"),
+            jira_ticket_id=int(ticket_id),
+            jira_ticket_key=ticket_key,
+            jira_author_name=jira_author_name,
+            jira_field_modified=jira_field_modified,
+            jira_field_from=jira_field_from,
+            jira_field_to=jira_field_to,
         )
         if status is not True:
             logger.error(
                 "Could not alert in Slack for the update/s in the Jira ticket %s",
-                jira_ticket_key,
+                jira_ticket_key or "unknown",
             )
             return False
         return True
