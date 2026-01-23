@@ -223,9 +223,35 @@ class TestUpdateStatusModal:
 
         # Create a P1/P2 incident in POST_MORTEM status
         # This incident will have missing milestones (detected, started)
+        priority = (
+            Priority.objects.filter(value=1).first()
+            or Priority.objects.create(
+                value=1,
+                name="P1",
+                order=1,
+                emoji="🔴",
+                needs_postmortem=True,
+                enabled_create=True,
+                enabled_update=True,
+                default=False,
+            )
+        )
+        environment = (
+            Environment.objects.filter(value="PRD").first()
+            or Environment.objects.create(
+                value="PRD",
+                name="Production",
+                description="Production",
+                order=1,
+                default=False,
+            )
+        )
+
         incident = IncidentFactory.create(
             _status=IncidentStatus.POST_MORTEM,
             created_by=user,
+            priority=priority,
+            environment=environment,
         )
 
         # Verify that can_be_closed returns False due to missing milestones
