@@ -531,7 +531,6 @@ ignore = [
   "FIX003",  # XXX: Enable later - Too many X*X
   "FIX002",  # XXX: Enable later - Too many T0D0s
   "RUF012",  # XXX Enable later - Mutable class attributes should be annotated with `typing.ClassVar`
-  "RUF067",  # __init__ module should only contain docstrings and re-exports
   "CPY001",  # Missing copyright notice at top of file
   "PLR6301", # XXX Method could be a function or static method -- needs allow list or @override support
   "E203",    # XXX whitespace-before-punctuation -- still unstable with black formatting
