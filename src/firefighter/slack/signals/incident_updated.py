@@ -202,7 +202,7 @@ def incident_key_events_updated_handler(
         return
 
     # Everything in Slack views trigger the Slack handshake, so we delay the import
-    from firefighter.slack.views.modals.key_event_message import (  # noqa: PLC0415
+    from firefighter.slack.views.modals.key_event_message import (
         SlackMessageKeyEvents,
     )
 
@@ -246,7 +246,7 @@ def publish_status_update(
         and incident.status >= IncidentStatus.MITIGATED
         and not incident.closure_reason  # Don't show key events for direct closures
     ):
-        from firefighter.slack.views.modals.key_event_message import (  # noqa: PLC0415
+        from firefighter.slack.views.modals.key_event_message import (
             SlackMessageKeyEvents,
         )
 

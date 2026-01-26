@@ -118,7 +118,7 @@ class SendSosModal(IncidentSelectableModalMixin, ModalForm[SendSosFormSlack]):
 
     @staticmethod
     def _send_incident_sos(incident: Incident, sos: Sos, user: User) -> None:
-        from firefighter.slack.messages.slack_messages import (  # noqa: PLC0415
+        from firefighter.slack.messages.slack_messages import (
             SlackMessagesSOS,
         )
 

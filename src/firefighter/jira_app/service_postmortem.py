@@ -71,7 +71,7 @@ class JiraPostMortemService:
         logger.info(f"Creating Jira post-mortem for incident #{incident.id}")
 
         # Prefetch incident updates and jira_ticket for timeline and parent link
-        from firefighter.incidents.models.incident import Incident  # noqa: PLC0415
+        from firefighter.incidents.models.incident import Incident
 
         incident = (
             Incident.objects.select_related("priority", "environment", "jira_ticket")

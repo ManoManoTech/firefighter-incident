@@ -46,8 +46,8 @@ class RaidJiraClient(JiraClient):
         labels: list[str] | None = None,
         zoho_desk_ticket_id: str | int | None = None,
         zendesk_ticket_id: str | int | None = None,
-        is_seller_in_golden_list: bool | None = None,  # noqa: FBT001
-        is_key_account: bool | None = None,  # noqa: FBT001
+        is_seller_in_golden_list: bool | None = None,
+        is_key_account: bool | None = None,
         seller_contract_id: int | str | None = None,
         suggested_team_routing: str | None = None,
         business_impact: str | None = None,

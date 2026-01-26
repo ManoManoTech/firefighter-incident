@@ -48,7 +48,7 @@ def postmortem_created_send(sender: Any, incident: Incident, **kwargs: Any) -> N
     )
 
     # Update the initial incident message with post-mortem links
-    from firefighter.slack.messages.slack_messages import (  # noqa: PLC0415
+    from firefighter.slack.messages.slack_messages import (
         SlackMessageIncidentDeclaredAnnouncement,
     )
 

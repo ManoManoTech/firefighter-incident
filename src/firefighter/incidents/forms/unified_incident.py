@@ -182,7 +182,7 @@ class UnifiedIncidentForm(CreateIncidentFormBase):
 
         # Set queryset for suggested_team_routing
         try:
-            from firefighter.raid.models import FeatureTeam  # noqa: PLC0415
+            from firefighter.raid.models import FeatureTeam
 
             field = typing_cast("forms.ModelChoiceField[Any]", self.fields["suggested_team_routing"])
             field.queryset = FeatureTeam.objects.only("name").order_by("name")
@@ -232,7 +232,7 @@ class UnifiedIncidentForm(CreateIncidentFormBase):
 
             # If it's a UUID string, fetch the ImpactLevel from database
             if isinstance(impact, str):
-                from firefighter.incidents.models.impact import (  # noqa: PLC0415
+                from firefighter.incidents.models.impact import (
                     ImpactLevel as ImpactLevelModel,
                 )
 
@@ -415,20 +415,20 @@ class UnifiedIncidentForm(CreateIncidentFormBase):
             creator: User creating the incident
             impacts_data: Dictionary of impact data
         """
-        from firefighter.incidents.forms.select_impact import (  # noqa: PLC0415
+        from firefighter.incidents.forms.select_impact import (
             SelectImpactForm,
         )
-        from firefighter.raid.client import client as jira_client  # noqa: PLC0415
-        from firefighter.raid.forms import (  # noqa: PLC0415
+        from firefighter.raid.client import client as jira_client
+        from firefighter.raid.forms import (
             alert_slack_new_jira_ticket,
             prepare_jira_fields,
             set_jira_ticket_watchers_raid,
         )
-        from firefighter.raid.models import JiraTicket  # noqa: PLC0415
-        from firefighter.raid.service import (  # noqa: PLC0415
+        from firefighter.raid.models import JiraTicket
+        from firefighter.raid.service import (
             get_jira_user_from_user,
         )
-        from firefighter.slack.messages.slack_messages import (  # noqa: PLC0415
+        from firefighter.slack.messages.slack_messages import (
             SlackMessageIncidentDeclaredAnnouncement,
         )
 

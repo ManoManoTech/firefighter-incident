@@ -226,8 +226,8 @@ def create_issue_seller(  # noqa: PLR0913
     team_to_be_routed: str | None,
     incident_category: str | None,
     seller_contract_id: str | None,
-    is_key_account: bool | None,  # noqa: FBT001
-    is_seller_in_golden_list: bool | None,  # noqa: FBT001
+    is_key_account: bool | None,
+    is_seller_in_golden_list: bool | None,
     zoho_desk_ticket_id: str | None,
 ) -> JiraObject:
     """Creates a Jira Incident issue of type Seller.

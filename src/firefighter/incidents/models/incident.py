@@ -384,7 +384,7 @@ class Incident(models.Model):
             # If a Jira post-mortem exists, ensure it is in the expected "Ready" status
             if hasattr(self, "jira_postmortem_for"):
                 try:
-                    from firefighter.jira_app.service_postmortem import (  # noqa: PLC0415
+                    from firefighter.jira_app.service_postmortem import (
                         jira_postmortem_service,
                     )
 

@@ -191,11 +191,11 @@ def output_manifest(
     manifest: dict[str, Any], output_format: str, stdout: OutputWrapper
 ) -> None:
     if output_format == "json":
-        import json  # noqa: PLC0415
+        import json
 
         stdout.write(json.dumps(manifest, indent=2, ensure_ascii=False))
 
     elif output_format == "yml":
-        import yaml  # noqa: PLC0415
+        import yaml
 
         stdout.write(yaml.dump(manifest, allow_unicode=True))

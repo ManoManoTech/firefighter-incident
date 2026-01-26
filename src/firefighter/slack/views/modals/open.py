@@ -184,7 +184,7 @@ class OpenModal(SlackModal):
     def get_set_impact_blocks(
         open_incident_context: OpeningData, *, impact_form_done: bool
     ) -> list[Block]:
-        from firefighter.slack.views.modals.opening.select_impact import (  # noqa: PLC0415
+        from firefighter.slack.views.modals.opening.select_impact import (
             SelectImpactModal,
         )
 
@@ -416,7 +416,7 @@ class OpenModal(SlackModal):
 
         # Pass impacts_data and response_type to form if it supports them (UnifiedIncidentForm)
         # Check if __init__ accepts these parameters
-        import inspect  # noqa: PLC0415
+        import inspect
         init_params = inspect.signature(details_form_class.__init__).parameters
         form_kwargs: dict[str, Any] = {}
         if "impacts_data" in init_params:
@@ -631,7 +631,7 @@ class OpenModal(SlackModal):
             )
             if details_form_class:
                 # Pass impacts_data and response_type to form if it supports them (UnifiedIncidentForm)
-                import inspect  # noqa: PLC0415
+                import inspect
                 init_params = inspect.signature(details_form_class.__init__).parameters
                 form_kwargs: dict[str, Any] = {}
                 if "impacts_data" in init_params:

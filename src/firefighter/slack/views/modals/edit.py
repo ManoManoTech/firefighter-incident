@@ -57,7 +57,7 @@ class EditMetaModal(ModalForm[EditMetaFormSlack]):
     form_class = EditMetaFormSlack
 
     def build_modal_fn(self, incident: Incident, **kwargs: Any) -> View:
-        from firefighter.incidents.models import Environment  # noqa: PLC0415
+        from firefighter.incidents.models import Environment
 
         # Get all environments from custom_fields, fallback to single environment
         environments_values = incident.custom_fields.get("environments", [])
@@ -90,7 +90,7 @@ class EditMetaModal(ModalForm[EditMetaFormSlack]):
     def handle_modal_fn(  # type: ignore
         self, ack: Ack, body: dict[str, Any], incident: Incident, user: User
     ):
-        from firefighter.incidents.models import Environment  # noqa: PLC0415
+        from firefighter.incidents.models import Environment
 
         # Get current environments for initial comparison
         environments_values = incident.custom_fields.get("environments", [])
