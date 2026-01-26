@@ -101,7 +101,7 @@ jobs:
       - name: "Build sdist"
         run: pdm build --no-wheel --no-clean
       - name: Publish Python artifacts on Github artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         if: ${{ ! env.ACT }} && ${{ matrix.python-version == env.PYTHON_VERSION }}
         with:
           name: python-artifacts

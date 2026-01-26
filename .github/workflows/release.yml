@@ -51,7 +51,7 @@ jobs:
       - name: "Build sdist"
         run: pdm build --no-wheel --no-clean
       - name: "Upload wheel and sdist"
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         if: ${{ !env.ACT }}
         with:
           name: dist
@@ -63,7 +63,7 @@ jobs:
 
       - name: Publish frozen requirements.txt
         if: ${{ !env.ACT }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: requirements
           path: requirements.txt
