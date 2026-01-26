@@ -30,11 +30,11 @@ BASE_URL: str = settings.BASE_URL
 @shared_task(name="incidents.update_oncall")
 def update_oncall() -> None:
     """Fetch current on-calls and update the on-call Slack topic and Confluence page."""
-    chain: Signature[bool] = (
+    chain: Signature[bool] = (  # type: ignore[assignment]
         fetch_oncalls.s()  # pyright: ignore[reportUnboundVariable]
         | update_oncall_views.s()
     )
-    chain.apply_async()
+    chain()
 
 
 @shared_task(name="incidents.update_oncall_views")
