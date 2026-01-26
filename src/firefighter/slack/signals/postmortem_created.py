@@ -8,6 +8,7 @@ from slack_sdk.errors import SlackApiError
 
 from firefighter.incidents.signals import postmortem_created
 from firefighter.slack.messages.slack_messages import (
+    SlackMessageIncidentDeclaredAnnouncement,
     SlackMessageIncidentPostMortemCreated,
 )
 
@@ -48,10 +49,6 @@ def postmortem_created_send(sender: Any, incident: Incident, **kwargs: Any) -> N
     )
 
     # Update the initial incident message with post-mortem links
-    from firefighter.slack.messages.slack_messages import (
-        SlackMessageIncidentDeclaredAnnouncement,
-    )
-
     incident.conversation.send_message_and_save(
         SlackMessageIncidentDeclaredAnnouncement(incident)
     )

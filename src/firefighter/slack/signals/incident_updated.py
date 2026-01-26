@@ -201,7 +201,6 @@ def incident_key_events_updated_handler(
         logger.info(f"Skipping key events update for incident {incident.id} (direct closure)")
         return
 
-    # Everything in Slack views trigger the Slack handshake, so we delay the import
     from firefighter.slack.views.modals.key_event_message import (
         SlackMessageKeyEvents,
     )
