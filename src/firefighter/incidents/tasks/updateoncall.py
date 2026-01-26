@@ -34,7 +34,7 @@ def update_oncall() -> None:
         fetch_oncalls.s()  # pyright: ignore[reportUnboundVariable]
         | update_oncall_views.s()
     )
-    chain()
+    chain.apply_async()
 
 
 @shared_task(name="incidents.update_oncall_views")
