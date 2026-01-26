@@ -35,7 +35,7 @@ class JiraAttachmentError(Exception):
 
 
 class RaidJiraClient(JiraClient):
-    def create_issue(  # noqa: PLR0912, PLR0913, C901, PLR0917
+    def create_issue(  # noqa: PLR0912, PLR0913, C901
         self,
         issuetype: str | None,
         summary: str,

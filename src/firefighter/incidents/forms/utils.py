@@ -71,7 +71,7 @@ class GroupedModelChoiceField(ModelChoiceField):  # type: ignore[type-arg]
 class EnumChoiceField(TypedChoiceField):
     def __init__(self, *args: Any, enum_class: type[T], **kwargs: Any) -> None:
         # Explicit for type checking
-        self.coerce_func: Callable[[Any], T] = lambda val: enum_class(  # noqa: PLW0108
+        self.coerce_func: Callable[[Any], T] = lambda val: enum_class(
             val
         )
         self.enum_class = enum_class

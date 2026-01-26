@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-import subprocess  # noqa: S404
+import subprocess
 from typing import Any
 
 from hatchling.builders.hooks.plugin.interface import BuildHookInterface
