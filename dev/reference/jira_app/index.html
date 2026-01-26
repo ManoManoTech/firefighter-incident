@@ -643,7 +643,7 @@
 <a id=__codelineno-0-71 name=__codelineno-0-71></a>    <span class=n>logger</span><span class=o>.</span><span class=n>info</span><span class=p>(</span><span class=sa>f</span><span class=s2>&quot;Creating Jira post-mortem for incident #</span><span class=si>{</span><span class=n>incident</span><span class=o>.</span><span class=n>id</span><span class=si>}</span><span class=s2>&quot;</span><span class=p>)</span>
 <a id=__codelineno-0-72 name=__codelineno-0-72></a>
 <a id=__codelineno-0-73 name=__codelineno-0-73></a>    <span class=c1># Prefetch incident updates and jira_ticket for timeline and parent link</span>
-<a id=__codelineno-0-74 name=__codelineno-0-74></a>    <span class=kn>from</span><span class=w> </span><span class=nn>firefighter.incidents.models.incident</span><span class=w> </span><span class=kn>import</span> <span class=n>Incident</span>  <span class=c1># noqa: PLC0415</span>
+<a id=__codelineno-0-74 name=__codelineno-0-74></a>    <span class=kn>from</span><span class=w> </span><span class=nn>firefighter.incidents.models.incident</span><span class=w> </span><span class=kn>import</span> <span class=n>Incident</span>
 <a id=__codelineno-0-75 name=__codelineno-0-75></a>
 <a id=__codelineno-0-76 name=__codelineno-0-76></a>    <span class=n>incident</span> <span class=o>=</span> <span class=p>(</span>
 <a id=__codelineno-0-77 name=__codelineno-0-77></a>        <span class=n>Incident</span><span class=o>.</span><span class=n>objects</span><span class=o>.</span><span class=n>select_related</span><span class=p>(</span><span class=s2>&quot;priority&quot;</span><span class=p>,</span> <span class=s2>&quot;environment&quot;</span><span class=p>,</span> <span class=s2>&quot;jira_ticket&quot;</span><span class=p>)</span>

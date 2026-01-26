@@ -2314,7 +2314,7 @@
 <a id=__codelineno-0-246 name=__codelineno-0-246></a>        <span class=ow>and</span> <span class=n>incident</span><span class=o>.</span><span class=n>status</span> <span class=o>&gt;=</span> <span class=n>IncidentStatus</span><span class=o>.</span><span class=n>MITIGATED</span>
 <a id=__codelineno-0-247 name=__codelineno-0-247></a>        <span class=ow>and</span> <span class=ow>not</span> <span class=n>incident</span><span class=o>.</span><span class=n>closure_reason</span>  <span class=c1># Don&#39;t show key events for direct closures</span>
 <a id=__codelineno-0-248 name=__codelineno-0-248></a>    <span class=p>):</span>
-<a id=__codelineno-0-249 name=__codelineno-0-249></a>        <span class=kn>from</span><span class=w> </span><span class=nn>firefighter.slack.views.modals.key_event_message</span><span class=w> </span><span class=kn>import</span> <span class=p>(</span>  <span class=c1># noqa: PLC0415</span>
+<a id=__codelineno-0-249 name=__codelineno-0-249></a>        <span class=kn>from</span><span class=w> </span><span class=nn>firefighter.slack.views.modals.key_event_message</span><span class=w> </span><span class=kn>import</span> <span class=p>(</span>
 <a id=__codelineno-0-250 name=__codelineno-0-250></a>            <span class=n>SlackMessageKeyEvents</span><span class=p>,</span>
 <a id=__codelineno-0-251 name=__codelineno-0-251></a>        <span class=p>)</span>
 <a id=__codelineno-0-252 name=__codelineno-0-252></a>
@@ -4526,7 +4526,7 @@
 <a id=__codelineno-0-631 name=__codelineno-0-631></a>        <span class=p>)</span>
 <a id=__codelineno-0-632 name=__codelineno-0-632></a>        <span class=k>if</span> <span class=n>details_form_class</span><span class=p>:</span>
 <a id=__codelineno-0-633 name=__codelineno-0-633></a>            <span class=c1># Pass impacts_data and response_type to form if it supports them (UnifiedIncidentForm)</span>
-<a id=__codelineno-0-634 name=__codelineno-0-634></a>            <span class=kn>import</span><span class=w> </span><span class=nn>inspect</span>  <span class=c1># noqa: PLC0415</span>
+<a id=__codelineno-0-634 name=__codelineno-0-634></a>            <span class=kn>import</span><span class=w> </span><span class=nn>inspect</span>
 <a id=__codelineno-0-635 name=__codelineno-0-635></a>            <span class=n>init_params</span> <span class=o>=</span> <span class=n>inspect</span><span class=o>.</span><span class=n>signature</span><span class=p>(</span><span class=n>details_form_class</span><span class=o>.</span><span class=fm>__init__</span><span class=p>)</span><span class=o>.</span><span class=n>parameters</span>
 <a id=__codelineno-0-636 name=__codelineno-0-636></a>            <span class=n>form_kwargs</span><span class=p>:</span> <span class=nb>dict</span><span class=p>[</span><span class=nb>str</span><span class=p>,</span> <span class=n>Any</span><span class=p>]</span> <span class=o>=</span> <span class=p>{}</span>
 <a id=__codelineno-0-637 name=__codelineno-0-637></a>            <span class=k>if</span> <span class=s2>&quot;impacts_data&quot;</span> <span class=ow>in</span> <span class=n>init_params</span><span class=p>:</span>
@@ -6098,7 +6098,7 @@
 <a id=__codelineno-0-631 name=__codelineno-0-631></a>        <span class=p>)</span>
 <a id=__codelineno-0-632 name=__codelineno-0-632></a>        <span class=k>if</span> <span class=n>details_form_class</span><span class=p>:</span>
 <a id=__codelineno-0-633 name=__codelineno-0-633></a>            <span class=c1># Pass impacts_data and response_type to form if it supports them (UnifiedIncidentForm)</span>
-<a id=__codelineno-0-634 name=__codelineno-0-634></a>            <span class=kn>import</span><span class=w> </span><span class=nn>inspect</span>  <span class=c1># noqa: PLC0415</span>
+<a id=__codelineno-0-634 name=__codelineno-0-634></a>            <span class=kn>import</span><span class=w> </span><span class=nn>inspect</span>
 <a id=__codelineno-0-635 name=__codelineno-0-635></a>            <span class=n>init_params</span> <span class=o>=</span> <span class=n>inspect</span><span class=o>.</span><span class=n>signature</span><span class=p>(</span><span class=n>details_form_class</span><span class=o>.</span><span class=fm>__init__</span><span class=p>)</span><span class=o>.</span><span class=n>parameters</span>
 <a id=__codelineno-0-636 name=__codelineno-0-636></a>            <span class=n>form_kwargs</span><span class=p>:</span> <span class=nb>dict</span><span class=p>[</span><span class=nb>str</span><span class=p>,</span> <span class=n>Any</span><span class=p>]</span> <span class=o>=</span> <span class=p>{}</span>
 <a id=__codelineno-0-637 name=__codelineno-0-637></a>            <span class=k>if</span> <span class=s2>&quot;impacts_data&quot;</span> <span class=ow>in</span> <span class=n>init_params</span><span class=p>:</span>
@@ -6534,7 +6534,7 @@
 <a id=__codelineno-0-232 name=__codelineno-0-232></a>
 <a id=__codelineno-0-233 name=__codelineno-0-233></a>        <span class=c1># If it&#39;s a UUID string, fetch the ImpactLevel from database</span>
 <a id=__codelineno-0-234 name=__codelineno-0-234></a>        <span class=k>if</span> <span class=nb>isinstance</span><span class=p>(</span><span class=n>impact</span><span class=p>,</span> <span class=nb>str</span><span class=p>):</span>
-<a id=__codelineno-0-235 name=__codelineno-0-235></a>            <span class=kn>from</span><span class=w> </span><span class=nn>firefighter.incidents.models.impact</span><span class=w> </span><span class=kn>import</span> <span class=p>(</span>  <span class=c1># noqa: PLC0415</span>
+<a id=__codelineno-0-235 name=__codelineno-0-235></a>            <span class=kn>from</span><span class=w> </span><span class=nn>firefighter.incidents.models.impact</span><span class=w> </span><span class=kn>import</span> <span class=p>(</span>
 <a id=__codelineno-0-236 name=__codelineno-0-236></a>                <span class=n>ImpactLevel</span> <span class=k>as</span> <span class=n>ImpactLevelModel</span><span class=p>,</span>
 <a id=__codelineno-0-237 name=__codelineno-0-237></a>            <span class=p>)</span>
 <a id=__codelineno-0-238 name=__codelineno-0-238></a>
