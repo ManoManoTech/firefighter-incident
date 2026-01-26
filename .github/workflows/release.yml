@@ -34,6 +34,10 @@ jobs:
         if: ${{ inputs.tag }}
         run: |
           git tag -m "v${{ inputs.tag }}" "v${{ inputs.tag }}"
+      - name: Set version environment
+        if: ${{ inputs.tag }}
+        run: |
+          echo "SETUPTOOLS_SCM_PRETEND_VERSION=${{ inputs.tag }}" >> $GITHUB_ENV
       - name: Fake .git for act
         if: ${{ env.ACT }}
         run: |
