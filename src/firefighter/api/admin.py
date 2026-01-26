@@ -49,7 +49,7 @@ class APITokenAdmin(TokenAdmin):
         self,
         request: HttpRequest,  # type: ignore[override]
         obj: APITokenProxy | None = None,
-        change: bool = False,  # noqa: FBT001, FBT002
+        change: bool = False,  # noqa: FBT002
         **kwargs: Any,
     ) -> type[ModelForm[APITokenProxy]]:
         """Prefill the form with the current user."""

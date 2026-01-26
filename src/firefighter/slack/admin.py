@@ -234,7 +234,7 @@ class UserGroupAdmin(admin.ModelAdmin[UserGroup]):
         request: HttpRequest,
         obj: UserGroup,
         form: ModelForm[UserGroup],
-        change: bool,  # noqa: FBT001
+        change: bool,
     ) -> None:
         # If added, check that we have all properties, or fetch them from firefighter.slack.
         if not change and not (

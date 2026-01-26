@@ -294,10 +294,10 @@ class OpenModal(SlackModal):
     def get_done_review_blocks(
         open_incident_context: OpeningData,
         user: User,
-        details_form_done: bool,  # noqa: FBT001
+        details_form_done: bool,
         details_form_class: type[CreateIncidentFormBase] | None,
         details_form: CreateIncidentFormBase | None,
-        can_submit: bool,  # noqa: FBT001
+        can_submit: bool,
     ) -> list[Block]:
         if not can_submit:
             return []
