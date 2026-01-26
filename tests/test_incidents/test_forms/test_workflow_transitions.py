@@ -50,7 +50,7 @@ class TestCompleteWorkflowTransitions(TestCase):
             (IncidentStatus.OPEN, [IncidentStatus.INVESTIGATING, IncidentStatus.CLOSED]),
             (IncidentStatus.INVESTIGATING, [IncidentStatus.MITIGATING, IncidentStatus.CLOSED]),
             (IncidentStatus.MITIGATING, [IncidentStatus.MITIGATED]),
-            (IncidentStatus.MITIGATED, [IncidentStatus.POST_MORTEM]),
+            (IncidentStatus.MITIGATED, [IncidentStatus.POST_MORTEM, IncidentStatus.INVESTIGATING, IncidentStatus.MITIGATING]),
             (IncidentStatus.POST_MORTEM, [IncidentStatus.CLOSED]),
         ]
 
@@ -99,7 +99,7 @@ class TestCompleteWorkflowTransitions(TestCase):
             (IncidentStatus.OPEN, [IncidentStatus.INVESTIGATING, IncidentStatus.CLOSED]),
             (IncidentStatus.INVESTIGATING, [IncidentStatus.MITIGATING, IncidentStatus.CLOSED]),
             (IncidentStatus.MITIGATING, [IncidentStatus.MITIGATED]),
-            (IncidentStatus.MITIGATED, [IncidentStatus.CLOSED]),
+            (IncidentStatus.MITIGATED, [IncidentStatus.CLOSED, IncidentStatus.INVESTIGATING, IncidentStatus.MITIGATING]),
         ]
 
         for current_status, expected_statuses in transitions:

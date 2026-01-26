@@ -1,6 +1,7 @@
 # Incident Workflow
 
 > All priorities (P1-P5) follow the same workflow. Differences are in Slack channels and post-mortem requirements.
+> **NEW**: From MITIGATED status, all incidents can autonomously reopen to INVESTIGATING/MITIGATING with mandatory justification.
 
 ---
 
@@ -24,14 +25,22 @@ graph TD
 
     H1 --> I1["🔧 MITIGATING"]
     H1 -->|Early closure<br/>+ Reason modal| CLOSED
+    H1 -.->|Reopen with reason<br/>(10+ chars)| K1
+    H1 -.->|Reopen with reason<br/>(10+ chars)| K2
 
     I1 --> J1{Post-Mortem?}
+    I1 -.->|Reopen with reason<br/>(10+ chars)| K1
+    I1 -.->|Reopen with reason<br/>(10+ chars)| K2
 
     J1 -->|P1/P2| K1["⚡ MITIGATED"]
     J1 -->|P3-P5| K2["⚡ MITIGATED"]
 
     K1 --> L1["📋 POST_MORTEM"]
+    K1 -.->|🆕 Reopen with reason<br/>(10+ chars)| H1
+    K1 -.->|🆕 Reopen with reason<br/>(10+ chars)| I1
     K2 --> CLOSED
+    K2 -.->|🆕 Reopen with reason<br/>(10+ chars)| H1
+    K2 -.->|🆕 Reopen with reason<br/>(10+ chars)| I1
 
     L1 --> CLOSED
 
