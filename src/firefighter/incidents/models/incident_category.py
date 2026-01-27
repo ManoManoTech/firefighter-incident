@@ -159,7 +159,6 @@ class IncidentCategory(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     if TYPE_CHECKING:
-        # ruff: noqa: PLC0415
         if settings.ENABLE_SLACK:
             from firefighter.slack.models.conversation import Conversation
             from firefighter.slack.models.user_group import UserGroup

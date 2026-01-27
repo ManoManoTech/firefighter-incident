@@ -374,7 +374,6 @@ def ask_key_timestamps(
     """Will send a message to the Incident conversation (if it exists) to ask for key events.
     TODO Error handling.
     """
-    # ruff: noqa: PLC0415
     from firefighter.slack.views.modals.key_event_message import SlackMessageKeyEvents
 
     success: list[tuple[int, bool]] = []

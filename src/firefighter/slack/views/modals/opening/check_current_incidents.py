@@ -25,7 +25,6 @@ class CheckCurrentIncidentsModal(
 
     @staticmethod
     def build_modal_fn(body: dict[str, Any], **kwargs: Any) -> View:
-        # ruff: noqa: PLC0415
         from firefighter.slack.views.events.home import _home_incident_element
 
         # Close or back button?

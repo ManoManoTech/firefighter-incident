@@ -10,7 +10,6 @@ logger = logging.getLogger(__name__)
 
 
 def link_auth_user(user: User, claim: dict[str, str | list[str]]) -> None:
-    # ruff: noqa: PLC0415
 
     # Check that roles are in the claim
     group_names = claim.get("roles")

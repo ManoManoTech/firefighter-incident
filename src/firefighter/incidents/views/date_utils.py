@@ -17,7 +17,6 @@ TZ = timezone.get_current_timezone()
 
 @functools.cache
 def get_ddp() -> DateDataParser:
-    # ruff: noqa: PLC0415
     from dateparser.date import DateDataParser
 
     return DateDataParser(

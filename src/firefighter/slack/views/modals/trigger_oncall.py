@@ -91,7 +91,6 @@ class OnCallModal(IncidentSelectableModalMixin, SlackModal):
             "view.state.values.oncall_service.select_oncall_service.selected_option.value",
         )
         # TODO Fix the dependency on PagerDuty app
-        # ruff: noqa: PLC0415
         from firefighter.pagerduty.tasks.trigger_oncall import trigger_oncall
 
         service: PagerDutyService | None = PagerDutyService.objects.get(
