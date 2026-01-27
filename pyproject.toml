@@ -167,30 +167,6 @@ celery-beat = {cmd="celery -A firefighter.firefighter beat -l INFO", help="Run t
 switch-test-users = {cmd="ff-manage switch_test_users", help="Generate and apply Slack user mapping for test environment"}
 
 [tool.pdm.dev-dependencies]
-dev = [
-    "mypy>=1.7.1",
-    "pylint>=3.0.2",
-    "pylint-django>=2.5.5",
-    "yamllint>=1.33.0",
-    "django-browser-reload>=1.12.1",
-    "django-silk>=5.0.4",
-    "django-debug-toolbar>=4.2.0",
-    "django-extra-checks>=0.13.3",
-    "nplusone>=1.0.0",
-    "django-migration-linter>=5.0.0",
-    "ipdb>=0.13.13",
-    "ipython>=8.18.1",
-    "djhtml>=3.0.6",
-    "django-extensions>=3.2.3",
-    "pyparsing>=3.1.1",
-    "pydot>=1.4.2",
-    "lazy-object-proxy>=1.9.0",
-    "werkzeug>=3.0.1",
-    "django-watchfiles>=0.1.0",
-    "ruff>=0.1.6",
-    "mypy-to-codeclimate>=0.0.3",
-    "djade>=1.1.1",
-]
 tests = [
     "pytest>=7.4.3",
     "pytest-cov>=4.1.0",
@@ -598,3 +574,29 @@ max-branches = 15
 max-returns = 10
 max-bool-expr = 6
 max-locals = 20
+
+[dependency-groups]
+dev = [
+    "mypy==1.19.1",
+    "pylint>=3.0.2",
+    "pylint-django>=2.5.5",
+    "yamllint>=1.33.0",
+    "django-browser-reload>=1.12.1",
+    "django-silk>=5.0.4",
+    "django-debug-toolbar>=4.2.0",
+    "django-extra-checks>=0.13.3",
+    "nplusone>=1.0.0",
+    "django-migration-linter>=5.0.0",
+    "ipdb>=0.13.13",
+    "ipython>=8.18.1",
+    "djhtml>=3.0.6",
+    "django-extensions>=3.2.3",
+    "pyparsing>=3.1.1",
+    "pydot>=1.4.2",
+    "lazy-object-proxy>=1.9.0",
+    "werkzeug>=3.0.1",
+    "django-watchfiles>=0.1.0",
+    "ruff==0.14.14",
+    "mypy-to-codeclimate>=0.0.3",
+    "djade>=1.1.1",
+]
