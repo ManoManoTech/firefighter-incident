@@ -30,7 +30,6 @@ class StandaloneApplication(gunicorn.app.wsgiapp.WSGIApplication):
 
 def main() -> None:
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "firefighter.firefighter.settings")
-    # ruff: noqa: PLC0415
     from django import setup
 
     setup()

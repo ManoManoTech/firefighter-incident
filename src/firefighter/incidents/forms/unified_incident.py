@@ -11,12 +11,11 @@ from firefighter.incidents.forms.create_incident import CreateIncidentFormBase
 from firefighter.incidents.forms.select_impact import SelectImpactForm
 from firefighter.incidents.forms.utils import GroupedModelChoiceField
 from firefighter.incidents.models import Environment, IncidentCategory, Priority
-from firefighter.incidents.models.impact import LevelChoices
+from firefighter.incidents.models.impact import ImpactLevel, LevelChoices
 from firefighter.incidents.models.incident import Incident
 from firefighter.incidents.signals import create_incident_conversation
 
 if TYPE_CHECKING:
-    from firefighter.incidents.models.impact import ImpactLevel
     from firefighter.incidents.models.user import User
     from firefighter.jira_app.models import JiraUser
 
@@ -232,13 +231,9 @@ class UnifiedIncidentForm(CreateIncidentFormBase):
 
             # If it's a UUID string, fetch the ImpactLevel from database
             if isinstance(impact, str):
-                from firefighter.incidents.models.impact import (
-                    ImpactLevel as ImpactLevelModel,
-                )
-
                 try:
-                    impact_obj = ImpactLevelModel.objects.get(id=impact)
-                except ImpactLevelModel.DoesNotExist:
+                    impact_obj = ImpactLevel.objects.get(id=impact)
+                except ImpactLevel.DoesNotExist:
                     return False
                 else:
                     return impact_obj.value != LevelChoices.NONE.value
@@ -415,9 +410,6 @@ class UnifiedIncidentForm(CreateIncidentFormBase):
             creator: User creating the incident
             impacts_data: Dictionary of impact data
         """
-        from firefighter.incidents.forms.select_impact import (
-            SelectImpactForm,
-        )
         from firefighter.raid.client import client as jira_client
         from firefighter.raid.forms import (
             alert_slack_new_jira_ticket,

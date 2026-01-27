@@ -9,6 +9,8 @@ from django.conf import settings
 from firefighter.slack.slack_templating import user_slack_handle_or_name
 
 if TYPE_CHECKING:
+    from celery import Signature
+
     from firefighter.incidents.models.user import User
 
 if settings.ENABLE_PAGERDUTY:
@@ -28,7 +30,7 @@ BASE_URL: str = settings.BASE_URL
 @shared_task(name="incidents.update_oncall")
 def update_oncall() -> None:
     """Fetch current on-calls and update the on-call Slack topic and Confluence page."""
-    chain = (
+    chain: Signature[bool] = (
         fetch_oncalls.s()  # pyright: ignore[reportUnboundVariable]
         | update_oncall_views.s()
     )

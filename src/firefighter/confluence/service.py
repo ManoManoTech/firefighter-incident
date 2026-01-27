@@ -20,7 +20,6 @@ logger = logging.getLogger(__name__)
 
 @cache
 def get_confluence_client() -> type[ConfluenceClient]:
-    # ruff: noqa: PLC0415
     from firefighter.confluence.client import ConfluenceClient
 
     return ConfluenceClient

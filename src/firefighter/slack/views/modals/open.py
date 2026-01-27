@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import inspect
 import json
 import logging
 from datetime import timedelta
@@ -293,10 +294,10 @@ class OpenModal(SlackModal):
     def get_done_review_blocks(
         open_incident_context: OpeningData,
         user: User,
-        details_form_done: bool,  # noqa: FBT001
+        details_form_done: bool,
         details_form_class: type[CreateIncidentFormBase] | None,
         details_form: CreateIncidentFormBase | None,
-        can_submit: bool,  # noqa: FBT001
+        can_submit: bool,
     ) -> list[Block]:
         if not can_submit:
             return []
@@ -416,7 +417,6 @@ class OpenModal(SlackModal):
 
         # Pass impacts_data and response_type to form if it supports them (UnifiedIncidentForm)
         # Check if __init__ accepts these parameters
-        import inspect
         init_params = inspect.signature(details_form_class.__init__).parameters
         form_kwargs: dict[str, Any] = {}
         if "impacts_data" in init_params:
@@ -631,7 +631,6 @@ class OpenModal(SlackModal):
             )
             if details_form_class:
                 # Pass impacts_data and response_type to form if it supports them (UnifiedIncidentForm)
-                import inspect
                 init_params = inspect.signature(details_form_class.__init__).parameters
                 form_kwargs: dict[str, Any] = {}
                 if "impacts_data" in init_params:

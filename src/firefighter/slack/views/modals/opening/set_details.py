@@ -138,7 +138,6 @@ class SetIncidentDetails(ModalForm[T], Generic[T]):
 
         if skip_form:
             return
-        # ruff: noqa: PLC0415
         from firefighter.slack.views.modals.open import modal_open
 
         if "priority" in private_metadata and isinstance(

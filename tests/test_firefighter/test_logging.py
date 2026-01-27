@@ -5,7 +5,6 @@ import pytest
 
 def test_json_logging(caplog: pytest.LogCaptureFixture, capsys, settings) -> None:
     """This test ensures that JSON logging is working."""
-    # ruff: noqa: PLC0415
     import logging
 
     from firefighter.firefighter.settings.components.logging import (

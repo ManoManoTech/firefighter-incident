@@ -234,7 +234,7 @@ class UserGroupAdmin(admin.ModelAdmin[UserGroup]):
         request: HttpRequest,
         obj: UserGroup,
         form: ModelForm[UserGroup],
-        change: bool,  # noqa: FBT001
+        change: bool,
     ) -> None:
         # If added, check that we have all properties, or fetch them from firefighter.slack.
         if not change and not (
@@ -374,7 +374,6 @@ def ask_key_timestamps(
     """Will send a message to the Incident conversation (if it exists) to ask for key events.
     TODO Error handling.
     """
-    # ruff: noqa: PLC0415
     from firefighter.slack.views.modals.key_event_message import SlackMessageKeyEvents
 
     success: list[tuple[int, bool]] = []

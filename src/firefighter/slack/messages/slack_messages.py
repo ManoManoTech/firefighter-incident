@@ -61,7 +61,6 @@ SLACK_APP_EMOJI: str = settings.SLACK_APP_EMOJI
 
 
 def get_key_events_accessory(incident: Incident) -> dict[str, Any]:
-    # ruff: noqa: PLC0415
     from firefighter.slack.views.modals.key_event_message import SlackMessageKeyEvents
 
     key_events_msg = Message.objects.get_or_none(

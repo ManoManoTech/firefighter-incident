@@ -534,6 +534,8 @@ ignore = [
   "CPY001",  # Missing copyright notice at top of file
   "PLR6301", # XXX Method could be a function or static method -- needs allow list or @override support
   "E203",    # XXX whitespace-before-punctuation -- still unstable with black formatting
+  "PLC0415", # Allow imports inside functions for circular dependencies and optional modules
+  "FBT001",  # Allow boolean positional arguments in function definitions
 ]
 
 # Allow unused variables when underscore-prefixed.

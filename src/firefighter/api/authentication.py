@@ -14,7 +14,6 @@ class BearerTokenAuthentication(TokenAuthentication):
     keyword = "Bearer"
 
     def get_model(self) -> type[Model]:
-        # ruff: noqa: PLC0415
         from firefighter.api.models import APIToken
 
         return APIToken

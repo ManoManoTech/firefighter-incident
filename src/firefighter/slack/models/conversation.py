@@ -433,7 +433,6 @@ class Conversation(models.Model):
 
     @staticmethod
     def _get_message_manager() -> MessageManager:
-        # ruff: noqa: PLC0415
         from firefighter.slack.models.message import Message
 
         return Message.objects
