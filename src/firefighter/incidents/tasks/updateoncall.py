@@ -3,14 +3,12 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING, Any
 
-from celery import shared_task
+from celery import Signature, shared_task
 from django.conf import settings
 
 from firefighter.slack.slack_templating import user_slack_handle_or_name
 
 if TYPE_CHECKING:
-    from celery import Signature
-
     from firefighter.incidents.models.user import User
 
 if settings.ENABLE_PAGERDUTY:
