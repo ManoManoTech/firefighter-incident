@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING, Any
 
-from celery import Signature, shared_task
+from celery import shared_task
 from django.conf import settings
 
 from firefighter.slack.slack_templating import user_slack_handle_or_name
@@ -28,11 +28,11 @@ BASE_URL: str = settings.BASE_URL
 @shared_task(name="incidents.update_oncall")
 def update_oncall() -> None:
     """Fetch current on-calls and update the on-call Slack topic and Confluence page."""
-    chain: Signature[bool] = (
+    task_chain: Any = (
         fetch_oncalls.s()  # pyright: ignore[reportUnboundVariable]
         | update_oncall_views.s()
     )
-    chain()
+    task_chain()
 
 
 @shared_task(name="incidents.update_oncall_views")
