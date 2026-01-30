@@ -1146,3 +1146,62 @@ class SlackMessageIncidentDowngradeHint(SlackMessageSurface):
 
     def get_text(self) -> str:
         return f"Incident #{self.incident.id} might not need an incident channel, as it is {self.incident.priority.name}."
+
+
+class SlackMessageChannelReminderPostMortem(SlackMessageSurface):
+    id = "ff_incident_postmortem_late_channel_reminder"
+
+    def __init__(self, incident: Incident):
+        self.incident = incident
+        super().__init__()
+
+    def get_text(self) -> str:
+        return f"Reminder: Post-mortem for incident #{self.incident.id} is still pending. :memo:"
+
+    def get_blocks(self) -> list[Block]:
+        return [
+            SectionBlock(
+                text=f":hourglass_flowing_sand: *Reminder* :hourglass_flowing_sand:\n"
+                f"The post-mortem for incident *#{self.incident.id}* is still pending. Completing it will "
+                f"help us understand and mitigate such issues in the future. :memo:"
+            ),
+            ContextBlock(
+                elements=[
+                    MarkdownTextObject(
+                        text=":bulb: Please take a moment to complete the post-mortem process. "
+                        "It's essential for continuous improvement",
+                    )
+                ]
+            ),
+        ]
+
+
+class SlackMessageIncidentUpdateReminderCommander(SlackMessageSurface):
+    id = "ff_incident_postmortem_commander_late_reminder"
+
+    def __init__(self, incident: Incident, time_delta_fmt: str):
+        self.incident = incident
+        self.time_delta_fmt = time_delta_fmt
+        super().__init__()
+
+    def get_blocks(self) -> list[Block]:
+        if self.incident.priority.value >= 4:
+            text = f"Hey there ! You may want to close your this {self.incident.title} incident 📝"
+        else:
+            text = f"Hey there ! Just a reminder for this incident {self.incident.title}. He has no update since {self.time_delta_fmt}. Please make sure the postmortem is done even if you are not the one doing it."
+
+        return [
+            HeaderBlock(
+                text=PlainTextObject(
+                    text=":robot_face: Reminder to update this incident :robot_face:",
+                    emoji=True,
+                )
+            ),
+            SectionBlock(text=MarkdownTextObject(text=text)),
+            SectionBlockUpdateIntent(self.incident),
+        ]
+
+    def get_text(self) -> str:
+        return (
+            "👋 Hey there! Just a reminder to ensure the postmortem for this incident"
+        )

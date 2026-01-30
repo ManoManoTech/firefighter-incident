@@ -459,4 +459,30 @@ class SlackUser(models.Model):
             **kwargs,
         )
 
+    @slack_client
+    def send_and_save_private_message(
+        self,
+        message: SlackMessageSurface,
+        client: WebClient = DefaultWebClient,
+        **kwargs: Any,
+    ) -> None:
+        """Send a private message to the user and save it to DB."""
+        from firefighter.slack.models.conversation import (  # noqa: PLC0415
+            Conversation,
+            ConversationStatus,
+            ConversationType,
+        )
+
+        conversation_response = client.conversations_open(users=self.slack_id)
+        channel_id = get_in(conversation_response, "channel.id")
+        conversation, _created = Conversation.objects.get_or_create(
+            channel_id=channel_id,
+            defaults={
+                "name": self.username,
+                "type": ConversationType.DM,
+                "status": ConversationStatus.OPENED,
+            },
+        )
+        conversation.send_message_and_save(message)
+
     objects: SlackUserManager = SlackUserManager()

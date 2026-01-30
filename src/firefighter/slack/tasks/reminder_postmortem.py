@@ -5,15 +5,21 @@ from typing import TYPE_CHECKING
 
 from firefighter.slack.messages.base import SlackMessageStrategy
 from firefighter.slack.messages.slack_messages import (
+    SlackMessageChannelReminderPostMortem,
     SlackMessageIncidentFixedNextActions,
     SlackMessageIncidentPostMortemReminder,
+    SlackMessageIncidentUpdateReminderCommander,
 )
 from firefighter.slack.slack_app import DefaultWebClient, slack_client
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     from slack_sdk.web.client import WebClient
 
     from firefighter.incidents.models.incident import Incident
+    from firefighter.incidents.models.incident_membership import IncidentRole
+
 
 logger = logging.getLogger(__name__)
 
@@ -72,3 +78,24 @@ def publish_fixed_next_actions(
         },
         client=client,
     )
+
+
+def send_reminder(
+    incident: Incident, commander_role: Iterable[IncidentRole], *, to_channel: bool
+) -> None:
+    """Sends a postmortem reminder related to an incident either through a channel or privately to the commander."""
+    if to_channel:
+        # Send a message in the incident channel
+        incident.conversation.send_message_and_save(
+            SlackMessageChannelReminderPostMortem(incident)
+        )
+    else:
+        # Send a private message to commander
+        for commander in commander_role:
+            user = commander.user
+            slack_user = user.slack_user
+            if slack_user:
+                private_message = SlackMessageIncidentUpdateReminderCommander(
+                    incident=incident, time_delta_fmt=str(incident.created_at)
+                )
+                slack_user.send_and_save_private_message(private_message)
