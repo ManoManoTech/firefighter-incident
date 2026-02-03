@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import re
+from contextlib import suppress
 from typing import TYPE_CHECKING, Any, cast
 
 from django.conf import settings
@@ -194,8 +195,35 @@ class IncidentDetailView(CustomDetailView[Incident]):
 
         incident: Incident = context["incident"]
 
+        # Check if external resources exist
+        has_confluence_app = "firefighter.confluence" in settings.INSTALLED_APPS
+        has_jira_app = "firefighter.jira_app" in settings.INSTALLED_APPS
+
+        # Safely check for post-mortem existence
+        # We suppress exceptions because accessing OneToOne relations can fail
+        # in various ways if the related app is not installed or tables don't exist
+        has_confluence_pm = False
+        if has_confluence_app:
+            with suppress(AttributeError, ImportError, LookupError):
+                has_confluence_pm = bool(incident.postmortem_for)
+
+        has_jira_pm = False
+        if has_jira_app:
+            with suppress(AttributeError, ImportError, LookupError):
+                has_jira_pm = bool(incident.jira_postmortem_for)
+
+        has_jira_ticket = False
+        if has_jira_app:
+            with suppress(AttributeError, ImportError, LookupError):
+                has_jira_ticket = bool(incident.jira_ticket)
+
         additional_context = {
             "page_title": f"Incident #{incident.id}",
+            "has_confluence_app": has_confluence_app,
+            "has_jira_app": has_jira_app,
+            "has_confluence_pm": has_confluence_pm,
+            "has_jira_pm": has_jira_pm,
+            "has_jira_ticket": has_jira_ticket,
         }
 
         return {**context, **additional_context}

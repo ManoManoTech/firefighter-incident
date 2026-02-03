@@ -102,7 +102,7 @@
       <div class="lg:col-start-8 lg:col-span-5 space-y-6 ">
         {% component "card" card_title="External resources" id="incident-integrations" %}
           {% fill "card_content" %}
-            {% if not incident.conversation and not incident.postmortem_for and not incident.jira_postmortem_for and not incident.jira_ticket and pagerduty_incident_set.count == 0 %}
+            {% if not incident.conversation and not has_confluence_pm and not has_jira_pm and not has_jira_ticket and pagerduty_incident_set.count == 0 %}
               <div class="px-4 py-5 sm:px-6 col-span-2">
                 <h4 class="text-center font-medium text-sm text-neutral-500 dark:text-neutral-100">
                   No external resources for this incident.
@@ -144,7 +144,7 @@
                     </div>
                   </li>
                 {% endif %}
-                {% if incident.postmortem_for %}
+                {% if has_confluence_app and incident.postmortem_for %}
                   <li class="py-4 flex items-center">
                     <div class="h-10 w-10 flex shrink-0">
                       <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 m-auto" viewBox="0 0 20 20" fill="currentColor">
@@ -157,7 +157,7 @@
                     </div>
                   </li>
                 {% endif %}
-                {% if incident.jira_postmortem_for %}
+                {% if has_jira_app and incident.jira_postmortem_for %}
                   <li class="py-4 flex items-center">
                     <div class="h-10 w-10 flex shrink-0">
                       <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 m-auto" viewBox="0 0 20 20" fill="currentColor">
