@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING, Any
 
+from django.conf import settings
 from django.core.cache import cache
 from django.db.models.signals import post_save
 from django.dispatch.dispatcher import receiver
@@ -11,39 +12,35 @@ from firefighter.incidents.enums import IncidentStatus
 from firefighter.incidents.models.incident import Incident
 from firefighter.incidents.signals import incident_updated
 from firefighter.raid.client import RAID_JIRA_WORKFLOW_NAME, client
+from firefighter.raid.utils import normalize_cache_value
 
 if TYPE_CHECKING:
     from firefighter.incidents.models.incident_update import IncidentUpdate
 
 logger = logging.getLogger(__name__)
+JIRA_SYNC_CACHE_TIMEOUT = getattr(settings, "JIRA_SYNC_CACHE_TIMEOUT", 60)
+
+JIRA_STATUS_INCOMING = "Incoming"
+JIRA_STATUS_PENDING_RESOLUTION = "Pending resolution"
+JIRA_STATUS_IN_PROGRESS = "in progress"
+JIRA_STATUS_REPORTER_VALIDATION = "Reporter validation"
+JIRA_STATUS_CLOSED = "Closed"
+
 IMPACT_TO_JIRA_STATUS_MAP: dict[IncidentStatus, str] = {
-    IncidentStatus.OPEN: "Incoming",
-    IncidentStatus.INVESTIGATING: "in progress",
-    IncidentStatus.MITIGATING: "in progress",
-    IncidentStatus.MITIGATED: "Reporter validation",
-    IncidentStatus.POST_MORTEM: "Reporter validation",
-    IncidentStatus.CLOSED: "Closed",
+    IncidentStatus.OPEN: JIRA_STATUS_INCOMING,
+    IncidentStatus.INVESTIGATING: JIRA_STATUS_IN_PROGRESS,
+    IncidentStatus.MITIGATING: JIRA_STATUS_IN_PROGRESS,
+    IncidentStatus.MITIGATED: JIRA_STATUS_REPORTER_VALIDATION,
+    IncidentStatus.POST_MORTEM: JIRA_STATUS_REPORTER_VALIDATION,
+    IncidentStatus.CLOSED: JIRA_STATUS_CLOSED,
 }
 
 
-def _normalize_cache_value(value: Any) -> str:
-    """Normalize cache values for loop-prevention keys."""
-    if value is None:
-        return ""
-    # Lowercase strings for status consistency; leave numbers as stringified ints.
-    if isinstance(value, str):
-        return value.strip().lower()
-    try:
-        return str(int(value))
-    except (TypeError, ValueError):
-        return str(value).strip().lower()
-
-
 def _set_impact_to_jira_cache(
-    incident_id: Any, field: str, value: Any, timeout: int = 30
+    incident_id: Any, field: str, value: Any, timeout: int = JIRA_SYNC_CACHE_TIMEOUT
 ) -> None:
     cache_key = (
-        f"sync:impact_to_jira:{incident_id}:{field}:{_normalize_cache_value(value)}"
+        f"sync:impact_to_jira:{incident_id}:{field}:{normalize_cache_value(value)}"
     )
     cache.set(cache_key, value=True, timeout=timeout)
 
@@ -63,7 +60,7 @@ def incident_updated_close_ticket_when_mitigated_or_postmortem(
     - P3+ (no postmortem): Close when incident is MITIGATED or CLOSED
     - POST_MORTEM status never closes the ticket (it remains open during PM phase)
     """
-    logger.warning(
+    logger.debug(
         "incident_updated handler invoked for incident #%s with status %s; updated_fields=%s event_type=%s",
         getattr(incident, "id", "unknown"),
         incident_update.status,
@@ -96,7 +93,8 @@ def incident_updated_close_ticket_when_mitigated_or_postmortem(
     # Special case: when Impact moves to MITIGATING, Jira must go through two steps:
     # "Pending resolution" then "in progress".
     if incident_update.status == IncidentStatus.MITIGATING:
-        for step in ("Pending resolution", "in progress"):
+        all_steps_succeeded = True
+        for step in (JIRA_STATUS_PENDING_RESOLUTION, JIRA_STATUS_IN_PROGRESS):
             try:
                 logger.debug(
                     "Transitioning Jira ticket %s via workflow %s to status %s (incident #%s, impact status %s)",
@@ -110,18 +108,25 @@ def incident_updated_close_ticket_when_mitigated_or_postmortem(
                     incident.jira_ticket.id, step, RAID_JIRA_WORKFLOW_NAME
                 )
             except Exception:
+                all_steps_succeeded = False
                 logger.exception(
                     "Failed to transition Jira ticket %s to %s for incident %s",
                     incident.jira_ticket.id,
                     step,
                     getattr(incident, "id", "unknown"),
                 )
-                return
-        logger.info(
-            "Transitioned Jira ticket %s through Pending resolution -> in progress from Impact status %s",
-            incident.jira_ticket.id,
-            incident_update.status.label if incident_update.status else "Unknown",
-        )
+        if all_steps_succeeded:
+            logger.info(
+                "Transitioned Jira ticket %s through Pending resolution -> in progress from Impact status %s",
+                incident.jira_ticket.id,
+                incident_update.status.label if incident_update.status else "Unknown",
+            )
+        else:
+            logger.warning(
+                "At least one Jira transition failed while moving ticket %s to MITIGATING (incident #%s)",
+                incident.jira_ticket.id,
+                getattr(incident, "id", "unknown"),
+            )
         return
 
     # Decide target Jira status based on Impact status and postmortem requirement.
@@ -135,11 +140,11 @@ def incident_updated_close_ticket_when_mitigated_or_postmortem(
         )
         return
 
-    target_jira_status: str | None = None
-    if incident_status == IncidentStatus.CLOSED:
-        target_jira_status = "Closed"
-    else:
-        target_jira_status = IMPACT_TO_JIRA_STATUS_MAP.get(incident_status)
+    target_jira_status: str | None = (
+        JIRA_STATUS_CLOSED
+        if incident_status == IncidentStatus.CLOSED
+        else IMPACT_TO_JIRA_STATUS_MAP.get(incident_status)
+    )
 
     if target_jira_status is None:
         logger.info(

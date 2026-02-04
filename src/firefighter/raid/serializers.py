@@ -22,7 +22,7 @@ from firefighter.raid.forms import (
     alert_slack_update_ticket,
 )
 from firefighter.raid.models import JiraTicket
-from firefighter.raid.utils import get_domain_from_email
+from firefighter.raid.utils import get_domain_from_email, normalize_cache_value
 from firefighter.slack.models.user import SlackUser
 
 if TYPE_CHECKING:
@@ -53,18 +53,6 @@ JIRA_TO_IMPACT_PRIORITY_MAP: dict[str, int] = {
 }
 
 logger = logging.getLogger(__name__)
-
-
-def _normalize_cache_value(value: Any) -> str:
-    """Normalize cache values for loop-prevention keys."""
-    if value is None:
-        return ""
-    if isinstance(value, str):
-        return value.strip().lower()
-    try:
-        return str(int(value))
-    except (TypeError, ValueError):
-        return str(value).strip().lower()
 
 
 class IgnoreEmptyStringListField(serializers.ListField):
@@ -324,10 +312,17 @@ class JiraWebhookUpdateSerializer(serializers.Serializer[Any]):
             return True
 
         jira_ticket_key = validated_data["issue"].get("key")
+        incident = (
+            self._get_incident_from_jira_ticket(jira_ticket_key)
+            if jira_ticket_key
+            else None
+        )
+        if incident is None:
+            return True
 
         for change_item in changes:
             if not self._sync_jira_fields_to_incident(
-                validated_data, jira_ticket_key, change_item
+                validated_data, jira_ticket_key, incident, change_item
             ):
                 continue
 
@@ -375,6 +370,7 @@ class JiraWebhookUpdateSerializer(serializers.Serializer[Any]):
         self,
         validated_data: dict[str, Any],
         jira_ticket_key: str | None,
+        incident: Incident,
         change_item: dict[str, Any],
     ) -> bool:
         field = (change_item.get("field") or "").lower()
@@ -394,7 +390,7 @@ class JiraWebhookUpdateSerializer(serializers.Serializer[Any]):
                 validated_data, jira_ticket_key, change_item
             ):
                 raise SlackNotificationError("Could not alert in Slack")
-            return self._handle_status_update(validated_data, change_item)
+            return self._handle_status_update(validated_data, incident, change_item)
 
         to_val = change_item.get("toString")
         from_val = change_item.get("fromString")
@@ -406,7 +402,7 @@ class JiraWebhookUpdateSerializer(serializers.Serializer[Any]):
                 validated_data, jira_ticket_key, change_item
             ):
                 raise SlackNotificationError("Could not alert in Slack")
-            return self._handle_priority_update(validated_data, change_item)
+            return self._handle_priority_update(validated_data, incident, change_item)
 
         return False
 
@@ -434,9 +430,11 @@ class JiraWebhookUpdateSerializer(serializers.Serializer[Any]):
         return incident
 
     def _handle_status_update(
-        self, validated_data: dict[str, Any], change_item: dict[str, Any]
+        self,
+        _validated_data: dict[str, Any],
+        incident: Incident,
+        change_item: dict[str, Any],
     ) -> bool:
-        jira_ticket_key = validated_data["issue"].get("key")
         jira_status_to = change_item.get("toString") or ""
         impact_status = JIRA_TO_IMPACT_STATUS_MAP.get(jira_status_to)
         if impact_status is None:
@@ -444,10 +442,6 @@ class JiraWebhookUpdateSerializer(serializers.Serializer[Any]):
                 "Jira status '%s' has no Impact mapping; skipping incident sync",
                 jira_status_to,
             )
-            return True
-
-        incident = self._get_incident_from_jira_ticket(jira_ticket_key)
-        if incident is None:
             return True
 
         if incident.status == impact_status:
@@ -464,6 +458,7 @@ class JiraWebhookUpdateSerializer(serializers.Serializer[Any]):
                     "Skipping Jira→Impact close for incident %s: postmortem is required but no Jira PM linked.",
                     incident.id,
                 )
+                # Returning True: webhook handled but intentionally skipped due to missing Jira PM link.
                 return True
             try:
                 from firefighter.jira_app.service_postmortem import (  # noqa: PLC0415
@@ -480,12 +475,14 @@ class JiraWebhookUpdateSerializer(serializers.Serializer[Any]):
                         incident.jira_postmortem_for.jira_issue_key,
                         current_status,
                     )
+                    # Returning True: webhook handled but close sync deferred until PM ready.
                     return True
             except Exception:
                 logger.exception(
                     "Failed to verify Jira post-mortem readiness for incident %s; skipping close sync",
                     incident.id,
                 )
+                # Returning True: webhook handled; failure is logged, no retry desired here.
                 return True
 
         incident.create_incident_update(
@@ -497,9 +494,11 @@ class JiraWebhookUpdateSerializer(serializers.Serializer[Any]):
         return True
 
     def _handle_priority_update(
-        self, validated_data: dict[str, Any], change_item: dict[str, Any]
+        self,
+        _validated_data: dict[str, Any],
+        incident: Incident,
+        change_item: dict[str, Any],
     ) -> bool:
-        jira_ticket_key = validated_data["issue"].get("key")
         jira_priority_to = change_item.get("toString") or ""
 
         impact_priority_value = self._parse_priority_value(jira_priority_to)
@@ -510,11 +509,6 @@ class JiraWebhookUpdateSerializer(serializers.Serializer[Any]):
                 jira_priority_to,
             )
             return True
-
-        incident = self._get_incident_from_jira_ticket(jira_ticket_key)
-        if incident is None:
-            return True
-
         if incident.priority and incident.priority.value == impact_priority_value:
             logger.debug(
                 "Incident %s already at priority %s from Jira webhook; no-op",
@@ -565,7 +559,7 @@ class JiraWebhookUpdateSerializer(serializers.Serializer[Any]):
             parsed = JiraWebhookUpdateSerializer._parse_priority_value(raw_value)
             value_for_cache = parsed if parsed is not None else raw_value
 
-        cache_key = f"sync:impact_to_jira:{incident.id}:{field}:{_normalize_cache_value(value_for_cache)}"
+        cache_key = f"sync:impact_to_jira:{incident.id}:{field}:{normalize_cache_value(value_for_cache)}"
         if cache.get(cache_key):
             cache.delete(cache_key)
             return True
