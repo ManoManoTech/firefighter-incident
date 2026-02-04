@@ -84,7 +84,7 @@ def incident_updated_close_ticket_when_mitigated_or_postmortem(
         return
 
     if not hasattr(incident, "jira_ticket") or incident.jira_ticket is None:
-        logger.debug(
+        logger.warning(
             "Trying to close Jira ticket for incident %s but no Jira ticket found",
             getattr(incident, "id", "unknown"),
         )

@@ -318,6 +318,22 @@ class JiraWebhookUpdateSerializer(serializers.Serializer[Any]):
             else None
         )
         if incident is None:
+            # No linked incident: still emit Slack alerts for tracked fields (status/priority).
+            for change_item in changes:
+                field = (change_item.get("field") or "").lower()
+                to_val = change_item.get("toString")
+                from_val = change_item.get("fromString")
+                is_status = field == "status"
+                is_priority = (
+                    self._parse_priority_value(to_val) is not None
+                    or self._parse_priority_value(from_val) is not None
+                )
+                if not (is_status or is_priority):
+                    continue
+                if not self._alert_slack_update(
+                    validated_data, jira_ticket_key, change_item
+                ):
+                    raise SlackNotificationError("Could not alert in Slack")
             return True
 
         for change_item in changes:
