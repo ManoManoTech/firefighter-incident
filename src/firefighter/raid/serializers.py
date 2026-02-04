@@ -461,7 +461,7 @@ class JiraWebhookUpdateSerializer(serializers.Serializer[Any]):
                 # Returning True: webhook handled but intentionally skipped due to missing Jira PM link.
                 return True
             try:
-                from firefighter.jira_app.service_postmortem import (  # noqa: PLC0415
+                from firefighter.jira_app.service_postmortem import (
                     jira_postmortem_service,
                 )
 
