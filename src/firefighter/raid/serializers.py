@@ -15,6 +15,7 @@ from firefighter.jira_app.client import (
     JiraUserNotFoundError,
     SlackNotificationError,
 )
+from firefighter.jira_app.service_postmortem import jira_postmortem_service
 from firefighter.raid.client import client as jira_client
 from firefighter.raid.forms import (
     alert_slack_comment_ticket,
@@ -477,10 +478,6 @@ class JiraWebhookUpdateSerializer(serializers.Serializer[Any]):
                 # Returning True: webhook handled but intentionally skipped due to missing Jira PM link.
                 return True
             try:
-                from firefighter.jira_app.service_postmortem import (
-                    jira_postmortem_service,
-                )
-
                 is_ready, current_status = jira_postmortem_service.is_postmortem_ready(
                     incident.jira_postmortem_for
                 )
