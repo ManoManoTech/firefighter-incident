@@ -204,11 +204,7 @@ class Incident(models.Model):
         null=True,
         blank=True,
     )
-    severity.system_check_deprecated_details = {
-        "msg": "The Incident.severity field has been deprecated.",
-        "hint": "Use Incident.priority instead.",
-        "id": "fields.W921",
-    }
+    severity.system_check_deprecated_details = None
     priority = models.ForeignKey(
         Priority,
         on_delete=models.PROTECT,
@@ -292,7 +288,8 @@ class Incident(models.Model):
             ),
             models.CheckConstraint(
                 name="%(app_label)s_%(class)s_closure_reason_valid",
-                check=models.Q(closure_reason__in=[*ClosureReason.values, None]),
+                check=models.Q(closure_reason__in=[*ClosureReason.values, ""])
+                | models.Q(closure_reason__isnull=True),
             ),
         ]
 
@@ -418,14 +415,17 @@ class Incident(models.Model):
                     f"Incident is not in {IncidentStatus.MITIGATED.label} status (currently {self.status.label}).",
                 )
             )
-        missing_milestones = self.missing_milestones()
-        if len(missing_milestones) > 0:
-            cant_closed_reasons.append(
-                (
-                    "MISSING_REQUIRED_KEY_EVENTS",
-                    f"Missing key events: {', '.join(missing_milestones)}",
+        # Require key events only for P1-P3; P4+ can close without them.
+        require_milestones = not (self.priority and self.priority.value >= 4)
+        if require_milestones:
+            missing_milestones = self.missing_milestones()
+            if len(missing_milestones) > 0:
+                cant_closed_reasons.append(
+                    (
+                        "MISSING_REQUIRED_KEY_EVENTS",
+                        f"Missing key events: {', '.join(missing_milestones)}",
+                    )
                 )
-            )
 
         if len(cant_closed_reasons) > 0:
             return False, cant_closed_reasons
@@ -644,8 +644,20 @@ class Incident(models.Model):
         _update_incident_field(self, "description", description, updated_fields)
         _update_incident_field(self, "environment_id", environment_id, updated_fields)
 
+        skip_priority_sync = "priority_id" in updated_fields
+        skip_status_sync = "_status" in updated_fields
+
         if updated_fields:
+            # Mark to skip post_save priority sync (prevents double push to Jira)
+            if skip_priority_sync:
+                self._skip_priority_sync = True
+            if skip_status_sync:
+                self._skip_status_sync = True
             self.save(update_fields=[*updated_fields, "updated_at"])
+            if skip_priority_sync and hasattr(self, "_skip_priority_sync"):
+                del self._skip_priority_sync
+            if skip_status_sync and hasattr(self, "_skip_status_sync"):
+                del self._skip_status_sync
 
         if not (updated_fields or message):
             raise ValueError("No updated fields or message provided.")
