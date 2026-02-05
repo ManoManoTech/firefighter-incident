@@ -82,6 +82,11 @@
   {
     "version": "v0.0.37",
     "title": "v0.0.37",
+    "aliases": []
+  },
+  {
+    "version": "v0.0.36",
+    "title": "v0.0.36",
     "aliases": [
       "latest"
     ]
