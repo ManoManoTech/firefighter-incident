@@ -39,7 +39,7 @@ runs:
         fi
 
         if [ -n "$sha" ]; then
-          if ! echo "$sha" | grep -E '^[0-9a-f]{40}$' >/dev/null; then
+          if ! echo "$sha" | grep -E '^[0-9A-Fa-f]{40}$' >/dev/null; then
             echo "Invalid sha format (expected 40 hex chars)" >&2
             exit 1
           fi
