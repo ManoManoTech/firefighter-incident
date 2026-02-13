@@ -1,0 +1,44 @@
+name: Validate release inputs
+description: Validate workflow_dispatch inputs for release workflows
+inputs:
+  tag:
+    description: "Semver-like tag without leading v (e.g. 0.0.1)"
+    required: false
+  sha:
+    description: "40-character commit SHA"
+    required: false
+outputs:
+  validated_tag:
+    description: "Validated tag value (empty if not provided)"
+    value: ${{ steps.validate.outputs.validated_tag }}
+  validated_sha:
+    description: "Validated sha value (empty if not provided)"
+    value: ${{ steps.validate.outputs.validated_sha }}
+runs:
+  using: "composite"
+  steps:
+    - id: validate
+      shell: bash
+      run: |
+        tag="${{ inputs.tag }}"
+        sha="${{ inputs.sha }}"
+
+        if [ -n "$tag" ]; then
+          if ! echo "$tag" | grep -E '^[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9.-]+)?$' >/dev/null; then
+            echo "Invalid tag format (expected semver-like)" >&2
+            exit 1
+          fi
+          echo "validated_tag=$tag" >> "$GITHUB_OUTPUT"
+        else
+          echo "validated_tag=" >> "$GITHUB_OUTPUT"
+        fi
+
+        if [ -n "$sha" ]; then
+          if ! echo "$sha" | grep -E '^[0-9a-f]{40}$' >/dev/null; then
+            echo "Invalid sha format (expected 40 hex chars)" >&2
+            exit 1
+          fi
+          echo "validated_sha=$sha" >> "$GITHUB_OUTPUT"
+        else
+          echo "validated_sha=" >> "$GITHUB_OUTPUT"
+        fi
