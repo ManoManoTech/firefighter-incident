@@ -19,26 +19,39 @@ runs:
   steps:
     - id: validate
       shell: bash
+      env:
+        TAG_INPUT: ${{ inputs.tag }}
+        SHA_INPUT: ${{ inputs.sha }}
       run: |
-        tag="${{ inputs.tag }}"
-        sha="${{ inputs.sha }}"
+        set -euo pipefail
+
+        tag="${TAG_INPUT:-}"
+        sha="${SHA_INPUT:-}"
 
         if [ -n "$tag" ]; then
-          if ! echo "$tag" | grep -E '^[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9.-]+)?$' >/dev/null; then
+          if printf '%s' "$tag" | LC_ALL=C grep -q '[^0-9A-Za-z.-]'; then
+            echo "Invalid tag format (only 0-9 A-Za-z . - allowed)" >&2
+            exit 1
+          fi
+          if ! printf '%s' "$tag" | LC_ALL=C grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9.-]+)?$'; then
             echo "Invalid tag format (expected semver-like)" >&2
             exit 1
           fi
-          echo "validated_tag=$tag" >> "$GITHUB_OUTPUT"
+          printf 'validated_tag=%s\n' "$tag" >> "$GITHUB_OUTPUT"
         else
-          echo "validated_tag=" >> "$GITHUB_OUTPUT"
+          printf 'validated_tag=\n' >> "$GITHUB_OUTPUT"
         fi
 
         if [ -n "$sha" ]; then
-          if ! echo "$sha" | grep -E '^[0-9a-f]{40}$' >/dev/null; then
+          if printf '%s' "$sha" | LC_ALL=C grep -q '[^0-9A-Fa-f]'; then
+            echo "Invalid sha format (only 0-9 A-F a-f allowed)" >&2
+            exit 1
+          fi
+          if ! printf '%s' "$sha" | LC_ALL=C grep -Eq '^[0-9A-Fa-f]{40}$'; then
             echo "Invalid sha format (expected 40 hex chars)" >&2
             exit 1
           fi
-          echo "validated_sha=$sha" >> "$GITHUB_OUTPUT"
+          printf 'validated_sha=%s\n' "$sha" >> "$GITHUB_OUTPUT"
         else
-          echo "validated_sha=" >> "$GITHUB_OUTPUT"
+          printf 'validated_sha=\n' >> "$GITHUB_OUTPUT"
         fi

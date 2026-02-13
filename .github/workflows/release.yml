@@ -141,16 +141,16 @@ jobs:
       # For git tag
       contents: write
     steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ inputs.sha }}
-          fetch-depth: 0
       - name: Validate inputs
         id: validate
         uses: ./.github/actions/validate-release-inputs
         with:
           tag: ${{ inputs.tag }}
           sha: ${{ inputs.sha }}
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.validate.outputs.validated_sha || 'main' }}
+          fetch-depth: 0
       - name: git tag
         env:
           VALIDATED_TAG: ${{ steps.validate.outputs.validated_tag }}
@@ -203,16 +203,16 @@ jobs:
       packages: write
       contents: read
     steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ inputs.sha }}
-          fetch-depth: 0
       - name: Validate inputs
         id: validate
         uses: ./.github/actions/validate-release-inputs
         with:
           tag: ${{ inputs.tag }}
           sha: ${{ inputs.sha }}
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.validate.outputs.validated_sha || 'main' }}
+          fetch-depth: 0
       - uses: actions/download-artifact@v5
         name: Download Python artifacts
         with:
@@ -250,7 +250,7 @@ jobs:
           # Reuse the builder
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          push: ${{ inputs.tag != '' }}
+          push: ${{ steps.validate.outputs.validated_tag != '' }}
           # Repository name must be lowercase
           tags: ghcr.io/manomanotech/firefighter-incident:latest,ghcr.io/manomanotech/firefighter-incident:${{ steps.validate.outputs.validated_tag || 'dry-run' }}
           labels: ${{ steps.meta.outputs.labels }}
