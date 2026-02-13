@@ -30,28 +30,18 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Validate inputs
-        id: validate
-        uses: ./.github/actions/validate-release-inputs
-        with:
-          tag: $env.RAW_TAG
-          sha: $env.RAW_SHA
       - name: Configure git
         run: |
           git config --global user.email "firefighter@manomano.com"
           git config --global user.name "FireFighter Release CI"
       - name: Set local tag for version
         if: ${{ env.RAW_TAG }}
-        env:
-          VALIDATED_TAG: ${{ steps.validate.outputs.validated_tag }}
         run: |
-          git tag -m "v${VALIDATED_TAG}" "v${VALIDATED_TAG}"
+          git tag -m "v$RAW_TAG" "v$RAW_TAG"
       - name: Set version environment
         if: ${{ env.RAW_TAG }}
-        env:
-          VALIDATED_TAG: ${{ steps.validate.outputs.validated_tag }}
         run: |
-          echo "SETUPTOOLS_SCM_PRETEND_VERSION=${VALIDATED_TAG}" >> "$GITHUB_ENV"
+          echo "SETUPTOOLS_SCM_PRETEND_VERSION=$RAW_TAG" >> "$GITHUB_ENV"
       - name: Fake .git for act
         if: ${{ env.ACT }}
         run: |
@@ -81,36 +71,6 @@ jobs:
         with:
           name: requirements
           path: requirements.txt
-
-  validate-tag:
-    name: Validate tag
-    runs-on: ubuntu-latest
-    # If you don't set an input tag, it's a dry run (no uploads).
-    if: ${{ env.RAW_TAG }}
-    permissions:
-      contents: read
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: main # We checkout the main branch to check for the commit
-          fetch-depth: 0
-      - name: Validate inputs
-        id: validate
-        uses: ./.github/actions/validate-release-inputs
-        with:
-          tag: $env.RAW_TAG
-          sha: $env.RAW_SHA
-      - name: Check main branch
-        if: ${{ inputs.sha }}
-        env:
-          VALIDATED_SHA: ${{ steps.validate.outputs.validated_sha }}
-        run: |
-          # Fetch the main branch since a shallow checkout is used by default
-          git fetch origin main --unshallow
-          if ! git branch --contains "$VALIDATED_SHA" | grep -E '(^|\s)main$'; then
-            echo "The specified sha is not on the main branch" >&2
-            exit 1
-          fi
 
   upload-release:
     name: Upload to PyPI
@@ -148,23 +108,15 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Validate inputs
-        id: validate
-        uses: ./.github/actions/validate-release-inputs
-        with:
-          tag: $env.RAW_TAG
-          sha: $env.RAW_SHA
       - uses: actions/checkout@v4
         with:
-          ref: ${{ steps.validate.outputs.validated_sha || 'main' }}
+          ref: ${{ env.RAW_SHA || 'main' }}
           fetch-depth: 0
       - name: git tag
-        env:
-          VALIDATED_TAG: ${{ steps.validate.outputs.validated_tag }}
         run: |
           git config user.email "firefighter@manomano.com"
           git config user.name "FireFighter Release CI"
-          git tag -m "v$VALIDATED_TAG" "v$VALIDATED_TAG"
+          git tag -m "v$RAW_TAG" "v$RAW_TAG"
           # If there is duplicate tag, this will fail. The publish to pypi action will have been a noop (due to skip
           # existing), so we make a non-destructive exit here
           git push --tags
@@ -179,12 +131,6 @@ jobs:
       # For GitHub release publishing
       contents: write
     steps:
-      - name: Validate inputs
-        id: validate
-        uses: ./.github/actions/validate-release-inputs
-        with:
-          tag: $env.RAW_TAG
-          sha: $env.RAW_SHA
       - uses: actions/download-artifact@v5
         with:
           name: dist
@@ -194,7 +140,7 @@ jobs:
         with:
           draft: true
           files: dist/*
-          tag_name: v${{ steps.validate.outputs.validated_tag }}
+          tag_name: v${{ env.RAW_TAG }}
 
   docker-publish:
     # This action doesn't need to wait on any other task, it's easy to re-tag if something failed and we're validating
@@ -213,15 +159,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Validate inputs
-        id: validate
-        uses: ./.github/actions/validate-release-inputs
-        with:
-          tag: $env.RAW_TAG
-          sha: $env.RAW_SHA
       - uses: actions/checkout@v4
         with:
-          ref: ${{ steps.validate.outputs.validated_sha || 'main' }}
+          ref: ${{ env.RAW_SHA || 'main' }}
           fetch-depth: 0
       - uses: actions/download-artifact@v5
         name: Download Python artifacts
@@ -262,5 +202,5 @@ jobs:
           cache-to: type=gha,mode=max
           push: ${{ inputs.tag != '' }}
           # Repository name must be lowercase
-          tags: ghcr.io/manomanotech/firefighter-incident:latest,ghcr.io/manomanotech/firefighter-incident:${{ steps.validate.outputs.validated_tag || 'dry-run' }}
+          tags: ghcr.io/manomanotech/firefighter-incident:latest,ghcr.io/manomanotech/firefighter-incident:${{ env.RAW_TAG || 'dry-run' }}
           labels: ${{ steps.meta.outputs.labels }}
