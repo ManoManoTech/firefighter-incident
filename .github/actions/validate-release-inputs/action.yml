@@ -19,14 +19,9 @@ runs:
   steps:
     - id: validate
       shell: bash
-      env:
-        TAG_INPUT: ${{ inputs.tag }}
-        SHA_INPUT: ${{ inputs.sha }}
       run: |
-        set -euo pipefail
-
-        tag="${TAG_INPUT:-}"
-        sha="${SHA_INPUT:-}"
+        tag="${{ inputs.tag }}"
+        sha="${{ inputs.sha }}"
 
         if [ -n "$tag" ]; then
           # Extra guard to reject any character outside the allowed set (defense in depth)
