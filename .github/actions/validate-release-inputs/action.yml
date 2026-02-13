@@ -29,6 +29,11 @@ runs:
         sha="${SHA_INPUT:-}"
 
         if [ -n "$tag" ]; then
+          # Extra guard to reject any character outside the allowed set (defense in depth)
+          if printf '%s' "$tag" | LC_ALL=C grep -q '[^0-9A-Za-z.-]'; then
+            echo "Invalid tag format (only 0-9 A-Za-z . - allowed)" >&2
+            exit 1
+          fi
           if ! echo "$tag" | grep -E '^[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9.-]+)?$' >/dev/null; then
             echo "Invalid tag format (expected semver-like)" >&2
             exit 1
@@ -39,6 +44,11 @@ runs:
         fi
 
         if [ -n "$sha" ]; then
+          # Extra guard to reject any character outside the allowed set (defense in depth)
+          if printf '%s' "$sha" | LC_ALL=C grep -q '[^0-9A-Fa-f]'; then
+            echo "Invalid sha format (only 0-9 A-F a-f allowed)" >&2
+            exit 1
+          fi
           if ! echo "$sha" | grep -E '^[0-9A-Fa-f]{40}$' >/dev/null; then
             echo "Invalid sha format (expected 40 hex chars)" >&2
             exit 1
