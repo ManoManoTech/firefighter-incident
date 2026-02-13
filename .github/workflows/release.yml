@@ -34,8 +34,8 @@ jobs:
         id: validate
         uses: ./.github/actions/validate-release-inputs
         with:
-          tag: ${{ env.RAW_TAG }}
-          sha: ${{ env.RAW_SHA }}
+          tag: $env.RAW_TAG
+          sha: $env.RAW_SHA
       - name: Configure git
         run: |
           git config --global user.email "firefighter@manomano.com"
@@ -98,8 +98,8 @@ jobs:
         id: validate
         uses: ./.github/actions/validate-release-inputs
         with:
-          tag: ${{ env.RAW_TAG }}
-          sha: ${{ env.RAW_SHA }}
+          tag: $env.RAW_TAG
+          sha: $env.RAW_SHA
       - name: Check main branch
         if: ${{ inputs.sha }}
         env:
@@ -152,8 +152,8 @@ jobs:
         id: validate
         uses: ./.github/actions/validate-release-inputs
         with:
-          tag: ${{ env.RAW_TAG }}
-          sha: ${{ env.RAW_SHA }}
+          tag: $env.RAW_TAG
+          sha: $env.RAW_SHA
       - uses: actions/checkout@v4
         with:
           ref: ${{ steps.validate.outputs.validated_sha || 'main' }}
@@ -183,8 +183,8 @@ jobs:
         id: validate
         uses: ./.github/actions/validate-release-inputs
         with:
-          tag: ${{ env.RAW_TAG }}
-          sha: ${{ env.RAW_SHA }}
+          tag: $env.RAW_TAG
+          sha: $env.RAW_SHA
       - uses: actions/download-artifact@v5
         with:
           name: dist
@@ -217,8 +217,8 @@ jobs:
         id: validate
         uses: ./.github/actions/validate-release-inputs
         with:
-          tag: ${{ env.RAW_TAG }}
-          sha: ${{ env.RAW_SHA }}
+          tag: $env.RAW_TAG
+          sha: $env.RAW_SHA
       - uses: actions/checkout@v4
         with:
           ref: ${{ steps.validate.outputs.validated_sha || 'main' }}
