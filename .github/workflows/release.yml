@@ -143,7 +143,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.sha }}
           fetch-depth: 0
       - name: Validate inputs
         id: validate
@@ -151,6 +150,10 @@ jobs:
         with:
           tag: ${{ inputs.tag }}
           sha: ${{ inputs.sha }}
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.validate.outputs.validated_sha || 'main' }}
+          fetch-depth: 0
       - name: git tag
         env:
           VALIDATED_TAG: ${{ steps.validate.outputs.validated_tag }}
@@ -205,7 +208,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.sha }}
           fetch-depth: 0
       - name: Validate inputs
         id: validate
@@ -213,6 +215,10 @@ jobs:
         with:
           tag: ${{ inputs.tag }}
           sha: ${{ inputs.sha }}
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.validate.outputs.validated_sha || 'main' }}
+          fetch-depth: 0
       - uses: actions/download-artifact@v5
         name: Download Python artifacts
         with:
