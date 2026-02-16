@@ -25,33 +25,30 @@ runs:
       run: |
         set -euo pipefail
 
-        tag="${TAG_INPUT:-}"
-        sha="${SHA_INPUT:-}"
-
-        if [ -n "$tag" ]; then
-          if printf '%s' "$tag" | LC_ALL=C grep -q '[^0-9A-Za-z.-]'; then
+        if [ -n "$TAG_INPUT" ]; then
+          if printf '%s' "$TAG_INPUT" | LC_ALL=C grep -q '[^0-9A-Za-z.-]'; then
             echo "Invalid tag format (only 0-9 A-Za-z . - allowed)" >&2
             exit 1
           fi
-          if ! printf '%s' "$tag" | LC_ALL=C grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9.-]+)?$'; then
+          if ! printf '%s' "$TAG_INPUT" | LC_ALL=C grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9.-]+)?$'; then
             echo "Invalid tag format (expected semver-like)" >&2
             exit 1
           fi
-          printf 'validated_tag=%s\n' "$tag" >> "$GITHUB_OUTPUT"
+          printf 'validated_tag=%s\n' "$TAG_INPUT" >> "$GITHUB_OUTPUT"
         else
           printf 'validated_tag=\n' >> "$GITHUB_OUTPUT"
         fi
 
-        if [ -n "$sha" ]; then
-          if printf '%s' "$sha" | LC_ALL=C grep -q '[^0-9A-Fa-f]'; then
+        if [ -n "$SHA_INPUT" ]; then
+          if printf '%s' "$SHA_INPUT" | LC_ALL=C grep -q '[^0-9A-Fa-f]'; then
             echo "Invalid sha format (only 0-9 A-F a-f allowed)" >&2
             exit 1
           fi
-          if ! printf '%s' "$sha" | LC_ALL=C grep -Eq '^[0-9A-Fa-f]{40}$'; then
+          if ! printf '%s' "$SHA_INPUT" | LC_ALL=C grep -Eq '^[0-9A-Fa-f]{40}$'; then
             echo "Invalid sha format (expected 40 hex chars)" >&2
             exit 1
           fi
-          printf 'validated_sha=%s\n' "$sha" >> "$GITHUB_OUTPUT"
+          printf 'validated_sha=%s\n' "$SHA_INPUT" >> "$GITHUB_OUTPUT"
         else
           printf 'validated_sha=\n' >> "$GITHUB_OUTPUT"
         fi
