@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 from functools import cache
-from typing import Any, Generic, Never, TypeVar
+from typing import Any, Never, TypeVar
 
 from django.core.exceptions import BadRequest, PermissionDenied
 from django.db import connection
@@ -49,7 +49,7 @@ def server_error_view(request: HttpRequest) -> Never:
     raise Exception("Test exception for 500")  # noqa: TRY002
 
 
-class CustomDetailView(DetailView[_MT], Generic[_MT]):
+class CustomDetailView[MT: Model](DetailView[MT]):
     """A custom detail view that adds the admin edit URL to the context, as `admin_edit_url`."""
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import re
-from typing import TypeAlias, TypedDict
+from typing import TypedDict
 
 from django.utils.timezone import (  # type: ignore[attr-defined]
     datetime,
@@ -10,7 +10,7 @@ from django.utils.timezone import (  # type: ignore[attr-defined]
 
 from firefighter.incidents.views.date_utils import get_quarter_from_week
 
-ConfluencePageId: TypeAlias = int | str
+type ConfluencePageId = int | str
 """Alias of `int | str`"""
 
 

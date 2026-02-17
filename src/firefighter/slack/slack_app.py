@@ -97,7 +97,7 @@ R = TypeVar("R")
 
 
 # Now we can type the decorator more accurately
-def slack_client(function: Callable[P, R]) -> Callable[P, R]:
+def slack_client[**P, R](function: Callable[P, R]) -> Callable[P, R]:
     """Adds a Slack client in `client` kwargs, if none is provided.
 
     Can be used as a decorator with `@slack_client` or as a function with `slack_client(function)`.

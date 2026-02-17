@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 import logging
-from typing import TYPE_CHECKING, Any, Generic, TypeVar, cast
+from typing import TYPE_CHECKING, Any, TypeVar, cast
 
 from django import forms
 from django.db.models import Model
@@ -36,7 +36,7 @@ logger = logging.getLogger(__name__)
 T = TypeVar("T", bound=CreateIncidentFormBase)
 
 
-class SetIncidentDetails(ModalForm[T], Generic[T]):
+class SetIncidentDetails[T: CreateIncidentFormBase](ModalForm[T]):
     callback_id: str
     push_action: str
     title: str = "Open an incident"

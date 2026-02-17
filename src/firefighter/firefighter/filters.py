@@ -58,7 +58,7 @@ def get_item(dictionary: dict[str, Any], key: Any) -> Any:
 
 
 @register_global.filter
-def apply_filter(
+def apply_filter[V](
     value: Any,
     fn_holder: dict[Literal["filter_args", "filter"], Callable[..., V]],
 ) -> V | Any:

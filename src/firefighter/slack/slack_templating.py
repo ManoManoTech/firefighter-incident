@@ -41,7 +41,7 @@ def shorten_long(text: str, width: int, **kwargs: Any) -> str:
 T = TypeVar("T")
 
 
-def md_quote_filter(val: str | T) -> str | T:
+def md_quote_filter[T](val: str | T) -> str | T:
     """Add > on newlines for MD quotes."""
     if isinstance(val, str):
         return val.replace("\n", "\n> ")
