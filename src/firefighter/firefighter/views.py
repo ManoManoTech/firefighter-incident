@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 from functools import cache
-from typing import Any, Never, TypeVar
+from typing import Any, Never
 
 from django.core.exceptions import BadRequest, PermissionDenied
 from django.db import connection
@@ -14,8 +14,6 @@ from django.views.decorators.http import require_safe
 from django.views.generic import DetailView
 
 logger = logging.getLogger(__name__)
-
-_MT = TypeVar("_MT", bound=Model)
 
 
 @require_safe
