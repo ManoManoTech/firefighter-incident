@@ -54,7 +54,7 @@ class CustomDetailView[MT: Model](DetailView[MT]):
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
-        obj: _MT = context[self.get_context_object_name(self.object) or "object"]
+        obj: MT = context[self.get_context_object_name(self.object) or "object"]
         return {**context, "admin_edit_url": get_admin_edit_url(self.model, obj.pk)}
 
 
