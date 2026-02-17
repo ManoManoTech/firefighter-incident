@@ -6,9 +6,7 @@ from datetime import datetime
 from typing import (
     TYPE_CHECKING,
     Any,
-    Generic,
     Literal,
-    TypeAlias,
     TypedDict,
     TypeVar,
     cast,
@@ -64,13 +62,13 @@ class SlackFormAttributes(TypedDict, total=False):
     widget: SlackFormAttributesWidget
 
 
-SlackFormAttributesDict: TypeAlias = dict[str, SlackFormAttributes]
+type SlackFormAttributesDict = dict[str, SlackFormAttributes]
 
 
 T = TypeVar("T", bound=forms.Form)
 
 
-class SlackForm(Generic[T]):
+class SlackForm[T: forms.Form]:
     slack_fields: SlackFormAttributesDict
     form: T
     form_class: type[T]

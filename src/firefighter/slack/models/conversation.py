@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 import uuid
-from typing import TYPE_CHECKING, Any, Generic, TypeVar
+from typing import TYPE_CHECKING, Any, TypeVar
 
 from django.db import models
 from django.db.models import Q
@@ -47,7 +47,7 @@ logger = logging.getLogger(__name__)
 T = TypeVar("T", bound="Conversation")
 
 
-class ConversationManager(models.Manager[T], Generic[T]):
+class ConversationManager[T: "Conversation"](models.Manager[T]):
     def get_or_none(self, **kwargs: Any) -> Conversation | None:
         try:
             return self.get(**kwargs)

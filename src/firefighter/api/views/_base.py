@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Generic, TypeVar
+from typing import Any, TypeVar
 
 from django.db.models import Model
 from drf_spectacular.utils import OpenApiExample, OpenApiParameter, extend_schema
@@ -32,7 +32,7 @@ T_co = TypeVar("T_co", bound=Model, covariant=True)
         )
     ],
 )
-class AdvancedGenericViewSet(viewsets.GenericViewSet[T_co], Generic[T_co]):
+class AdvancedGenericViewSet[T_co: Model](viewsets.GenericViewSet[T_co]):
     """Generic viewset with support for fields and labels parameters, to customize fields of CSV and TSV renderer."""
 
     fields: list[str] = []
@@ -71,10 +71,9 @@ class AdvancedGenericViewSet(viewsets.GenericViewSet[T_co], Generic[T_co]):
         return context
 
 
-class ReadOnlyModelViewSet(
+class ReadOnlyModelViewSet[T_co: Model](
     mixins.RetrieveModelMixin,
     mixins.ListModelMixin,
     AdvancedGenericViewSet[T_co],
-    Generic[T_co],
 ):
     pass

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 from datetime import timedelta
-from typing import TYPE_CHECKING, Any, Generic, TypeVar
+from typing import TYPE_CHECKING, Any, TypeVar
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.validators import EmailValidator
@@ -38,7 +38,7 @@ logger = logging.getLogger(__name__)
 T = TypeVar("T", bound=Model)
 
 
-class GroupedModelSerializer(serializers.RelatedField[T, Any, Any], Generic[T]):
+class GroupedModelSerializer[T: Model](serializers.RelatedField[T, Any, Any]):
     """Generic implementation for a model with a One2Many, where instead of a list we want the items grouped by a field, like costs or metrics."""
 
     def __init__(
@@ -83,7 +83,7 @@ class GroupedModelSerializerOpenAPI(OpenApiSerializerExtension):  # type: ignore
         return f"GroupedModelSerializer_{self.target.child_serializer.__name__}"
 
 
-class CreatableSlugRelatedField(serializers.SlugRelatedField[T], Generic[T]):
+class CreatableSlugRelatedField[T: Model](serializers.SlugRelatedField[T]):
     """Like [SlugRelatedField](https://www.django-rest-framework.org/api-guide/relations/#slugrelatedfield), but allows to create an object that is not present in DB."""
 
     def to_internal_value(self, data: str | None) -> T:

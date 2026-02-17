@@ -73,9 +73,10 @@ def send_reminders() -> None:
     if not is_during_office_hours(timezone.localtime()):
         return
     # Get all incidents that have reminders (not Gameday, not resolved) and are not ignored
+    # Only P1-P3 have Slack conversations, so we filter for priority <= 3
     opened_incidents = Incident.objects.filter(
         _status__lt=IncidentStatus.POST_MORTEM.value,
-        priority__value__lte=5,
+        priority__value__lte=3,
         ignore=False,
     ).select_related("conversation")
 

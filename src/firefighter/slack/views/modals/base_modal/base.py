@@ -5,7 +5,7 @@ import logging
 import operator
 import re
 from functools import reduce
-from typing import TYPE_CHECKING, Any, Generic, TypeVar
+from typing import TYPE_CHECKING, Any, TypeVar
 
 from django.forms import Form
 from slack_bolt.request.payload_utils import (
@@ -268,7 +268,7 @@ class SlackModal:
                     fn_register(action)(fn)
 
 
-class ModalForm(SlackModal, Generic[T]):
+class ModalForm[T: Form](SlackModal):
     """Specific SlackModal to handle a Django form.
 
     Provided a Django form in form_class, it will handle:
@@ -316,7 +316,7 @@ class ModalForm(SlackModal, Generic[T]):
         return reduce(operator.add, ["; ".join(e.messages) for e in err], "")
 
 
-class MessageForm(SlackModal, Generic[T]):
+class MessageForm[T: Form](SlackModal):
     """Form wrapper to use a Django form in a Slack message.
 
     Provided a Django form in form_class, it will handle:

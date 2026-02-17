@@ -21,7 +21,7 @@ T = TypeVar("T")
 logger = logging.getLogger(__name__)
 
 
-def _transition_path(
+def _transition_path[T](
     statuses_transitions: dict[T, set[T]], from_state: T, to_state: T
 ) -> list[T]:
     """Returns the path to transition from one status to another.
@@ -99,7 +99,7 @@ def _snake_case_key(key: str) -> str:
     return s1.lower()
 
 
-def pythonic_keys(d: T) -> T:
+def pythonic_keys[T](d: T) -> T:
     """Converts camelCase keys in a dict or list of dict to snake_case. Works recursively."""
     if isinstance(d, dict):
         new_d = {}

@@ -45,7 +45,7 @@ def get_in(
     return get_in(dictionary.get(keys[0], {}), keys[1:], default=default)
 
 
-def get_first_in(
+def get_first_in[T: dict[str, Any], V](
     ulist: list[T],
     key: str | Sequence[str],
     matches: Iterable[str],
