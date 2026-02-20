@@ -12,8 +12,6 @@ authors = [
 dependencies = [
     "django[argon2]>=4.2.8,<5.0.0",
     "celery[gevent,redis]>=5.3.6",
-    "ddtrace>=4.0.0,<5.0.0",
-    "wrapt>=2.0.0,<3.0.0",  # Required by ddtrace 4.x (ddtrace requires wrapt<3,>=1)
     "django-celery-beat>=2.5.0",
     "django-filter>=23.4",
     "django-oauth2-authcodeflow>=1.0.1",
@@ -400,10 +398,8 @@ norecursedirs = "*.egg .eggs dist build docs .tox .git __pycache__ node_modules 
 timeout = 15
 # Ignore deprecation warnings from libs
 filterwarnings = [
-  "ignore::DeprecationWarning:ddtrace.internal*:",
   "ignore:.*taggit.TaggedItem.*:django.utils.deprecation.RemovedInDjango51Warning",
   'ignore:SelectableGroups dict interface is deprecated. Use select:DeprecationWarning',
-  'ignore::DeprecationWarning:ddtrace.*',
   'ignore::DeprecationWarning:pkg_resources.*',
 ]
 

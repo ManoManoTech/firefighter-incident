@@ -13,9 +13,6 @@ from pythonjsonlogger.json import JsonEncoder, JsonFormatter
 if TYPE_CHECKING:
     from logging import LogRecord
 
-DD_TRACE_ENABLED = os.environ.get("DD_TRACE_ENABLED")
-if DD_TRACE_ENABLED:
-    from ddtrace import tracer
 GUNICORN_KEY_RE = re.compile(r"{([^}]+)}")
 
 
@@ -63,14 +60,6 @@ class CustomJsonFormatter(JsonFormatter):
         # Cleanup: just don't log cookies
         if "cookie" in log_record:
             log_record["cookie"] = "STRIPPED_AT_EMISSION"
-        if DD_TRACE_ENABLED:
-            span = tracer.current_span()
-            trace_id, span_id = (span.trace_id, span.span_id) if span else (None, None)
-
-            # add ids to structlog event dictionary
-            log_record["dd.trace_id"] = str(trace_id or 0)
-            log_record["dd.span_id"] = str(span_id or 0)
-
         # Normalisation: Datadog source code attributes
         log_record["logger.name"] = record.name
         log_record["logger.thread_name"] = record.threadName

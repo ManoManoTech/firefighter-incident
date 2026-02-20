@@ -83,10 +83,6 @@ FF_LOGGING = {
             "propagate": False,
         },
         "gunicorn.error": {"handlers": ["console"], "propagate": False},
-        "ddtrace": {
-            "handlers": ["console"],
-            "level": "WARNING",
-        },
         "faker.factory": {
             "level": "INFO",
         },

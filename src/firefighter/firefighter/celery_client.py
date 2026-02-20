@@ -11,12 +11,6 @@ from django.conf import settings
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "firefighter.firefighter.settings")
 
 
-if os.environ.get("DD_TRACE_ENABLED", "false").lower() == "true":
-    # Enable Datadog tracing except for dev env
-    from ddtrace import patch
-
-    patch(celery=True)
-
 
 app = Celery("firefighter")
 
