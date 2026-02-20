@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import pytest
 from django.conf import settings
+from django.db import transaction
 from django.db.utils import IntegrityError
 
 from firefighter.incidents.factories import IncidentFactory, UserFactory
@@ -51,7 +52,7 @@ class TestJiraPostMortem:
         assert incident.jira_postmortem_for == jira_pm1
 
         # Try to create second post-mortem for same incident should fail
-        with pytest.raises(IntegrityError):
+        with pytest.raises(IntegrityError), transaction.atomic():
             JiraPostMortem.objects.create(
                 incident=incident,
                 jira_issue_key="INCIDENT-456",
@@ -74,7 +75,6 @@ class TestJiraPostMortem:
         expected_url = f"{settings.RAID_JIRA_API_URL}/browse/INCIDENT-123"
         assert jira_pm.issue_url == expected_url
 
-    @pytest.mark.django_db(transaction=True)
     def test_jira_postmortem_unique_constraints(self):
         """Test uniqueness constraints on jira_issue_key and jira_issue_id."""
         incident1 = IncidentFactory()
@@ -91,7 +91,8 @@ class TestJiraPostMortem:
         )
 
         # Try to create second post-mortem with same jira_issue_key
-        with pytest.raises(IntegrityError):
+        # Use transaction.atomic() savepoint so the outer test transaction stays valid
+        with pytest.raises(IntegrityError), transaction.atomic():
             JiraPostMortem.objects.create(
                 incident=incident2,
                 jira_issue_key="INCIDENT-123",  # Duplicate key
@@ -100,7 +101,7 @@ class TestJiraPostMortem:
             )
 
         # Try to create second post-mortem with same jira_issue_id
-        with pytest.raises(IntegrityError):
+        with pytest.raises(IntegrityError), transaction.atomic():
             JiraPostMortem.objects.create(
                 incident=incident3,
                 jira_issue_key="INCIDENT-456",
