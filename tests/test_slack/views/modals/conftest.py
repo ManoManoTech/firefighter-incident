@@ -63,6 +63,7 @@ def environment_factory(db):
             Environment.objects.filter(default=True).update(default=False)
 
         defaults = {
+            "name": value,
             "description": f"Environment {value}",
             "order": 1,
             "default": set_as_default,
