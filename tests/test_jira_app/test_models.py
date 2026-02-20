@@ -52,14 +52,13 @@ class TestJiraPostMortem:
         assert incident.jira_postmortem_for == jira_pm1
 
         # Try to create second post-mortem for same incident should fail
-        with pytest.raises(IntegrityError):
-            with transaction.atomic():
-                JiraPostMortem.objects.create(
-                    incident=incident,
-                    jira_issue_key="INCIDENT-456",
-                    jira_issue_id="10002",
-                    created_by=user,
-                )
+        with pytest.raises(IntegrityError), transaction.atomic():
+            JiraPostMortem.objects.create(
+                incident=incident,
+                jira_issue_key="INCIDENT-456",
+                jira_issue_id="10002",
+                created_by=user,
+            )
 
     def test_jira_postmortem_issue_url_property(self):
         """Test issue_url property generates correct Jira URL."""
@@ -93,24 +92,22 @@ class TestJiraPostMortem:
 
         # Try to create second post-mortem with same jira_issue_key
         # Use transaction.atomic() savepoint so the outer test transaction stays valid
-        with pytest.raises(IntegrityError):
-            with transaction.atomic():
-                JiraPostMortem.objects.create(
-                    incident=incident2,
-                    jira_issue_key="INCIDENT-123",  # Duplicate key
-                    jira_issue_id="10002",
-                    created_by=user,
-                )
+        with pytest.raises(IntegrityError), transaction.atomic():
+            JiraPostMortem.objects.create(
+                incident=incident2,
+                jira_issue_key="INCIDENT-123",  # Duplicate key
+                jira_issue_id="10002",
+                created_by=user,
+            )
 
         # Try to create second post-mortem with same jira_issue_id
-        with pytest.raises(IntegrityError):
-            with transaction.atomic():
-                JiraPostMortem.objects.create(
-                    incident=incident3,
-                    jira_issue_key="INCIDENT-456",
-                    jira_issue_id="10001",  # Duplicate ID
-                    created_by=user,
-                )
+        with pytest.raises(IntegrityError), transaction.atomic():
+            JiraPostMortem.objects.create(
+                incident=incident3,
+                jira_issue_key="INCIDENT-456",
+                jira_issue_id="10001",  # Duplicate ID
+                created_by=user,
+            )
 
     def test_jira_postmortem_str_representation(self):
         """Test string representation of JiraPostMortem."""
