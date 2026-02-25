@@ -90,11 +90,19 @@ def incident_updated_close_ticket_when_mitigated_or_postmortem(
         )
         return
 
-    # Special case: when Impact moves to MITIGATING, Jira must go through two steps:
-    # "Pending resolution" then "in progress".
-    if incident_update.status == IncidentStatus.MITIGATING:
+    # Special case: when Impact moves to INVESTIGATING or MITIGATING, Jira must go
+    # through two steps: "Pending resolution" then "in progress". We also set
+    # cache keys for both steps to prevent the Jira→Impact webhook from bouncing
+    # Impact back to OPEN on the intermediate hop.
+    if incident_update.status in (IncidentStatus.INVESTIGATING, IncidentStatus.MITIGATING):
+        steps = (JIRA_STATUS_PENDING_RESOLUTION, JIRA_STATUS_IN_PROGRESS)
+        incident_id = getattr(incident, "id", None)
+        if incident_id is not None:
+            for step in steps:
+                _set_impact_to_jira_cache(incident_id, "status", step)
+
         all_steps_succeeded = True
-        for step in (JIRA_STATUS_PENDING_RESOLUTION, JIRA_STATUS_IN_PROGRESS):
+        for step in steps:
             try:
                 logger.debug(
                     "Transitioning Jira ticket %s via workflow %s to status %s (incident #%s, impact status %s)",

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from unittest.mock import ANY, Mock, patch
+from unittest.mock import ANY, Mock, call, patch
 
 import pytest
 from django.test import override_settings
@@ -157,7 +157,11 @@ class TestIncidentUpdatedCloseJiraTicket:
     def test_do_not_close_jira_ticket_when_status_not_terminal(
         self, mock_transition: Mock, incident_factory, user_factory, jira_ticket_factory
     ) -> None:
-        """Test that Jira ticket is NOT closed for non-terminal statuses."""
+        """Test that Jira ticket is NOT closed for non-terminal statuses.
+
+        INVESTIGATING (and MITIGATING) trigger a two-step Jira transition:
+        Pending resolution → in progress (to avoid webhook bouncing Impact back to OPEN).
+        """
         user = user_factory()
         incident = incident_factory(created_by=user)
         jira_ticket = jira_ticket_factory(incident=incident)
@@ -177,8 +181,14 @@ class TestIncidentUpdatedCloseJiraTicket:
             updated_fields=["_status"],
         )
 
-        target = IMPACT_TO_JIRA_STATUS_MAP[IncidentStatus.INVESTIGATING]
-        mock_transition.assert_called_once_with(jira_ticket.id, target, ANY)
+        # Two-step transition: Pending resolution then in progress
+        assert mock_transition.call_count == 2
+        mock_transition.assert_has_calls(
+            [
+                call(jira_ticket.id, "Pending resolution", ANY),
+                call(jira_ticket.id, "in progress", ANY),
+            ]
+        )
 
     @patch("firefighter.raid.signals.incident_updated.client.transition_issue_auto")
     def test_do_not_close_jira_ticket_when_status_not_updated(
