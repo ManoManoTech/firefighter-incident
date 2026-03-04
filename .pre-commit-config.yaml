@@ -2,6 +2,9 @@
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
 
+ci:
+  skip: [mypy]  # mypy requires the project venv; runs in GitHub Actions CI instead
+
 default_language_version:
   python: python3.12
 repos:
@@ -17,9 +20,9 @@ repos:
       - id: check-added-large-files
       - id: check-merge-conflict
       - id: fix-byte-order-marker
-  # Versions must be kept in sync with lockfile
+  # Versions must be kept in sync with lockfile (managed by sync-pre-commit-lock PDM plugin)
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: 'v0.13.1'
+    rev: 'v0.14.14'
     hooks:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix]
@@ -41,3 +44,13 @@ repos:
     hooks:
       - id: djade
         args: [--target-version, "4.2"]
+
+  - repo: local
+    hooks:
+      - id: mypy
+        name: mypy
+        entry: pdm run lint-mypy
+        language: system
+        types_or: [python, pyi]
+        pass_filenames: false
+        require_serial: true

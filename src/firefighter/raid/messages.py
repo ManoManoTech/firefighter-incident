@@ -153,3 +153,38 @@ class SlackMessageRaidComment(SlackMessageSurface):
                 ]
             ),
         ]
+
+
+class SlackMessageJiraClosedBlockedByCanBeClosed(SlackMessageSurface):
+    """Sent to the incident channel when a Jira 'Closed' webhook was received but the incident cannot be automatically closed (e.g. missing key events)."""
+
+    id = "raid_jira_closed_blocked"
+
+    def __init__(self, jira_ticket_key: str, reasons: list[tuple[str, str]]) -> None:
+        self.jira_ticket_key = jira_ticket_key
+        self.reasons = reasons
+        super().__init__()
+
+    def get_text(self) -> str:
+        return (
+            f"Jira ticket {self.jira_ticket_key} was closed, "
+            "but the incident could not be automatically closed."
+        )
+
+    def get_blocks(self) -> list[Block]:
+        reasons_text = "\n".join(f"• {reason}" for _, reason in self.reasons)
+        return [
+            SectionBlock(
+                text=(
+                    f":jira_new: Jira ticket *{self.jira_ticket_key}* was closed, "
+                    "but the incident was *not* automatically closed."
+                )
+            ),
+            DividerBlock(),
+            SectionBlock(
+                text=f":warning: *The following must be resolved before closing:*\n{reasons_text}"
+            ),
+            SectionBlock(
+                text="Once resolved, close the incident using the _Close incident_ action in this channel."
+            ),
+        ]
