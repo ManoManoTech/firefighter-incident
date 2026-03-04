@@ -74,7 +74,7 @@ class OpenModal(SlackModal):
 
     def open_modal_aio(self, ack: Ack, body: dict[str, Any], **kwargs: Any) -> None:
         super().open_modal_aio(ack, body, **kwargs)
-        from firefighter.slack.messages.slack_messages import (  # noqa: PLC0415
+        from firefighter.slack.messages.slack_messages import (
             SlackMessageIncidentOpeningWarning,
         )
 
