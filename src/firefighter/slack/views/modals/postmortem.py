@@ -9,6 +9,7 @@ from slack_sdk.models.blocks.blocks import ActionsBlock, Block, SectionBlock
 from slack_sdk.models.views import View
 
 from firefighter.confluence.models import PostMortemManager
+from firefighter.incidents.enums import IncidentStatus
 from firefighter.incidents.models.incident import Incident
 from firefighter.slack.utils import respond
 from firefighter.slack.views.modals.base_modal.base import SlackModal, app
@@ -56,18 +57,23 @@ class PostMortemModal(
                         text=f"• Jira: <{incident.jira_postmortem_for.issue_url}|{incident.jira_postmortem_for.jira_issue_key}>"
                     )
                 )
-        elif incident.needs_postmortem:
+        elif (
+            incident.needs_postmortem
+            and incident.status < IncidentStatus.MITIGATED
+        ):
             blocks.append(
                 SectionBlock(
                     text=f"Post-mortem for incident #{incident.id} will be automatically created when the incident reaches MITIGATED status."
                 )
             )
         else:
+            if incident.needs_postmortem:
+                text = "Post-mortem was not automatically created for this incident. You can create it manually."
+            else:
+                text = "P3 incident post-mortem is not mandatory. You can still have one if you think is necessary by clicking on the button below."
             blocks.extend(
                 [
-                    SectionBlock(
-                        text="P3 incident post-mortem is not mandatory. You can still have one if you think is necessary by clicking on the button below."
-                    ),
+                    SectionBlock(text=text),
                     ActionsBlock(
                         elements=[
                             ButtonElement(
@@ -106,6 +112,13 @@ def handle_create_postmortem_action(ack: Ack, body: dict[str, Any]) -> None:
         incident = Incident.objects.get(pk=incident_id)
     except Incident.DoesNotExist:
         respond(body, text=":x: Incident not found.")
+        return
+
+    if incident.status < IncidentStatus.MITIGATED:
+        respond(
+            body,
+            text=f":x: Post-mortem can only be created when the incident is at least *Mitigated* (current status: *{incident.status.label}*).",
+        )
         return
 
     try:
