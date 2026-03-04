@@ -76,7 +76,7 @@ def user_slack_handle_or_name(user: User | None, slack_user_id: str | None = Non
 
     # In test mode: if slack_user_id is provided, it's only for the current action performer
     # For other users (assigned to roles), use their stored slack_id if valid or fallback to name
-    from firefighter.firefighter.settings.settings_utils import config  # noqa: PLC0415
+    from firefighter.firefighter.settings.settings_utils import config
     test_mode = config("TEST_MODE", default="False", cast=str).lower() == "true"
     if test_mode and slack_user_id:
         # This is specifically for the "Updated by" context where we use the current action performer's ID
