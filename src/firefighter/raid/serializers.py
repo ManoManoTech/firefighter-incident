@@ -22,6 +22,7 @@ from firefighter.raid.forms import (
     alert_slack_new_jira_ticket,
     alert_slack_update_ticket,
 )
+from firefighter.raid.messages import SlackMessageJiraClosedBlockedByCanBeClosed
 from firefighter.raid.models import JiraTicket
 from firefighter.raid.utils import get_domain_from_email, normalize_cache_value
 from firefighter.slack.models.user import SlackUser
@@ -448,16 +449,32 @@ class JiraWebhookUpdateSerializer(serializers.Serializer[Any]):
 
     def _handle_status_update(
         self,
-        _validated_data: dict[str, Any],
+        validated_data: dict[str, Any],
         incident: Incident,
         change_item: dict[str, Any],
     ) -> bool:
         jira_status_to = change_item.get("toString") or ""
+        jira_status_from = change_item.get("fromString") or ""
         impact_status = JIRA_TO_IMPACT_STATUS_MAP.get(jira_status_to)
         if impact_status is None:
             logger.debug(
                 "Jira status '%s' has no Impact mapping; skipping incident sync",
                 jira_status_to,
+            )
+            return True
+
+        # Guard against unintentional closures triggered by non-standard Jira workflows.
+        # If the target maps to CLOSED but the previous Jira status is not a known Impact
+        # status (e.g. "Code Review" from a CI/CD automation), this is likely an intermediate
+        # step and not a deliberate incident closure. Only allow close when the transition
+        # comes from a recognised Impact status (e.g. "Reporter validation").
+        if impact_status == IncidentStatus.CLOSED and jira_status_from not in JIRA_TO_IMPACT_STATUS_MAP:
+            logger.warning(
+                "Skipping Jira→Impact close for incident %s: transition from unknown Jira status '%s' to 'Closed'. "
+                "This looks like an intermediate step in a non-standard Jira workflow (e.g. CI/CD automation). "
+                "Close the ticket from a recognised status (e.g. 'Reporter validation') to trigger Impact closure.",
+                incident.id,
+                jira_status_from,
             )
             return True
 
@@ -496,6 +513,32 @@ class JiraWebhookUpdateSerializer(serializers.Serializer[Any]):
                     incident.id,
                 )
                 # Returning True: webhook handled; failure is logged, no retry desired here.
+                return True
+
+        # Before closing, verify all business rules are satisfied (key events, status, etc.).
+        # If not, notify the incident channel and leave the incident open.
+        if impact_status == IncidentStatus.CLOSED:
+            can_close, reasons = incident.can_be_closed
+            if not can_close:
+                logger.warning(
+                    "Jira ticket closed but Impact incident %s cannot be closed yet: %s",
+                    incident.id,
+                    reasons,
+                )
+                jira_ticket_key = validated_data.get("issue", {}).get("key", "")
+                if hasattr(incident, "conversation") and jira_ticket_key:
+                    try:
+                        incident.conversation.send_message_and_save(
+                            SlackMessageJiraClosedBlockedByCanBeClosed(
+                                jira_ticket_key=jira_ticket_key,
+                                reasons=reasons,
+                            )
+                        )
+                    except Exception:
+                        logger.exception(
+                            "Failed to notify incident channel for blocked close of incident %s",
+                            incident.id,
+                        )
                 return True
 
         incident.create_incident_update(
