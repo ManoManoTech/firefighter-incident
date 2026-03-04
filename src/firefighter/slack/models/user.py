@@ -467,7 +467,7 @@ class SlackUser(models.Model):
         **kwargs: Any,
     ) -> None:
         """Send a private message to the user and save it to DB."""
-        from firefighter.slack.models.conversation import (  # noqa: PLC0415
+        from firefighter.slack.models.conversation import (
             Conversation,
             ConversationStatus,
             ConversationType,
