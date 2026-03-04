@@ -139,7 +139,6 @@ class SelectImpactModal(
         )
 
     def extract_descriptions(self, open_incident_context: OpeningData) -> str:
-        from firefighter.incidents.models.impact import ImpactLevel  # noqa: PLC0415
 
         impact_form_data = open_incident_context.get("impact_form_data", {})
         impact_descriptions = ""

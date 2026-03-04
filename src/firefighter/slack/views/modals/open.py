@@ -471,7 +471,7 @@ class OpenModal(SlackModal):
 
     @staticmethod
     def _build_response_type_blocks(open_incident_context: OpeningData) -> list[Block]:
-        from firefighter.incidents.models.priority import Priority  # noqa: PLC0415
+        from firefighter.incidents.models.priority import Priority
 
         selected_response_type = open_incident_context.get("response_type")
         priority_data = open_incident_context.get("priority")
@@ -546,7 +546,6 @@ class OpenModal(SlackModal):
 
     @staticmethod
     def _get_impact_descriptions(open_incident_context: OpeningData) -> str:
-        from firefighter.incidents.models.impact import ImpactLevel  # noqa: PLC0415
 
         impact_form_data = open_incident_context.get("impact_form_data", {})
         if not impact_form_data:
