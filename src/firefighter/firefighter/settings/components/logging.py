@@ -3,8 +3,6 @@ from __future__ import annotations
 from logging import Filter, LogRecord
 from typing import TYPE_CHECKING
 
-from loggia.conf import FlexibleFlag, LoggerConfiguration
-from loggia.logger import initialize
 from loggia.utils.logrecordutils import STANDARD_FIELDS, popattr
 
 from firefighter.firefighter.settings.settings_utils import ENV
