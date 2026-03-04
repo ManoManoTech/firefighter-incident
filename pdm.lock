@@ -2324,6 +2324,19 @@ files = [
 ]
 
 [[package]]
+name = "loggia"
+version = "0.3.1"
+requires_python = ">=3.9"
+summary = "A convenient logging configuration manager for Python's standard logging library and Loguru."
+dependencies = [
+    "python-json-logger>=2.0.7",
+]
+files = [
+    {url = "https://files.pythonhosted.org/packages/14/96/f2a12aa2998517f5c2daa3d3c1a8accb0b76fa98b1a2c636a797fe9bae6e/loggia-0.3.1.tar.gz", hash = "sha256:6e6525819688e79e833c15d390af0d3f334c30080cd4e114667cb62192c23d09"},
+    {url = "https://files.pythonhosted.org/packages/9d/96/b11e39dfd2d36ced3a03e250513290ff7b9575d67b5bf4cf13e2ee4797f5/loggia-0.3.1-py3-none-any.whl", hash = "sha256:f7b6b21ec129bbeb39332f61e6bea2a08443a2d0185b2aecb0ca51b5f77bfa45"},
+]
+
+[[package]]
 name = "markdown"
 version = "3.10.2"
 requires_python = ">=3.10"
