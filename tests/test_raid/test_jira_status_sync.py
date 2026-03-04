@@ -4,6 +4,7 @@ from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 import pytest
+from django.core.cache import cache
 from django.test.utils import override_settings
 
 from firefighter.incidents.enums import IncidentStatus
@@ -18,6 +19,18 @@ from firefighter.raid.signals.incident_updated import (
     IMPACT_TO_JIRA_STATUS_MAP,
     incident_updated_close_ticket_when_mitigated_or_postmortem,
 )
+
+
+@pytest.fixture(autouse=True)
+def clear_sync_cache() -> None:
+    """Clear the Django cache before each test to prevent cross-test cache pollution.
+
+    The Impact→Jira loop-prevention mechanism writes cache keys of the form
+    sync:impact_to_jira:{incident_id}:status:{value}. Without this fixture,
+    keys written by other tests in the same session can cause
+    _skip_due_to_recent_impact_change to erroneously skip the sync.
+    """
+    cache.clear()
 
 
 @pytest.fixture(autouse=True)
