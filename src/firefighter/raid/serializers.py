@@ -15,7 +15,6 @@ from firefighter.jira_app.client import (
     JiraUserNotFoundError,
     SlackNotificationError,
 )
-from firefighter.jira_app.service_postmortem import jira_postmortem_service
 from firefighter.raid.client import client as jira_client
 from firefighter.raid.forms import (
     alert_slack_comment_ticket,
@@ -485,35 +484,6 @@ class JiraWebhookUpdateSerializer(serializers.Serializer[Any]):
                 incident.status.label,
             )
             return True
-
-        if incident.needs_postmortem and impact_status == IncidentStatus.CLOSED:
-            if not hasattr(incident, "jira_postmortem_for"):
-                logger.warning(
-                    "Skipping Jira→Impact close for incident %s: postmortem is required but no Jira PM linked.",
-                    incident.id,
-                )
-                # Returning True: webhook handled but intentionally skipped due to missing Jira PM link.
-                return True
-            try:
-                is_ready, current_status = jira_postmortem_service.is_postmortem_ready(
-                    incident.jira_postmortem_for
-                )
-                if not is_ready:
-                    logger.warning(
-                        "Skipping Jira→Impact close for incident %s: Jira PM %s not ready (status=%s).",
-                        incident.id,
-                        incident.jira_postmortem_for.jira_issue_key,
-                        current_status,
-                    )
-                    # Returning True: webhook handled but close sync deferred until PM ready.
-                    return True
-            except Exception:
-                logger.exception(
-                    "Failed to verify Jira post-mortem readiness for incident %s; skipping close sync",
-                    incident.id,
-                )
-                # Returning True: webhook handled; failure is logged, no retry desired here.
-                return True
 
         # Before closing, verify all business rules are satisfied (key events, status, etc.).
         # If not, notify the incident channel and leave the incident open.

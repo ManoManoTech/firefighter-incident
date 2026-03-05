@@ -378,8 +378,15 @@ class Incident(models.Model):
                         f"Incident is not in PostMortem status, and needs one because of its priority and environment ({self.priority.name}/{self.environment.value}).",
                     )
                 )
-            # If a Jira post-mortem exists, ensure it is in the expected "Ready" status
-            if hasattr(self, "jira_postmortem_for"):
+            # Ensure Jira post-mortem is linked and ready
+            if not hasattr(self, "jira_postmortem_for"):
+                cant_closed_reasons.append(
+                    (
+                        "POSTMORTEM_NOT_LINKED",
+                        "No Jira post-mortem is linked to this incident. Please create one before closing.",
+                    )
+                )
+            else:
                 try:
                     from firefighter.jira_app.service_postmortem import (
                         jira_postmortem_service,
