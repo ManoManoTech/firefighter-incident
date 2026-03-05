@@ -121,7 +121,7 @@ jobs:
       # For pypi trusted publishing
       id-token: write
     steps:
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@v8
         with:
           name: dist
           path: dist
@@ -182,7 +182,7 @@ jobs:
         with:
           tag: ${{ inputs.tag }}
           sha: ${{ inputs.sha }}
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@v8
         with:
           name: dist
           path: dist
@@ -217,13 +217,13 @@ jobs:
         with:
           tag: ${{ inputs.tag }}
           sha: ${{ inputs.sha }}
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@v8
         name: Download Python artifacts
         with:
           name: dist
           path: dist
 
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@v8
         name: Download Python frozen requirements
         with:
           name: requirements
