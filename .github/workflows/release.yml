@@ -23,7 +23,7 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Validate inputs
@@ -86,7 +86,7 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           ref: main # We checkout the main branch to check for the commit
           fetch-depth: 0
@@ -141,7 +141,7 @@ jobs:
       # For git tag
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           ref: ${{ inputs.sha || 'main' }}
           fetch-depth: 0
@@ -172,7 +172,7 @@ jobs:
       # For GitHub release publishing
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           ref: ${{ inputs.sha || 'main' }}
           fetch-depth: 0
@@ -207,7 +207,7 @@ jobs:
       packages: write
       contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           ref: ${{ inputs.sha || 'main' }}
           fetch-depth: 0
