@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 
+from firefighter.incidents.enums import IncidentStatus
 from firefighter.slack.views.modals.postmortem import PostMortemModal
 
 
@@ -24,7 +25,7 @@ class TestPostMortemModal:
 
     @staticmethod
     def test_p1_p2_shows_auto_creation_message(mocker):
-        incident = SimpleNamespace(id=123, needs_postmortem=True)
+        incident = SimpleNamespace(id=123, needs_postmortem=True, status=IncidentStatus.OPEN)
 
         # No existing PMs
         mocker.patch(
@@ -47,6 +48,28 @@ class TestPostMortemModal:
             for el in TestPostMortemModal._get_action_elements(view_dict)
         ]
         assert "incident_create_postmortem_now" not in action_ids
+
+    @staticmethod
+    def test_p1_p2_mitigated_shows_button(mocker):
+        incident = SimpleNamespace(id=124, needs_postmortem=True, status=IncidentStatus.MITIGATED)
+
+        mocker.patch(
+            "firefighter.slack.views.modals.postmortem._safe_has_relation",
+            return_value=False,
+            create=True,
+        )
+
+        view = PostMortemModal().build_modal_fn(incident)
+        view_dict = view.to_dict()
+
+        texts = TestPostMortemModal._get_text_blocks(view_dict)
+        assert any("not automatically created" in t for t in texts)
+
+        action_ids = [
+            el.get("action_id")
+            for el in TestPostMortemModal._get_action_elements(view_dict)
+        ]
+        assert "incident_create_postmortem_now" in action_ids
 
     @staticmethod
     def test_p3_shows_optional_message_and_button(mocker):
