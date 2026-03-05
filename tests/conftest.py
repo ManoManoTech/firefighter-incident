@@ -47,6 +47,26 @@ def footer_text() -> str:
 
 
 @pytest.fixture(scope="session")
+def django_db_modify_db_settings() -> None:
+    """Remove search_path from DB OPTIONS for the test database.
+
+    The test DB is created fresh without any custom schema, so the search_path
+    configured via POSTGRES_SCHEMA would point to a non-existent schema and
+    cause migrations to fail with 'no schema has been selected to create in'.
+    """
+    from django.conf import settings
+
+    db = settings.DATABASES.get("default", {})
+    options = db.get("OPTIONS", {})
+    opts_str = options.get("options", "")
+    if "-c search_path=" in opts_str:
+        import re
+
+        opts_str = re.sub(r"\s*-c\s+search_path=\S+", "", opts_str).strip()
+        db["OPTIONS"] = {"options": opts_str}
+
+
+@pytest.fixture(scope="session")
 def django_db_setup(django_db_setup: Any, django_db_blocker: DjangoDbBlocker) -> None:
     # XXX Allow override of fixtures path
     try:
