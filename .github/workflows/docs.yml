@@ -14,7 +14,7 @@ on:
 name: Mkdocs CI
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref_name }}-${{ github.event.pull_request.number || github.sha }}
+  group: ${{ github.workflow }}-${{ github.ref_name }}-${{ github.event.pull_request.number || '' }}
   cancel-in-progress: true
 
 jobs:
