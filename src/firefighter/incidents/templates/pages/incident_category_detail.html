@@ -47,7 +47,7 @@
           {% fill "card_content" %}
             <ul role="list" class="mt-3 grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
               {% for usergroup in incident_category.usergroups.all %}
-                <li class="col-span-1 flex rounded-md shadow-sm">
+                <li class="col-span-1 flex rounded-md shadow-xs">
                   <div class="flex flex-1 items-center justify-between truncate rounded-md border border-neutral-200 dark:border-neutral-700">
                     <div class="flex-1 truncate px-4 py-2 text-sm">
                       <a href="{{ usergroup.link }}" class="font-medium text-neutral-900 hover:text-neutral-600 dark:text-neutral-100 hover:dark:text-neutral-300">@{{ usergroup.handle }}</a>
@@ -57,7 +57,7 @@
                 </li>
               {% endfor %}
               {% for conversation in incident_category.conversations.all %}
-                <li class="col-span-1 flex rounded-md shadow-sm">
+                <li class="col-span-1 flex rounded-md shadow-xs">
                   <div class="flex flex-1 items-center justify-between truncate rounded-md border border-neutral-200 dark:border-neutral-700">
                     <div class="flex-1 truncate px-4 py-2 text-sm">
                       <a href="{{ conversation.link }}" class="font-medium text-neutral-900 hover:text-neutral-600 dark:text-neutral-100 hover:dark:text-neutral-300">#{{ conversation.name }}</a>

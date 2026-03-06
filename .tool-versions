@@ -1,4 +1,4 @@
 python 3.12
 direnv 2.32.1
-nodejs lts-hydrogen
+nodejs lts-jod
 pdm    2.26.4
