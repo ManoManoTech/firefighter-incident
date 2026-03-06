@@ -5,7 +5,7 @@
     <!-- Page header -->
     <div class="mx-auto max-w-3xl px-4 sm:px-6 md:flex md:items-center md:justify-between md:space-x-5 lg:max-w-7xl lg:px-8">
       <div class="flex items-center space-x-5">
-        <div class="flex-shrink-0">
+        <div class="shrink-0">
           <div class="relative h-16">
             <span class="inline-flex w-16 h-16 rounded-full" >
               {% component "avatar" user=target_user %}{% endcomponent %}
@@ -49,7 +49,7 @@
           {% fill "card_content" %}
             <ul role="list" class="mt-3 grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
               {% for usergroup in target_user.usergroup_set.all %}
-                <li class="col-span-1 flex rounded-md shadow-sm">
+                <li class="col-span-1 flex rounded-md shadow-xs">
                   <div class="flex flex-1 items-center justify-between truncate rounded-md border border-neutral-200 dark:border-neutral-700">
                     <div class="flex-1 truncate px-4 py-2 text-sm">
                       <a href="{{ usergroup.link }}" class="font-medium text-neutral-900 hover:text-neutral-600 dark:text-neutral-100 hover:dark:text-neutral-300">@{{ usergroup.handle }}</a>
@@ -59,7 +59,7 @@
                 </li>
               {% endfor %}
               {% for conversation in target_user.conversation_set.all %}
-                <li class="col-span-1 flex rounded-md shadow-sm">
+                <li class="col-span-1 flex rounded-md shadow-xs">
                   <div class="flex flex-1 items-center justify-between truncate rounded-md border border-neutral-200 dark:border-neutral-700">
                     <div class="flex-1 truncate px-4 py-2 text-sm">
                       <a href="{{ conversation.link }}" class="font-medium text-neutral-900 hover:text-neutral-600 dark:text-neutral-100 hover:dark:text-neutral-300">#{{ conversation.name }}</a>
@@ -81,23 +81,23 @@
           {% fill "card_content" %}
             <dl class="grid grid-cols-1 gap-x-4 gap-y-8 ">
               <div class="sm:col-span-1">
-                <dt class="text-sm font-medium text-opacity-95">Email address</dt>
-                <dd class="mt-1 text-sm text-opacity-70"><a href="mailto:{{ target_user.email }}" class="truncate link">{{ target_user.email }}</a></dd>
+                <dt class="text-sm font-medium">Email address</dt>
+                <dd class="mt-1 text-sm opacity-70"><a href="mailto:{{ target_user.email }}" class="truncate link">{{ target_user.email }}</a></dd>
               </div>
               <div class="sm:col-span-1">
-                <dt class="text-sm font-medium text-opacity-95">Slack</dt>
+                <dt class="text-sm font-medium">Slack</dt>
                 {% if target_user.slack_user.link %}
-                  <dd class="mt-1 text-sm text-opacity-70"><a href="{{ target_user.slack_user.link }}" class="link">@{{ target_user.slack_user.username }}</a></dd>
+                  <dd class="mt-1 text-sm opacity-70"><a href="{{ target_user.slack_user.link }}" class="link">@{{ target_user.slack_user.username }}</a></dd>
                 {% else %}
-                  <dd class="mt-1 text-sm text-opacity-70">Ø</dd>
+                  <dd class="mt-1 text-sm opacity-70">Ø</dd>
                 {% endif %}
               </div>
               <div class="sm:col-span-1">
-                <dt class="text-sm font-medium text-opacity-95">Pagerduty</dt>
+                <dt class="text-sm font-medium">Pagerduty</dt>
                 {% if target_user.pagerduty_user.pagerduty_url %}
-                  <dd class="mt-1 text-sm text-opacity-70"><a href="{{ target_user.pagerduty_user.pagerduty_url }}" class="link">{{ target_user.pagerduty_user.name }}</a></dd>
+                  <dd class="mt-1 text-sm opacity-70"><a href="{{ target_user.pagerduty_user.pagerduty_url }}" class="link">{{ target_user.pagerduty_user.name }}</a></dd>
                 {% else %}
-                  <dd class="mt-1 text-sm text-opacity-70">Ø</dd>
+                  <dd class="mt-1 text-sm opacity-70">Ø</dd>
                 {% endif %}
               </div>
             </dl>
