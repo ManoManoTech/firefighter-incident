@@ -6,10 +6,10 @@
   "main": "index.js",
   "scripts": {
     "build": "cross-env NODE_ENV=production npm run build:js && npm run build:css",
-    "dev:css": "tailwindcss -i src/firefighter/incidents/static/css/main.css --watch -o ./src/firefighter/incidents/static/css/main.min.css",
+    "dev:css": "tailwindcss -i src/firefighter/incidents/css_src/main.css --watch -o ./src/firefighter/incidents/static/css/main.min.css",
     "dev:js": "rollup -c -w --silent",
     "build:js": "rollup -c --silent",
-    "build:css": "tailwindcss -i src/firefighter/incidents/static/css/main.css --minify -o ./src/firefighter/incidents/static/css/main.min.css"
+    "build:css": "tailwindcss -i src/firefighter/incidents/css_src/main.css --minify -o ./src/firefighter/incidents/static/css/main.min.css"
   },
   "keywords": [],
   "author": "",

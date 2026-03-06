@@ -2,9 +2,9 @@
 
 /* ─── Source scanning ─────────────────────────────────────────────────────── */
 /* Paths are relative to this file (src/firefighter/incidents/static/css/)     */
-@source "../../../../../**/templates/**/*.html";
-@source "../../../../../**/components/**/*.html";
-@source "../../../../../**/*.py";
+@source "../../../../**/templates/**/*.html";
+@source "../../../../**/components/**/*.html";
+@source "../../../../**/*.py";
 
 /* ─── Plugins ─────────────────────────────────────────────────────────────── */
 @plugin "@tailwindcss/forms";
