@@ -10,13 +10,13 @@ from __future__ import annotations
 
 import logging
 from importlib import resources as impresources
+from pathlib import Path
 from typing import Any
 
 import pytest
 from django.core.management import call_command
 from pytest_django import DjangoDbBlocker
 from pytest_django.fixtures import SettingsWrapper
-from zipp import Path
 
 from firefighter.incidents.factories import IncidentFactory
 from firefighter.incidents.models import Incident
