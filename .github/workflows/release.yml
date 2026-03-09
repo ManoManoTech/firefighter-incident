@@ -232,7 +232,7 @@ jobs:
       - name: Move requirements.txt to root
         run: mv requirements/requirements.txt .
 
-      - uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-buildx-action@v4
 
       - uses: docker/login-action@v4
         with:
