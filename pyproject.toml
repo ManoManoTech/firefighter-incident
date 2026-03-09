@@ -592,7 +592,7 @@ dev = [
     "lazy-object-proxy>=1.9.0",
     "werkzeug>=3.0.1",
     "django-watchfiles>=0.1.0",
-    "ruff==0.14.14",
+    "ruff==0.15.5",
     "mypy-to-codeclimate>=0.0.3",
     "djade>=1.1.1",
 ]
