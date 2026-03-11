@@ -172,7 +172,8 @@ class OpenModal(SlackModal):
         ]
 
         recent_critical_incidents: int = Incident.objects.filter(
-            created_at__gte=timezone.now() - timedelta(hours=1)
+            created_at__gte=timezone.now() - timedelta(hours=1),
+            priority__value__lte=3,
         ).count()
         if recent_critical_incidents > 0:
             blocks.append(

@@ -37,8 +37,8 @@ class CheckCurrentIncidentsModal(
 
         incidents = list(
             Incident.objects.filter(
-
-                created_at__gte=datetime.now(UTC) - timedelta(hours=1)
+                created_at__gte=datetime.now(UTC) - timedelta(hours=1),
+                priority__value__lte=3,
             )
             .order_by("-created_at")
             .select_related(
