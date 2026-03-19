@@ -37,7 +37,8 @@ class SelectModal(SlackModal):
         missing_incident_error: bool = False,
     ) -> View:
         active_incidents = Incident.objects.filter(
-            _status__lt=IncidentStatus.CLOSED
+            _status__lt=IncidentStatus.CLOSED,
+            priority__value__lte=3,
         ).order_by("-id")
 
         if select_class is None and isinstance(self, IncidentSelectableModalMixinBase):
