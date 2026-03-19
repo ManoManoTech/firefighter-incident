@@ -55,7 +55,7 @@ jobs:
           git add .
           git commit -a -m "chore(act): fake commit"
           git log
-      - uses: jdx/mise-action@v3
+      - uses: jdx/mise-action@v4
       - name: "Build wheel"
         run: pdm build --no-sdist --no-clean
       - name: "Build sdist"
