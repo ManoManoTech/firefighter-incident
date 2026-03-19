@@ -329,10 +329,20 @@ class SlackForm[T: forms.Form]:
                 label=initial_choice_label, value=initial_choice_value
             )
 
-        slack_input_kwargs["options"] = [
+        all_options = [
             SafeOption(label=str(c[1]), value=str(c[0]))
             for c in filter(lambda co: co[0] != "", f.choices)
         ]
+        # Slack API limits static_select to 100 options
+        if len(all_options) > 100:
+            logger.warning(
+                "Field %s has %d options, truncating to 100 (Slack API limit)",
+                field_name,
+                len(all_options),
+            )
+            all_options = all_options[:100]
+        slack_input_kwargs["options"] = all_options
+
         # Add the initial option to the list of options if it's not there
         if (
             "initial_option" in slack_input_kwargs
@@ -387,10 +397,19 @@ class SlackForm[T: forms.Form]:
                 slack_input_kwargs["initial_options"] = initial_options
 
         # Build all options
-        slack_input_kwargs["options"] = [
+        all_options = [
             SafeOption(label=str(c[1]), value=str(c[0]))
             for c in filter(lambda co: co[0] != "", f.choices)
         ]
+        # Slack API limits static_multi_select to 100 options
+        if len(all_options) > 100:
+            logger.warning(
+                "Field %s has %d options, truncating to 100 (Slack API limit)",
+                field_name,
+                len(all_options),
+            )
+            all_options = all_options[:100]
+        slack_input_kwargs["options"] = all_options
 
         # Ensure we have at least one option for Slack API
         if not slack_input_kwargs["options"]:
