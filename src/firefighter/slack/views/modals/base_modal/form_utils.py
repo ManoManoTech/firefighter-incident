@@ -14,6 +14,7 @@ from typing import (
 from uuid import UUID
 
 from django import forms
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.db.models import Model
 from django.utils import timezone
@@ -309,8 +310,20 @@ class SlackForm[T: forms.Form]:
         if f.initial:
             initial_choice_label: str | None = None
             if isinstance(f, forms.ModelChoiceField):
-                initial_choice_label = f.label_from_instance(f.initial)
-                initial_choice_value = str(f.initial.pk)
+                if hasattr(f.initial, "pk"):
+                    initial_choice_label = f.label_from_instance(f.initial)
+                    initial_choice_value = str(f.initial.pk)
+                else:
+                    # f.initial is a raw value (string/UUID) from modal context serialization
+                    initial_choice_value = str(f.initial)
+                    try:
+                        if f.queryset is not None:
+                            instance = f.queryset.get(pk=f.initial)
+                            initial_choice_label = f.label_from_instance(instance)
+                        else:
+                            initial_choice_label = initial_choice_value
+                    except (ValueError, TypeError, ObjectDoesNotExist):
+                        initial_choice_label = initial_choice_value
 
             elif isinstance(f, EnumChoiceField):
                 initial_choice_label = f.initial.label
