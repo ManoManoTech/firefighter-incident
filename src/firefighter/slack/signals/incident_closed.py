@@ -16,7 +16,6 @@ logger = logging.getLogger(__name__)
 # pylint: disable=unused-argument
 def incident_closed_slack(sender: Any, incident: Incident, **kwargs: Any) -> bool:
     if not hasattr(incident, "conversation"):
-        logger.error(f"No Slack conversation to archive for incident {incident}.")
-        return False
+        return True
     return incident.conversation.archive_channel()
     # TODO Retry
