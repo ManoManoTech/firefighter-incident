@@ -404,15 +404,17 @@ class Incident(models.Model):
                                 f"Jira post-mortem {self.jira_postmortem_for.jira_issue_key} is not Ready (current status: {current_status}).",
                             )
                         )
-                except Exception:  # pragma: no cover - defensive guard
+                except Exception as e:  # pragma: no cover - defensive guard
+                    jira_key = self.jira_postmortem_for.jira_issue_key if self.jira_postmortem_for else "unknown"
                     logger.exception(
-                        "Failed to verify Jira post-mortem status for incident #%s",
+                        "Failed to verify Jira post-mortem status for incident #%s (JIRA issue: %s)",
                         self.id,
+                        jira_key,
                     )
                     cant_closed_reasons.append(
                         (
                             "POSTMORTEM_STATUS_UNKNOWN",
-                            "Could not verify Jira post-mortem status. Please check it in Jira.",
+                            f"Could not verify Jira post-mortem status for {jira_key}: {e}. Please check the JIRA ticket and API token validity.",
                         )
                     )
         elif self.status.value < IncidentStatus.MITIGATED:
