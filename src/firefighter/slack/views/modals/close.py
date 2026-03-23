@@ -104,86 +104,59 @@ class CloseModal(
                             ]
                         ),
                     ]
-                elif reason[0] == "STATUS_NOT_POST_MORTEM" and getattr(
-                    settings, "ENABLE_CONFLUENCE", False
-                ):
+                elif reason[0] == "STATUS_NOT_POST_MORTEM":
+                    has_confluence = getattr(settings, "ENABLE_CONFLUENCE", False)
+                    if has_confluence:
+                        detail_text = f"This status is required. Please update the status to _{IncidentStatus.POST_MORTEM.label}_ and *fill the post-mortem on Confluence* before closing the incident."
+                    else:
+                        detail_text = f"This status is required. Please update the status to _{IncidentStatus.POST_MORTEM.label}_ and ensure the Jira post-mortem is *Ready* before closing the incident."
+                    action_buttons: list[ButtonElement] = []
+                    if has_confluence:
+                        action_buttons.append(
+                            ButtonElement(
+                                text="Fill the post-mortem on Confluence",
+                                action_id="open_link",
+                                url=incident.postmortem_for.page_edit_url,
+                                style="primary",
+                            )
+                            if hasattr(incident, "postmortem_for")
+                            else ButtonElement(
+                                text="Create the post-mortem",
+                                action_id=str(PostMortemModal.push_action),
+                                value=str(incident.id),
+                                style="primary",
+                            )
+                        )
+                    elif hasattr(incident, "jira_postmortem_for"):
+                        action_buttons.append(
+                            ButtonElement(
+                                text="Open Jira post-mortem",
+                                action_id="open_link",
+                                url=incident.jira_postmortem_for.issue_url,
+                                style="primary",
+                            )
+                        )
+                    action_buttons.append(
+                        ButtonElement(
+                            text="Update status",
+                            action_id=UpdateStatusModal.push_action,
+                            value=str(incident.id),
+                        ),
+                    )
                     reason_blocks += [
                         SectionBlock(
                             text=f":warning: *Status is not _{IncidentStatus.POST_MORTEM.label}_* :warning:\n"
                         ),
                         ContextBlock(
                             elements=[
-                                MarkdownTextObject(
-                                    text=f"This status is required. Please update the status to _{IncidentStatus.POST_MORTEM.label}_ and *fill the post-mortem on Confluence* before closing the incident."
-                                )
+                                MarkdownTextObject(text=detail_text)
                             ]
                         ),
-                        ActionsBlock(
-                            elements=[
-                                (
-                                    ButtonElement(
-                                        text="Fill the post-mortem on Confluence",
-                                        action_id="open_link",
-                                        url=incident.postmortem_for.page_edit_url,
-                                        style="primary",
-                                    )
-                                    if hasattr(incident, "postmortem_for")
-                                    else ButtonElement(
-                                        text="Create the post-mortem",
-                                        action_id=str(PostMortemModal.push_action),
-                                        value=str(incident.id),
-                                        style="primary",
-                                    )
-                                ),
-                                ButtonElement(
-                                    text="Update status",
-                                    action_id=UpdateStatusModal.push_action,
-                                    value=str(incident.id),
-                                ),
-                            ]
-                        ),
+                        ActionsBlock(elements=action_buttons),
                         ContextBlock(
                             elements=[
                                 MarkdownTextObject(
                                     text=f":bulb: You can also publish an update and change the status of the incident with `{settings.SLACK_INCIDENT_COMMAND} update`. You can also use `{settings.SLACK_INCIDENT_COMMAND} postmortem` to access or create your post-mortem."
-                                )
-                            ]
-                        ),
-                    ]
-                elif reason[0] == "JIRA_POSTMORTEM_NOT_READY" and getattr(
-                    settings, "ENABLE_JIRA", False
-                ):
-                    reason_blocks += [
-                        SectionBlock(
-                            text=":warning: *Jira post-mortem not ready* :warning:\n"
-                        ),
-                        ContextBlock(
-                            elements=[
-                                MarkdownTextObject(
-                                    text=f"{reason[1]}\nPlease move the Jira post-mortem to the Ready status before closing the incident."
-                                )
-                            ]
-                        ),
-                        ActionsBlock(
-                            elements=[
-                                ButtonElement(
-                                    text="Open Jira post-mortem",
-                                    action_id="open_link",
-                                    url=incident.jira_postmortem_for.issue_url,
-                                    style="primary",
-                                ),
-                            ]
-                        ),
-                    ]
-                elif reason[0] == "JIRA_POSTMORTEM_STATUS_UNKNOWN":
-                    reason_blocks += [
-                        SectionBlock(
-                            text=":warning: *Could not verify Jira post-mortem status* :warning:\n"
-                        ),
-                        ContextBlock(
-                            elements=[
-                                MarkdownTextObject(
-                                    text=f"{reason[1]}\nPlease check the Jira post-mortem status before closing the incident."
                                 )
                             ]
                         ),

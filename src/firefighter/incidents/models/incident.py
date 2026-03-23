@@ -411,10 +411,25 @@ class Incident(models.Model):
                         self.id,
                         jira_key,
                     )
+                    # Build a concise user-facing message (full details are in the logs)
+                    from jira.exceptions import JIRAError
+
+                    if isinstance(e, JIRAError):
+                        user_error = f"JIRA error {e.status_code}: {e.text}"
+                    else:
+                        user_error = str(e)
+
+                    support_channel_mention = ""
+                    from firefighter.slack.models.conversation import Conversation
+
+                    support_conv = Conversation.objects.get_or_none(tag="dev_firefighter")
+                    if support_conv:
+                        support_channel_mention = f" Please contact <#{support_conv.channel_id}> for help."
+
                     cant_closed_reasons.append(
                         (
                             "POSTMORTEM_STATUS_UNKNOWN",
-                            f"Could not verify Jira post-mortem status for {jira_key}: {e}. Please check the JIRA ticket and API token validity.",
+                            f"Could not verify Jira post-mortem status for {jira_key}. {user_error}.{support_channel_mention}",
                         )
                     )
         elif self.status.value < IncidentStatus.MITIGATED:
