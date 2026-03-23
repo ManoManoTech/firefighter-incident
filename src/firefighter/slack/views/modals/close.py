@@ -228,6 +228,29 @@ class CloseModal(
                             ]
                         ),
                     ]
+                elif reason[0] == "POSTMORTEM_NOT_LINKED":
+                    reason_blocks += [
+                        SectionBlock(
+                            text=":warning: *No post-mortem linked* :warning:\n"
+                        ),
+                        ContextBlock(
+                            elements=[
+                                MarkdownTextObject(
+                                    text=reason[1]
+                                )
+                            ]
+                        ),
+                        ActionsBlock(
+                            elements=[
+                                ButtonElement(
+                                    text="Create post-mortem",
+                                    action_id=str(PostMortemModal.push_action),
+                                    value=str(incident.id),
+                                    style="primary",
+                                ),
+                            ]
+                        ),
+                    ]
                 elif reason[0] == "POSTMORTEM_STATUS_UNKNOWN":
                     reason_blocks += [
                         SectionBlock(
@@ -257,6 +280,13 @@ class CloseModal(
                                     style="primary",
                                 ),
                             ]
+                        ),
+                    ]
+                else:
+                    # Fallback for any unhandled reason code
+                    reason_blocks += [
+                        SectionBlock(
+                            text=f":warning: {reason[1]}"
                         ),
                     ]
 
