@@ -404,15 +404,32 @@ class Incident(models.Model):
                                 f"Jira post-mortem {self.jira_postmortem_for.jira_issue_key} is not Ready (current status: {current_status}).",
                             )
                         )
-                except Exception:  # pragma: no cover - defensive guard
+                except Exception as e:  # pragma: no cover - defensive guard
+                    jira_key = self.jira_postmortem_for.jira_issue_key if self.jira_postmortem_for else "unknown"
                     logger.exception(
-                        "Failed to verify Jira post-mortem status for incident #%s",
+                        "Failed to verify Jira post-mortem status for incident #%s (JIRA issue: %s)",
                         self.id,
+                        jira_key,
                     )
+                    # Build a concise user-facing message (full details are in the logs)
+                    from jira.exceptions import JIRAError
+
+                    if isinstance(e, JIRAError):
+                        user_error = f"JIRA error {e.status_code}: {e.text}"
+                    else:
+                        user_error = str(e)
+
+                    support_channel_mention = ""
+                    from firefighter.slack.models.conversation import Conversation
+
+                    support_conv = Conversation.objects.get_or_none(tag="dev_firefighter")
+                    if support_conv:
+                        support_channel_mention = f" Please contact <#{support_conv.channel_id}> for help."
+
                     cant_closed_reasons.append(
                         (
                             "POSTMORTEM_STATUS_UNKNOWN",
-                            "Could not verify Jira post-mortem status. Please check it in Jira.",
+                            f"Could not verify Jira post-mortem status for {jira_key}. {user_error}.{support_channel_mention}",
                         )
                     )
         elif self.status.value < IncidentStatus.MITIGATED:

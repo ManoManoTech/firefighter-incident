@@ -61,17 +61,26 @@ class KeyEvents(MessageForm[IncidentUpdateKeyEventsForm]):
                 )
             )
         else:
-            blocks.append(
-                # XXX Check if postmortem and change message
-                SectionBlock(
-                    text=":white_check_mark: All required key events have been submitted. Once you're ready, you can close the incident.",
-                    accessory=ButtonElement(
-                        text="Close incident",
-                        value=str(form.incident.id),
-                        action_id="close_incident",
-                    ),
+            can_close, reasons = form.incident.can_be_closed
+            if can_close:
+                blocks.append(
+                    SectionBlock(
+                        text=":white_check_mark: All required key events have been submitted. Once you're ready, you can close the incident.",
+                        accessory=ButtonElement(
+                            text="Close incident",
+                            value=str(form.incident.id),
+                            action_id="close_incident",
+                        ),
+                    )
                 )
-            )
+            else:
+                reason_texts = [reason[1] for reason in reasons]
+                blocks.append(
+                    SectionBlock(
+                        text=":white_check_mark: All required key events have been submitted.\n:warning: Before closing, the following must be resolved:\n"
+                        + "\n".join(f"• {r}" for r in reason_texts),
+                    )
+                )
         blocks.append(
             ContextBlock(
                 elements=[
