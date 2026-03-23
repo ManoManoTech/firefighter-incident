@@ -52,6 +52,9 @@ if base_level_override and base_level_override != "":
 formatter: dict[str, type[Formatter] | Any]
 formatter = {"()": PrettyFormatter} if ENV == "dev" else get_json_formatter()
 
+# NOTE: ERROR-level logs from this service are monitored by a Datadog log alert
+# defined in infra/spinak/main.ts (web-error-rate-monitor).
+# Changing log levels or formats may affect alert behavior.
 FF_LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
