@@ -9,5 +9,5 @@ class IncidentsConfig(AppConfig):
     label = "incidents"
 
     def ready(self) -> None:
-        from firefighter.incidents import tasks
+        from firefighter.incidents import observability, tasks
         from firefighter.incidents.models.incident_update import set_event_ts

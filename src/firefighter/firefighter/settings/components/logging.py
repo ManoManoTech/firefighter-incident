@@ -20,10 +20,10 @@ class AccessLogFilter(Filter):
 
         raw_uri: str = record.args["{raw_uri}e"]  # type: ignore
 
-        if (
-            raw_uri == "/api/v2/firefighter/monitoring/healthcheck"
-            and record.levelno <= 20
-        ):
+        if raw_uri in (
+            "/api/v2/firefighter/monitoring/healthcheck",
+            "/api/v2/firefighter/monitoring/readiness",
+        ) and record.levelno <= 20:
             return False
         if raw_uri.startswith("/static/") and record.levelno <= 20:
             return False
