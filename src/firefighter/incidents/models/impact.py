@@ -101,7 +101,7 @@ class ImpactLevel(models.Model):
 
     @cached_property
     def value_label(self) -> str:
-        return LevelChoices(self.value).label
+        return str(LevelChoices(self.value).label)
 
 
 class Impact(models.Model):

@@ -331,7 +331,7 @@ class SlackForm[T: forms.Form]:
 
             elif isinstance(f, forms.ChoiceField):
                 initial_choice_label = str(
-                    [c[1] for c in f.choices if c[0] == f.initial][0]  # noqa: RUF015
+                    [c[1] for c in f.choices if c[0] == f.initial][0]  # type: ignore[index,union-attr]  # noqa: RUF015
                 )
                 initial_choice_value = f.initial
             else:
@@ -342,9 +342,9 @@ class SlackForm[T: forms.Form]:
                 label=initial_choice_label, value=initial_choice_value
             )
 
-        slack_input_kwargs["options"] = [
+        slack_input_kwargs["options"] = [  # type: ignore[var-annotated]
             SafeOption(label=str(c[1]), value=str(c[0]))
-            for c in filter(lambda co: co[0] != "", f.choices)
+            for c in filter(lambda co: co[0] != "", f.choices)  # type: ignore[arg-type]
         ]
         # Add the initial option to the list of options if it's not there
         if (
@@ -391,7 +391,7 @@ class SlackForm[T: forms.Form]:
             elif isinstance(f, forms.MultipleChoiceField):
                 # For MultipleChoiceField, initial is a list of choice values
                 for val in initial_value:
-                    choice_label = str(next(c[1] for c in f.choices if c[0] == val))
+                    choice_label = str(next(c[1] for c in f.choices if c[0] == val))  # type: ignore[index,union-attr]
                     initial_options.append(
                         SafeOption(label=choice_label, value=str(val))
                     )
@@ -400,9 +400,9 @@ class SlackForm[T: forms.Form]:
                 slack_input_kwargs["initial_options"] = initial_options
 
         # Build all options
-        slack_input_kwargs["options"] = [
+        slack_input_kwargs["options"] = [  # type: ignore[var-annotated]
             SafeOption(label=str(c[1]), value=str(c[0]))
-            for c in filter(lambda co: co[0] != "", f.choices)
+            for c in filter(lambda co: co[0] != "", f.choices)  # type: ignore[arg-type]
         ]
 
         # Ensure we have at least one option for Slack API
@@ -457,7 +457,7 @@ class SlackForm[T: forms.Form]:
             )
 
         slack_input_kwargs["option_groups"] = []
-        for _, (option_group_value, option_group_label) in enumerate(f.choices):
+        for _, (option_group_value, option_group_label) in enumerate(f.choices):  # type: ignore[arg-type]
             if option_group_value is None:
                 option_group_value = ""  # noqa: PLW2901
                 continue

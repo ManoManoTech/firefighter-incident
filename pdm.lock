@@ -5,7 +5,7 @@
 groups = ["default", "dev", "docs", "tests", "types"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:6f0d03e89e99b3eb0109eaf99e541c67687f8e1a5b01fdb75643e19f5cd13f70"
+content_hash = "sha256:c817cc5b51cfa3c3e1e989cd6d50df80452a11254667c1b6378e482950d1b918"
 
 [[metadata.targets]]
 requires_python = ">=3.12,<3.15"
@@ -449,7 +449,7 @@ name = "certifi"
 version = "2026.2.25"
 requires_python = ">=3.7"
 summary = "Python package for providing Mozilla's CA Bundle."
-groups = ["default", "docs", "tests", "types"]
+groups = ["default", "docs", "tests"]
 files = [
     {file = "certifi-2026.2.25-py3-none-any.whl", hash = "sha256:027692e4402ad994f1c42e52a4997a9763c646b73e4096e4d5d6db8af1d6f0fa"},
     {file = "certifi-2026.2.25.tar.gz", hash = "sha256:e887ab5cee78ea814d3472169153c2d12cd43b14bd03329a39a9c6e2e80bfba7"},
@@ -519,7 +519,7 @@ name = "charset-normalizer"
 version = "3.4.6"
 requires_python = ">=3.7"
 summary = "The Real First Universal Charset Detector. Open, modern and actively maintained alternative to Chardet."
-groups = ["default", "docs", "types"]
+groups = ["default", "docs"]
 files = [
     {file = "charset_normalizer-3.4.6-cp312-cp312-macosx_10_13_universal2.whl", hash = "sha256:2ef7fedc7a6ecbe99969cd09632516738a97eeb8bd7258bf8a0f23114c057dab"},
     {file = "charset_normalizer-3.4.6-cp312-cp312-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:a4ea868bc28109052790eb2b52a9ab33f3aa7adc02f96673526ff47419490e21"},
@@ -1270,21 +1270,20 @@ files = [
 
 [[package]]
 name = "django-stubs"
-version = "5.1.3"
-requires_python = ">=3.8"
+version = "5.2.9"
+requires_python = ">=3.10"
 summary = "Mypy stubs for Django"
 groups = ["types"]
 dependencies = [
-    "asgiref",
     "django",
-    "django-stubs-ext>=5.1.3",
-    "tomli; python_version < \"3.11\"",
-    "types-PyYAML",
+    "django-stubs-ext>=5.2.9",
+    "tomli; python_full_version < \"3.11\"",
+    "types-pyyaml",
     "typing-extensions>=4.11.0",
 ]
 files = [
-    {file = "django_stubs-5.1.3-py3-none-any.whl", hash = "sha256:716758ced158b439213062e52de6df3cff7c586f9f9ad7ab59210efbea5dfe78"},
-    {file = "django_stubs-5.1.3.tar.gz", hash = "sha256:8c230bc5bebee6da282ba8a27ad1503c84a0c4cd2f46e63d149e76d2a63e639a"},
+    {file = "django_stubs-5.2.9-py3-none-any.whl", hash = "sha256:2317a7130afdaa76f6ff7f623650d7f3bf1b6c86a60f95840e14e6ec6de1a7cd"},
+    {file = "django_stubs-5.2.9.tar.gz", hash = "sha256:c192257120b08785cfe6f2f1c91f1797aceae8e9daa689c336e52c91e8f6a493"},
 ]
 
 [[package]]
@@ -1433,20 +1432,18 @@ files = [
 
 [[package]]
 name = "djangorestframework-stubs"
-version = "3.15.3"
-requires_python = ">=3.9"
+version = "3.16.8"
+requires_python = ">=3.10"
 summary = "PEP-484 stubs for django-rest-framework"
 groups = ["types"]
 dependencies = [
-    "django-stubs>=5.1.3",
-    "requests>=2.0.0",
-    "types-PyYAML>=5.4.3",
-    "types-requests>=0.1.12",
-    "typing-extensions>=3.10.0",
+    "django-stubs>=5.2.8",
+    "types-pyyaml",
+    "typing-extensions>=4.0",
 ]
 files = [
-    {file = "djangorestframework_stubs-3.15.3-py3-none-any.whl", hash = "sha256:3add29ac343292ffc926a3f3984af42de237cca214c69ca0489d124315a803bc"},
-    {file = "djangorestframework_stubs-3.15.3.tar.gz", hash = "sha256:e7bdec722d98b8a8049bad9f8bb5ead0931f4f64010ffb3c4538c9ae0f35ef2a"},
+    {file = "djangorestframework_stubs-3.16.8-py3-none-any.whl", hash = "sha256:c5bf61def0f330a071dd5f470f05710189d06c467b3f3e186b32c5a23d4952fb"},
+    {file = "djangorestframework_stubs-3.16.8.tar.gz", hash = "sha256:f6d464b54fa2f929610e957446c04e6ac29558265418e0a2d9f653a4cdd410b5"},
 ]
 
 [[package]]
@@ -1614,7 +1611,7 @@ files = [
 
 [[package]]
 name = "faker"
-version = "40.11.0"
+version = "40.11.1"
 requires_python = ">=3.10"
 summary = "Faker is a Python package that generates fake data for you."
 groups = ["tests"]
@@ -1622,8 +1619,8 @@ dependencies = [
     "tzdata; platform_system == \"Windows\"",
 ]
 files = [
-    {file = "faker-40.11.0-py3-none-any.whl", hash = "sha256:0e9816c950528d2a37d74863f3ef389ea9a3a936cbcde0b11b8499942e25bf90"},
-    {file = "faker-40.11.0.tar.gz", hash = "sha256:7c419299103b13126bd02ec14bd2b47b946edb5a5eedf305e66a193b25f9a734"},
+    {file = "faker-40.11.1-py3-none-any.whl", hash = "sha256:3af3a213ba8fb33ce6ba2af7aef2ac91363dae35d0cec0b2b0337d189e5bee2a"},
+    {file = "faker-40.11.1.tar.gz", hash = "sha256:61965046e79e8cfde4337d243eac04c0d31481a7c010033141103b43f603100c"},
 ]
 
 [[package]]
@@ -1858,40 +1855,43 @@ files = [
 
 [[package]]
 name = "griffe"
-version = "2.0.0"
+version = "2.0.1"
 requires_python = ">=3.10"
 summary = "Signatures for entire Python programs. Extract the structure, the frame, the skeleton of your project, to generate API documentation or find breaking changes in your API."
 groups = ["docs"]
 dependencies = [
-    "griffecli==2.0.0",
-    "griffelib==2.0.0",
+    "griffecli==2.0.1",
+    "griffelib==2.0.1",
 ]
 files = [
-    {file = "griffe-2.0.0-py3-none-any.whl", hash = "sha256:5418081135a391c3e6e757a7f3f156f1a1a746cc7b4023868ff7d5e2f9a980aa"},
+    {file = "griffe-2.0.1-py3-none-any.whl", hash = "sha256:7ebbefa657cb20c035552176425f3a9acef1a3a73619a469fa4088a2fbf2a4c1"},
+    {file = "griffe-2.0.1.tar.gz", hash = "sha256:87e2483145669334d4b595b459a7bd58ab92037c20c63c9d882ead0c0f7ca5b6"},
 ]
 
 [[package]]
 name = "griffecli"
-version = "2.0.0"
+version = "2.0.1"
 requires_python = ">=3.10"
 summary = "Signatures for entire Python programs. Extract the structure, the frame, the skeleton of your project, to generate API documentation or find breaking changes in your API."
 groups = ["docs"]
 dependencies = [
     "colorama>=0.4",
-    "griffelib==2.0.0",
+    "griffelib==2.0.1",
 ]
 files = [
-    {file = "griffecli-2.0.0-py3-none-any.whl", hash = "sha256:9f7cd9ee9b21d55e91689358978d2385ae65c22f307a63fb3269acf3f21e643d"},
+    {file = "griffecli-2.0.1-py3-none-any.whl", hash = "sha256:5c89012c292365c20538740cf491443625b3083449516964f4d3de3ca8c36090"},
+    {file = "griffecli-2.0.1.tar.gz", hash = "sha256:a44f1482dfbeea72bd6686a4e7c99e0d30b0d2abd675b81e9ac1d97734ca7cf6"},
 ]
 
 [[package]]
 name = "griffelib"
-version = "2.0.0"
+version = "2.0.1"
 requires_python = ">=3.10"
 summary = "Signatures for entire Python programs. Extract the structure, the frame, the skeleton of your project, to generate API documentation or find breaking changes in your API."
 groups = ["docs"]
 files = [
-    {file = "griffelib-2.0.0-py3-none-any.whl", hash = "sha256:01284878c966508b6d6f1dbff9b6fa607bc062d8261c5c7253cb285b06422a7f"},
+    {file = "griffelib-2.0.1-py3-none-any.whl", hash = "sha256:b769eed581c0e857d362fc8fcd8e57ecd2330c124b6104ac8b4c1c86d76970aa"},
+    {file = "griffelib-2.0.1.tar.gz", hash = "sha256:59f39eabb4c777483a3823e39e8f9e03e69df271a7e49aee64e91a8cfa91bdf5"},
 ]
 
 [[package]]
@@ -1980,7 +1980,7 @@ name = "idna"
 version = "3.11"
 requires_python = ">=3.8"
 summary = "Internationalized Domain Names in Applications (IDNA)"
-groups = ["default", "dev", "docs", "tests", "types"]
+groups = ["default", "dev", "docs", "tests"]
 files = [
     {file = "idna-3.11-py3-none-any.whl", hash = "sha256:771a87f49d9defaf64091e6e6fe9c18d4833f140bd19464795bc32d966ca37ea"},
     {file = "idna-3.11.tar.gz", hash = "sha256:795dafcc9c04ed0c1fb032c2aa73654d8e8c5023a7df64a53f39190ada629902"},
@@ -3898,7 +3898,7 @@ name = "requests"
 version = "2.32.5"
 requires_python = ">=3.9"
 summary = "Python HTTP for Humans."
-groups = ["default", "docs", "types"]
+groups = ["default", "docs"]
 dependencies = [
     "certifi>=2017.4.17",
     "charset-normalizer<4,>=2",
@@ -4315,16 +4315,16 @@ files = [
 
 [[package]]
 name = "types-requests"
-version = "2.32.4.20260107"
-requires_python = ">=3.9"
+version = "2.32.4.20260324"
+requires_python = ">=3.10"
 summary = "Typing stubs for requests"
 groups = ["types"]
 dependencies = [
     "urllib3>=2",
 ]
 files = [
-    {file = "types_requests-2.32.4.20260107-py3-none-any.whl", hash = "sha256:b703fe72f8ce5b31ef031264fe9395cac8f46a04661a79f7ed31a80fb308730d"},
-    {file = "types_requests-2.32.4.20260107.tar.gz", hash = "sha256:018a11ac158f801bfa84857ddec1650750e393df8a004a8a9ae2a9bec6fcb24f"},
+    {file = "types_requests-2.32.4.20260324-py3-none-any.whl", hash = "sha256:f83ef2deb284fe99a249b8b0b0a3e4b9809e01ff456063c4df0aac7670c07ab9"},
+    {file = "types_requests-2.32.4.20260324.tar.gz", hash = "sha256:33a2a9ccb1de7d4e4da36e347622c35418f6761269014cc32857acabd5df739e"},
 ]
 
 [[package]]
@@ -4563,7 +4563,7 @@ files = [
 
 [[package]]
 name = "werkzeug"
-version = "3.1.6"
+version = "3.1.7"
 requires_python = ">=3.9"
 summary = "The comprehensive WSGI web application library."
 groups = ["dev"]
@@ -4571,8 +4571,8 @@ dependencies = [
     "markupsafe>=2.1.1",
 ]
 files = [
-    {file = "werkzeug-3.1.6-py3-none-any.whl", hash = "sha256:7ddf3357bb9564e407607f988f683d72038551200c704012bb9a4c523d42f131"},
-    {file = "werkzeug-3.1.6.tar.gz", hash = "sha256:210c6bede5a420a913956b4791a7f4d6843a43b6fcee4dfa08a65e93007d0d25"},
+    {file = "werkzeug-3.1.7-py3-none-any.whl", hash = "sha256:4b314d81163a3e1a169b6a0be2a000a0e204e8873c5de6586f453c55688d422f"},
+    {file = "werkzeug-3.1.7.tar.gz", hash = "sha256:fb8c01fe6ab13b9b7cdb46892b99b1d66754e1d7ab8e542e865ec13f526b5351"},
 ]
 
 [[package]]
