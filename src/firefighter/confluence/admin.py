@@ -11,17 +11,17 @@ from firefighter.incidents.models.incident import Incident
 class ConfluencePageAdmin(admin.ModelAdmin[ConfluencePage]):
     model = ConfluencePage
 
-    list_display: tuple[str, ...] = (
+    list_display = [
         "name",
         "page_id",
         "created_at",
         "updated_at",
-    )
-    search_fields: tuple[str, ...] = (
+    ]
+    search_fields = [
         "name",
         "page_id",
-    )
-    ordering: tuple[str, ...] = ("-created_at",)
+    ]
+    ordering = ["-created_at"]
     list_display_links = ["name", "page_id"]
 
 
@@ -34,16 +34,16 @@ class PostMortemAdminInline(admin.StackedInline[PostMortem, Incident]):
 @admin.register(PostMortem)
 class PostMortemAdmin(ConfluencePageAdmin):
     model = PostMortem
-    search_fields = ("name", "page_id", "incident__id")
-    list_display = ("incident_id", "name", "page_id")
-    ordering = ("-incident_id",)
+    search_fields = ["name", "page_id", "incident__id"]
+    list_display = ["incident_id", "name", "page_id"]
+    ordering = ["-incident_id"]
 
 
 @admin.register(Runbook)
 class RunbookAdmin(ConfluencePageAdmin):
     model = Runbook
-    list_display = ("service_type", "service_name", "title", "page_id")
-    ordering = ("service_type", "service_name")
+    list_display = ["service_type", "service_name", "title", "page_id"]
+    ordering = ["service_type", "service_name"]
     list_display_links = ["service_type", "service_name", "title", "page_id"]
     list_filter = ("service_type",)
 

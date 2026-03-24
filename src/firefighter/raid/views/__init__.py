@@ -67,15 +67,10 @@ class CreateJiraBotView(
     generics.GenericAPIView[JiraTicket],
 ):
     queryset = JiraTicket.objects.all().select_related(
-        "id",
-        "key",
         "assignee",
         "reporter",
-        "watchers",
-        "business_impact",
-        "description",
-        "summary",
-        "issue_type",
+        "incident",
+        "jiraissue_ptr",
     )
     serializer_class = LandbotIssueRequestSerializer
     permission_classes = [permissions.AllowAny]

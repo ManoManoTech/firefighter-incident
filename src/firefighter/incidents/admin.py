@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import logging
 from functools import cached_property
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from django import apps
 from django.conf import settings
@@ -478,7 +478,7 @@ class IncidentAdmin(admin.ModelAdmin[Incident]):
     incident_inlines.append(IncidentImpactInline)
     incident_inlines.append(IncidentMetricInline)
     inlines = incident_inlines  # type: ignore[assignment]
-    search_fields: list[str] = [
+    search_fields: ClassVar[list[str]] = [
         "title",
         "description",
     ]  # We need to define it even if we redefine get_search_results so that the input is shown in the admin
