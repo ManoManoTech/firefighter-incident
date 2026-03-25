@@ -5,7 +5,8 @@ from typing import TYPE_CHECKING
 
 from celery import shared_task
 from django.conf import settings
-from pdpyras import PDClientError, PDHTTPError
+from pagerduty import Error as PDClientError
+from pagerduty import HttpError as PDHTTPError
 
 from firefighter.incidents.models.incident import Incident
 from firefighter.pagerduty.models import PagerDutyIncident, PagerDutyService
@@ -55,13 +56,13 @@ Incident Details:
         )
 
     except PDHTTPError as e:
-        if e.response.status_code == 404:
+        if e.response is not None and e.response.status_code == 404:
             logger.exception("User not found")
         else:
-            logger.exception("Transient network error: %s", e.msg)
+            logger.exception("Transient network error")
             raise
-    except PDClientError as e:
-        logger.exception("Non-transient network or client error: %s", e.msg)
+    except PDClientError:
+        logger.exception("Non-transient network or client error")
     # TODO Error handling
 
     if not 200 <= res.status_code < 300:
