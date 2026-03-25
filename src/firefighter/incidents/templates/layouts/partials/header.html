@@ -42,7 +42,7 @@
       {% for item in menus.main %}
         {% if item.children %}
           <li class="dropdown dropdown-hover dropdown-bottom ">
-            <a tabindex="0" role="button" class="btn btn-ghost" {% if item.boost %}hx-boost="true"{% else %}hx-boost="false"{% endif %} {% if item.url %} href="{{ item.url }}"{% endif %}>
+            <a class="btn btn-ghost" {% if item.boost %}hx-boost="true"{% else %}hx-boost="false"{% endif %} {% if item.url %} href="{{ item.url }}"{% endif %}>
               {{ item.title }}
             </a>
             <ul tabindex="0" class="dropdown-content p-2 rounded-md z-[15] ml-0 p-2 shadow bg-base-200 dark:bg-black rounded-box w-auto">
