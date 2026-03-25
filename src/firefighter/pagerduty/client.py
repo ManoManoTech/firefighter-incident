@@ -4,21 +4,20 @@ import logging
 from typing import TYPE_CHECKING, Any
 
 from django.conf import settings
-from pdpyras import APISession
+from pagerduty import RestApiV2Client
 
 if TYPE_CHECKING:
-    from collections.abc import Generator
+    from collections.abc import Iterator
     from datetime import datetime
 
-    from requests import Response
+    from httpx import Response
 
 logger = logging.getLogger(__name__)
 
 
 class PagerdutyClient:
     api_key = settings.PAGERDUTY_API_KEY
-    session = APISession(api_key, default_from=settings.PAGERDUTY_ACCOUNT_EMAIL)
-    session.raise_if_http_error = True
+    session = RestApiV2Client(api_key, default_from=settings.PAGERDUTY_ACCOUNT_EMAIL)
 
     def get_schedule_on_call_users(
         self, schedule: str, since: datetime, until: datetime
@@ -34,10 +33,10 @@ class PagerdutyClient:
     def get_user_contact_method(self, user_id: str, contact_method_id: str) -> Response:
         return self.session.get(f"users/{user_id}/contact_methods/{contact_method_id}")
 
-    def get_all_services(self) -> Generator[Any, Any, Generator[Any, Any, None] | None]:
+    def get_all_services(self) -> Iterator[dict[Any, Any]]:
         return self.session.iter_all("services")
 
-    def get_all_users(self) -> Generator[Any, Any, Generator[Any, Any, None] | None]:
+    def get_all_users(self) -> Iterator[dict[Any, Any]]:
         return self.session.iter_all("users", params={"include[]": "contact_methods"})
 
     def create_incident(
