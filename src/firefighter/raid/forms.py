@@ -13,6 +13,7 @@ from firefighter.jira_app.client import (
     JiraAPIError,
     JiraUserNotFoundError,
 )
+from firefighter.jira_app.models import JiraUser
 from firefighter.raid.client import client as jira_client
 from firefighter.raid.messages import (
     SlackMessageRaidComment,
@@ -28,7 +29,6 @@ if TYPE_CHECKING:
 
     from firefighter.incidents.models.impact import ImpactLevel
     from firefighter.incidents.models.user import User
-    from firefighter.jira_app.models import JiraUser
     from firefighter.raid.types import JiraObject
     from firefighter.slack.messages.base import SlackMessageSurface
 
@@ -219,6 +219,12 @@ def send_message_to_watchers(
                     f"Skipping sending message to jira_user_id={watcher_account_id}: is an app"
                 )
                 continue
+            if not JiraUser.objects.filter(id=watcher_account_id).exists():
+                logger.debug(
+                    "Skipping watcher %s: no JiraUser mapping in database",
+                    watcher_account_id,
+                )
+                continue
             watcher_jira_user = jira_client.get_jira_user_from_jira_id(
                 watcher_account_id
             )
@@ -228,8 +234,9 @@ def send_message_to_watchers(
                 else None
             )
             if watcher_slack_user is None:
-                logger.warning(
-                    f"Couldn't find Slack user from Jira account ID for watcher {watcher}"
+                logger.debug(
+                    "Watcher %s has a JiraUser but no linked Slack user",
+                    watcher_account_id,
                 )
                 continue
             watcher_slack_user.send_private_message(
