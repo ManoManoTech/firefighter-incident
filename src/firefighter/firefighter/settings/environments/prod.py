@@ -54,8 +54,9 @@ SECURE_HSTS_PRELOAD = True
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SECURE_SSL_REDIRECT = config("SECURE_SSL_REDIRECT", default=True, cast=bool)
 SECURE_REDIRECT_EXEMPT = [
-    # This is required for healthcheck to work:
+    # This is required for healthcheck and readiness probes to work:
     r"^api/v2/firefighter/monitoring/healthcheck$",
+    r"^api/v2/firefighter/monitoring/readiness$",
 ]
 
 SESSION_COOKIE_SECURE = True

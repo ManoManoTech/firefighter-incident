@@ -50,6 +50,11 @@ firefighter_urlpatterns: tuple[list[URLPattern], str] = (
             views.healthcheck,
             name="healthcheck",
         ),
+        path(
+            "api/v2/firefighter/monitoring/readiness",
+            views.readiness,
+            name="readiness",
+        ),
     ],
     "firefighter",
 )

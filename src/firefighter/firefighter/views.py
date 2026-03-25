@@ -4,6 +4,7 @@ import logging
 from functools import cache
 from typing import Any, Never
 
+from django.core.cache import caches
 from django.core.exceptions import BadRequest, PermissionDenied
 from django.db import connection
 from django.db.models import Model
@@ -16,18 +17,62 @@ from django.views.generic import DetailView
 logger = logging.getLogger(__name__)
 
 
-@require_safe
-def healthcheck(request: HttpRequest) -> JsonResponse:
-    db_ok = True
+def _check_db() -> bool:
     try:
         connection.ensure_connection()
     except OperationalError:
         logger.exception("Healthcheck failed: can't access DB!")
-        db_ok = False
+        return False
+    return True
 
+
+def _check_redis() -> bool:
+    try:
+        redis_cache = caches["default"]
+        redis_cache.set("_healthcheck", "1", timeout=10)
+        return redis_cache.get("_healthcheck") == "1"
+    except Exception:
+        logger.exception("Healthcheck failed: can't access Redis!")
+        return False
+
+
+def _check_celery() -> bool:
+    try:
+        from firefighter.firefighter.celery_client import app as celery_app
+
+        inspector = celery_app.control.inspect(timeout=2.0)
+        ping = inspector.ping()
+        if not ping:
+            logger.error("Healthcheck failed: no Celery workers responding!")
+            return False
+    except Exception:
+        logger.exception("Healthcheck failed: can't reach Celery workers!")
+        return False
+    return True
+
+
+@require_safe
+def healthcheck(request: HttpRequest) -> JsonResponse:
+    """Liveness probe: checks DB only (used by Kubernetes)."""
+    db_ok = _check_db()
     if db_ok:
         return JsonResponse({"status": "ok"})
     return JsonResponse({"status": "fail"}, status=503)
+
+
+@require_safe
+def readiness(request: HttpRequest) -> JsonResponse:
+    """Readiness probe: checks all dependencies (DB, Redis, Celery workers)."""
+    checks = {
+        "db": _check_db(),
+        "redis": _check_redis(),
+        "celery": _check_celery(),
+    }
+    healthy = all(checks.values())
+    return JsonResponse(
+        {"status": "ok" if healthy else "fail", "checks": checks},
+        status=200 if healthy else 503,
+    )
 
 
 def permission_denied_view(request: HttpRequest) -> Never:

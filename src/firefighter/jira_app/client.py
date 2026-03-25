@@ -502,7 +502,16 @@ class JiraClient:
                 )
 
         except exceptions.JIRAError as e:
-            logger.exception("Failed to create Jira issue in project %s", project_key)
+            logger.exception(
+                "Failed to create Jira issue in project %s",
+                project_key,
+                extra={
+                    "ff.metric": "integration.error",
+                    "ff.integration": "jira",
+                    "ff.operation": "create_issue",
+                    "ff.jira_status_code": e.status_code,
+                },
+            )
             error_msg = f"Failed to create Jira issue: {e.status_code} {e.text}"
             raise JiraAPIError(error_msg) from e
         else:
