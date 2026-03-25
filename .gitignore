@@ -159,3 +159,6 @@ pytest-coverage.xml
 # Minified files
 *.min.js
 *.min.css
+
+# Serena
+.serena/
