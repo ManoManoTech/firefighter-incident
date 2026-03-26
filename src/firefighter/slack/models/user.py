@@ -427,20 +427,64 @@ class SlackUser(models.Model):
 
         # Update the User (not SlackUser)
         if name or first_name or last_name or email or deleted is not None:
-            user_kwargs = {}
+            user_kwargs: dict[str, Any] = {}
             if name:
                 user_kwargs["name"] = name
-            if email:
-                user_kwargs["email"] = email
             if first_name:
                 user_kwargs["first_name"] = first_name
             if last_name:
                 user_kwargs["last_name"] = last_name
             if deleted is not None:
                 user_kwargs["is_active"] = not deleted
+            if email:
+                self._resolve_email_conflict(email, user_kwargs)
+
             user_kwargs["updated_at"] = timezone.now()
             User.objects.filter(slack_user__slack_id=self.slack_id).update(
                 **user_kwargs
+            )
+
+    def _resolve_email_conflict(self, email: str, user_kwargs: dict[str, Any]) -> None:
+        """Check for email conflicts and update user_kwargs accordingly.
+
+        If the new email is already taken by an orphan User (no SlackUser),
+        delete the orphan and proceed with the update. If it's taken by a User
+        with a SlackUser, skip the email update and log an error.
+        """
+        current_user = User.objects.filter(slack_user__slack_id=self.slack_id).first()
+        if not current_user or current_user.email == email:
+            if current_user:
+                user_kwargs["email"] = email
+            return
+
+        conflicting_user = User.objects.filter(email=email).exclude(pk=current_user.pk).first()
+        if not conflicting_user:
+            user_kwargs["email"] = email
+            user_kwargs["username"] = email.split("@", maxsplit=1)[0]
+            return
+
+        try:
+            conflicting_slack_user = conflicting_user.slack_user
+        except SlackUser.DoesNotExist:
+            conflicting_slack_user = None
+
+        if conflicting_slack_user is None:
+            logger.warning(
+                "Email change detected for Slack user %s: %s -> %s. "
+                "Merging orphan user %s into %s.",
+                self.slack_id, current_user.email, email,
+                conflicting_user.pk, current_user.pk,
+            )
+            conflicting_user.delete()
+            user_kwargs["email"] = email
+            user_kwargs["username"] = email.split("@", maxsplit=1)[0]
+        else:
+            logger.error(
+                "Email change detected for Slack user %s: %s -> %s. "
+                "Cannot update: email already taken by user %s (has SlackUser %s). "
+                "Manual intervention required.",
+                self.slack_id, current_user.email, email,
+                conflicting_user.pk, conflicting_slack_user.slack_id,
             )
 
     @slack_client
