@@ -1387,35 +1387,35 @@
       property
    (firefighter.slack.models.user.SlackUser.url)" href=#firefighter.slack.models.user.SlackUser.url>url</a></code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3.12/library/stdtypes.html#str>str</a></code>) – <div class=doc-md-description> <p>Returns an HTTPS ULR to the Slack user's profile. For deep linking, use <code>link</code> instead.</p> </div> </li> </ul> <div class="doc doc-children"> <div class="doc doc-object doc-attribute"> <h5 id=firefighter.slack.models.user.SlackUser.url class="doc doc-heading"> <code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code> <span class="doc doc-object-name doc-attribute-name">url</span> <span class="doc doc-labels"> <small class="doc doc-label doc-label-property"><code>property</code></small> </span> <a href=#firefighter.slack.models.user.SlackUser.url class=headerlink title="Permanent link">¤</a></h5> <div class="doc-signature highlight"><pre><span></span><code><a id=__codelineno-0-1 name=__codelineno-0-1 href=#__codelineno-0-1></a><span class=n>url</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3.12/library/stdtypes.html#str>str</a></span>
 </code></pre></div> <div class="doc doc-contents "> <p>Returns an HTTPS ULR to the Slack user's profile. For deep linking, use <code>link</code> instead.</p> </div> </div> <div class="doc doc-object doc-function"> <h5 id=firefighter.slack.models.user.SlackUser.send_private_message class="doc doc-heading"> <code class="doc-symbol doc-symbol-heading doc-symbol-method"></code> <span class="doc doc-object-name doc-function-name">send_private_message</span> <a href=#firefighter.slack.models.user.SlackUser.send_private_message class=headerlink title="Permanent link">¤</a></h5> <div class="doc-signature highlight"><pre><span></span><code><a id=__codelineno-0-1 name=__codelineno-0-1 href=#__codelineno-0-1></a><span class=nf>send_private_message</span><span class=p>(</span><span class=n>message</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-internal" title="            SlackMessageSurface (firefighter.slack.messages.base.SlackMessageSurface)" href=#firefighter.slack.messages.base.SlackMessageSurface>SlackMessageSurface</a></span><span class=p>,</span> <span class=n>client</span><span class=p>:</span> <span class=n><span title=slack_sdk.web.client.WebClient>WebClient</span></span> <span class=o>=</span> <span class=n><span title=firefighter.slack.slack_app.DefaultWebClient>DefaultWebClient</span></span><span class=p>,</span> <span class=o>**</span><span class=n>kwargs</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" title=typing.Any href=https://docs.python.org/3.12/library/typing.html#typing.Any>Any</a></span><span class=p>)</span> <span class=o>-&gt;</span> <span class=kc>None</span>
-</code></pre></div> <div class="doc doc-contents "> <p>Send a private message to the user.</p> <details class=mkdocstrings-source> <summary>Source code in <code>src/firefighter/slack/models/user.py</code></summary> <div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal><a href=#__codelineno-0-446>446</a></span>
-<span class=normal><a href=#__codelineno-0-447>447</a></span>
-<span class=normal><a href=#__codelineno-0-448>448</a></span>
-<span class=normal><a href=#__codelineno-0-449>449</a></span>
-<span class=normal><a href=#__codelineno-0-450>450</a></span>
-<span class=normal><a href=#__codelineno-0-451>451</a></span>
-<span class=normal><a href=#__codelineno-0-452>452</a></span>
-<span class=normal><a href=#__codelineno-0-453>453</a></span>
-<span class=normal><a href=#__codelineno-0-454>454</a></span>
-<span class=normal><a href=#__codelineno-0-455>455</a></span>
-<span class=normal><a href=#__codelineno-0-456>456</a></span>
-<span class=normal><a href=#__codelineno-0-457>457</a></span>
-<span class=normal><a href=#__codelineno-0-458>458</a></span>
-<span class=normal><a href=#__codelineno-0-459>459</a></span>
-<span class=normal><a href=#__codelineno-0-460>460</a></span></pre></div></td><td class=code><div><pre><span></span><code><a id=__codelineno-0-446 name=__codelineno-0-446></a><span class=nd>@slack_client</span>
-<a id=__codelineno-0-447 name=__codelineno-0-447></a><span class=k>def</span><span class=w> </span><span class=nf>send_private_message</span><span class=p>(</span>
-<a id=__codelineno-0-448 name=__codelineno-0-448></a>    <span class=bp>self</span><span class=p>,</span>
-<a id=__codelineno-0-449 name=__codelineno-0-449></a>    <span class=n>message</span><span class=p>:</span> <span class=n>SlackMessageSurface</span><span class=p>,</span>
-<a id=__codelineno-0-450 name=__codelineno-0-450></a>    <span class=n>client</span><span class=p>:</span> <span class=n>WebClient</span> <span class=o>=</span> <span class=n>DefaultWebClient</span><span class=p>,</span>
-<a id=__codelineno-0-451 name=__codelineno-0-451></a>    <span class=o>**</span><span class=n>kwargs</span><span class=p>:</span> <span class=n>Any</span><span class=p>,</span>
-<a id=__codelineno-0-452 name=__codelineno-0-452></a><span class=p>)</span> <span class=o>-&gt;</span> <span class=kc>None</span><span class=p>:</span>
-<a id=__codelineno-0-453 name=__codelineno-0-453></a><span class=w>    </span><span class=sd>&quot;&quot;&quot;Send a private message to the user.&quot;&quot;&quot;</span>
-<a id=__codelineno-0-454 name=__codelineno-0-454></a>    <span class=n>client</span><span class=o>.</span><span class=n>chat_postMessage</span><span class=p>(</span>
-<a id=__codelineno-0-455 name=__codelineno-0-455></a>        <span class=n>channel</span><span class=o>=</span><span class=bp>self</span><span class=o>.</span><span class=n>slack_id</span><span class=p>,</span>
-<a id=__codelineno-0-456 name=__codelineno-0-456></a>        <span class=n>text</span><span class=o>=</span><span class=n>message</span><span class=o>.</span><span class=n>get_text</span><span class=p>(),</span>
-<a id=__codelineno-0-457 name=__codelineno-0-457></a>        <span class=n>metadata</span><span class=o>=</span><span class=n>message</span><span class=o>.</span><span class=n>get_metadata</span><span class=p>(),</span>
-<a id=__codelineno-0-458 name=__codelineno-0-458></a>        <span class=n>blocks</span><span class=o>=</span><span class=n>message</span><span class=o>.</span><span class=n>get_blocks</span><span class=p>(),</span>
-<a id=__codelineno-0-459 name=__codelineno-0-459></a>        <span class=o>**</span><span class=n>kwargs</span><span class=p>,</span>
-<a id=__codelineno-0-460 name=__codelineno-0-460></a>    <span class=p>)</span>
+</code></pre></div> <div class="doc doc-contents "> <p>Send a private message to the user.</p> <details class=mkdocstrings-source> <summary>Source code in <code>src/firefighter/slack/models/user.py</code></summary> <div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal><a href=#__codelineno-0-490>490</a></span>
+<span class=normal><a href=#__codelineno-0-491>491</a></span>
+<span class=normal><a href=#__codelineno-0-492>492</a></span>
+<span class=normal><a href=#__codelineno-0-493>493</a></span>
+<span class=normal><a href=#__codelineno-0-494>494</a></span>
+<span class=normal><a href=#__codelineno-0-495>495</a></span>
+<span class=normal><a href=#__codelineno-0-496>496</a></span>
+<span class=normal><a href=#__codelineno-0-497>497</a></span>
+<span class=normal><a href=#__codelineno-0-498>498</a></span>
+<span class=normal><a href=#__codelineno-0-499>499</a></span>
+<span class=normal><a href=#__codelineno-0-500>500</a></span>
+<span class=normal><a href=#__codelineno-0-501>501</a></span>
+<span class=normal><a href=#__codelineno-0-502>502</a></span>
+<span class=normal><a href=#__codelineno-0-503>503</a></span>
+<span class=normal><a href=#__codelineno-0-504>504</a></span></pre></div></td><td class=code><div><pre><span></span><code><a id=__codelineno-0-490 name=__codelineno-0-490></a><span class=nd>@slack_client</span>
+<a id=__codelineno-0-491 name=__codelineno-0-491></a><span class=k>def</span><span class=w> </span><span class=nf>send_private_message</span><span class=p>(</span>
+<a id=__codelineno-0-492 name=__codelineno-0-492></a>    <span class=bp>self</span><span class=p>,</span>
+<a id=__codelineno-0-493 name=__codelineno-0-493></a>    <span class=n>message</span><span class=p>:</span> <span class=n>SlackMessageSurface</span><span class=p>,</span>
+<a id=__codelineno-0-494 name=__codelineno-0-494></a>    <span class=n>client</span><span class=p>:</span> <span class=n>WebClient</span> <span class=o>=</span> <span class=n>DefaultWebClient</span><span class=p>,</span>
+<a id=__codelineno-0-495 name=__codelineno-0-495></a>    <span class=o>**</span><span class=n>kwargs</span><span class=p>:</span> <span class=n>Any</span><span class=p>,</span>
+<a id=__codelineno-0-496 name=__codelineno-0-496></a><span class=p>)</span> <span class=o>-&gt;</span> <span class=kc>None</span><span class=p>:</span>
+<a id=__codelineno-0-497 name=__codelineno-0-497></a><span class=w>    </span><span class=sd>&quot;&quot;&quot;Send a private message to the user.&quot;&quot;&quot;</span>
+<a id=__codelineno-0-498 name=__codelineno-0-498></a>    <span class=n>client</span><span class=o>.</span><span class=n>chat_postMessage</span><span class=p>(</span>
+<a id=__codelineno-0-499 name=__codelineno-0-499></a>        <span class=n>channel</span><span class=o>=</span><span class=bp>self</span><span class=o>.</span><span class=n>slack_id</span><span class=p>,</span>
+<a id=__codelineno-0-500 name=__codelineno-0-500></a>        <span class=n>text</span><span class=o>=</span><span class=n>message</span><span class=o>.</span><span class=n>get_text</span><span class=p>(),</span>
+<a id=__codelineno-0-501 name=__codelineno-0-501></a>        <span class=n>metadata</span><span class=o>=</span><span class=n>message</span><span class=o>.</span><span class=n>get_metadata</span><span class=p>(),</span>
+<a id=__codelineno-0-502 name=__codelineno-0-502></a>        <span class=n>blocks</span><span class=o>=</span><span class=n>message</span><span class=o>.</span><span class=n>get_blocks</span><span class=p>(),</span>
+<a id=__codelineno-0-503 name=__codelineno-0-503></a>        <span class=o>**</span><span class=n>kwargs</span><span class=p>,</span>
+<a id=__codelineno-0-504 name=__codelineno-0-504></a>    <span class=p>)</span>
 </code></pre></div></td></tr></table></div> </details> </div> </div> </div> </div> </div> <div class="doc doc-object doc-class"> <h4 id=firefighter.slack.models.user.SlackUserManager class="doc doc-heading"> <code class="doc-symbol doc-symbol-heading doc-symbol-class"></code> <span class="doc doc-object-name doc-class-name">SlackUserManager</span> <a href=#firefighter.slack.models.user.SlackUserManager class=headerlink title="Permanent link">¤</a></h4> <div class="doc doc-contents "> <p class="doc doc-class-bases"> Bases: <code><a class="autorefs autorefs-external" title=django.db.models.Manager href=https://docs.djangoproject.com/en/4.2/topics/db/managers/#django.db.models.Manager>Manager</a>[&#39;SlackUser&#39;]</code></p> <p><span class=doc-section-title>Methods:</span></p> <ul> <li class="doc-section-item field-body"> <b><code><a class="autorefs autorefs-internal" title="            get_user_by_slack_id (firefighter.slack.models.user.SlackUserManager.get_user_by_slack_id)" href=#firefighter.slack.models.user.SlackUserManager.get_user_by_slack_id>get_user_by_slack_id</a></code></b> – <div class=doc-md-description> <p>Returns a User from DB if it exists, or fetch its info from Slack, save it to DB and returns it.</p> </div> </li> <li class="doc-section-item field-body"> <b><code><a class="autorefs autorefs-internal" title="            unpack_user_info
 
 
