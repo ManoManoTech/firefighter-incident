@@ -125,7 +125,7 @@ class UnifiedIncidentForm(CreateIncidentFormBase):
     suggested_team_routing: forms.ModelChoiceField[Any] = forms.ModelChoiceField(
         queryset=None,  # Will be set in __init__
         label="Feature Team or Train",
-        required=False,  # Conditionally required based on response_type
+        required=True,
     )
 
     # === Conditional: Customer impact ===
