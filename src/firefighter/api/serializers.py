@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any, TypeVar
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.validators import EmailValidator
-from django.db.models import Model, QuerySet
+from django.db.models import Model
 from drf_spectacular.extensions import (
     OpenApiSerializerExtension,
 )
@@ -27,7 +27,7 @@ from firefighter.incidents.models.priority import Priority
 from firefighter.incidents.models.user import User
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, MutableMapping, Sequence
+    from collections.abc import Callable, Sequence
 
     from drf_spectacular.openapi import AutoSchema
     from drf_spectacular.utils import Direction
@@ -92,18 +92,18 @@ class CreatableSlugRelatedField[T: Model](serializers.SlugRelatedField[T]):
                 "SlugRelatedField requires the `slug_field` attribute to be set."
             )
 
+        queryset = self.get_queryset()
+        if queryset is None:
+            self.fail("invalid")
+
         try:
-            data_get_or_create: MutableMapping[str, Any] = {self.slug_field: data}
+            lookup = {self.slug_field: data}
+            return queryset.get(**lookup)
         except ObjectDoesNotExist:
             logger.warning("Object does not exist. Creating...")
-            # XXX Improve behaviour when user does not exist
-            self.get_queryset().create(**{self.slug_field: data})
+            return queryset.create(**{self.slug_field: data})
         except (TypeError, ValueError):
-            return self.fail("invalid")
-        else:
-            queryset: QuerySet[T] = self.get_queryset()
-            return queryset.get(**data_get_or_create)
-        return self.fail("invalid")
+            self.fail("invalid")
 
     def run_validation(self, data: Any = empty) -> T | Any | None:
         """Override the default validation to perform the validation before trying to create the object."""
