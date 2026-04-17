@@ -147,6 +147,10 @@ class UnifiedIncidentFormSlack(UnifiedIncidentForm):
         for field_name in fields_to_remove:
             del self.fields[field_name]
 
+        # Feature Team is required for P4-P5 incidents
+        if "suggested_team_routing" in self.fields:
+            self.fields["suggested_team_routing"].required = True
+
 
 class OpeningUnifiedModal(SetIncidentDetails[UnifiedIncidentFormSlack]):
     """Unified modal for all incident types (P1-P5)."""

@@ -125,7 +125,7 @@ class UnifiedIncidentForm(CreateIncidentFormBase):
     suggested_team_routing: forms.ModelChoiceField[Any] = forms.ModelChoiceField(
         queryset=None,  # Will be set in __init__
         label="Feature Team or Train",
-        required=True,
+        required=False,  # Enforced as required for P4-P5 via clean() and Slack field visibility
     )
 
     # === Conditional: Customer impact ===
