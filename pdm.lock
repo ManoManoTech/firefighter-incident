@@ -5,7 +5,7 @@
 groups = ["default", "dev", "docs", "tests", "types"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:4802d6bb893cb0b9e765102e132bca56e7119d3fb55d6d18e48acc6af4a1fdd2"
+content_hash = "sha256:a6bb4095116083b9ea52e3e51deb82d0b9ffe2ea4a4216f1ab5ee4d8b63d369a"
 
 [[metadata.targets]]
 requires_python = ">=3.12,<3.15"
@@ -1303,16 +1303,16 @@ files = [
 
 [[package]]
 name = "django-tables2"
-version = "3.0.0"
-requires_python = ">=3.10"
+version = "2.8.0"
+requires_python = ">=3.9"
 summary = "Table/data-grid framework for Django"
 groups = ["default"]
 dependencies = [
     "django>=4.2",
 ]
 files = [
-    {file = "django_tables2-3.0.0-py3-none-any.whl", hash = "sha256:2a5b5447f10d7a8cfb7a2e8f0b139d969c7eb2e675079a4b8ba0107956345bfa"},
-    {file = "django_tables2-3.0.0.tar.gz", hash = "sha256:3c5343f72663b0d6684e8e6cbcb16caae10d7621a51c1cf3c581f57ce605f8ee"},
+    {file = "django_tables2-2.8.0-py3-none-any.whl", hash = "sha256:860633b0f448216af73fca6005c7e38dc9b46931dc36c08a9281a71ee250b1ee"},
+    {file = "django_tables2-2.8.0.tar.gz", hash = "sha256:0dea3401bb99a0164ba09e20d59a7d90856fdc05e5ae2da9a14d0fa14d99257c"},
 ]
 
 [[package]]
@@ -1611,7 +1611,7 @@ files = [
 
 [[package]]
 name = "faker"
-version = "40.13.0"
+version = "40.15.0"
 requires_python = ">=3.10"
 summary = "Faker is a Python package that generates fake data for you."
 groups = ["tests"]
@@ -1619,8 +1619,8 @@ dependencies = [
     "tzdata; platform_system == \"Windows\"",
 ]
 files = [
-    {file = "faker-40.13.0-py3-none-any.whl", hash = "sha256:c1298fd0d819b3688fb5fd358c4ba8f56c7c8c740b411fd3dbd8e30bf2c05019"},
-    {file = "faker-40.13.0.tar.gz", hash = "sha256:a0751c84c3abac17327d7bb4c98e8afe70ebf7821e01dd7d0b15cd8856415525"},
+    {file = "faker-40.15.0-py3-none-any.whl", hash = "sha256:71ab3c3370da9d2205ab74ffb0fd51273063ad562b3a3bb69d0026a20923e318"},
+    {file = "faker-40.15.0.tar.gz", hash = "sha256:20f3a6ec8c266b74d4c554e34118b21c3c2056c0b4a519d15c8decb3a4e6e795"},
 ]
 
 [[package]]
@@ -3567,17 +3567,16 @@ files = [
 
 [[package]]
 name = "pytest-randomly"
-version = "4.0.1"
-requires_python = ">=3.9"
+version = "4.1.0"
+requires_python = ">=3.10"
 summary = "Pytest plugin to randomly order tests and control random.seed."
 groups = ["tests"]
 dependencies = [
-    "importlib-metadata>=3.6; python_version < \"3.10\"",
     "pytest",
 ]
 files = [
-    {file = "pytest_randomly-4.0.1-py3-none-any.whl", hash = "sha256:e0dfad2fd4f35e07beff1e47c17fbafcf98f9bf4531fd369d9260e2f858bfcb7"},
-    {file = "pytest_randomly-4.0.1.tar.gz", hash = "sha256:174e57bb12ac2c26f3578188490bd333f0e80620c3f47340158a86eca0593cd8"},
+    {file = "pytest_randomly-4.1.0-py3-none-any.whl", hash = "sha256:f55e89e53367b090c0c053697d7f9d77595543d0e0516c93978b50c0f6b252f9"},
+    {file = "pytest_randomly-4.1.0.tar.gz", hash = "sha256:47f1d9746c3bc3efabd53ae1ebfb8bb385cf3d4df4b505b6d58d9c97a3dfe70f"},
 ]
 
 [[package]]
