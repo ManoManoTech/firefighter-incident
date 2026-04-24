@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+import ipaddress
 import logging
+import socket
 from typing import TYPE_CHECKING, Any
+from urllib.parse import urlparse
 
 from django.conf import settings
 from django.core.cache import cache
@@ -54,6 +57,58 @@ JIRA_TO_IMPACT_PRIORITY_MAP: dict[str, int] = {
 }
 
 logger = logging.getLogger(__name__)
+
+
+ATTACHMENT_MAX_COUNT = 10
+ATTACHMENT_URL_MAX_LENGTH = 2048
+ATTACHMENT_ALLOWED_SCHEMES = frozenset({"http", "https"})
+
+
+def parse_attachment_urls(raw: str | None) -> list[str]:
+    """Normalise the attachments payload sent by Landbot into a list of URLs.
+
+    Landbot historically sends a Python-stringified list (e.g. ``"['https://a', 'https://b']"``)
+    rather than a JSON array. This helper tolerates that legacy format along with
+    a plain comma-separated string or a single URL.
+    """
+    if not raw:
+        return []
+    stripped = raw.replace("[", "").replace("]", "").replace("'", "").replace('"', "")
+    return [item.strip() for item in stripped.split(",") if item.strip()]
+
+
+def _validate_attachment_url(url: str) -> None:
+    if len(url) > ATTACHMENT_URL_MAX_LENGTH:
+        msg = f"Attachment URL exceeds {ATTACHMENT_URL_MAX_LENGTH} characters."
+        raise serializers.ValidationError(msg)
+    parsed = urlparse(url)
+    if parsed.scheme not in ATTACHMENT_ALLOWED_SCHEMES:
+        msg = f"Attachment URL scheme '{parsed.scheme}' is not allowed."
+        raise serializers.ValidationError(msg)
+    host = parsed.hostname
+    if not host:
+        raise serializers.ValidationError("Attachment URL is missing a host.")
+    try:
+        addr_infos = socket.getaddrinfo(host, None)
+    except socket.gaierror as err:
+        msg = f"Attachment URL host '{host}' could not be resolved."
+        raise serializers.ValidationError(msg) from err
+    # SSRF guard: reject any host resolving to a non-routable address so the
+    # fetch in add_attachments_to_issue can never reach internal services
+    # (cloud metadata endpoint, RFC1918 networks, loopback).
+    for info in addr_infos:
+        ip = ipaddress.ip_address(info[4][0])
+        if (
+            ip.is_private
+            or ip.is_loopback
+            or ip.is_link_local
+            or ip.is_reserved
+            or ip.is_multicast
+            or ip.is_unspecified
+        ):
+            raise serializers.ValidationError(
+                "Attachment URL host resolves to a private, loopback or link-local address."
+            )
 
 
 class IgnoreEmptyStringListField(serializers.ListField):
@@ -186,6 +241,8 @@ class LandbotIssueRequestSerializer(serializers.ModelSerializer[JiraTicket]):
         required=False,
         allow_blank=True,
         allow_null=True,
+        default="",
+        max_length=ATTACHMENT_URL_MAX_LENGTH * ATTACHMENT_MAX_COUNT,
     )
     issue_type = serializers.ChoiceField(
         required=False,
@@ -210,6 +267,15 @@ class LandbotIssueRequestSerializer(serializers.ModelSerializer[JiraTicket]):
         if not value:
             return self.fields["environments"].default
         return value
+
+    def validate_attachments(self, value: str | None) -> str:
+        urls = parse_attachment_urls(value)
+        if len(urls) > ATTACHMENT_MAX_COUNT:
+            msg = f"Too many attachments (max {ATTACHMENT_MAX_COUNT})."
+            raise serializers.ValidationError(msg)
+        for url in urls:
+            _validate_attachment_url(url)
+        return value or ""
 
     def create(self, validated_data: dict[str, Any]) -> JiraTicket:
         reporter_email: str = validated_data["reporter_email"]
@@ -251,17 +317,8 @@ class LandbotIssueRequestSerializer(serializers.ModelSerializer[JiraTicket]):
         if issue_id is None:
             logger.error("Could not create Jira ticket")
             raise JiraAPIError("Could not create Jira ticket")
-        if validated_data["attachments"] is not None:
-            #  Prepare attachments and double check we don't have any empty strings
-            attachments: list[str] = [
-                a
-                for a in validated_data["attachments"]
-                .replace("[", "")
-                .replace("]", "")
-                .replace("'", "")
-                .split(", ")
-                if a
-            ]
+        attachments = parse_attachment_urls(validated_data.get("attachments"))
+        if attachments:
             jira_client.add_attachments_to_issue(issue_id, attachments)
 
         jira_ticket = JiraTicket.objects.create(**issue)

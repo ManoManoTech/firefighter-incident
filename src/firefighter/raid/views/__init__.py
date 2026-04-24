@@ -9,6 +9,7 @@ from rest_framework import generics, mixins, permissions, status
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 
+from firefighter.api.authentication import BearerTokenAuthentication
 from firefighter.raid.models import JiraTicket
 from firefighter.raid.serializers import (
     JiraWebhookCommentSerializer,
@@ -73,7 +74,8 @@ class CreateJiraBotView(
         "jiraissue_ptr",
     )
     serializer_class = LandbotIssueRequestSerializer
-    permission_classes = [permissions.AllowAny]
+    authentication_classes = [BearerTokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
     renderer_classes = [JSONRenderer]
 
     def post(self, request: Request, *args: Never, **kwargs: Never) -> Response:
