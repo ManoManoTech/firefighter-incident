@@ -23,7 +23,7 @@ base_valid_data = {
     "issue_type": "Incident",
     "business_impact": "High",
     "priority": 1,
-    "attachments": "['https://test-attachment.com/test1','https://test-attachment2.com/test2',]",
+    "attachments": "['https://example.com/test1','https://example.org/test2',]",
 }
 
 
