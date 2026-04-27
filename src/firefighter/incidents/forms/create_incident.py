@@ -79,6 +79,7 @@ class CreateIncidentForm(CreateIncidentFormBase):
         self,
         creator: User,
         impacts_data: dict[str, ImpactLevel],
+        source_channel: Any,
         *args: Any,
         **kwargs: Any,
     ) -> None:
@@ -89,4 +90,5 @@ class CreateIncidentForm(CreateIncidentFormBase):
         create_incident_conversation.send(
             "create_incident_form",
             incident=incident,
+            source_channel=source_channel
         )
