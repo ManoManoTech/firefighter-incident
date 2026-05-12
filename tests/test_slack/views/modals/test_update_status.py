@@ -353,10 +353,14 @@ class TestUpdateStatusModal:
             ack=ack, body=submission_copy, incident=incident, user=user
         )
 
-        # Verify handle_update_status_close_request was called
-        mock_handle_close.assert_called_once_with(
-            ack, submission_copy, incident, IncidentStatus.CLOSED
-        )
+        # Verify handle_update_status_close_request was called and that the
+        # submitted form was forwarded so its carry-over fields (priority,
+        # incident_category) can be re-applied at closure time.
+        mock_handle_close.assert_called_once()
+        call_args, call_kwargs = mock_handle_close.call_args
+        assert call_args == (ack, submission_copy, incident, IncidentStatus.CLOSED)
+        assert "form" in call_kwargs
+        assert call_kwargs["form"] is not None
 
         # Verify that incident update was NOT triggered (because closure reason modal was shown)
         trigger_incident_workflow.assert_not_called()
