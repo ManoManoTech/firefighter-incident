@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import logging
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any, Literal
@@ -104,14 +105,48 @@ def get_incident_from_view_submission_metadata(
     if view_type not in {"view_submission", "block_actions"}:
         return False
 
+    incident_id = _extract_incident_id_from_private_metadata(private_metadata)
+    if incident_id is None:
+        return None
+    return Incident.objects.get(id=incident_id)
+
+
+def _extract_incident_id_from_private_metadata(
+    private_metadata: str,
+) -> int | None:
+    """Extract an incident ID from a Slack view's private_metadata.
+
+    Supports two formats:
+    - Legacy: the raw incident ID as a string (e.g. "123").
+    - Extended: a JSON object with an "incident_id" key (e.g. {"incident_id": 123, ...}),
+      used when callers need to carry additional state alongside the incident ID.
+    """
     try:
-        incident_id = int(private_metadata)
+        return int(private_metadata)
     except ValueError:
+        pass
+
+    try:
+        parsed = json.loads(private_metadata)
+    except (json.JSONDecodeError, TypeError):
         logger.warning(
             f"Response.view.private_metadata ('{private_metadata}') was not a valid incident ID!"
         )
         return None
-    return Incident.objects.get(id=incident_id)
+
+    if not isinstance(parsed, dict) or "incident_id" not in parsed:
+        logger.warning(
+            f"Response.view.private_metadata ('{private_metadata}') has no incident_id!"
+        )
+        return None
+
+    try:
+        return int(parsed["incident_id"])
+    except (ValueError, TypeError):
+        logger.warning(
+            f"Response.view.private_metadata.incident_id ('{parsed['incident_id']}') was not a valid incident ID!"
+        )
+        return None
 
 
 @incident_resolve_strategy

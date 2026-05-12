@@ -95,7 +95,71 @@ class TestModalUtils:
 
             assert result is True
             ack.assert_called_once_with(response_action="push", view=mock_build.return_value)
-            mock_build.assert_called_once_with(body, incident)
+            mock_build.assert_called_once_with(body, incident, carry_over={})
+
+    def test_handle_update_status_close_request_passes_carry_over(self):
+        """A priority/category change submitted with status=CLOSED must be carried over."""
+        incident = IncidentFactory.create(_status=IncidentStatus.OPEN)
+        ack = MagicMock()
+        body = {}
+        target_status = IncidentStatus.CLOSED
+
+        # Build a fake form with changed_data + cleaned_data for priority and category
+        priority = MagicMock()
+        priority.id = "00000000-0000-0000-0000-000000000001"
+        category = MagicMock()
+        category.id = "00000000-0000-0000-0000-000000000002"
+        form = MagicMock()
+        form.changed_data = ["status", "priority", "incident_category"]
+        form.cleaned_data = {
+            "status": IncidentStatus.CLOSED,
+            "priority": priority,
+            "incident_category": category,
+        }
+
+        with patch("firefighter.slack.views.modals.utils.UpdateStatusForm.requires_closure_reason", return_value=True), \
+             patch("firefighter.slack.views.modals.utils.modal_closure_reason.build_modal_fn") as mock_build:
+            mock_build.return_value = MagicMock()
+
+            result = handle_update_status_close_request(
+                ack, body, incident, target_status, form=form
+            )
+
+            assert result is True
+            mock_build.assert_called_once_with(
+                body,
+                incident,
+                carry_over={
+                    "priority_id": str(priority.id),
+                    "incident_category_id": str(category.id),
+                },
+            )
+
+    def test_handle_update_status_close_request_carry_over_ignores_untouched(self):
+        """Fields that are not in changed_data must not be carried over."""
+        incident = IncidentFactory.create(_status=IncidentStatus.OPEN)
+        ack = MagicMock()
+        body = {}
+        target_status = IncidentStatus.CLOSED
+
+        priority = MagicMock()
+        priority.id = "00000000-0000-0000-0000-000000000003"
+        form = MagicMock()
+        form.changed_data = ["status"]  # Only status changed
+        form.cleaned_data = {
+            "status": IncidentStatus.CLOSED,
+            "priority": priority,  # Present but not changed
+        }
+
+        with patch("firefighter.slack.views.modals.utils.UpdateStatusForm.requires_closure_reason", return_value=True), \
+             patch("firefighter.slack.views.modals.utils.modal_closure_reason.build_modal_fn") as mock_build:
+            mock_build.return_value = MagicMock()
+
+            handle_update_status_close_request(
+                ack, body, incident, target_status, form=form
+            )
+
+            mock_build.assert_called_once_with(body, incident, carry_over={})
 
     def test_handle_update_status_close_request_no_reason_required(self):
         """Test handle_update_status_close_request when reason is not required."""

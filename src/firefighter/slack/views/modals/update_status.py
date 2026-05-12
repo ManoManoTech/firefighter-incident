@@ -117,7 +117,9 @@ class UpdateStatusModal(ModalForm[UpdateStatusFormSlack]):
         # Check if user is trying to close and needs a closure reason
         if "status" in form.changed_data:
             target_status = form.cleaned_data["status"]
-            if handle_update_status_close_request(ack, body, incident, target_status):
+            if handle_update_status_close_request(
+                ack, body, incident, target_status, form=form
+            ):
                 return
 
             # Validate that incident can be closed (check key events, post-mortem, etc.)
