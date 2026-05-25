@@ -452,7 +452,7 @@ class TestSendMessageToWatchers:
 
     @patch(
         "firefighter.raid.forms.RAID_WATCHER_EMAIL_EXCLUSIONS",
-        frozenset({"teamqraft@manomano.com"}),
+        frozenset({"service-account@example.com"}),
     )
     @patch("firefighter.raid.forms.jira_client")
     def test_send_message_to_watchers_skips_excluded_email(self, mock_jira_client):
@@ -462,7 +462,7 @@ class TestSendMessageToWatchers:
             {
                 "accountId": "jira-service-account",
                 "accountType": "atlassian",
-                "emailAddress": "TeamQraft@manomano.com",
+                "emailAddress": "Service-Account@example.com",
             },
         ]
         mock_jira_client.get_watchers_from_jira_ticket.return_value = watchers
