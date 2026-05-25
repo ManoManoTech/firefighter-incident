@@ -35,6 +35,30 @@ The module handles user resolution for external ticket creation:
 3. **Slack fallback**: Attempts to find users via Slack integration
 4. **Default assignment**: Falls back to configured default Jira user
 
+## Authentication
+
+The external ticket creation endpoint (`POST /api/v2/firefighter/raid/jira_bot`) requires Bearer token authentication.
+
+Each caller must use a dedicated `APIToken`, generated from the Django back-office at `/admin/api/apitokenproxy/`. Requests must include the header:
+
+```
+Authorization: Bearer <token>
+```
+
+### Common pitfall: HTML formatting in copy-pasted tokens
+
+The Django admin renders the token with text styling inherited from `rest_framework.authtoken`. A regular copy-paste from the admin into a tool that accepts rich-text input (Landbot Webhook header values, some no-code platforms, Notion, etc.) silently carries the styling as inline HTML. The receiving tool displays the value as plain text, but the actual outgoing header looks like:
+
+```
+Authorization: <h2>Bearer <token></h2>
+```
+
+The endpoint then returns `401 not_authenticated` because DRF cannot parse the keyword.
+
+**Workaround:** when copying a token from the admin, paste with `Cmd+Shift+V` (paste without formatting) or type the token by hand.
+
+**Debug tip:** if a third-party integration fails with `not_authenticated` while `curl` with the same token succeeds, route the integration's webhook to [webhook.site](https://webhook.site) to inspect the actual `Authorization` header it emits.
+
 ## API Reference
 
 ::: firefighter.raid
