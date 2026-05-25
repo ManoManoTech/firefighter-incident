@@ -5,14 +5,14 @@
 services:
   db:
     container_name: ff-db
-    image: postgres:13-alpine
+    image: postgres:18-alpine
     env_file:
       - ".env"
     restart: unless-stopped
     ports:
       - "127.0.0.1:5432:5432"
     volumes:
-      - firefighter-pg-13:/var/lib/postgresql/data
+      - firefighter-pg-18:/var/lib/postgresql
     security_opt:
       - no-new-privileges:true
 
@@ -43,5 +43,5 @@ services:
       ADMINER_DESIGN: nette
 
 volumes:
-  firefighter-pg-13:
+  firefighter-pg-18:
   firefighter-redis:
