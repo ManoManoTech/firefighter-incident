@@ -34,6 +34,9 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 RAID_DEFAULT_JIRA_QRAFT_USER_ID: str = settings.RAID_DEFAULT_JIRA_QRAFT_USER_ID
+RAID_WATCHER_EMAIL_EXCLUSIONS: frozenset[str] = frozenset(
+    getattr(settings, "RAID_WATCHER_EMAIL_EXCLUSIONS", []) or []
+)
 
 
 class PlatformChoices(models.TextChoices):
@@ -217,6 +220,15 @@ def send_message_to_watchers(
             if watcher.get("accountType") == "app":
                 logger.info(
                     f"Skipping sending message to jira_user_id={watcher_account_id}: is an app"
+                )
+                continue
+
+            watcher_email = (watcher.get("emailAddress") or "").strip().lower()
+            if watcher_email and watcher_email in RAID_WATCHER_EMAIL_EXCLUSIONS:
+                logger.info(
+                    "Skipping sending message to jira_user_id=%s (email=%s): excluded by RAID_WATCHER_EMAIL_EXCLUSIONS",
+                    watcher_account_id,
+                    watcher_email,
                 )
                 continue
             if not JiraUser.objects.filter(id=watcher_account_id).exists():

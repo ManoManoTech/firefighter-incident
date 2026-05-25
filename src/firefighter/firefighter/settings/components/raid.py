@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from decouple import Csv
+
 from firefighter.firefighter.settings.components.common import INSTALLED_APPS
 from firefighter.firefighter.settings.settings_utils import config
 
@@ -23,3 +25,14 @@ if ENABLE_RAID:
 
     RAID_JIRA_INCIDENT_CATEGORY_FIELD: str = config("RAID_JIRA_INCIDENT_CATEGORY_FIELD", default="")
     "Jira custom field ID for incident category (e.g. 'customfield_12345')"
+
+    RAID_WATCHER_EMAIL_EXCLUSIONS: list[str] = [
+        email.strip().lower()
+        for email in config(
+            "RAID_WATCHER_EMAIL_EXCLUSIONS",
+            default="",
+            cast=Csv(),
+        )
+        if email.strip()
+    ]
+    "Comma-separated emails to skip when notifying Jira ticket watchers. Use it for service or bot accounts that have no usable Slack mapping (e.g. shared automation users)."
