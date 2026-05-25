@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import logging
 from typing import TYPE_CHECKING, Any
 
@@ -42,9 +43,19 @@ class ClosureReasonModal(IncidentSelectableModalMixin, SlackModal):
     callback_id: str = "incident_closure_reason"
 
     def build_modal_fn(
-        self, body: dict[str, Any], incident: Incident, **kwargs: Any  # noqa: ARG002
+        self,
+        body: dict[str, Any],  # noqa: ARG002
+        incident: Incident,
+        carry_over: dict[str, Any] | None = None,
+        **kwargs: Any,
     ) -> View:
-        """Build the closure reason modal."""
+        """Build the closure reason modal.
+
+        `carry_over` lets upstream callers (Update Status modal) pass form
+        changes that should be applied along with the closure (e.g. a priority
+        change submitted in the same step). Values are serialized into
+        `private_metadata` so they survive the round-trip to Slack.
+        """
         # Build closure reason options (exclude RESOLVED)
         closure_options = [
             Option(
@@ -107,7 +118,7 @@ class ClosureReasonModal(IncidentSelectableModalMixin, SlackModal):
             title=f"Close #{incident.id}"[:24],
             submit="Close Incident",
             callback_id=self.callback_id,
-            private_metadata=str(incident.id),
+            private_metadata=_build_private_metadata(incident.id, carry_over),
             blocks=blocks,
         )
 
@@ -127,6 +138,7 @@ class ClosureReasonModal(IncidentSelectableModalMixin, SlackModal):
             or ""
         )
         message = state_values["closure_message"]["input_closure_message"]["value"]
+        carry_over = _extract_carry_over(body)
 
         # For early closure (OPEN/INVESTIGATING), we bypass normal workflow checks
         # For normal closure (MITIGATED/POST_MORTEM), we must validate key events
@@ -184,6 +196,7 @@ class ClosureReasonModal(IncidentSelectableModalMixin, SlackModal):
                 status=IncidentStatus.CLOSED,
                 message=message,
                 event_type="closure_reason",
+                **carry_over,
             )
 
         except Exception:
@@ -232,6 +245,50 @@ class ClosureReasonModal(IncidentSelectableModalMixin, SlackModal):
 
     def get_select_title(self) -> str:
         return "Select an incident to close with a specific reason"
+
+
+# Carry-over kwargs the closure reason modal will re-apply when closing the
+# incident. Whitelisted to keep deserialization tight and avoid passing unknown
+# kwargs to ``create_incident_update``.
+_ALLOWED_CARRY_OVER_KEYS: frozenset[str] = frozenset(
+    {"priority_id", "incident_category_id"}
+)
+
+
+def _build_private_metadata(
+    incident_id: int, carry_over: dict[str, Any] | None
+) -> str:
+    """Serialize the closure modal's private metadata.
+
+    Without carry-over we keep the legacy plain-int format for backwards
+    compatibility. When carry-over fields are present we switch to a JSON
+    object — the incident resolver supports both shapes.
+    """
+    sanitized = {
+        k: v
+        for k, v in (carry_over or {}).items()
+        if k in _ALLOWED_CARRY_OVER_KEYS and v is not None
+    }
+    if not sanitized:
+        return str(incident_id)
+    return json.dumps({"incident_id": incident_id, "carry_over": sanitized})
+
+
+def _extract_carry_over(body: dict[str, Any]) -> dict[str, Any]:
+    """Read carry-over kwargs back from the submitted view's private_metadata."""
+    raw = body.get("view", {}).get("private_metadata")
+    if not raw:
+        return {}
+    try:
+        parsed = json.loads(raw)
+    except (json.JSONDecodeError, TypeError):
+        return {}
+    if not isinstance(parsed, dict):
+        return {}
+    carry_over = parsed.get("carry_over")
+    if not isinstance(carry_over, dict):
+        return {}
+    return {k: v for k, v in carry_over.items() if k in _ALLOWED_CARRY_OVER_KEYS}
 
 
 modal_closure_reason = ClosureReasonModal()
