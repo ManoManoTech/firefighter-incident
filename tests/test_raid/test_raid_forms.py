@@ -450,6 +450,31 @@ class TestSendMessageToWatchers:
         # Then
         assert result is True
 
+    @patch(
+        "firefighter.raid.forms.RAID_WATCHER_EMAIL_EXCLUSIONS",
+        frozenset({"service-account@example.com"}),
+    )
+    @patch("firefighter.raid.forms.jira_client")
+    def test_send_message_to_watchers_skips_excluded_email(self, mock_jira_client):
+        """Watchers whose emailAddress matches RAID_WATCHER_EMAIL_EXCLUSIONS are skipped before any DB lookup."""
+        # Given
+        watchers = [
+            {
+                "accountId": "jira-service-account",
+                "accountType": "atlassian",
+                "emailAddress": "Service-Account@example.com",
+            },
+        ]
+        mock_jira_client.get_watchers_from_jira_ticket.return_value = watchers
+        mock_message = Mock()
+
+        # When
+        result = send_message_to_watchers(10001, mock_message)
+
+        # Then
+        assert result is True
+        mock_jira_client.get_jira_user_from_jira_id.assert_not_called()
+
 
 @pytest.mark.django_db
 class TestGetBusinessImpact:
