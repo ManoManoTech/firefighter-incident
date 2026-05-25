@@ -34,6 +34,27 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
+def _safely_send_announcement(
+    conversation: Conversation | IncidentChannel,
+    message: Any,
+    *,
+    context: str,
+    incident_id: Any,
+    **send_kwargs: Any,
+) -> None:
+    """Send an announcement message, swallowing SlackApiError so the calling flow keeps running."""
+    try:
+        conversation.send_message_and_save(message, **send_kwargs)
+    except SlackApiError:
+        logger.warning(
+            "Could not post %s in conversation (channel_id=%s) for incident %s",
+            context,
+            getattr(conversation, "channel_id", "?"),
+            incident_id,
+            exc_info=True,
+        )
+
+
 @receiver(signal=create_incident_conversation)
 def create_incident_slack_conversation(
     incident: Incident,
@@ -95,8 +116,12 @@ def create_incident_slack_conversation(
         logger.warning("Could not find user Slack ID for opener_user!")
 
     # Send message in the created channel
-    channel.send_message_and_save(
-        SlackMessageIncidentDeclaredAnnouncement(incident), pin=True
+    _safely_send_announcement(
+        channel,
+        SlackMessageIncidentDeclaredAnnouncement(incident),
+        context="incident declared announcement",
+        incident_id=incident.id,
+        pin=True,
     )
 
     # Post in general channel #tech-incidents if needed
@@ -107,7 +132,12 @@ def create_incident_slack_conversation(
             tag="tech_incidents"
         )
         if tech_incidents_conversation:
-            tech_incidents_conversation.send_message_and_save(announcement_general)
+            _safely_send_announcement(
+                tech_incidents_conversation,
+                announcement_general,
+                context="tech_incidents announcement",
+                incident_id=incident.id,
+            )
         else:
             logger.warning(
                 "Could not find tech_incidents conversation! Is there a channel with tag tech_incidents?"
@@ -126,7 +156,12 @@ def create_incident_slack_conversation(
 
         it_deploy_conversation = Conversation.objects.get_or_none(tag="it_deploy")
         if it_deploy_conversation:
-            it_deploy_conversation.send_message_and_save(announcement_it_deploy)
+            _safely_send_announcement(
+                it_deploy_conversation,
+                announcement_it_deploy,
+                context="it_deploy announcement",
+                incident_id=incident.id,
+            )
         else:
             logger.warning(
                 "Could not find it_deploy conversation! Is there a channel with tag it_deploy?"
