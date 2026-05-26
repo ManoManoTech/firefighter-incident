@@ -36,3 +36,6 @@ if ENABLE_RAID:
         if email.strip()
     ]
     "Comma-separated emails to skip when notifying Jira ticket watchers. Use it for service or bot accounts that have no usable Slack mapping (e.g. shared automation users)."
+
+    RAID_JIRA_WEBHOOK_SECRET: str = config("RAID_JIRA_WEBHOOK_SECRET", default="")
+    "Shared secret expected as `?secret=` on Jira webhook calls to `raid/jira_update` and `raid/jira_comment`. Empty disables the endpoints (fail-closed)."
