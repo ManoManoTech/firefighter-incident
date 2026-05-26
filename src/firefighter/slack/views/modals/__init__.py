@@ -7,6 +7,7 @@ from firefighter.slack.views.modals.closure_reason import (
     ClosureReasonModal,
     modal_closure_reason,
 )
+from firefighter.slack.views.modals.critical import CriticalModal, modal_critical
 from firefighter.slack.views.modals.downgrade_workflow import (
     DowngradeWorkflowModal,
     modal_dowgrade_workflow,
@@ -52,4 +53,5 @@ selectable_modals: list[type[SlackModal]] = [
     StatusModal,
     SendSosModal,
     DowngradeWorkflowModal,
+    CriticalModal
 ]
