@@ -1,2 +1,0 @@
-
-::: firefighter.logging
