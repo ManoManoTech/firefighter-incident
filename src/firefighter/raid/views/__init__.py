@@ -11,7 +11,7 @@ from rest_framework.response import Response
 
 from firefighter.api.authentication import (
     BearerTokenAuthentication,
-    JiraWebhookSecretAuthentication,
+    JiraHmacWebhookAuthentication,
 )
 from firefighter.raid.models import JiraTicket
 from firefighter.raid.serializers import (
@@ -98,17 +98,17 @@ class JiraUpdateAlertView(
     generics.CreateAPIView[Any],
 ):
     serializer_class = JiraWebhookUpdateSerializer
-    authentication_classes = [JiraWebhookSecretAuthentication]
+    authentication_classes = [JiraHmacWebhookAuthentication]
     permission_classes = [permissions.IsAuthenticated]
     renderer_classes = [JSONRenderer]
 
     def post(self, request: Request, *args: Never, **kwargs: Never) -> Response:
         """Allow to send a message in Slack when some fields ("Priority", "project", "description", "status") of a Jira ticket are updated.
 
-        Authentication: callers must append `?secret=<value>` to the URL.
-        The value must match `settings.RAID_JIRA_WEBHOOK_SECRET` (set via the
-        `RAID_JIRA_WEBHOOK_SECRET` env var, fed by Vault). Jira webhooks
-        cannot send custom headers, hence the query-string scheme.
+        Authentication: Jira signs the raw request body with
+        `settings.RAID_JIRA_WEBHOOK_SECRET` and sends the HMAC-SHA256
+        signature in the `X-Hub-Signature: sha256=<hex>` header. Configure
+        the same secret in the Atlassian webhook "Secret" field.
         """
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -121,17 +121,17 @@ class JiraCommentAlertView(
     generics.CreateAPIView[Any],
 ):
     serializer_class = JiraWebhookCommentSerializer
-    authentication_classes = [JiraWebhookSecretAuthentication]
+    authentication_classes = [JiraHmacWebhookAuthentication]
     permission_classes = [permissions.IsAuthenticated]
     renderer_classes = [JSONRenderer]
 
     def post(self, request: Request, *args: Never, **kwargs: Never) -> Response:
         """Allow to send a message in Slack when a comment in a Jira ticket is created or modified.
 
-        Authentication: callers must append `?secret=<value>` to the URL.
-        The value must match `settings.RAID_JIRA_WEBHOOK_SECRET` (set via the
-        `RAID_JIRA_WEBHOOK_SECRET` env var, fed by Vault). Jira webhooks
-        cannot send custom headers, hence the query-string scheme.
+        Authentication: Jira signs the raw request body with
+        `settings.RAID_JIRA_WEBHOOK_SECRET` and sends the HMAC-SHA256
+        signature in the `X-Hub-Signature: sha256=<hex>` header. Configure
+        the same secret in the Atlassian webhook "Secret" field.
         """
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)

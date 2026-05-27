@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-import secrets
+import hashlib
+import hmac
 from typing import TYPE_CHECKING
 
 from django.conf import settings
@@ -25,29 +26,48 @@ class BearerTokenAuthentication(TokenAuthentication):
         return APIToken
 
 
-class QueryStringSecretAuthentication(BaseAuthentication):
-    """Authenticate a request via a `?secret=<value>` query parameter.
+class JiraHmacWebhookAuthentication(BaseAuthentication):
+    """Authenticate Jira webhook callers via the `X-Hub-Signature` header.
 
-    For third parties that cannot send an `Authorization` header (e.g. Jira
-    webhooks). The expected value is read from the Django setting referenced
-    by `setting_name`, populated from an env var fed by Vault.
+    Jira webhooks cannot send custom `Authorization` headers; when a webhook
+    has a Secret configured in the Atlassian admin, Jira signs the raw
+    request body with HMAC and sends the signature in `X-Hub-Signature`,
+    formatted as `method=signature` per the WebSub spec (see
+    https://developer.atlassian.com/cloud/jira/platform/webhooks/).
 
-    Subclasses must set:
-      - `setting_name`: name of the Django setting holding the expected value
-      - `service_username`: username of the Django user to bind to `request.user`
+    The expected secret is read from `settings.RAID_JIRA_WEBHOOK_SECRET`
+    (fed by Vault). Successful calls are bound to the dedicated
+    `jira-webhook` service user provisioned by migration
+    `incidents.0033_create_jira_webhook_service_user`.
     """
 
-    setting_name: str = ""
-    service_username: str = ""
+    setting_name = "RAID_JIRA_WEBHOOK_SECRET"
+    service_username = "jira-webhook"
+    supported_method = "sha256"
 
     def authenticate(self, request: Request) -> tuple[User, None] | None:
-        provided = request.query_params.get("secret")
-        if not provided:
+        header = request.META.get("HTTP_X_HUB_SIGNATURE")
+        if not header:
             return None
 
-        expected = getattr(settings, self.setting_name, None)
-        if not expected or not secrets.compare_digest(str(provided), str(expected)):
-            raise exceptions.AuthenticationFailed("Invalid webhook secret.")
+        expected_secret = getattr(settings, self.setting_name, None)
+        if not expected_secret:
+            raise exceptions.AuthenticationFailed("Webhook secret not configured.")
+
+        method, _, received_sig = header.partition("=")
+        if not received_sig:
+            raise exceptions.AuthenticationFailed("Malformed X-Hub-Signature header.")
+        if method.lower() != self.supported_method:
+            msg = f"Unsupported X-Hub-Signature method: {method!r}"
+            raise exceptions.AuthenticationFailed(msg)
+
+        computed_sig = hmac.new(
+            expected_secret.encode("utf-8"),
+            request.body,
+            hashlib.sha256,
+        ).hexdigest()
+        if not hmac.compare_digest(computed_sig, received_sig):
+            raise exceptions.AuthenticationFailed("Invalid webhook signature.")
 
         from django.contrib.auth import get_user_model
 
@@ -65,16 +85,4 @@ class QueryStringSecretAuthentication(BaseAuthentication):
         return (user, None)
 
     def authenticate_header(self, _request: Request) -> str:
-        return 'QueryString realm="webhook"'
-
-
-class JiraWebhookSecretAuthentication(QueryStringSecretAuthentication):
-    """Authenticate Jira webhook callers via `?secret=<value>`.
-
-    The expected value is compared (constant time) against
-    `settings.RAID_JIRA_WEBHOOK_SECRET`. On success the request is bound to
-    the dedicated `jira-webhook` service user.
-    """
-
-    setting_name = "RAID_JIRA_WEBHOOK_SECRET"
-    service_username = "jira-webhook"
+        return 'Signature realm="jira-webhook"'
