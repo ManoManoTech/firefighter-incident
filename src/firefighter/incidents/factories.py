@@ -25,7 +25,7 @@ class UserFactory(DjangoModelFactory[User]):
         model = User
 
     name = Faker("name")  # type: ignore[no-untyped-call]
-    email = Faker("email")  # type: ignore[no-untyped-call]
+    email = Sequence(lambda n: f"user_{n}@example.com")  # type: ignore[no-untyped-call]
     username = Sequence(lambda n: f"user_{n}")  # type: ignore[no-untyped-call]
 
 
