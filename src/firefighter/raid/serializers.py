@@ -355,6 +355,10 @@ class LandbotIssueRequestSerializer(serializers.ModelSerializer[JiraTicket]):
 
 
 class JiraWebhookUpdateSerializer(serializers.Serializer[Any]):
+    # Jira custom field holding the FireFighter priority (option values "1".."5").
+    # This is the only priority field Impact reads from / writes to.
+    PRIORITY_FIELD_ID = "customfield_11064"
+
     issue = serializers.DictField()
     changelog = serializers.DictField()
     user = serializers.DictField()
@@ -379,13 +383,8 @@ class JiraWebhookUpdateSerializer(serializers.Serializer[Any]):
             # No linked incident: still emit Slack alerts for tracked fields (status/priority).
             for change_item in changes:
                 field = (change_item.get("field") or "").lower()
-                to_val = change_item.get("toString")
-                from_val = change_item.get("fromString")
                 is_status = field == "status"
-                is_priority = (
-                    self._parse_priority_value(to_val) is not None
-                    or self._parse_priority_value(from_val) is not None
-                )
+                is_priority = self._is_priority_change(change_item)
                 if not (is_status or is_priority):
                     continue
                 if not self._alert_slack_update(
@@ -466,12 +465,7 @@ class JiraWebhookUpdateSerializer(serializers.Serializer[Any]):
                 raise SlackNotificationError("Could not alert in Slack")
             return self._handle_status_update(validated_data, incident, change_item)
 
-        to_val = change_item.get("toString")
-        from_val = change_item.get("fromString")
-        if (
-            self._parse_priority_value(to_val) is not None
-            or self._parse_priority_value(from_val) is not None
-        ):
+        if self._is_priority_change(change_item):
             if not self._alert_slack_update(
                 validated_data, jira_ticket_key, change_item
             ):
@@ -647,6 +641,23 @@ class JiraWebhookUpdateSerializer(serializers.Serializer[Any]):
             cache.delete(cache_key)
             return True
         return False
+
+    @classmethod
+    def _is_priority_change(cls, change_item: dict[str, Any]) -> bool:
+        """Whether a Jira changelog item is a change of the FF priority field.
+
+        Impact owns ``customfield_11064`` exclusively (that is the only field it
+        writes via Impact→Jira sync). The match is made strictly on the field
+        identity, NEVER on the value: a Story Points change (``customfield_10008``)
+        or any other field set to "1".."5" must not be misread as a priority
+        change. See AFP-4216 (Story Points=2 wrongly flipped the incident to P2)
+        and the standard ``priority`` field, which Impact does not manage.
+        """
+        field_id = (change_item.get("fieldId") or "").lower()
+        if field_id:
+            return field_id == cls.PRIORITY_FIELD_ID
+        # Some payloads omit fieldId; fall back to the field name.
+        return (change_item.get("field") or "").lower() == cls.PRIORITY_FIELD_ID
 
     @staticmethod
     def _parse_priority_value(raw: Any) -> int | None:
