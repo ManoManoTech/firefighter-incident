@@ -84,7 +84,7 @@ jobs:
           pdm run collectstatic
           pdm run tests-cov
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v6
+        uses: codecov/codecov-action@v7
         if: ${{ ! env.ACT }}
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
