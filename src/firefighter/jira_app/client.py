@@ -108,17 +108,41 @@ class JiraClient:
         )
 
         if len(transitions_to_apply) == 0:
-            logger.info(f"Issue {issue_id} is already closed. Not closing again.")
+            if current_status_id == closed_state_id:
+                logger.info(
+                    f"Issue {issue_id} is already at target status "
+                    f"'{target_status_name}'. Nothing to do."
+                )
+            else:
+                logger.warning(
+                    f"No transition path found for issue {issue_id} from status "
+                    f"id={current_status_id} to target '{target_status_name}'. "
+                    f"Leaving issue unchanged."
+                )
+            return
 
-        # Apply transitions
-        # XXX Better error handling
+        # Apply transitions sequentially. A screen on a transition is fine as long
+        # as it has no required field (we submit an empty field set). If a transition
+        # ever fails (e.g. a field was later made required), stop and surface the
+        # error rather than leaving the issue half-transitioned.
         for transition in transitions_to_apply:
             logger.debug(f"Running transition: {transition}")
-            self.jira.transition_issue(
-                issue=issue_id,
-                transition=transition,
-                fields={},
-            )
+            try:
+                self.jira.transition_issue(
+                    issue=issue_id,
+                    transition=transition,
+                    fields={},
+                )
+            except Exception:
+                logger.exception(
+                    "Failed to apply transition '%s' on issue %s while moving to "
+                    "'%s'. Aborting remaining transitions; issue may be partially "
+                    "transitioned.",
+                    transition,
+                    issue_id,
+                    target_status_name,
+                )
+                raise
 
     def _fetch_jira_user(self, username: str) -> JiraAPIUser:
         """Fetches a Jira user from the Jira API.
@@ -404,12 +428,17 @@ class JiraClient:
 
         for transition in transitions:
             if "screen_name" in transition:
+                # A screen does NOT make a transition unusable over the API: it
+                # only fails if the screen has a *required* field (we submit an
+                # empty field set). Keeping screened transitions in the graph
+                # avoids the path-finder being forced onto undesirable detours
+                # to reach statuses whose only direct transitions are screened
+                # (e.g. "Reporter validation" -> see GT-2184).
                 logger.debug(
-                    "Ignoring Transition %s has a screen_name: %s",
+                    "Including Transition %s despite screen_name: %s",
                     transition["name"],
                     transition["screen_name"],
                 )
-                continue  # Ignore transitions that have a screen_name
             if transition["initial"]:
                 logger.debug(f"Ignoring Transition {transition['name']} is initial")
                 continue
