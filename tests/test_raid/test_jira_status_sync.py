@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from types import SimpleNamespace
+from typing import Any
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -144,6 +145,74 @@ def test_signal_transitions_non_close_status(mocker) -> None:
             mocker.call("123", "Pending resolution", mocker.ANY),
             mocker.call("123", "in progress", mocker.ANY),
         ]
+    )
+
+
+def _run_status_webhook(incident: Any, *, to_status: str, actor_account_id: str) -> None:
+    webhook_payload = {
+        "issue": {"id": "123", "key": "IMPACT-1"},
+        "changelog": {
+            "items": [
+                {
+                    "field": "status",
+                    "fromString": "in progress",
+                    "toString": to_status,
+                }
+            ]
+        },
+        "user": {"displayName": "actor", "accountId": actor_account_id},
+        "webhookEvent": "jira:issue_updated",
+    }
+    mock_ticket = SimpleNamespace(incident=incident)
+    fake_qs = SimpleNamespace(get=lambda **kwargs: mock_ticket)
+    with patch(
+        "firefighter.raid.serializers.JiraTicket.objects.select_related",
+        return_value=fake_qs,
+    ):
+        serializer = JiraWebhookUpdateSerializer(data=webhook_payload)
+        assert serializer.is_valid(), serializer.errors
+        serializer.save()
+
+
+@override_settings(RAID_DEFAULT_JIRA_QRAFT_USER_ID="ff-bot-account-id")
+def test_jira_webhook_skips_status_change_authored_by_ff() -> None:
+    """Jira → Impact: a status change authored by FireFighter's own service account
+    must NOT sync back. This is the self-induced bounce: FF's own transition through
+    the transient "Pending resolution" hop maps to OPEN and would regress the
+    incident (see GT-2184 / INCIDENT-27620).
+    """
+    incident = SimpleNamespace(create_incident_update=MagicMock())
+
+    _run_status_webhook(
+        incident,
+        to_status="Pending resolution",
+        actor_account_id="ff-bot-account-id",
+    )
+
+    incident.create_incident_update.assert_not_called()
+
+
+@override_settings(RAID_DEFAULT_JIRA_QRAFT_USER_ID="ff-bot-account-id")
+def test_jira_webhook_syncs_status_change_authored_by_human() -> None:
+    """Jira → Impact: a status change authored by a human (different account) still
+    syncs — the actor filter must not over-suppress genuine external changes.
+    """
+    incident = SimpleNamespace(
+        id=1,
+        status=IncidentStatus.INVESTIGATING,
+        create_incident_update=MagicMock(),
+    )
+
+    _run_status_webhook(
+        incident,
+        to_status="Reporter validation",
+        actor_account_id="some-human-account-id",
+    )
+
+    incident.create_incident_update.assert_called_once()
+    assert (
+        incident.create_incident_update.call_args.kwargs["status"]
+        == IncidentStatus.MITIGATED
     )
 
 

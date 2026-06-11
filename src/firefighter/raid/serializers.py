@@ -448,7 +448,23 @@ class JiraWebhookUpdateSerializer(serializers.Serializer[Any]):
     ) -> bool:
         field = (change_item.get("field") or "").lower()
 
-        # Loop prevention: skip if this exact change was just sent Impact -> Jira
+        # Loop prevention (primary): skip changes FireFighter itself made in Jira.
+        # FF performs every Jira write as a single service account; reflecting its
+        # own changes back into Impact bounces the incident's status — e.g. the
+        # transient "Pending resolution" hop of FF's own transition maps back to
+        # OPEN and regresses a Mitigated incident (see GT-2184 / INCIDENT-27620).
+        # The reverse sync must only mirror human/external Jira changes.
+        if self._is_authored_by_ff(validated_data):
+            logger.debug(
+                "Skipping Jira→Impact sync for '%s' on %s: change authored by the "
+                "FireFighter service account",
+                field,
+                jira_ticket_key,
+            )
+            return False
+
+        # Loop prevention (fallback): skip if this exact change was just sent
+        # Impact -> Jira. Kept as belt-and-suspenders behind the actor check above.
         if self._skip_due_to_recent_impact_change(jira_ticket_key, field, change_item):
             logger.debug(
                 "Skipping Jira→Impact sync for %s on %s due to recent Impact change",
@@ -610,6 +626,21 @@ class JiraWebhookUpdateSerializer(serializers.Serializer[Any]):
             event_type="jira_priority_sync",
         )
         return True
+
+    @staticmethod
+    def _is_authored_by_ff(validated_data: dict[str, Any]) -> bool:
+        """Whether the webhook was triggered by FireFighter's own Jira account.
+
+        FF performs all Jira writes (issue creation and status/priority
+        transitions) as a single service account, identified by
+        ``RAID_DEFAULT_JIRA_QRAFT_USER_ID``. Changes authored by that account are
+        echoes of Impact→Jira sync and must never be reflected back into Impact.
+        """
+        ff_account_id = getattr(settings, "RAID_DEFAULT_JIRA_QRAFT_USER_ID", "") or ""
+        if not ff_account_id:
+            return False
+        actor = validated_data.get("user") or {}
+        return actor.get("accountId") == ff_account_id
 
     @staticmethod
     def _skip_due_to_recent_impact_change(
