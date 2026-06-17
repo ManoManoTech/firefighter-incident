@@ -78,14 +78,16 @@ class CreateIncidentForm(CreateIncidentFormBase):
     def trigger_incident_workflow(
         self,
         creator: User,
-        impacts_data: dict[str, ImpactLevel],
+        impacts_data: dict[str, ImpactLevel] | None,
         *args: Any,
         **kwargs: Any,
     ) -> None:
         incident = Incident.objects.declare(created_by=creator, **self.cleaned_data)
-        impacts_form = SelectImpactForm(impacts_data)
 
-        impacts_form.save(incident=incident)
+        if impacts_data is not None:
+            impacts_form = SelectImpactForm(impacts_data)
+            impacts_form.save(incident=incident)
+
         create_incident_conversation.send(
             "create_incident_form",
             incident=incident,
