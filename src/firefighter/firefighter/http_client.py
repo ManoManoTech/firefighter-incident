@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 import logging
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from typing import Self
 
 import httpx
 from django.conf import settings
@@ -52,3 +55,13 @@ class HttpClient:
 
     def get(self, url: str, **kwargs: Any) -> httpx.Response:
         return self.call("get", url, **kwargs)
+
+    def close(self) -> None:
+        """Close the underlying httpx client and release connection resources."""
+        self._client.close()
+
+    def __enter__(self) -> Self:
+        return self
+
+    def __exit__(self, *exc: object) -> None:
+        self.close()

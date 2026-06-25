@@ -15,6 +15,7 @@ from firefighter.firefighter.settings.components.logging import *
 from firefighter.firefighter.settings.components.pagerduty import *
 from firefighter.firefighter.settings.components.slack import *
 from firefighter.firefighter.settings.components.raid import *
+from firefighter.firefighter.settings.components.atlas import *
 
 # Load dev or prod settings:
 if SETTINGS_ENV == "dev":
