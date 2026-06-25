@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 from slack_sdk.errors import SlackApiError
@@ -31,8 +31,8 @@ def _make_incident_without_channel() -> object:
 
 @pytest.mark.django_db
 def test_invites_bot_and_posts_message(settings) -> None:
-    """Happy path: invites bot then posts the generation request."""
-    settings.DUST_SLACK_BOT_USER_ID = "UDUSTBOT1"
+    """Happy path: resolves bot user ID, invites bot then posts the generation request."""
+    settings.DUST_SLACK_BOT_NAME = "dust"
     incident = _make_incident_with_channel()
     channel_id = incident.conversation.channel_id
 
@@ -40,7 +40,11 @@ def test_invites_bot_and_posts_message(settings) -> None:
     mock_client.conversations_invite.return_value = {"ok": True}
     mock_client.chat_postMessage.return_value = {"ok": True}
 
-    generate_dust_postmortem(incident.id, client=mock_client)
+    with patch(
+        "firefighter.slack.tasks.generate_dust_postmortem._resolve_bot_user_id",
+        return_value="UDUSTBOT1",
+    ):
+        generate_dust_postmortem(incident.id, client=mock_client)
 
     mock_client.conversations_invite.assert_called_once_with(
         channel=channel_id, users=["UDUSTBOT1"]
@@ -54,7 +58,7 @@ def test_invites_bot_and_posts_message(settings) -> None:
 @pytest.mark.django_db
 def test_already_in_channel_is_tolerated(settings) -> None:
     """If bot is already in channel, skip invite silently and still post message."""
-    settings.DUST_SLACK_BOT_USER_ID = "UDUSTBOT1"
+    settings.DUST_SLACK_BOT_NAME = "dust"
     incident = _make_incident_with_channel()
 
     mock_client = MagicMock()
@@ -63,7 +67,11 @@ def test_already_in_channel_is_tolerated(settings) -> None:
     )
     mock_client.chat_postMessage.return_value = {"ok": True}
 
-    generate_dust_postmortem(incident.id, client=mock_client)
+    with patch(
+        "firefighter.slack.tasks.generate_dust_postmortem._resolve_bot_user_id",
+        return_value="UDUSTBOT1",
+    ):
+        generate_dust_postmortem(incident.id, client=mock_client)
 
     mock_client.chat_postMessage.assert_called_once()
 
@@ -71,12 +79,30 @@ def test_already_in_channel_is_tolerated(settings) -> None:
 @pytest.mark.django_db
 def test_skips_when_no_conversation(settings) -> None:
     """If the incident has no Slack channel, do nothing."""
-    settings.DUST_SLACK_BOT_USER_ID = "UDUSTBOT1"
+    settings.DUST_SLACK_BOT_NAME = "dust"
     incident = _make_incident_without_channel()
 
     mock_client = MagicMock()
 
     generate_dust_postmortem(incident.id, client=mock_client)
+
+    mock_client.conversations_invite.assert_not_called()
+    mock_client.chat_postMessage.assert_not_called()
+
+
+@pytest.mark.django_db
+def test_skips_when_bot_not_found(settings) -> None:
+    """If the Dust bot is not found in the workspace, do nothing."""
+    settings.DUST_SLACK_BOT_NAME = "dust"
+    incident = _make_incident_with_channel()
+
+    mock_client = MagicMock()
+
+    with patch(
+        "firefighter.slack.tasks.generate_dust_postmortem._resolve_bot_user_id",
+        return_value=None,
+    ):
+        generate_dust_postmortem(incident.id, client=mock_client)
 
     mock_client.conversations_invite.assert_not_called()
     mock_client.chat_postMessage.assert_not_called()

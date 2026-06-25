@@ -15,6 +15,23 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
+def _resolve_bot_user_id(client: WebClient, bot_name: str) -> str | None:
+    """Find the Slack user ID of a bot app by its display name."""
+    cursor = None
+    while True:
+        kwargs: dict = {"limit": 200}
+        if cursor:
+            kwargs["cursor"] = cursor
+        response = client.users_list(**kwargs)
+        for member in response.get("members", []):
+            if member.get("is_bot") and member.get("name") == bot_name:
+                return member["id"]
+        cursor = response.get("response_metadata", {}).get("next_cursor")
+        if not cursor:
+            break
+    return None
+
+
 @shared_task(
     name="slack.generate_dust_postmortem",
     autoretry_for=(SlackApiError,),
@@ -33,9 +50,10 @@ def generate_dust_postmortem(
         logger.warning("Incident %s has no Slack channel, skipping Dust trigger", incident_id)
         return
 
-    bot_user_id: str | None = settings.DUST_SLACK_BOT_USER_ID
+    bot_name: str = settings.DUST_SLACK_BOT_NAME
+    bot_user_id = _resolve_bot_user_id(client, bot_name)
     if not bot_user_id:
-        logger.warning("DUST_SLACK_BOT_USER_ID not configured, skipping Dust trigger")
+        logger.warning("Dust bot '%s' not found in workspace, skipping Dust trigger", bot_name)
         return
 
     channel_id: str = incident.conversation.channel_id

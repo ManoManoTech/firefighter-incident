@@ -36,9 +36,9 @@ def _get_button_action_ids(blocks: list) -> list[str]:
 
 
 @pytest.mark.django_db
-def test_dust_button_present_when_setting_configured(settings) -> None:
-    """Button appears when DUST_SLACK_BOT_USER_ID is set and JIRA post-mortem exists."""
-    settings.DUST_SLACK_BOT_USER_ID = "UDUSTBOT1"
+def test_dust_button_present_when_enabled(settings) -> None:
+    """Button appears when DUST_ENABLED is True and JIRA post-mortem exists."""
+    settings.DUST_ENABLED = True
     incident = _make_incident_with_jira_pm()
 
     msg = SlackMessageIncidentPostMortemCreated(incident)
@@ -57,9 +57,9 @@ def test_dust_button_present_when_setting_configured(settings) -> None:
 
 
 @pytest.mark.django_db
-def test_dust_button_absent_when_setting_not_configured(settings) -> None:
-    """Button is absent when DUST_SLACK_BOT_USER_ID is not set."""
-    settings.DUST_SLACK_BOT_USER_ID = None
+def test_dust_button_absent_when_disabled(settings) -> None:
+    """Button is absent when DUST_ENABLED is False (default)."""
+    settings.DUST_ENABLED = False
     incident = _make_incident_with_jira_pm()
 
     msg = SlackMessageIncidentPostMortemCreated(incident)
