@@ -37,8 +37,6 @@ def trigger_atlas_incident_analysis(
     """
     if incident.priority.value > _MAX_PRIORITY_VALUE:
         return
-    if incident.environment.value != "PRD":
-        return
 
     logger.info(
         "Scheduling Atlas incident analysis for %s (priority %s, channel %s)",
@@ -49,4 +47,10 @@ def trigger_atlas_incident_analysis(
 
     from firefighter.atlas.tasks.request_analysis import request_incident_analysis
 
-    request_incident_analysis.delay(incident.id, channel.channel_id)
+    try:
+        request_incident_analysis.delay(incident.id, channel.channel_id)
+    except Exception:
+        logger.exception(
+            "Failed to enqueue Atlas analysis — incident channel creation unaffected",
+            extra={"incident_id": incident.id},
+        )

@@ -51,10 +51,22 @@ def test_skips_low_priority(mock_task: Mock, priority_value: int) -> None:
 
 @pytest.mark.parametrize("env_value", ["STG", "INT", "DEV", "TST"])
 @patch("firefighter.atlas.tasks.request_analysis.request_incident_analysis")
-def test_skips_non_prd_environment(mock_task: Mock, env_value: str) -> None:
+def test_enqueues_task_for_any_environment(mock_task: Mock, env_value: str) -> None:
+    """All environments trigger Atlas analysis — only priority is gated."""
     incident = _make_incident(priority_value=1, env_value=env_value)
     channel = _make_channel()
 
     trigger_atlas_incident_analysis(sender=None, incident=incident, channel=channel)
 
-    mock_task.delay.assert_not_called()
+    mock_task.delay.assert_called_once_with(incident.id, channel.channel_id)
+
+
+@patch("firefighter.atlas.tasks.request_analysis.request_incident_analysis")
+def test_enqueue_failure_does_not_propagate(mock_task: Mock) -> None:
+    """Broker errors on .delay() must not break the signal chain."""
+    mock_task.delay.side_effect = ConnectionError("broker unreachable")
+    incident = _make_incident(priority_value=1)
+    channel = _make_channel()
+
+    # Should not raise
+    trigger_atlas_incident_analysis(sender=None, incident=incident, channel=channel)

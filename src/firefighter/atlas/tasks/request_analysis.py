@@ -2,17 +2,41 @@
 
 from __future__ import annotations
 
+import hashlib
+import hmac
+import json
 import logging
 from typing import Any
 
 import httpx
-from celery import shared_task
+from celery import Task, shared_task
 from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
 
+class _AtlasAnalysisTask(Task):  # type: ignore[type-arg]
+    """Celery Task base that logs a structured error when all retries are exhausted."""
+
+    def on_failure(
+        self,
+        exc: BaseException,
+        task_id: str,
+        args: tuple[Any, ...],
+        _kwargs: dict[str, Any],
+        _einfo: Any,
+    ) -> None:
+        incident_id = args[0] if args else None
+        logger.error(
+            "Atlas analysis permanently failed after retries — incident %s has no RCA",
+            incident_id,
+            extra={"incident_id": incident_id, "task_id": task_id},
+            exc_info=exc,
+        )
+
+
 @shared_task(
+    base=_AtlasAnalysisTask,
     name="atlas.request_incident_analysis",
     bind=True,
     autoretry_for=(httpx.TransportError,),
@@ -22,12 +46,13 @@ logger = logging.getLogger(__name__)
 def request_incident_analysis(self: Any, incident_id: int, slack_channel_id: str) -> None:
     """POST incident context to Atlas Bot and trigger automated root-cause analysis.
 
-    Fetches the incident from the DB, builds the payload, and calls the Atlas
-    trigger endpoint.  Retries up to 3 times on transport/network errors; 5xx
-    responses are also retried, 4xx responses fail permanently.
+    Fetches the incident from the DB, builds the payload, signs it with
+    HMAC-SHA256, and calls the Atlas trigger endpoint.  Retries up to 3 times
+    on transport/network errors; 5xx responses are also retried, 4xx responses
+    fail permanently.
 
     The Atlas Bot will:
-    1. Validate the shared secret.
+    1. Verify the HMAC-SHA256 signature on the ``X-Atlas-Signature`` header.
     2. Async self-invoke its internal component to run a multi-track investigation.
     3. Post a ranked root-cause analysis (Block Kit) into ``slack_channel_id``.
 
@@ -47,11 +72,19 @@ def request_incident_analysis(self: Any, incident_id: int, slack_channel_id: str
     from firefighter.firefighter.http_client import HttpClient
     from firefighter.incidents.models.incident import Incident
 
-    incident = Incident.objects.select_related(
-        "priority",
-        "environment",
-        "incident_category",
-    ).get(id=incident_id)
+    try:
+        incident = Incident.objects.select_related(
+            "priority",
+            "environment",
+            "incident_category",
+        ).get(id=incident_id)
+    except Incident.DoesNotExist:
+        logger.error(  # noqa: TRY400
+            "Atlas task: incident %s not found, aborting analysis",
+            incident_id,
+            extra={"incident_id": incident_id},
+        )
+        return
 
     payload: dict[str, Any] = {
         "incident_id": str(incident.id),
@@ -65,6 +98,12 @@ def request_incident_analysis(self: Any, incident_id: int, slack_channel_id: str
         "slack_channel_id": slack_channel_id,
     }
 
+    # Sign the exact bytes we will send so Atlas can verify integrity.
+    body: bytes = json.dumps(payload, separators=(",", ":")).encode("utf-8")
+    signature: str = hmac.new(
+        shared_secret.encode("utf-8"), body, hashlib.sha256
+    ).hexdigest()
+
     atlas_url: str = settings.ATLAS_URL
 
     logger.info(
@@ -77,11 +116,16 @@ def request_incident_analysis(self: Any, incident_id: int, slack_channel_id: str
         },
     )
 
-    response = HttpClient().post(
-        atlas_url,
-        json=payload,
-        headers={"X-Atlas-Secret": shared_secret},
-    )
+    with HttpClient() as client:
+        response = client.post(
+            atlas_url,
+            content=body,
+            headers={
+                "Content-Type": "application/json",
+                "X-Atlas-Signature": f"sha256={signature}",
+            },
+            timeout=10.0,
+        )
 
     try:
         response.raise_for_status()
