@@ -675,7 +675,7 @@ class SlackMessageIncidentPostMortemCreated(SlackMessageSurface):
         parts = ["📔 The post-mortem has been created:"]
 
         # Add Confluence link if available
-        if hasattr(self.incident, "postmortem_for"):
+        if getattr(settings, "ENABLE_CONFLUENCE", False) and hasattr(self.incident, "postmortem_for"):
             parts.append(f"• Confluence: {self.incident.postmortem_for.page_url}")
 
         # Add Jira link if available
@@ -701,6 +701,18 @@ class SlackMessageIncidentPostMortemCreated(SlackMessageSurface):
                         url="https://manomano.atlassian.net/wiki/spaces/TC/pages/5639635000/How+to+fill+Post-Mortems+in+Jira",
                         value="jira_postmortem_documentation",
                         action_id="open_link",
+                    ),
+                )
+            )
+
+        if settings.DUST_SLACK_BOT_USER_ID:
+            blocks.append(
+                SectionBlock(
+                    text="Generate and update the post-mortem with Dust AI",
+                    accessory=ButtonElement(
+                        text="Generate post-mortem with Dust",
+                        value=str(self.incident.id),
+                        action_id="generate_dust_postmortem",
                     ),
                 )
             )
