@@ -51,6 +51,6 @@ def generate_dust_postmortem(
 
     client.chat_postMessage(
         channel=channel_id,
-        text=f"<@{bot_user_id}> @IncidentManagementPostMortem",
+        text=f"<@{bot_user_id}> ~IncidentManagementPostMortem",
     )
     logger.info("Sent Dust post-mortem generation request for incident %s", incident_id)

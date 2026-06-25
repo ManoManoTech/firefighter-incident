@@ -48,6 +48,7 @@ def test_invites_bot_and_posts_message(settings) -> None:
     call_kwargs = mock_client.chat_postMessage.call_args.kwargs
     assert call_kwargs["channel"] == channel_id
     assert "UDUSTBOT1" in call_kwargs["text"]
+    assert "~IncidentManagementPostMortem" in call_kwargs["text"]
 
 
 @pytest.mark.django_db
