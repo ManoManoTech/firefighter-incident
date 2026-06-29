@@ -49,3 +49,14 @@ def update_update_modal(ack: Ack, body: dict[str, Any]) -> None:
 def open_link(ack: Ack) -> None:
     """Does nothing. ack() is mandatory, even on buttons that open a URL."""
     ack()
+
+
+@app.action("generate_dust_postmortem")
+def generate_dust_postmortem_action(ack: Ack, body: dict[str, Any]) -> None:
+    ack()
+    incident_id = int(body["actions"][0]["value"])
+    from firefighter.slack.tasks.generate_dust_postmortem import (
+        generate_dust_postmortem,
+    )
+
+    generate_dust_postmortem.delay(incident_id)

@@ -51,3 +51,8 @@ FF_SLACK_SKIP_CHECKS: bool = config(
     "FF_SLACK_SKIP_CHECKS", cast=bool, default=_is_default_skip_check_cmd
 )
 """Skip Slack checks. Only use for testing or demo."""
+
+ENABLE_DUST: bool = config("ENABLE_DUST", cast=bool, default=False)
+"""Enable the 'Generate post-mortem with Dust' button in incident Slack messages."""
+DUST_SLACK_BOT_NAME: str = config("DUST_SLACK_BOT_NAME", default="dust")
+"""Slack display name of the Dust app (used to resolve its user ID at runtime)."""

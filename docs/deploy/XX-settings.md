@@ -76,6 +76,11 @@ See [django-oauth2-codeflow](https://gitlab.com/systra/qeto/lib/django-oauth2-au
 - [`SLACK_APP_EMOJI`][firefighter.firefighter.settings.components.slack.SLACK_APP_EMOJI]
 - [`FF_SLACK_SKIP_CHECKS`][firefighter.firefighter.settings.components.slack.FF_SLACK_SKIP_CHECKS]
 
+### Dust AI integration (optional)
+
+- [`ENABLE_DUST`][firefighter.firefighter.settings.components.slack.ENABLE_DUST]: set to `True` to show the "Generate post-mortem with Dust" button in Jira post-mortem Slack messages.
+- [`DUST_SLACK_BOT_NAME`][firefighter.firefighter.settings.components.slack.DUST_SLACK_BOT_NAME]: Slack display name of the Dust app (default: `dust`). Used to resolve its user ID at runtime to invite it to the incident channel and mention it.
+
 ## Confluence integration
 
 `ENABLE_CONFLUENCE`
