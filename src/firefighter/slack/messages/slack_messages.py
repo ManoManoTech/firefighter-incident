@@ -705,7 +705,7 @@ class SlackMessageIncidentPostMortemCreated(SlackMessageSurface):
                 )
             )
 
-        if getattr(settings, "DUST_ENABLED", False):
+        if getattr(settings, "ENABLE_DUST", False):
             blocks.append(
                 SectionBlock(
                     text="Generate and update the post-mortem with Dust AI",

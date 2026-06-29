@@ -37,8 +37,8 @@ def _get_button_action_ids(blocks: list) -> list[str]:
 
 @pytest.mark.django_db
 def test_dust_button_present_when_enabled(settings) -> None:
-    """Button appears when DUST_ENABLED is True and JIRA post-mortem exists."""
-    settings.DUST_ENABLED = True
+    """Button appears when ENABLE_DUST is True and JIRA post-mortem exists."""
+    settings.ENABLE_DUST = True
     incident = _make_incident_with_jira_pm()
 
     msg = SlackMessageIncidentPostMortemCreated(incident)
@@ -58,8 +58,8 @@ def test_dust_button_present_when_enabled(settings) -> None:
 
 @pytest.mark.django_db
 def test_dust_button_absent_when_disabled(settings) -> None:
-    """Button is absent when DUST_ENABLED is False (default)."""
-    settings.DUST_ENABLED = False
+    """Button is absent when ENABLE_DUST is False (default)."""
+    settings.ENABLE_DUST = False
     incident = _make_incident_with_jira_pm()
 
     msg = SlackMessageIncidentPostMortemCreated(incident)

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from celery import shared_task
 from django.conf import settings
@@ -19,14 +19,16 @@ def _resolve_bot_user_id(client: WebClient, bot_name: str) -> str | None:
     """Find the Slack user ID of a bot app by its display name."""
     cursor = None
     while True:
-        kwargs: dict = {"limit": 200}
+        kwargs: dict[str, Any] = {"limit": 200}
         if cursor:
             kwargs["cursor"] = cursor
         response = client.users_list(**kwargs)
-        for member in response.get("members", []):
+        members: list[dict[str, Any]] = response.get("members") or []
+        for member in members:
             if member.get("is_bot") and member.get("name") == bot_name:
                 return member["id"]
-        cursor = response.get("response_metadata", {}).get("next_cursor")
+        response_metadata: dict[str, Any] = response.get("response_metadata") or {}
+        cursor = response_metadata.get("next_cursor")
         if not cursor:
             break
     return None
