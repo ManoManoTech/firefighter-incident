@@ -19,7 +19,7 @@
     "@alpinejs/morph": "^3.15.12",
     "alpinejs": "^3.15.12",
     "htmx.org": "^2.0.10",
-    "hyperscript.org": "^0.9.91"
+    "hyperscript.org": "^0.9.93"
   },
   "devDependencies": {
     "@babel/core": "^7.29.7",
