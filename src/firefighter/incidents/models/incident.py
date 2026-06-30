@@ -248,6 +248,13 @@ class Incident(models.Model):
         help_text="Custom fields for incident (zendesk_ticket_id, seller_contract_id, etc.)",
     )
 
+    dedup_key = models.CharField(
+        max_length=160,
+        null=True,
+        blank=True,
+        help_text="Idempotency key for automated sources (e.g. Datadog->IMPACT). While the incident is open (status <= Mitigated), no two incidents may share a dedup_key. Left empty (NULL) for manually-created incidents, which are never de-duplicated.",
+    )
+
     # XXX-ZOR pick a more meaningful name. maybe 'hidden'
     # XXX-ZOR document intent and impl. status
     ignore = models.BooleanField(
@@ -290,6 +297,15 @@ class Incident(models.Model):
                 name="%(app_label)s_%(class)s_closure_reason_valid",
                 check=models.Q(closure_reason__in=[*ClosureReason.values, ""])
                 | models.Q(closure_reason__isnull=True),
+            ),
+            # Idempotency: at most one *open* incident (status <= Mitigated) per
+            # dedup_key. Partial index, so NULL keys never collide and closed/
+            # post-mortem incidents free the key for a future recurrence.
+            models.UniqueConstraint(
+                fields=["dedup_key"],
+                condition=models.Q(dedup_key__isnull=False)
+                & models.Q(_status__lte=IncidentStatus.MITIGATED),
+                name="%(app_label)s_%(class)s__unique_open_dedup_key",
             ),
         ]
 
@@ -405,7 +421,11 @@ class Incident(models.Model):
                             )
                         )
                 except Exception as e:  # pragma: no cover - defensive guard
-                    jira_key = self.jira_postmortem_for.jira_issue_key if self.jira_postmortem_for else "unknown"
+                    jira_key = (
+                        self.jira_postmortem_for.jira_issue_key
+                        if self.jira_postmortem_for
+                        else "unknown"
+                    )
                     logger.exception(
                         "Failed to verify Jira post-mortem status for incident #%s (JIRA issue: %s)",
                         self.id,
@@ -422,9 +442,13 @@ class Incident(models.Model):
                     support_channel_mention = ""
                     from firefighter.slack.models.conversation import Conversation
 
-                    support_conv = Conversation.objects.get_or_none(tag="dev_firefighter")
+                    support_conv = Conversation.objects.get_or_none(
+                        tag="dev_firefighter"
+                    )
                     if support_conv:
-                        support_channel_mention = f" Please contact <#{support_conv.channel_id}> for help."
+                        support_channel_mention = (
+                            f" Please contact <#{support_conv.channel_id}> for help."
+                        )
 
                     cant_closed_reasons.append(
                         (
