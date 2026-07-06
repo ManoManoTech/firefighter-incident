@@ -6,6 +6,7 @@ import pytest
 from slack_sdk.errors import SlackApiError
 
 from firefighter.incidents.factories import IncidentFactory, UserFactory
+from firefighter.jira_app.models import JiraPostMortem
 from firefighter.slack.factories import IncidentChannelFactory
 from firefighter.slack.tasks.generate_dust_postmortem import generate_dust_postmortem
 
@@ -53,6 +54,33 @@ def test_invites_bot_and_posts_message(settings) -> None:
     assert call_kwargs["channel"] == channel_id
     assert "UDUSTBOT1" in call_kwargs["text"]
     assert "~IncidentManagementPostMortem" in call_kwargs["text"]
+
+
+@pytest.mark.django_db
+def test_message_includes_jira_postmortem_link(settings) -> None:
+    """When a Jira post-mortem exists, its link is embedded in the instruction."""
+    settings.DUST_SLACK_BOT_NAME = "dust"
+    incident = _make_incident_with_channel()
+    jira_pm = JiraPostMortem.objects.create(
+        incident=incident,
+        jira_issue_key="INCIDENT-27688",
+        jira_issue_id="123456",
+    )
+
+    mock_client = MagicMock()
+    mock_client.conversations_invite.return_value = {"ok": True}
+    mock_client.chat_postMessage.return_value = {"ok": True}
+
+    with patch(
+        "firefighter.slack.tasks.generate_dust_postmortem._resolve_bot_user_id",
+        return_value="UDUSTBOT1",
+    ):
+        generate_dust_postmortem(incident.id, client=mock_client)
+
+    text = mock_client.chat_postMessage.call_args.kwargs["text"]
+    assert jira_pm.jira_issue_key in text
+    assert jira_pm.issue_url in text
+    assert "fill in the post-mortem" in text
 
 
 @pytest.mark.django_db

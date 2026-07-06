@@ -12,6 +12,8 @@ from firefighter.slack.slack_app import DefaultWebClient, slack_client
 if TYPE_CHECKING:
     from slack_sdk.web.client import WebClient
 
+    from firefighter.incidents.models.incident import Incident
+
 logger = logging.getLogger(__name__)
 
 
@@ -34,6 +36,22 @@ def _resolve_bot_user_id(client: WebClient, bot_name: str) -> str | None:
     return None
 
 
+def _build_dust_message(bot_user_id: str, incident: Incident) -> str:
+    """Build the English instruction posted to the Dust agent in the channel."""
+    jira_pm = getattr(incident, "jira_postmortem_for", None)
+    ticket_ref = (
+        f"the post-mortem Jira ticket <{jira_pm.issue_url}|{jira_pm.jira_issue_key}>"
+        if jira_pm is not None
+        else "the post-mortem for this incident"
+    )
+    return (
+        f"<@{bot_user_id}> ~IncidentManagementPostMortem "
+        f"Please update {ticket_ref} for this incident. "
+        "Read through this incident channel and fill in the post-mortem: "
+        "summary, timeline, root cause, impact, and action items."
+    )
+
+
 @shared_task(
     name="slack.generate_dust_postmortem",
     autoretry_for=(SlackApiError,),
@@ -47,7 +65,9 @@ def generate_dust_postmortem(
 ) -> None:
     from firefighter.incidents.models.incident import Incident
 
-    incident = Incident.objects.select_related("conversation").get(id=incident_id)
+    incident = Incident.objects.select_related(
+        "conversation", "jira_postmortem_for"
+    ).get(id=incident_id)
     if not hasattr(incident, "conversation"):
         logger.warning("Incident %s has no Slack channel, skipping Dust trigger", incident_id)
         return
@@ -71,6 +91,6 @@ def generate_dust_postmortem(
 
     client.chat_postMessage(
         channel=channel_id,
-        text=f"<@{bot_user_id}> ~IncidentManagementPostMortem",
+        text=_build_dust_message(bot_user_id, incident),
     )
     logger.info("Sent Dust post-mortem generation request for incident %s", incident_id)
