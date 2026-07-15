@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Any, TypeVar
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.validators import EmailValidator
+from django.db import IntegrityError
 from django.db.models import Model
 from drf_spectacular.extensions import (
     OpenApiSerializerExtension,
@@ -15,6 +16,7 @@ from rest_framework.fields import empty
 from taggit.serializers import TaggitSerializer, TagListSerializerField
 
 from firefighter.firefighter.utils import get_in
+from firefighter.incidents.enums import IncidentStatus
 from firefighter.incidents.models.environment import Environment
 from firefighter.incidents.models.group import Group
 from firefighter.incidents.models.incident import Incident
@@ -212,7 +214,9 @@ class IncidentSerializer(TaggitSerializer, serializers.ModelSerializer[Incident]
     )
     incident_category = IncidentCategorySerializer(read_only=True)
     incident_category_id = serializers.PrimaryKeyRelatedField(
-        source="incident_category", queryset=IncidentCategory.objects.all(), write_only=True
+        source="incident_category",
+        queryset=IncidentCategory.objects.all(),
+        write_only=True,
     )
 
     status = serializers.SerializerMethodField()
@@ -228,6 +232,18 @@ class IncidentSerializer(TaggitSerializer, serializers.ModelSerializer[Incident]
         slug_field="email",
         queryset=User.objects.all(),
         validators=[EmailValidator()],  # type: ignore[list-item]
+    )
+
+    dedup_key = serializers.CharField(
+        write_only=True,
+        required=False,
+        allow_null=True,
+        max_length=160,
+        help_text=(
+            "Optional idempotency key. While an incident with this key is open "
+            "(status <= Mitigated), re-posting it returns that incident (HTTP 200) "
+            "instead of creating a duplicate."
+        ),
     )
 
     tags = TagListSerializerField(read_only=True)
@@ -277,7 +293,28 @@ class IncidentSerializer(TaggitSerializer, serializers.ModelSerializer[Incident]
         return None
 
     def create(self, validated_data: dict[str, Any]) -> Incident:
-        return Incident.objects.declare(**validated_data)
+        dedup_key = validated_data.get("dedup_key")
+        try:
+            return Incident.objects.declare(**validated_data)
+        except IntegrityError:
+            # An open incident (status <= Mitigated) already exists with this
+            # dedup_key (enforced by the partial unique constraint). Treat the
+            # request as idempotent: return the existing incident rather than
+            # raising, and flag it so the view answers HTTP 200 instead of 201.
+            # We catch IntegrityError broadly but only swallow it when a matching
+            # open incident actually exists; any other integrity error re-raises.
+            if dedup_key:
+                existing = (
+                    Incident.objects.filter(
+                        dedup_key=dedup_key, _status__lte=IncidentStatus.MITIGATED
+                    )
+                    .order_by("created_at")
+                    .first()
+                )
+                if existing is not None:
+                    existing._idempotent_hit = True  # type: ignore[attr-defined]  # noqa: SLF001
+                    return existing
+            raise
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         remove_fields = get_in(kwargs, "context.remove_fields", [])
@@ -317,4 +354,5 @@ class IncidentSerializer(TaggitSerializer, serializers.ModelSerializer[Incident]
             "metrics",
             "roles",
             "ignore",
+            "dedup_key",
         ]

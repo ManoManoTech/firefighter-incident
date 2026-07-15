@@ -244,7 +244,11 @@ class CreateIncidentViewSet(
     viewsets.GenericViewSet[Incident],
 ):
     queryset: QuerySet[Incident] = Incident.objects.all().select_related(
-        "priority", "incident_category__group", "incident_category", "environment", "conversation"
+        "priority",
+        "incident_category__group",
+        "incident_category",
+        "environment",
+        "conversation",
     )
     serializer_class = IncidentSerializer
     filterset_class = IncidentFilterSet
@@ -258,6 +262,12 @@ class CreateIncidentViewSet(
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
+        # Idempotent hit: an open incident already existed for this dedup_key.
+        # Return 200 with a plain Response so we do NOT re-trigger Slack channel
+        # creation (ProcessAfterResponse.close() fires create_incident_conversation)
+        # for an incident that already has its conversation.
+        if getattr(serializer.instance, "_idempotent_hit", False):
+            return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
         return ProcessAfterResponse(
             serializer.data, status=status.HTTP_201_CREATED, headers=headers
         )
