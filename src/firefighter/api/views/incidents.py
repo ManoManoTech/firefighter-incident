@@ -39,19 +39,15 @@ class ProcessAfterResponse(Response):
 
 
 def _create_jira_ticket_for_api_incident(incident: Incident) -> None:
-    """Best-effort: create a linked Jira ticket for an API-created incident.
+    """Create a linked Jira ticket for an incident opened through the API.
 
-    Incidents opened via the Slack/unified form get a Jira ticket
-    (``UnifiedIncidentForm._create_jira_ticket``); incidents created via the API
-    (e.g. the Datadog->IMPACT auto-raise receiver) previously did not. This mirrors
-    that behaviour for the automated path so QC-159's "generate a Jira incident"
-    holds there too.
+    Incidents opened through the Slack form already get a Jira ticket; ones created
+    through the API did not, so this brings the two paths in line.
 
-    Runs only on genuine 201 creates: this ``Response`` subtype is used only on a
-    real create, not on the idempotent 200 path, so repeats never spawn a ticket.
-    Fields are reconstructed from the incident (there is no form data). Failures are
-    logged and swallowed on purpose - raising an incident must not depend on Jira
-    availability (trade-off: no auto-heal if Jira is down; the incident is still raised).
+    Only runs on a real create (this response type is not used for the idempotent
+    duplicate case), so repeats do not create extra tickets. Fields are taken from
+    the incident since there is no form data. Best-effort: if Jira is unavailable the
+    failure is logged and ignored, because raising an incident must not depend on Jira.
     """
     try:
         from firefighter.raid.client import client as jira_client
@@ -59,7 +55,7 @@ def _create_jira_ticket_for_api_incident(incident: Incident) -> None:
         from firefighter.raid.models import JiraTicket
         from firefighter.raid.service import get_jira_user_from_user
 
-        # Insurance against a double ticket; the form path never routes through this view.
+        # Safety net against a duplicate ticket; the form path does not reach here.
         if JiraTicket.objects.filter(incident=incident).exists():
             return
 

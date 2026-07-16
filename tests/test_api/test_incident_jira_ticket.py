@@ -1,9 +1,8 @@
 """Tests for ``_create_jira_ticket_for_api_incident`` (api/views/incidents.py).
 
-API-created incidents (e.g. the Datadog->IMPACT auto-raise receiver) must get a
-linked Jira ticket like Slack/unified-form incidents do (QC-159). The helper
-reconstructs the Jira fields from the incident, creates the ticket best-effort,
-and never raises (an auto-raised incident must not depend on Jira availability).
+Incidents created through the API must get a linked Jira ticket like the ones
+opened through the Slack form. The helper takes the Jira fields from the incident,
+creates the ticket best-effort, and never raises if Jira is unavailable.
 
 Everything is mocked (no DB): the helper's DB/Jira calls are patched at their
 source modules, and the incident is a stand-in with the attributes the helper reads.
