@@ -31,11 +31,14 @@ class ProcessAfterResponse(Response):
     def close(self) -> None:
         super().close()
         incident = Incident.objects.get(id=self.data["id"])
+        # Create the Jira ticket before opening the Slack channel, so the declared
+        # announcement can include the ticket link (it is rendered only when the
+        # incident already has a linked ticket).
+        _create_jira_ticket_for_api_incident(incident)
         create_incident_conversation.send(
             "api",
             incident=incident,
         )
-        _create_jira_ticket_for_api_incident(incident)
 
 
 def _create_jira_ticket_for_api_incident(incident: Incident) -> None:
