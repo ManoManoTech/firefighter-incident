@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from typing import TYPE_CHECKING, Never
 
 from django.db.models import Prefetch, QuerySet
@@ -21,15 +22,70 @@ if TYPE_CHECKING:
     from rest_framework.serializers import BaseSerializer
 
 
+logger = logging.getLogger(__name__)
+
+
 class ProcessAfterResponse(Response):
     """Custom DRF Response, to trigger the Slack workflow after creating the incident and returning HTTP 201."""
 
     def close(self) -> None:
         super().close()
         incident = Incident.objects.get(id=self.data["id"])
+        # Create the Jira ticket before opening the Slack channel, so the declared
+        # announcement can include the ticket link (it is rendered only when the
+        # incident already has a linked ticket).
+        _create_jira_ticket_for_api_incident(incident)
         create_incident_conversation.send(
             "api",
             incident=incident,
+        )
+
+
+def _create_jira_ticket_for_api_incident(incident: Incident) -> None:
+    """Create a linked Jira ticket for an incident opened through the API.
+
+    Incidents opened through the Slack form already get a Jira ticket; ones created
+    through the API did not, so this brings the two paths in line.
+
+    Only runs on a real create (this response type is not used for the idempotent
+    duplicate case), so repeats do not create extra tickets. Fields are taken from
+    the incident since there is no form data. Best-effort: if Jira is unavailable the
+    failure is logged and ignored, because raising an incident must not depend on Jira.
+    """
+    try:
+        from firefighter.raid.client import client as jira_client
+        from firefighter.raid.forms import prepare_jira_fields
+        from firefighter.raid.models import JiraTicket
+        from firefighter.raid.service import get_jira_user_from_user
+
+        # Safety net against a duplicate ticket; the form path does not reach here.
+        if JiraTicket.objects.filter(incident=incident).exists():
+            return
+
+        reporter = get_jira_user_from_user(incident.created_by)
+        environments = [incident.environment.value] if incident.environment else []
+        jira_fields = prepare_jira_fields(
+            title=incident.title,
+            description=incident.description,
+            priority=incident.priority.value,
+            reporter=reporter.id,
+            incident_category=incident.incident_category.name,
+            environments=environments,
+            platforms=[],
+            impacts_data={},
+            optional_fields=incident.custom_fields or {},
+        )
+        issue_data = jira_client.create_issue(**jira_fields)
+        JiraTicket.objects.create(**issue_data, incident=incident)
+        logger.info(
+            "Created Jira ticket %s for API-created incident #%s",
+            issue_data.get("key"),
+            incident.id,
+        )
+    except Exception:
+        logger.exception(
+            "Best-effort Jira ticket creation failed for API-created incident #%s",
+            getattr(incident, "id", "unknown"),
         )
 
 
