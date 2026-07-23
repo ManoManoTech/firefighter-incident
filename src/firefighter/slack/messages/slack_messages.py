@@ -396,6 +396,12 @@ class SlackMessageIncidentAutoRaisedCommanderCall(SlackMessageSurface):
         self.incident = incident
         super().__init__()
 
+    def get_text(self) -> str:
+        return (
+            f"Incident #{self.incident.id} was raised automatically — "
+            "please claim the Commander role."
+        )
+
     def get_blocks(self) -> list[Block]:
         mentions = " ".join(
             f"<!subteam^{ug.usergroup_id}>"
