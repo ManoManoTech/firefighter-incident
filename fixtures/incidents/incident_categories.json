@@ -23,6 +23,7 @@
         "group": "db1d11b4-ed6d-415d-9d31-8e3ea07c3465",
         "private": false,
         "deploy_warning": true,
+        "enabled_create": false,
         "created_at": "2021-08-13T10:37:05.684Z",
         "updated_at": "2025-05-20T09:03:20.724Z"
     }
@@ -135,6 +136,7 @@
         "group": "db1d11b4-ed6d-415d-9d31-8e3ea07c3465",
         "private": false,
         "deploy_warning": true,
+        "enabled_create": false,
         "created_at": "2019-12-13T14:44:53Z",
         "updated_at": "2025-05-20T09:03:20.726Z"
     }
@@ -725,6 +727,21 @@
         "deploy_warning": true,
         "created_at": "2021-10-20T12:40:01.750Z",
         "updated_at": "2025-05-20T09:03:20.728Z"
+    }
+},
+{
+    "model": "incidents.incidentcategory",
+    "pk": "01292f09-b357-5c07-be96-754b9ea5922f",
+    "fields": {
+        "name": "Foundations",
+        "description": "",
+        "order": 1,
+        "group": "db1d11b4-ed6d-415d-9d31-8e3ea07c3465",
+        "private": false,
+        "deploy_warning": true,
+        "enabled_create": true,
+        "created_at": "2026-07-28T00:00:00Z",
+        "updated_at": "2026-07-28T00:00:00Z"
     }
 }
 ]
