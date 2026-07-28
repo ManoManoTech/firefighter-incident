@@ -101,10 +101,10 @@ incident_inlines: MutableSequence[type[InlineModelAdmin[Any, Incident]]] = []
 @admin.register(IncidentCategory)
 class IncidentCategoryAdmin(admin.ModelAdmin[IncidentCategory]):
     model = IncidentCategory
-    list_display = ["name", "group", "order", "private", "deploy_warning"]
+    list_display = ["name", "group", "order", "private", "deploy_warning", "enabled_create"]
     list_editable = ["order", "group", "private"]
     list_display_links = ["name"]
-    list_filter = ["private", "deploy_warning", "group"]
+    list_filter = ["private", "deploy_warning", "enabled_create", "group"]
     list_select_related = ["group"]
     ordering = ["group__order", "order"]
     search_fields = ["name", "group__name"]
@@ -125,6 +125,7 @@ class IncidentCategoryAdmin(admin.ModelAdmin[IncidentCategory]):
                     "order",
                     "private",
                     "deploy_warning",
+                    "enabled_create",
                     "created_at",
                     "updated_at",
                 )

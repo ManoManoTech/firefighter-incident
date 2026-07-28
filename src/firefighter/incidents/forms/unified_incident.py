@@ -91,7 +91,10 @@ class UnifiedIncidentForm(CreateIncidentFormBase):
         choices_groupby="group",
         label="Incident category",
         queryset=(
-            IncidentCategory.objects.all()
+            # Retired categories (enabled_create=False) stay selectable on the
+            # update/close forms, so existing incidents keep rendering their own.
+            # Mirrored in CreateIncidentForm, the sibling create form used by the web UI.
+            IncidentCategory.objects.filter(enabled_create=True)
             .select_related("group")
             .order_by(
                 "group__order",

@@ -154,6 +154,10 @@ class IncidentCategory(models.Model):
         default=True,
         help_text="If true, a warning will be sent when creating an incident of high severity with this incident category.",
     )
+    enabled_create = models.BooleanField(
+        default=True,
+        help_text="Can you create a new incident with this incident category? Disable to retire a category without losing the incidents already filed against it.",
+    )
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
