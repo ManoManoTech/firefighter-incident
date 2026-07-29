@@ -80,11 +80,16 @@
     "aliases": []
   },
   {
-    "version": "v0.0.65",
-    "title": "v0.0.65",
+    "version": "v0.0.66",
+    "title": "v0.0.66",
     "aliases": [
       "latest"
     ]
+  },
+  {
+    "version": "v0.0.65",
+    "title": "v0.0.65",
+    "aliases": []
   },
   {
     "version": "v0.0.64",
