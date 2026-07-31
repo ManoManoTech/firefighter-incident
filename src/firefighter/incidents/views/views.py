@@ -36,6 +36,26 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
+def incident_export_presets() -> list[tuple[str, str, str]]:
+    """Extra entries for the incident export dropdown, with pinned column order.
+
+    The `(Full)` options use `?fields=__all__`, which sorts the serializer's fields
+    alphabetically — so adding a field shifts every column after it and silently breaks
+    consumers that map by position. These presets pass an explicit field list instead,
+    which the renderer emits verbatim.
+
+    Imported lazily: `firefighter.api` imports `firefighter.incidents`, so a
+    module-level import here would create a cycle.
+    """
+    from firefighter.api.views.incidents import EXTENDED_EXPORT_FIELDS
+
+    fields = ",".join(EXTENDED_EXPORT_FIELDS)
+    return [
+        ("csv", fields, "(Full, mapped)"),
+        ("tsv", fields, "(Full, mapped)"),
+    ]
+
+
 class IncidentListView(SingleTableMixin, FilterView):
     table_class = IncidentTable
     context_object_name = "incidents"
@@ -75,6 +95,7 @@ class IncidentListView(SingleTableMixin, FilterView):
 
         context["page_title"] = "Incidents List"
         context["api_url_export"] = reverse("api:incidents-list")
+        context["export_presets"] = incident_export_presets()
         return context
 
 
@@ -110,6 +131,7 @@ class IncidentStatisticsView(FilterView):
             "priority",
             "incident_category",
         ]
+        context["export_presets"] = incident_export_presets()
         context_data = weekly_dashboard_context(
             self.request, context.get("incidents_filtered", [])
         )

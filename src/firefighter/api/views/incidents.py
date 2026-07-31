@@ -21,6 +21,110 @@ if TYPE_CHECKING:
     from rest_framework.serializers import BaseSerializer
 
 
+EXTENDED_EXPORT_FIELDS: tuple[str, ...] = (
+    # --- Stable block: order frozen as of firefighter-incident 0.0.65 (the last
+    # release before `incident_category.enabled_create`, `jira_ticket_key` and
+    # `jira_ticket_url` were added). Downstream consumers map these positionally,
+    # so NEVER insert, remove or reorder anything in this block.
+    "costs.Business Volume lost.amount",
+    "costs.Business Volume lost.details",
+    "costs.Infrastructure cost.amount",
+    "costs.Infrastructure cost.details",
+    "costs.Revenue lost.amount",
+    "costs.Revenue lost.details",
+    "created_at",
+    "created_by.email",
+    "created_by.id",
+    "created_by.name",
+    "description",
+    "environment.default",
+    "environment.description",
+    "environment.id",
+    "environment.name",
+    "environment.order",
+    "environment.value",
+    "id",
+    "ignore",
+    "incident_category.created_at",
+    "incident_category.deploy_warning",
+    "incident_category.description",
+    "incident_category.group.created_at",
+    "incident_category.group.description",
+    "incident_category.group.id",
+    "incident_category.group.name",
+    "incident_category.group.order",
+    "incident_category.group.updated_at",
+    "incident_category.id",
+    "incident_category.name",
+    "incident_category.order",
+    "incident_category.private",
+    "incident_category.updated_at",
+    "metrics.time_to_detect.duration",
+    "metrics.time_to_detect.duration_seconds",
+    "metrics.time_to_detect.metric_type",
+    "metrics.time_to_fix.duration",
+    "metrics.time_to_fix.duration_seconds",
+    "metrics.time_to_fix.metric_type",
+    "metrics.time_to_internal_response.duration",
+    "metrics.time_to_internal_response.duration_seconds",
+    "metrics.time_to_internal_response.metric_type",
+    "metrics.time_to_recovery.duration",
+    "metrics.time_to_recovery.duration_seconds",
+    "metrics.time_to_recovery.metric_type",
+    "metrics.time_to_repair.duration",
+    "metrics.time_to_repair.duration_seconds",
+    "metrics.time_to_repair.metric_type",
+    "metrics.time_to_respond.duration",
+    "metrics.time_to_respond.duration_seconds",
+    "metrics.time_to_respond.metric_type",
+    "postmortem_url",
+    "priority.created_at",
+    "priority.default",
+    "priority.description",
+    "priority.emoji",
+    "priority.enabled_create",
+    "priority.enabled_update",
+    "priority.id",
+    "priority.name",
+    "priority.needs_postmortem",
+    "priority.order",
+    "priority.recommended_response_type",
+    "priority.reminder_time",
+    "priority.sla",
+    "priority.updated_at",
+    "priority.value",
+    "roles.commander.email",
+    "roles.commander.id",
+    "roles.commander.name",
+    "roles.communication_lead.email",
+    "roles.communication_lead.id",
+    "roles.communication_lead.name",
+    "slack_channel_name",
+    "status",
+    "status_page_url",
+    "title",
+    # --- Append-only block: every new field goes at the END, below this line.
+    "incident_category.enabled_create",
+    "jira_ticket_key",
+    "jira_ticket_url",
+)
+"""Frozen column order for the extended CSV/TSV export.
+
+Unlike `?fields=__all__` — which alphabetically sorts whatever the serializer happens
+to expose — this list is explicit, and the renderer returns an explicit header
+verbatim. Column positions therefore stay stable when a new serializer field is added.
+
+Two rules keep it that way:
+
+1. Never insert, remove or reorder an entry in the stable block.
+2. New fields go at the END, after the append-only marker.
+
+`__all__` is also data-dependent: `costs.*`, `metrics.*` and `roles.*` are keyed by
+values present in the result set, so two `__all__` exports over different filters can
+return different columns. An explicit list avoids that as well.
+"""
+
+
 class ProcessAfterResponse(Response):
     """Custom DRF Response, to trigger the Slack workflow after creating the incident and returning HTTP 201."""
 
