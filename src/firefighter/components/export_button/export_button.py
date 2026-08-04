@@ -24,6 +24,7 @@ Args = tuple[str]
 class Kwargs(TypedDict, total=False):
     base_url: Required[str]
     default_fmt: NotRequired[tuple[str, str | None, str | None]]
+    presets: NotRequired[Sequence[tuple[str, str | None, str | None]]]
 
 
 @component.register("export_button")
@@ -34,14 +35,27 @@ class ExportButton(component.Component):
         self,
         base_url: str,
         default_fmt: tuple[str, str | None, str | None] | None = None,
+        presets: Sequence[tuple[str, str | None, str | None]] | None = None,
         **kwargs: Any,
     ) -> Data:
+        """Build the export dropdown.
+
+        Args:
+            base_url: Reversible name of the API list route to export from.
+            default_fmt: The format of the main (non-dropdown) button.
+            presets: Extra `(format, fields, label)` entries appended to the dropdown.
+                Pass an explicit comma-separated `fields` string to pin the column
+                order — unlike `__all__`, an explicit header is rendered verbatim, so
+                adding a serializer field cannot shift a downstream consumer's columns.
+            **kwargs: Unused; accepted for django-components compatibility.
+        """
         default_fmt = default_fmt or ("csv", None, None)
         fmts: list[tuple[str, str | None, str | None]] = [
             ("json", None, None),
             ("tsv", None, None),
             ("csv", "__all__", "(Full)"),
             ("tsv", "__all__", "(Full)"),
+            *(presets or ()),
         ]
 
         default_format = self.make_fmt(default_fmt, base_url)
