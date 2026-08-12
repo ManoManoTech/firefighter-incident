@@ -113,10 +113,10 @@ class KeyEvents(MessageForm[IncidentUpdateKeyEventsForm]):
         if form is None:
             logger.warning("Form is None, skipping save")
             return
+        self.form = form
         if len(form.errors) > 0:
             self.update_with_form()
             return
-        self.form = form
         self.form.save()
 
         # Send signal to update Jira post-mortem timeline if applicable
