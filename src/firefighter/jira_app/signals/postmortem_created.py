@@ -211,7 +211,16 @@ def postmortem_created_handler(
             f"confluence={confluence_pm is not None}, jira={jira_pm is not None}"
         )
         postmortem_created.send_robust(sender=__name__, incident=incident)
-        _publish_postmortem_announcement(incident)
+        # Announcing to #critical-incidents is a broadcast: it must never prevent
+        # the reminder below. Isolated in place rather than moved to its own
+        # receiver, because postmortem_created is also emitted by
+        # firefighter.confluence.models and a receiver would risk announcing twice.
+        try:
+            _publish_postmortem_announcement(incident)
+        except Exception:
+            logger.exception(
+                f"Post-mortem announcement failed, continuing for incident #{incident.id}"
+            )
 
     # Publish reminder
     publish_postmortem_reminder(incident)
