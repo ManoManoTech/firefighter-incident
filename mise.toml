@@ -2,7 +2,12 @@
 python = "3.12"
 direnv = "2.32.1"
 node = "22"
-pdm = "2.26.4"
+# Keep in step with the pdm that generates pdm.lock. A lockfile written by a
+# newer pdm makes an older one warn "Lockfile is generated on a newer version
+# of PDM" and silently re-resolve, so --frozen-lockfile stops being frozen and
+# CI installs versions the lock does not pin. See the pdm-version guard in
+# .github/workflows/ci.yml.
+pdm = "2.28.0"
 act = "0.2.77"
 
 [hooks]

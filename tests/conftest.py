@@ -11,15 +11,22 @@ from __future__ import annotations
 import logging
 from importlib import resources as impresources
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import pytest
 from django.core.management import call_command
-from pytest_django import DjangoDbBlocker
-from pytest_django.fixtures import SettingsWrapper
 
 from firefighter.incidents.factories import IncidentFactory
 from firefighter.incidents.models import Incident
+
+if TYPE_CHECKING:
+    # Imported for annotations only. pytest-django moves these between modules
+    # across releases - 4.14 dropped SettingsWrapper from pytest_django.fixtures
+    # - and a module-level import turns that into an ImportError that stops the
+    # whole suite from being collected. Annotations are deferred here, so the
+    # names are never resolved at runtime.
+    from pytest_django import DjangoDbBlocker
+    from pytest_django.fixtures import SettingsWrapper
 
 logger = logging.getLogger(__name__)
 
