@@ -18,13 +18,17 @@ import logging
 import re
 from typing import TYPE_CHECKING, Any, NamedTuple
 
-from django.utils.timezone import localtime
-from slack_sdk.models.blocks import Block, HeaderBlock, SectionBlock
+from django.utils.timezone import localtime, now
+from slack_sdk.models.blocks import Block, ContextBlock, HeaderBlock, SectionBlock
+from slack_sdk.models.blocks.basic_components import MarkdownTextObject
 from slack_sdk.models.blocks.block_elements import ButtonElement
 from slack_sdk.models.blocks.blocks import ActionsBlock
 
 from firefighter.incidents.enums import IncidentStatus
-from firefighter.incidents.forms.timeline_correction import TimelineCorrectionForm
+from firefighter.incidents.forms.timeline_correction import (
+    DEFINITIVE_OCCURRENCE,
+    TimelineCorrectionForm,
+)
 from firefighter.incidents.models.incident import Incident
 from firefighter.incidents.signals import incident_key_events_updated
 from firefighter.slack.messages.base import SlackMessageStrategy, SlackMessageSurface
@@ -46,6 +50,7 @@ app = SlackApp()
 
 ACCEPT_ACTION_ID = "review_timeline_accept"
 REJECT_ACTION_ID = "review_timeline_reject"
+RECHECK_ACTION_ID = "review_timeline_recheck"
 
 # Fields carried over from the Update Status submission so they aren't lost
 # while the human reviews the timeline (mirrors utils._build_carry_over_from_form).
@@ -123,6 +128,30 @@ class TimelineEntry(NamedTuple):
 # status timeline - both are collected via the Key Events form (see
 # fixtures/incidents/milestone_type.json) but aren't guaranteed to be filled
 # in, since that form is user-editable and can be skipped.
+# The expected chronological order of an incident, spanning both milestones and
+# status transitions. This interleaving lives nowhere else: MilestoneType has no
+# `order` field and IncidentStatus only orders the statuses among themselves.
+# Single source of truth for the displayed legend and the consistency checks.
+# label, emoji, source key, and which occurrence to keep when a status repeats
+# after a reopen: investigation *started* at its first occurrence, while the
+# mitigation that actually held is the last one - and that is the one the
+# post-mortem timeline must show.
+# label, emoji, source, and whether a missing time is an error. Only the
+# milestones are mandatory (MilestoneType.required): a status that never
+# happened - an incident going straight from Declared to Mitigated, say - is
+# not a mistake and must not be reported as one.
+_EXPECTED_STEPS: tuple[tuple[str, str, str | IncidentStatus, bool], ...] = (
+    ("Started", ":firecracker:", "started", True),
+    ("Detected", ":eyes:", "detected", True),
+    ("Declared", ":loudspeaker:", IncidentStatus.OPEN, False),
+    ("Investigating", ":mag:", IncidentStatus.INVESTIGATING, False),
+    ("Mitigating", ":wrench:", IncidentStatus.MITIGATING, False),
+    ("Mitigated", ":white_check_mark:", IncidentStatus.MITIGATED, False),
+    ("Post-mortem", ":memo:", IncidentStatus.POST_MORTEM, False),
+)
+
+_EXPECTED_ORDER: tuple[str, ...] = tuple(label for label, *_ in _EXPECTED_STEPS)
+
 _MILESTONE_EVENT_TYPES: tuple[tuple[str, str], ...] = (
     ("started", "Started"),
     ("detected", "Detected"),
@@ -170,6 +199,103 @@ def get_incident_timeline(incident: Incident) -> list[TimelineEntry]:
     return [*milestones, *status_entries]
 
 
+class TimelineIssue(NamedTuple):
+    label: str
+    message: str
+
+
+def _format_delta(delta: datetime.timedelta) -> str:
+    seconds = int(abs(delta).total_seconds())
+    days, seconds = divmod(seconds, 86400)
+    hours, seconds = divmod(seconds, 3600)
+    minutes, seconds = divmod(seconds, 60)
+    parts = [
+        f"{value}{unit}"
+        for value, unit in ((days, "d"), (hours, "h"), (minutes, "m"), (seconds, "s"))
+        if value
+    ]
+    return " ".join(parts[:2]) if parts else "0s"
+
+
+class TimelineStep(NamedTuple):
+    label: str
+    emoji: str
+    event_ts: datetime.datetime | None
+    occurrences: int
+    required: bool
+
+
+def get_canonical_steps(incident: Incident) -> list[TimelineStep]:
+    """One step per `_EXPECTED_STEPS` entry, collapsing reopen cycles.
+
+    A reopened incident goes through Investigating/Mitigating/Mitigated more than
+    once. Listing every occurrence makes the sequence impossible to check against
+    the expected order and buries the definitive times, so each step keeps a
+    single timestamp and carries its occurrence count instead.
+    """
+    milestone_updates = dict(
+        incident.incidentupdate_set.filter(
+            event_type__in=[event_type for event_type, _ in _MILESTONE_EVENT_TYPES]
+        )
+        .order_by("event_ts")
+        .values_list("event_type", "event_ts")
+    )
+    status_occurrences: dict[IncidentStatus, list[datetime.datetime]] = {}
+    for status, event_ts in get_status_timeline(incident):
+        status_occurrences.setdefault(status, []).append(event_ts)
+
+    steps: list[TimelineStep] = []
+    for label, emoji, source, required in _EXPECTED_STEPS:
+        step_ts: datetime.datetime | None
+        if isinstance(source, str):
+            step_ts = milestone_updates.get(source)
+            count = 1 if step_ts is not None else 0
+        else:
+            stamps = sorted(status_occurrences.get(source) or [])
+            count = len(stamps)
+            which = DEFINITIVE_OCCURRENCE.get(source, "last")
+            step_ts = (stamps[-1] if which == "last" else stamps[0]) if stamps else None
+        steps.append(TimelineStep(label, emoji, step_ts, count, required))
+    return steps
+
+
+def find_timeline_issues(steps: list[TimelineStep]) -> list[TimelineIssue]:
+    """Checks the recorded steps against the expected chronology.
+
+    Reports steps that break the order, required steps with no recorded time,
+    and times in the future - the three ways a hand-typed timeline goes wrong.
+    """
+    issues: list[TimelineIssue] = []
+    right_now = now()
+    previous: tuple[str, datetime.datetime] | None = None
+    for step in steps:
+        label = step.label
+        event_ts = step.event_ts
+        if event_ts is None:
+            if step.required:
+                issues.append(
+                    TimelineIssue(
+                        label, f"*{label}* is required and has no recorded time"
+                    )
+                )
+            continue
+        if event_ts > right_now:
+            issues.append(
+                TimelineIssue(label, f"*{label}* is in the future")
+            )
+        if previous is not None and event_ts < previous[1]:
+            issues.append(
+                TimelineIssue(
+                    label,
+                    f"*{label}* ({localtime(event_ts).strftime('%H:%M:%S')}) is "
+                    f"{_format_delta(previous[1] - event_ts)} before *{previous[0]}* "
+                    f"({localtime(previous[1]).strftime('%H:%M:%S')})",
+                )
+            )
+        previous = (label, event_ts)
+    return issues
+
+
 class SlackMessageReviewTimeline(SlackMessageSurface):
     id = "ff_incident_timeline_review"
     # Each new pending review posts fresh and removes the previous review
@@ -197,16 +323,78 @@ class SlackMessageReviewTimeline(SlackMessageSurface):
         return f"Timeline review before Post-mortem for {self.incident}."
 
     def get_blocks(self) -> list[Block]:
-        blocks: list[Block] = [
-            HeaderBlock(text=":stopwatch: Timeline Review"),
-        ]
-        for entry in get_incident_timeline(self.incident):
-            value = (
-                localtime(entry.event_ts).strftime("%Y-%m-%d %H:%M:%S %Z")
-                if entry.event_ts is not None
-                else "_Not recorded_"
+        steps = get_canonical_steps(self.incident)
+        issues = find_timeline_issues(steps)
+        flagged = {issue.label for issue in issues}
+
+        recorded = sorted(
+            localtime(step.event_ts) for step in steps if step.event_ts is not None
+        )
+        dates = {ts.date() for ts in recorded}
+        # Incidents can span several days, so the date is never dropped: a single
+        # day goes in the heading and the rows carry times only, otherwise the
+        # heading carries the range and every row carries its own day.
+        single_day = len(dates) == 1
+        heading = ":stopwatch: Timeline Review"
+        if recorded:
+            first, last = recorded[0].date(), recorded[-1].date()
+            if single_day:
+                span = first.strftime("%d %b %Y")
+            elif (first.year, first.month) == (last.year, last.month):
+                span = f"{first.day} → {last.strftime('%d %b %Y')}"
+            elif first.year == last.year:
+                span = f"{first.strftime('%d %b')} → {last.strftime('%d %b %Y')}"
+            else:
+                span = f"{first.strftime('%d %b %Y')} → {last.strftime('%d %b %Y')}"
+            heading = f"{heading} — {span} ({recorded[0].strftime('%Z')})"
+
+        blocks: list[Block] = [HeaderBlock(text=heading)]
+
+        # Horizontal chain: reads as a timeline at a glance and wraps on its own
+        # in Slack. Times are minute-precision here to keep the chain short - the
+        # exact seconds are in the issue list below and in the correction form.
+        chain = []
+        for step in steps:
+            if step.event_ts is None and not step.required:
+                continue
+            if step.event_ts is None:
+                stamp = "_not recorded_"
+            else:
+                local = localtime(step.event_ts)
+                stamp = local.strftime("%H:%M" if single_day else "%d/%m %H:%M")
+            marks = " :warning:" if step.label in flagged else ""
+            reopened = f" ↻{step.occurrences - 1}" if step.occurrences > 1 else ""
+            chain.append(f"{step.emoji} *{step.label}* {stamp}{marks}{reopened}")
+        blocks.append(SectionBlock(text="  ➜  ".join(chain)))
+
+        if issues:
+            details = "\n".join(f"> • {issue.message}" for issue in issues)
+            blocks.append(
+                SectionBlock(
+                    text=(
+                        f":warning: *{len(issues)} issue"
+                        f"{'s' if len(issues) > 1 else ''} to fix before "
+                        f"continuing*\n{details}"
+                    )
+                )
             )
-            blocks.append(SectionBlock(text=f"• *{entry.label}*: {value}"))
+        elif self.resolution is None:
+            blocks.append(
+                SectionBlock(
+                    text=":white_check_mark: *No inconsistency detected* — order and recorded times are consistent."
+                )
+            )
+
+        blocks.append(
+            ContextBlock(
+                elements=[
+                    MarkdownTextObject(
+                        text="Expected order: " + " → ".join(_EXPECTED_ORDER)
+                        + "   ·   ↻ = reopen cycles"
+                    )
+                ]
+            )
+        )
 
         if self.resolution == "accepted":
             blocks.append(
@@ -225,23 +413,28 @@ class SlackMessageReviewTimeline(SlackMessageSurface):
                 )
             )
         else:
-            blocks.append(
-                ActionsBlock(
-                    elements=[
-                        ButtonElement(
-                            text="Looks correct — continue to Post-mortem",
-                            style="primary",
-                            action_id=ACCEPT_ACTION_ID,
-                            value=self.carry_over_payload,
-                        ),
-                        ButtonElement(
-                            text="Not accurate — let me fix it",
-                            action_id=REJECT_ACTION_ID,
-                            value=self.carry_over_payload,
-                        ),
-                    ]
+            # Accept is withheld while the timeline is inconsistent: a wrong
+            # timeline drives the post-mortem and the incident metrics. Slack
+            # cannot disable a button, so it is simply not rendered - the accept
+            # handler re-checks as well, since an older message stays clickable.
+            actions = []
+            if not issues:
+                actions.append(
+                    ButtonElement(
+                        text="Looks correct — continue to Post-mortem",
+                        style="primary",
+                        action_id=ACCEPT_ACTION_ID,
+                        value=self.carry_over_payload,
+                    )
+                )
+            actions.append(
+                ButtonElement(
+                    text="Not accurate — let me fix it",
+                    action_id=REJECT_ACTION_ID,
+                    value=self.carry_over_payload,
                 )
             )
+            blocks.append(ActionsBlock(elements=actions))
         return blocks
 
 
@@ -265,6 +458,25 @@ def _resolved_message_strategy_args(body: dict[str, Any]) -> dict[str, Any] | No
 @app.action(ACCEPT_ACTION_ID)
 def handle_review_timeline_accept(ack: Ack, body: dict[str, Any]) -> None:
     ack()
+    _resolve_timeline_and_transition(body, update_in_place=True)
+
+
+@app.action(RECHECK_ACTION_ID)
+def handle_review_timeline_recheck(ack: Ack, body: dict[str, Any]) -> None:
+    """Re-run the checks from the correction message and transition if clean.
+
+    Saves a round trip through the Update Status modal once the times are fixed.
+    The transition it applies carries the status only: the message and any
+    priority or category change from the original submission cannot be threaded
+    across the correction step, so nothing pretends to carry them.
+    """
+    ack()
+    _resolve_timeline_and_transition(body, update_in_place=False)
+
+
+def _resolve_timeline_and_transition(
+    body: dict[str, Any], *, update_in_place: bool
+) -> None:
     payload = _parse_action_payload(body)
     if payload is None:
         return
@@ -275,15 +487,38 @@ def handle_review_timeline_accept(ack: Ack, body: dict[str, Any]) -> None:
         respond(body, text=":x: Incident not found.")
         return
 
+    # Re-check server-side: the button is not rendered when the timeline is
+    # inconsistent, but an older review message left in the channel stays
+    # clickable, so the gate cannot live in the rendering alone.
+    issues = find_timeline_issues(get_canonical_steps(incident))
+    if issues:
+        respond(
+            body,
+            text=(
+                ":warning: The timeline still has "
+                f"{len(issues)} issue{'s' if len(issues) > 1 else ''} to fix: "
+                + "; ".join(issue.message for issue in issues)
+            ),
+        )
+        return
+
     user = get_user_from_context(body)
+    # Flush the edits made in the correction form now that the reviewer is done:
+    # this refreshes the Key Events form message (it shows the same milestones)
+    # and re-syncs the Jira timeline, once instead of once per keystroke.
+    incident_key_events_updated.send_robust(__name__, incident=incident)
     incident.create_incident_update(
         created_by=user, status=IncidentStatus.POST_MORTEM, **payload
     )
     _push_confirmed_timeline_to_jira(incident)
+    # Accept edits the review message it was clicked from; the re-check button
+    # lives on the correction message, so it posts the outcome as a new message
+    # rather than overwriting a form the reviewer may still be reading.
+    strategy_args = _resolved_message_strategy_args(body) if update_in_place else None
     incident.conversation.send_message_and_save(
         SlackMessageReviewTimeline(incident, resolution="accepted"),
-        strategy=SlackMessageStrategy.UPDATE,
-        strategy_args=_resolved_message_strategy_args(body),
+        strategy=SlackMessageStrategy.UPDATE if update_in_place else SlackMessageStrategy.APPEND,
+        strategy_args=strategy_args,
     )
 
 
@@ -342,19 +577,33 @@ class TimelineCorrection(MessageForm[TimelineCorrectionForm]):
         slack_form: SlackForm[TimelineCorrectionForm] = self.get_form_class()
         slack_form.form = form
         blocks += slack_form.slack_blocks()
+        # Deliberately not an "accept" button: it re-runs the checks and only
+        # transitions if they pass. Its payload is the incident id alone - the
+        # original Update Status submission (its message, any priority or
+        # category change) cannot be threaded across the correction step, and
+        # this way nothing pretends to carry it.
         blocks.append(
             ActionsBlock(
                 elements=[
                     ButtonElement(
-                        text="Looks correct — continue to Post-mortem",
+                        text="Re-check timeline & continue to Post-mortem",
                         style="primary",
-                        action_id=ACCEPT_ACTION_ID,
-                        # Minimal payload (just the incident id), regenerated
-                        # fresh on every render - avoids needing to carry the
-                        # original Update Status submission's payload across
-                        # an indefinite number of field-edit reposts.
+                        action_id=RECHECK_ACTION_ID,
                         value=build_carry_over_payload(form.incident, {}),
                     ),
+                ]
+            )
+        )
+        blocks.append(
+            ContextBlock(
+                elements=[
+                    MarkdownTextObject(
+                        text=(
+                            "Re-checking applies the status change only. To also "
+                            "post an update message, run *Update Status* → "
+                            "*Post-mortem* instead."
+                        )
+                    )
                 ]
             )
         )
@@ -376,17 +625,20 @@ class TimelineCorrection(MessageForm[TimelineCorrectionForm]):
             return
         self.form.save()
 
-        # Same side effects as the Key Events form: refresh the Jira
-        # post-mortem timeline and the incident's computed metrics.
-        incident_key_events_updated.send_robust(__name__, incident=incident)
+        # Metrics are cheap and local, so they stay in sync on every edit.
         incident.compute_metrics()
 
-        # Only the correction message itself needs refreshing here - this
-        # runs on every single field edit (like Key Events), so reposting
-        # the "rejected" review message too would move/repost it on every
-        # keystroke. That message already showed why the review was
-        # rejected; the corrected timeline becomes visible in a fresh review
-        # message the next time Update Status -> Post-mortem is submitted.
+        # `incident_key_events_updated` is deliberately NOT sent here. This
+        # method runs on every single field edit, and the signal fans out to a
+        # Jira round trip plus a refresh of the Key Events form message - which
+        # shows the same started/detected values, so Slack marks it "(edited)"
+        # and resurfaces it on every keystroke. Both are done once the reviewer
+        # is finished, from `_resolve_timeline_and_transition`, which keeps the
+        # two surfaces consistent without the noise (and without ~2 Jira calls
+        # per edited field).
+        #
+        # Only the correction message itself is refreshed here, to echo the
+        # value that was just saved.
         self.update_with_form()
 
     def update_with_form(self) -> None:
