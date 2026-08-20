@@ -12,7 +12,10 @@ from django.template.loader import render_to_string
 from firefighter.incidents.models.incident import Incident as IncidentModel
 from firefighter.incidents.signals import incident_key_events_updated
 from firefighter.jira_app.client import JiraClient
-from firefighter.jira_app.service_postmortem import JiraPostMortemService
+from firefighter.jira_app.service_postmortem import (
+    JiraPostMortemService,
+    build_timeline_rows,
+)
 
 if TYPE_CHECKING:
     from firefighter.incidents.models.incident import Incident
@@ -20,19 +23,16 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-@receiver(signal=incident_key_events_updated)
-def sync_key_events_to_jira_postmortem(
-    sender: Any, incident: Incident, **kwargs: dict[str, Any]
-) -> None:
-    """Update Jira post-mortem timeline when key events are updated.
+def sync_timeline_to_jira_postmortem(incident: Incident) -> None:
+    """Render the incident's timeline and push it to its Jira post-mortem's Timeline field.
 
-    This handler is triggered when incident key events are updated via the web UI
-    or Slack, and syncs the timeline to the associated Jira post-mortem ticket.
+    No-op if Jira post-mortem is disabled, or the incident has no Jira post-mortem.
+    Shared by the key-events-updated signal receiver below and by other callers
+    that want to push a freshly-confirmed timeline on demand (e.g. the Slack
+    timeline review checkpoint, once a human accepts it).
 
     Args:
-        sender: The sender of the signal
-        incident: The incident whose key events were updated
-        **kwargs: Additional keyword arguments
+        incident: The incident whose timeline should be synced to Jira
     """
     # Check if Jira post-mortem is enabled
     if not getattr(settings, "ENABLE_JIRA_POSTMORTEM", False):
@@ -46,7 +46,7 @@ def sync_key_events_to_jira_postmortem(
 
     jira_postmortem = incident.jira_postmortem_for
     logger.info(
-        f"Syncing key events timeline to Jira post-mortem {jira_postmortem.jira_issue_key} "
+        f"Syncing timeline to Jira post-mortem {jira_postmortem.jira_issue_key} "
         f"for incident #{incident.id}"
     )
 
@@ -61,7 +61,7 @@ def sync_key_events_to_jira_postmortem(
         # Generate updated timeline from template
         timeline_content = render_to_string(
             "jira/postmortem/timeline.txt",
-            {"incident": incident_refreshed},
+            {"timeline_rows": build_timeline_rows(incident_refreshed)},
         )
 
         # Get the field ID for timeline from service
@@ -86,3 +86,20 @@ def sync_key_events_to_jira_postmortem(
             f"Failed to update timeline in Jira post-mortem {jira_postmortem.jira_issue_key} "
             f"for incident #{incident.id}"
         )
+
+
+@receiver(signal=incident_key_events_updated)
+def sync_key_events_to_jira_postmortem(
+    sender: Any, incident: Incident, **kwargs: dict[str, Any]
+) -> None:
+    """Update Jira post-mortem timeline when key events are updated.
+
+    This handler is triggered when incident key events are updated via the web UI
+    or Slack, and syncs the timeline to the associated Jira post-mortem ticket.
+
+    Args:
+        sender: The sender of the signal
+        incident: The incident whose key events were updated
+        **kwargs: Additional keyword arguments
+    """
+    sync_timeline_to_jira_postmortem(incident)

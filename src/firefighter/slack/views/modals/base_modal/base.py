@@ -51,6 +51,11 @@ app = SlackApp()
 logger = logging.getLogger(__name__)
 
 
+def _concat_validation_errors_msg(err: list[ValidationError]) -> str:
+    """Return a string of all validation errors."""
+    return reduce(operator.add, ["; ".join(e.messages) for e in err], "")
+
+
 class SlackModal:
     """Two main responsibilities:
     - Register the modal on Slack to open it with shortcuts or actions
@@ -303,17 +308,12 @@ class ModalForm[T: Form](SlackModal):
             ack(
                 response_action="errors",
                 errors={
-                    k: self._concat_validation_errors_msg(v)
+                    k: _concat_validation_errors_msg(v)
                     for k, v in form.errors.as_data().items()
                 },
             )
             return None
         return slack_form
-
-    @staticmethod
-    def _concat_validation_errors_msg(err: list[ValidationError]) -> str:
-        """Return a string of all validation errors."""
-        return reduce(operator.add, ["; ".join(e.messages) for e in err], "")
 
 
 class MessageForm[T: Form](SlackModal):
@@ -347,6 +347,10 @@ class MessageForm[T: Form](SlackModal):
             logger.warning("Form errors in Slack context.")
             logger.warning(form.errors.as_data())
 
-            ack(text="Error", response_type="ephemeral")
+            error_text = "; ".join(
+                f"{field}: {_concat_validation_errors_msg(errs)}"
+                for field, errs in form.errors.as_data().items()
+            )
+            ack(text=f"Error: {error_text}", response_type="ephemeral")
 
         return slack_form

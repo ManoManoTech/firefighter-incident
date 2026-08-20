@@ -366,6 +366,123 @@ class TestUpdateStatusModal:
         trigger_incident_workflow.assert_not_called()
 
     @staticmethod
+    def test_post_mortem_shows_timeline_review_instead_of_transitioning(
+        mocker: MockerFixture, priority_factory, environment_factory, settings
+    ) -> None:
+        """Test that moving to POST_MORTEM shows a timeline review checkpoint.
+
+        The transition itself must not be applied directly from the modal
+        submission - it's deferred to the Accept action on the review message.
+
+        POST_MORTEM is only a reachable status choice when the incident's
+        priority requires a postmortem and its environment is PRD (see
+        `UpdateStatusForm._set_status_choices`), hence the explicit P1/PRD setup.
+        The checkpoint itself is additionally gated on `incident.needs_postmortem`,
+        which also requires a postmortem system to be enabled - set explicitly
+        here so the test doesn't depend on ambient ENABLE_JIRA_POSTMORTEM/
+        ENABLE_CONFLUENCE settings (e.g. from a local .env vs CI).
+        """
+        settings.ENABLE_JIRA_POSTMORTEM = True
+        p1_priority = priority_factory(value=1, name="P1", needs_postmortem=True)
+        prd_environment = environment_factory(value="PRD", name="Production")
+        incident = IncidentFactory.build(
+            _status=IncidentStatus.MITIGATED,
+            priority=p1_priority,
+            environment=prd_environment,
+        )
+
+        modal = UpdateStatusModal()
+        mock_show_timeline_review = mocker.patch(
+            "firefighter.slack.views.modals.update_status.show_timeline_review"
+        )
+        trigger_incident_workflow = mocker.patch.object(
+            modal, "_trigger_incident_workflow"
+        )
+
+        ack = MagicMock()
+        user = UserFactory.build()
+        user.save()
+
+        submission_copy = dict(valid_submission)
+        submission_copy["view"]["state"]["values"]["status"]["status"][
+            "selected_option"
+        ] = {
+            "text": {"type": "plain_text", "text": "Post-mortem", "emoji": True},
+            "value": "50",
+        }
+        submission_copy["view"]["private_metadata"] = str(incident.id)
+
+        modal.handle_modal_fn(
+            ack=ack, body=submission_copy, incident=incident, user=user
+        )
+
+        mock_show_timeline_review.assert_called_once()
+        call_args = mock_show_timeline_review.call_args.args
+        assert call_args[0] is ack
+        assert call_args[1] is incident
+        assert call_args[2]["status"] == IncidentStatus.POST_MORTEM
+
+        # The transition must not happen directly from the modal submission.
+        trigger_incident_workflow.assert_not_called()
+
+    @staticmethod
+    def test_post_mortem_transitions_directly_when_incident_has_no_postmortem(
+        mocker: MockerFixture, priority_factory, environment_factory
+    ) -> None:
+        """No timeline review checkpoint when the incident has no post-mortem to review.
+
+        POST_MORTEM can still be a reachable form choice for a P1/PRD incident
+        even when no post-mortem system is actually enabled (the form's choice
+        list only checks priority/environment, not `Incident.needs_postmortem`,
+        which also factors in whether Confluence/Jira post-mortem is enabled).
+        In that case the transition should apply immediately, as it did before
+        the review checkpoint existed.
+        """
+        p1_priority = priority_factory(value=1, name="P1", needs_postmortem=True)
+        prd_environment = environment_factory(value="PRD", name="Production")
+        incident = IncidentFactory.build(
+            _status=IncidentStatus.MITIGATED,
+            priority=p1_priority,
+            environment=prd_environment,
+        )
+        mocker.patch.object(
+            type(incident),
+            "needs_postmortem",
+            new_callable=PropertyMock,
+            return_value=False,
+        )
+
+        modal = UpdateStatusModal()
+        mock_show_timeline_review = mocker.patch(
+            "firefighter.slack.views.modals.update_status.show_timeline_review"
+        )
+        trigger_incident_workflow = mocker.patch.object(
+            modal, "_trigger_incident_workflow"
+        )
+
+        ack = MagicMock()
+        user = UserFactory.build()
+        user.save()
+
+        submission_copy = dict(valid_submission)
+        submission_copy["view"]["state"]["values"]["status"]["status"][
+            "selected_option"
+        ] = {
+            "text": {"type": "plain_text", "text": "Post-mortem", "emoji": True},
+            "value": "50",
+        }
+        submission_copy["view"]["private_metadata"] = str(incident.id)
+
+        modal.handle_modal_fn(
+            ack=ack, body=submission_copy, incident=incident, user=user
+        )
+
+        mock_show_timeline_review.assert_not_called()
+        ack.assert_called_once_with()
+        trigger_incident_workflow.assert_called_once()
+        assert trigger_incident_workflow.call_args.kwargs["status"] == IncidentStatus.POST_MORTEM
+
+    @staticmethod
     def test_can_close_when_all_conditions_met(
         mocker: MockerFixture, priority_factory, environment_factory
     ) -> None:

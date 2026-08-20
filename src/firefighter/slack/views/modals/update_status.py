@@ -11,7 +11,10 @@ from firefighter.incidents.enums import IncidentStatus
 from firefighter.incidents.forms.update_status import UpdateStatusForm
 from firefighter.slack.slack_templating import slack_block_footer, slack_block_separator
 from firefighter.slack.views.modals.base_modal.base import ModalForm
-from firefighter.slack.views.modals.utils import handle_update_status_close_request
+from firefighter.slack.views.modals.utils import (
+    handle_update_status_close_request,
+    show_timeline_review,
+)
 
 if TYPE_CHECKING:
     from slack_bolt.context.ack.ack import Ack
@@ -138,19 +141,37 @@ class UpdateStatusModal(ModalForm[UpdateStatusFormSlack]):
                     )
                     return
 
+            # Before reaching Post-mortem, let a human review the recorded
+            # timeline and accept/reject it, instead of transitioning right away.
+            # Skipped when the incident has no post-mortem to review the
+            # timeline for (e.g. below P1/P2, or not in PRD).
+            if target_status == IncidentStatus.POST_MORTEM and incident.needs_postmortem:
+                update_kwargs = self._build_update_kwargs(form)
+                if len(update_kwargs) == 0:
+                    logger.warning("No update to incident status")
+                    ack()
+                    return
+                show_timeline_review(ack, incident, update_kwargs)
+                return
+
         # All validations passed, acknowledge the submission
         ack()
 
+        update_kwargs = self._build_update_kwargs(form)
+        if len(update_kwargs) == 0:
+            logger.warning("No update to incident status")
+            return
+        self._trigger_incident_workflow(incident, user, **update_kwargs)
+
+    @staticmethod
+    def _build_update_kwargs(form: UpdateStatusFormSlack) -> dict[str, Any]:
         update_kwargs: dict[str, Any] = {}
         for changed_key in form.changed_data:
             if changed_key in {"incident_category", "priority"}:
                 update_kwargs[f"{changed_key}_id"] = form.cleaned_data[changed_key].id
             if changed_key in {"description", "title", "message", "status"}:
                 update_kwargs[changed_key] = form.cleaned_data[changed_key]
-        if len(update_kwargs) == 0:
-            logger.warning("No update to incident status")
-            return
-        self._trigger_incident_workflow(incident, user, **update_kwargs)
+        return update_kwargs
 
     @staticmethod
     def _trigger_incident_workflow(
