@@ -172,10 +172,11 @@ tests = [
     "pytest>=7.4.3",
     "pytest-cov>=4.1.0",
     "pytest-deadfixtures>=2.2.1",
-    # Upper bound: 4.14 removed SettingsWrapper from pytest_django.fixtures,
-    # which conftest.py imports. Whatever the resolver does, it can no longer
-    # pick a release that breaks collection.
-    "pytest-django>=4.7.0,<4.14",
+    # Upper bound: 4.13 breaks every test with "type object
+    # 'PytestDjangoTestCase' has no attribute '_pre_setup_ran_eagerly'", and
+    # 4.14 removed SettingsWrapper from pytest_django.fixtures. 4.12 is the
+    # last release this suite runs on; lift the bound with the fixes it needs.
+    "pytest-django>=4.7.0,<4.13",
     "pytest-mock>=3.12.0",
     "pytest-randomly>=3.15.0",
     "pytest-timeout>=2.2.0",
