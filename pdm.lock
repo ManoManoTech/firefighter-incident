@@ -5,7 +5,7 @@
 groups = ["default", "dev", "docs", "tests", "types"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:f7690e0523bcb75d27502cf546bf4fcd3128b7a1cf6a37c7decff6fb1f51e959"
+content_hash = "sha256:d3600afec1e695cdc1e155b1227cb8f9a354febb0e523ecf5d1790dd95cd6d1c"
 
 [[metadata.targets]]
 requires_python = ">=3.12,<3.15"
@@ -3611,7 +3611,7 @@ files = [
 
 [[package]]
 name = "pytest-django"
-version = "4.13.0"
+version = "4.12.0"
 requires_python = ">=3.10"
 summary = "A Django plugin for pytest."
 groups = ["tests"]
@@ -3619,8 +3619,8 @@ dependencies = [
     "pytest>=7.0.0",
 ]
 files = [
-    {file = "pytest_django-4.13.0-py3-none-any.whl", hash = "sha256:09374c12d947ca0f99e33726bcb720a6d0124f67058e1130586372bd109493e3"},
-    {file = "pytest_django-4.13.0.tar.gz", hash = "sha256:2316e3f63e3bc799deb4212830e39b2ef1dcc3b2d8688060f1d0217db6a56ebe"},
+    {file = "pytest_django-4.12.0-py3-none-any.whl", hash = "sha256:3ff300c49f8350ba2953b90297d23bf5f589db69545f56f1ec5f8cff5da83e85"},
+    {file = "pytest_django-4.12.0.tar.gz", hash = "sha256:df94ec819a83c8979c8f6de13d9cdfbe76e8c21d39473cfe2b40c9fc9be3c758"},
 ]
 
 [[package]]
