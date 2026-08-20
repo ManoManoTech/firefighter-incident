@@ -407,13 +407,6 @@ filterwarnings = [
 # --reuse-db                   # to avoid creating a new database for each test
 # --reuse-db-keepdb # keep the DB after the test
 # --no-migrations              # to avoid running migrations
-# TEMPORARY: random test ordering is disabled while the suite is made
-# order-independent - see issue #344. The suite currently passes or fails
-# depending on the pytest-randomly seed (36 to 87 errors across seeds on an
-# unchanged tree), which makes CI unusable as a review signal. Remove this line
-# once the leaking tests are fixed; pytest-randomly is kept as a dependency so
-# it can be re-enabled with a single edit.
-
 ## Coverage sample options
 # --cov-branch
 # --cov-report=term-missing:skip-covered --cov-report=html --cov-fail-under=100
@@ -422,7 +415,6 @@ addopts = """
 --strict-config
 --fail-on-template-vars
 --tb=short
--p no:randomly
 """
 
 # Pytest-django
