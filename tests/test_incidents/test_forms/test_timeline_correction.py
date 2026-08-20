@@ -85,17 +85,18 @@ class TestGenerateFieldsDynamically:
         assert form.fields["milestone_started"].required is False
 
     @staticmethod
-    def test_reopen_exposes_one_field_per_occurrence_numbered() -> None:
+    def test_reopen_exposes_one_field_bound_to_the_last_mitigating() -> None:
+        """Mitigating settles on its last occurrence: that is the editable one."""
         incident: Incident = IncidentFactory.create(_status=IncidentStatus.MITIGATED)
         user = UserFactory.create()
         base_time = timezone.now()
-        first_mitigating = IncidentUpdate.objects.create(
+        IncidentUpdate.objects.create(
             incident=incident,
             _status=IncidentStatus.MITIGATING,
             event_ts=base_time,
             created_by=user,
         )
-        second_mitigating = IncidentUpdate.objects.create(
+        last_mitigating = IncidentUpdate.objects.create(
             incident=incident,
             _status=IncidentStatus.MITIGATING,
             event_ts=base_time + timezone.timedelta(minutes=30),
@@ -104,15 +105,39 @@ class TestGenerateFieldsDynamically:
 
         form = TimelineCorrectionForm(incident=incident, user=user)
 
-        mitigating_fields = [
-            name for name in form.fields if name.startswith("status_")
-        ]
-        assert mitigating_fields == [
-            f"status_{first_mitigating.id}",
-            f"status_{second_mitigating.id}",
-        ]
-        assert form.fields[f"status_{first_mitigating.id}"].label == "Mitigating (1)"
-        assert form.fields[f"status_{second_mitigating.id}"].label == "Mitigating (2)"
+        status_fields = [name for name in form.fields if name.startswith("status_")]
+        assert status_fields == [f"status_{last_mitigating.id}"]
+        field = form.fields[f"status_{last_mitigating.id}"]
+        assert field.label == "Mitigating (last of 2)"
+        assert form.initial[f"status_{last_mitigating.id}"] == last_mitigating.event_ts
+
+    @staticmethod
+    def test_reopen_exposes_the_first_investigating() -> None:
+        """Investigating started at its first occurrence, not at the last cycle."""
+        incident: Incident = IncidentFactory.create(_status=IncidentStatus.MITIGATED)
+        user = UserFactory.create()
+        base_time = timezone.now()
+        first_investigating = IncidentUpdate.objects.create(
+            incident=incident,
+            _status=IncidentStatus.INVESTIGATING,
+            event_ts=base_time,
+            created_by=user,
+        )
+        IncidentUpdate.objects.create(
+            incident=incident,
+            _status=IncidentStatus.INVESTIGATING,
+            event_ts=base_time + timezone.timedelta(minutes=30),
+            created_by=user,
+        )
+
+        form = TimelineCorrectionForm(incident=incident, user=user)
+
+        status_fields = [name for name in form.fields if name.startswith("status_")]
+        assert status_fields == [f"status_{first_investigating.id}"]
+        assert (
+            form.fields[f"status_{first_investigating.id}"].label
+            == "Investigating (first of 2)"
+        )
 
     @staticmethod
     def test_status_reached_once_keeps_a_bare_label() -> None:

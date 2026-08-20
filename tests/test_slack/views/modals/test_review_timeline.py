@@ -17,6 +17,7 @@ from firefighter.slack.factories import IncidentChannelFactory, SlackUserFactory
 from firefighter.slack.messages.base import SlackMessageStrategy
 from firefighter.slack.views.modals.review_timeline import (
     ACCEPT_ACTION_ID,
+    RECHECK_ACTION_ID,
     REJECT_ACTION_ID,
     SlackMessageReviewTimeline,
     SlackMessageTimelineCorrection,
@@ -34,6 +35,27 @@ if TYPE_CHECKING:
     from pytest_mock import MockerFixture
 
     from firefighter.incidents.models.incident import Incident
+
+
+def record_consistent_timeline(incident: Incident) -> None:
+    """Record the required milestones in order, so the consistency gate passes.
+
+    Accept is withheld while the timeline has issues, so any test exercising the
+    transition needs `started` and `detected` recorded before the declaration.
+    """
+    user = UserFactory.create()
+    IncidentUpdate.objects.create(
+        incident=incident,
+        event_type="started",
+        event_ts=incident.created_at - timezone.timedelta(hours=2),
+        created_by=user,
+    )
+    IncidentUpdate.objects.create(
+        incident=incident,
+        event_type="detected",
+        event_ts=incident.created_at - timezone.timedelta(hours=1),
+        created_by=user,
+    )
 
 
 @pytest.mark.django_db
@@ -280,6 +302,7 @@ class TestSlackMessageReviewTimelineBlocks:
     @staticmethod
     def test_pending_shows_accept_and_reject_buttons() -> None:
         incident: Incident = IncidentFactory.create(_status=IncidentStatus.MITIGATED)
+        record_consistent_timeline(incident)
 
         blocks = SlackMessageReviewTimeline(
             incident, carry_over_payload='{"incident_id": 1}'
@@ -293,6 +316,21 @@ class TestSlackMessageReviewTimelineBlocks:
         assert action_ids == {ACCEPT_ACTION_ID, REJECT_ACTION_ID}
 
     @staticmethod
+    def test_pending_withholds_accept_while_the_timeline_has_issues() -> None:
+        """A wrong timeline drives the post-mortem, so Accept is not offered."""
+        incident: Incident = IncidentFactory.create(_status=IncidentStatus.MITIGATED)
+
+        blocks = SlackMessageReviewTimeline(
+            incident, carry_over_payload='{"incident_id": 1}'
+        ).get_blocks()
+
+        actions_blocks = [b for b in blocks if isinstance(b, ActionsBlock)]
+        action_ids = {b.action_id for b in actions_blocks[0].elements}
+        assert action_ids == {REJECT_ACTION_ID}
+        section_texts = [b.text.text for b in blocks if isinstance(b, SectionBlock)]
+        assert any("issue" in text and "before continuing" in text for text in section_texts)
+
+    @staticmethod
     def test_shows_a_stopwatch_header() -> None:
         incident: Incident = IncidentFactory.create(_status=IncidentStatus.MITIGATED)
 
@@ -302,7 +340,9 @@ class TestSlackMessageReviewTimelineBlocks:
 
         headers = [b for b in blocks if isinstance(b, HeaderBlock)]
         assert len(headers) == 1
-        assert headers[0].text.text == ":stopwatch: Timeline Review"
+        # The heading carries the day (or the range) and the timezone, so that
+        # rows can show times only - an incident may span several days.
+        assert headers[0].text.text.startswith(":stopwatch: Timeline Review")
 
     @staticmethod
     def test_pending_shows_not_recorded_for_missing_milestones() -> None:
@@ -315,8 +355,8 @@ class TestSlackMessageReviewTimelineBlocks:
         section_texts = [
             b.text.text for b in blocks if isinstance(b, SectionBlock)
         ]
-        assert any("*Started*: _Not recorded_" in text for text in section_texts)
-        assert any("*Detected*: _Not recorded_" in text for text in section_texts)
+        assert any("*Started* _not recorded_" in text for text in section_texts)
+        assert any("*Detected* _not recorded_" in text for text in section_texts)
 
     @staticmethod
     def test_accepted_shows_confirmation_and_no_buttons() -> None:
@@ -336,6 +376,7 @@ class TestSlackMessageReviewTimelineBlocks:
     @staticmethod
     def test_accepted_shows_the_recorded_post_mortem_time() -> None:
         incident: Incident = IncidentFactory.create(_status=IncidentStatus.MITIGATED)
+        record_consistent_timeline(incident)
         user = UserFactory.create()
         post_mortem_at = timezone.now()
         IncidentUpdate.objects.create(
@@ -351,8 +392,8 @@ class TestSlackMessageReviewTimelineBlocks:
             b.text.text for b in blocks if isinstance(b, SectionBlock)
         ]
         assert any(
-            text.startswith(f"• *{IncidentStatus.POST_MORTEM.label}*:")
-            and "_Not recorded_" not in text
+            f"*{IncidentStatus.POST_MORTEM.label}*" in text
+            and "_not recorded_" not in text
             for text in section_texts
         )
 
@@ -380,6 +421,7 @@ class TestReviewTimelineActions:
         mocker: MockerFixture,
     ) -> None:
         incident: Incident = IncidentFactory.create(_status=IncidentStatus.MITIGATED)
+        record_consistent_timeline(incident)
         IncidentChannelFactory.create(incident=incident)
         user = UserFactory.create()
         slack_user = SlackUserFactory.create(user=user)
@@ -416,6 +458,7 @@ class TestReviewTimelineActions:
         mocker: MockerFixture,
     ) -> None:
         incident: Incident = IncidentFactory.create(_status=IncidentStatus.MITIGATED)
+        record_consistent_timeline(incident)
         IncidentChannelFactory.create(incident=incident)
         slack_user = SlackUserFactory.create()
         mocker.patch(
@@ -438,6 +481,7 @@ class TestReviewTimelineActions:
         mocker: MockerFixture,
     ) -> None:
         incident: Incident = IncidentFactory.create(_status=IncidentStatus.MITIGATED)
+        record_consistent_timeline(incident)
         IncidentChannelFactory.create(incident=incident)
         slack_user = SlackUserFactory.create()
         mocker.patch(
@@ -495,6 +539,7 @@ class TestReviewTimelineActions:
         mocker: MockerFixture,
     ) -> None:
         incident: Incident = IncidentFactory.create(_status=IncidentStatus.MITIGATED)
+        record_consistent_timeline(incident)
         IncidentChannelFactory.create(incident=incident)
         slack_user = SlackUserFactory.create()
         send_and_save = mocker.patch(
@@ -579,7 +624,7 @@ class TestTimelineCorrection:
         assert len(actions_blocks) == 1
         buttons = actions_blocks[0].elements
         assert len(buttons) == 1
-        assert buttons[0].action_id == ACCEPT_ACTION_ID
+        assert buttons[0].action_id == RECHECK_ACTION_ID
         payload = json.loads(buttons[0].value)
         assert payload == {"incident_id": incident.id}
 
@@ -588,6 +633,7 @@ class TestTimelineCorrection:
         mocker: MockerFixture,
     ) -> None:
         incident: Incident = IncidentFactory.create(_status=IncidentStatus.MITIGATED)
+        record_consistent_timeline(incident)
         IncidentChannelFactory.create(incident=incident)
         slack_user = SlackUserFactory.create()
         mocker.patch(

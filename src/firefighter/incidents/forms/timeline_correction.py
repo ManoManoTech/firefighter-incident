@@ -23,6 +23,18 @@ _MILESTONE_EVENT_TYPES: tuple[tuple[str, str], ...] = (
 )
 
 
+# Which occurrence of a status is the definitive one when a reopen makes it
+# repeat: investigation *started* at its first occurrence, while the mitigation
+# that actually held is the last one. Shared with the Slack review message so
+# both surfaces show and edit the same timestamp.
+DEFINITIVE_OCCURRENCE: dict[IncidentStatus, str] = {
+    IncidentStatus.INVESTIGATING: "first",
+    IncidentStatus.MITIGATING: "last",
+    IncidentStatus.MITIGATED: "last",
+}
+_DEFAULT_OCCURRENCE = "last"
+
+
 class TimelineCorrectionForm(forms.Form):
     """Edit in place the timeline shown in the Post-mortem review checkpoint.
 
@@ -62,7 +74,12 @@ class TimelineCorrectionForm(forms.Form):
                 event_type__in=[
                     event_type for event_type, _ in _MILESTONE_EVENT_TYPES
                 ]
-            ).values_list("event_type", "event_ts")
+            )
+            # Explicit ordering: without it Meta.ordering ("-event_ts") applies and
+            # dict() would keep the OLDEST row per type, while the review message
+            # keeps the newest - the two surfaces would disagree on the same field.
+            .order_by("event_ts")
+            .values_list("event_type", "event_ts")
         )
         for event_type, label in _MILESTONE_EVENT_TYPES:
             field_name = f"milestone_{event_type}"
@@ -79,9 +96,14 @@ class TimelineCorrectionForm(forms.Form):
             if field_name not in self.initial:
                 self.initial[field_name] = milestone_updates.get(event_type) or ""
 
-        for status, occurrence, total, update in self._status_updates_with_occurrence():
+        for status, total, update in self._editable_status_updates():
             field_name = f"status_{update.id}"
-            label = status.label if total == 1 else f"{status.label} ({occurrence})"
+            which = DEFINITIVE_OCCURRENCE.get(status, _DEFAULT_OCCURRENCE)
+            label = (
+                status.label
+                if total == 1
+                else f"{status.label} ({which} of {total})"
+            )
             self.fields[field_name] = forms.DateTimeField(
                 required=True,
                 label=label,
@@ -90,17 +112,20 @@ class TimelineCorrectionForm(forms.Form):
             if field_name not in self.initial:
                 self.initial[field_name] = update.event_ts
 
-    def _status_updates_with_occurrence(
+    def _editable_status_updates(
         self,
-    ) -> list[tuple[IncidentStatus, int, int, IncidentUpdate]]:
-        """Every non-OPEN status-change row, in chronological order.
+    ) -> list[tuple[IncidentStatus, int, IncidentUpdate]]:
+        """One editable row per non-OPEN status, in chronological order.
 
-        Yields `(status, occurrence_index, occurrence_total, update)` so a
-        status reached more than once (reopen cycles) can be numbered
-        ("Mitigating (1)", "Mitigating (2)") while a status reached only
-        once keeps a bare label. Mirrors `review_timeline.get_status_timeline`
-        - full history, no dedup - minus the OPEN special-case (OPEN, including
-        a later reopen back to OPEN, is never an editable row here).
+        A status reached several times (reopen cycles) yields a single field
+        bound to its *last* occurrence: that is the time the incident actually
+        settled on, the one the post-mortem timeline shows, and the only one
+        worth correcting. Earlier occurrences stay as recorded - they are the
+        history of the failed attempts, not a mistake to fix.
+
+        Returns `(status, occurrence_count, update)`; the count is surfaced in
+        the label ("Mitigated (last of 4)") rather than as one numbered field
+        per cycle. OPEN is never editable here, including a later reopen to OPEN.
         """
         updates = list(
             self.incident.incidentupdate_set.filter(_status__isnull=False)
@@ -108,19 +133,22 @@ class TimelineCorrectionForm(forms.Form):
             .order_by("event_ts")
         )
         totals: dict[IncidentStatus, int] = {}
-        for update in updates:
-            if update.status is not None:
-                totals[update.status] = totals.get(update.status, 0) + 1
-
-        seen: dict[IncidentStatus, int] = {}
-        result: list[tuple[IncidentStatus, int, int, IncidentUpdate]] = []
+        chosen: dict[IncidentStatus, IncidentUpdate] = {}
         for update in updates:
             status = update.status
             if status is None:
                 continue
-            seen[status] = seen.get(status, 0) + 1
-            result.append((status, seen[status], totals[status], update))
-        return result
+            totals[status] = totals.get(status, 0) + 1
+            which = DEFINITIVE_OCCURRENCE.get(status, _DEFAULT_OCCURRENCE)
+            if which == "last" or status not in chosen:
+                chosen[status] = update
+
+        return [
+            (status, totals[status], update)
+            for status, update in sorted(
+                chosen.items(), key=lambda item: item[1].event_ts
+            )
+        ]
 
     def clean(self) -> dict[str, Any] | None:
         if self.user is None:
