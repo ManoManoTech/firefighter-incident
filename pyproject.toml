@@ -421,6 +421,7 @@ addopts = """
 --strict-config
 --fail-on-template-vars
 --tb=short
+-p no:randomly
 """
 
 # Pytest-django
