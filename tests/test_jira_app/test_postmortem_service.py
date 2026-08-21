@@ -70,6 +70,14 @@ class TestJiraPostMortemService:
         # Create status updates
         now = timezone.now()
 
+        # Declaration marker, at the same instant as created_at
+        IncidentUpdate.objects.create(
+            incident=incident,
+            event_type="declared",
+            event_ts=incident.created_at,
+            created_by=user,
+        )
+
         # Status change to INVESTIGATING
         IncidentUpdate.objects.create(
             incident=incident,
@@ -106,7 +114,7 @@ class TestJiraPostMortemService:
         assert "Status changed to: Mitigated" in timeline
 
         # Verify the initial creation event is present
-        assert "Incident created" in timeline
+        assert "Key event: Declared" in timeline
 
     @staticmethod
     def test_generate_issue_fields_sets_due_date() -> None:

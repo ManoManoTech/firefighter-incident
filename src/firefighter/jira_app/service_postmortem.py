@@ -4,11 +4,12 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime, timedelta
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, NamedTuple
 
 from django.conf import settings
 from django.template.loader import render_to_string
 
+from firefighter.incidents.enums import IncidentStatus
 from firefighter.jira_app.client import (
     JiraClient,
     JiraUserDatabaseError,
@@ -21,6 +22,47 @@ if TYPE_CHECKING:
     from firefighter.incidents.models.user import User
 
 logger = logging.getLogger(__name__)
+
+
+class TimelineRow(NamedTuple):
+    event_ts: datetime
+    label: str
+
+
+def build_timeline_rows(incident: Incident) -> list[TimelineRow]:
+    """Merge all status changes and key events into one chronologically sorted list.
+
+    The `OPEN` row created at declaration time is skipped - it shares its
+    `event_ts` with `Incident.objects.declare()`'s "declared" key event,
+    which already marks when the incident was created (priority is shown in
+    the incident summary section, not repeated here), so showing both would
+    just duplicate the same instant. An incident can legitimately go back to
+    `OPEN` later (a real reopen); that row has a different `event_ts` than
+    the declaration and is kept, rendering as its own "Status changed to:
+    Open" line. Sorting everything together (rather than pinning any one
+    event first) keeps the rendered timeline chronologically correct even
+    when e.g. Started/Detected are backfilled to before the incident was
+    declared in FireFighter.
+    """
+    rows: list[TimelineRow] = []
+    for update in incident.incidentupdate_set.all():
+        if update.status:
+            is_declaration_open = (
+                update.status == IncidentStatus.OPEN
+                and update.event_ts == incident.created_at
+            )
+            if not is_declaration_open:
+                rows.append(
+                    TimelineRow(
+                        update.event_ts, f"Status changed to: {update.status.label}"
+                    )
+                )
+        if update.event_type:
+            label = f"Key event: {update.event_type.title()}"
+            if update.message:
+                label += f" - {update.message}"
+            rows.append(TimelineRow(update.event_ts, label))
+    return sorted(rows, key=lambda row: row.event_ts)
 
 
 class JiraPostMortemService:
@@ -174,6 +216,7 @@ class JiraPostMortemService:
             "priority": incident.priority,
             "created_at": incident.created_at,
             "components": [],  # No component relationship available
+            "timeline_rows": build_timeline_rows(incident),
         }
 
         incident_summary = render_to_string(

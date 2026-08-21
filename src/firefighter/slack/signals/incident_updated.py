@@ -31,22 +31,25 @@ logger = logging.getLogger(__name__)
 
 
 @receiver(signal=incident_updated, sender="update_status")
-def incident_updated_update_status_handler(
+def incident_updated_channel_maintenance_handler(
     sender: Any,
     incident: Incident,
     incident_update: IncidentUpdate,
     updated_fields: list[str],
     **kwargs: Any,
 ) -> None:
+    """Keep the incident channel name and topic in sync.
+
+    Registered on its own so a Slack failure here is contained by
+    Signal.send_robust() instead of suppressing the publications below.
+    """
     # Skip Slack operations for incidents without channels (e.g., P4-P5)
     if not hasattr(incident, "conversation"):
         logger.debug(f"Skipping Slack channel update for incident {incident.id} (no conversation)")
         return
 
-    # Update Slack channel if needed
     incident.conversation.rename_if_needed()
 
-    # Update topic if needed
     if (
         "priority_id" in updated_fields
         or "incident_category_id" in updated_fields
@@ -54,7 +57,37 @@ def incident_updated_update_status_handler(
     ):
         incident.conversation.set_incident_channel_topic()
 
-    publish_status_update(
+
+@receiver(signal=incident_updated, sender="update_status")
+def incident_updated_update_status_handler(
+    sender: Any,
+    incident: Incident,
+    incident_update: IncidentUpdate,
+    updated_fields: list[str],
+    **kwargs: Any,
+) -> None:
+    """Publish the status update and the Key Events form in the incident channel."""
+    publish_incident_channel_update(
+        incident=incident,
+        incident_update=incident_update,
+        status_changed=bool("_status" in updated_fields),
+    )
+
+
+@receiver(signal=incident_updated, sender="update_status")
+def incident_updated_broadcast_handler(
+    sender: Any,
+    incident: Incident,
+    incident_update: IncidentUpdate,
+    updated_fields: list[str],
+    **kwargs: Any,
+) -> None:
+    """Broadcast the update to the org-wide channels.
+
+    Kept out of the incident-channel handler on purpose: broadcast channels are
+    independent, and losing one must never suppress what responders rely on.
+    """
+    publish_broadcasts(
         incident=incident,
         incident_update=incident_update,
         status_changed=bool("_status" in updated_fields),
@@ -208,14 +241,13 @@ def incident_key_events_updated_handler(
     incident.conversation.send_message_and_save(SlackMessageKeyEvents(incident))
 
 
-def publish_status_update(
+def publish_incident_channel_update(
     incident: Incident,
     incident_update: IncidentUpdate,
     *,
     status_changed: bool = False,
-    old_priority: Priority | None = None,
 ) -> None:
-    """Publishes an update to the incident status."""
+    """Publishes the status update and the Key Events form in the incident channel."""
     # Skip Slack operations for incidents without channels (e.g., P4-P5)
     if not hasattr(incident, "conversation"):
         logger.debug(f"Skipping status update publication for incident {incident.id} (no conversation)")
@@ -227,17 +259,6 @@ def publish_status_update(
         in_channel=True,
     )
     incident.conversation.send_message_and_save(message)
-
-    # Post to #tech-incidents
-    if should_publish_in_general_channel(
-        incident=incident, incident_update=incident_update, old_priority=old_priority
-    ):
-        publish_update_in_general_channel(
-            incident=incident,
-            incident_update=incident_update,
-            status_changed=status_changed,
-            old_priority=old_priority,
-        )
 
     if (
         incident.ask_for_milestones
@@ -251,6 +272,26 @@ def publish_status_update(
 
         incident.conversation.send_message_and_save(
             SlackMessageKeyEvents(incident=incident)
+        )
+
+
+def publish_broadcasts(
+    incident: Incident,
+    incident_update: IncidentUpdate,
+    *,
+    status_changed: bool = False,
+    old_priority: Priority | None = None,
+) -> None:
+    """Publishes the update to the org-wide broadcast channels."""
+    # Post to #tech-incidents
+    if should_publish_in_general_channel(
+        incident=incident, incident_update=incident_update, old_priority=old_priority
+    ):
+        publish_update_in_general_channel(
+            incident=incident,
+            incident_update=incident_update,
+            status_changed=status_changed,
+            old_priority=old_priority,
         )
 
     if should_publish_in_it_deploy_channel(incident=incident):
