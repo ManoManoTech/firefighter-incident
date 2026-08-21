@@ -15,6 +15,27 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  frontend_build:
+    name: Build front-end assets
+    runs-on: "ubuntu-latest"
+    steps:
+      - uses: actions/checkout@v7
+      - uses: jdx/mise-action@v4
+        with:
+          experimental: true
+      # `npm ci` is the point of this job as much as the build is: it fails on
+      # an unsatisfiable peer dependency, which is how a grouped npm bump can
+      # break the bundle. Nothing else in CI touches package.json, so without
+      # this a front-end break merges on a green check.
+      - name: Install front-end dependencies
+        run: npm ci
+      - name: Build
+        run: npm run build
+      - name: Check the bundles were produced
+        run: |
+          test -s src/firefighter/incidents/static/js/main.min.js
+          test -s src/firefighter/incidents/static/css/main.min.css
+
   python_build:
     name: Test and build Python
     env:
