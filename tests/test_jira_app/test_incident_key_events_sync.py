@@ -54,6 +54,17 @@ class TestIncidentKeyEventsSync:
             created_by=user,
         )
 
+        # Create a key event (incident update) representing the "declared"
+        # event that Incident.objects.declare() creates in production at
+        # incident creation time.
+        IncidentUpdate.objects.create(
+            incident=incident,
+            event_type="declared",
+            event_ts=incident.created_at,
+            created_by=user,
+            message="Incident declared",
+        )
+
         # Create a key event (incident update)
         now = timezone.now()
         IncidentUpdate.objects.create(
@@ -85,7 +96,7 @@ class TestIncidentKeyEventsSync:
         # Verify timeline content was generated (contains basic incident info)
         timeline_content = next(iter(call_kwargs["fields"].values()))
         assert "Timeline" in timeline_content
-        assert "Incident created" in timeline_content
+        assert "Key event: Declared" in timeline_content
 
     @staticmethod
     @patch("firefighter.jira_app.signals.incident_key_events_updated.JiraClient")

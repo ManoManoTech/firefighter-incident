@@ -6,6 +6,10 @@ from typing import TYPE_CHECKING, Any
 from firefighter.incidents.enums import IncidentStatus
 from firefighter.incidents.forms.update_status import UpdateStatusForm
 from firefighter.slack.views.modals.closure_reason import modal_closure_reason
+from firefighter.slack.views.modals.review_timeline import (
+    SlackMessageReviewTimeline,
+    build_carry_over_payload,
+)
 
 if TYPE_CHECKING:
     from django.forms import Form
@@ -73,6 +77,23 @@ def handle_update_status_close_request(
         return True
 
     return False
+
+
+def show_timeline_review(
+    ack: Any, incident: Incident, update_kwargs: dict[str, Any]
+) -> None:
+    """Show a timeline review checkpoint before moving an incident to Post-mortem.
+
+    Acks the modal submission and posts a review message with the timeline
+    recorded so far, instead of applying the Post-mortem transition
+    immediately. The transition only happens if the human accepts it from
+    that message.
+    """
+    ack()
+    carry_over_payload = build_carry_over_payload(incident, update_kwargs)
+    incident.conversation.send_message_and_save(
+        SlackMessageReviewTimeline(incident, carry_over_payload=carry_over_payload)
+    )
 
 
 def _build_carry_over_from_form(form: Form | None) -> dict[str, Any]:

@@ -336,23 +336,23 @@ The Jira post-mortem feature creates dedicated post-mortem issues in Jira when a
 
 **Content**:
 
-- Incident creation event
-- All status changes with timestamps
+- A "Declared" key event marking incident creation (from `Incident.objects.declare()`)
+- All status changes with timestamps, except the OPEN row created at declaration time (its timestamp coincides with "Declared", so it would only duplicate that row) - a later, genuine reopen back to OPEN still shows as its own "Status changed to: Open" row
 - All key events (detected, started, recovered, etc.) with optional messages
 - Sorted chronologically ascending by `event_ts`
 
-**Format** (Jira Wiki Markup):
+**Format** (Jira Wiki Markup). Rows are built from a single chronologically-sorted list (`build_timeline_rows()`) so "Declared" and backfilled milestones (e.g. Started/Detected before the incident was declared) sort correctly against each other; times are rendered in the active timezone (`TIME_ZONE` setting) with its real abbreviation, not a hardcoded "UTC":
 
 ```text
 h2. Timeline
 
 || Time || Event ||
-| 2025-11-19 10:00 UTC | Incident created (P1) |
-| 2025-11-19 10:05 UTC | Status changed to: Investigating |
-| 2025-11-19 10:10 UTC | Key event: Detected - Issue first detected |
-| 2025-11-19 10:15 UTC | Status changed to: Mitigating |
-| 2025-11-19 10:30 UTC | Key event: Recovered - System back to normal |
-| 2025-11-19 10:35 UTC | Status changed to: Mitigated |
+| 2025-11-19 10:00 CET | Key event: Declared |
+| 2025-11-19 10:05 CET | Status changed to: Investigating |
+| 2025-11-19 10:10 CET | Key event: Detected - Issue first detected |
+| 2025-11-19 10:15 CET | Status changed to: Mitigating |
+| 2025-11-19 10:30 CET | Key event: Recovered - System back to normal |
+| 2025-11-19 10:35 CET | Status changed to: Mitigated |
 ```
 
 **Key Events Sync**:

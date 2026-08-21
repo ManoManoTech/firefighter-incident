@@ -12,7 +12,10 @@ from firefighter.firefighter.utils import get_in
 from firefighter.incidents.forms.create_incident import CreateIncidentFormBase
 from firefighter.incidents.models.priority import Priority
 from firefighter.incidents.signals import create_incident_conversation
-from firefighter.slack.views.modals.base_modal.base import ModalForm
+from firefighter.slack.views.modals.base_modal.base import (
+    ModalForm,
+    _concat_validation_errors_msg,
+)
 from firefighter.slack.views.modals.base_modal.form_utils import (
     SlackFormJSONEncoder,
     slack_view_submission_to_dict,
@@ -130,7 +133,7 @@ class SetIncidentDetails[T: CreateIncidentFormBase](ModalForm[T]):
             ack(
                 response_action="errors",
                 errors={
-                    k: self._concat_validation_errors_msg(v)
+                    k: _concat_validation_errors_msg(v)
                     for k, v in form.errors.as_data().items()
                 },
             )
