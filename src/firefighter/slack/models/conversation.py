@@ -305,7 +305,9 @@ class Conversation(models.Model):
         if strategy == SlackMessageStrategy.APPEND:
             strategy_res = self._send_message_strategy_append(message, client, kwargs)
         elif strategy == SlackMessageStrategy.UPDATE:
-            strategy_res = self._send_message_strategy_update(message, client, kwargs)
+            strategy_res = self._send_message_strategy_update(
+                message, client, kwargs, strategy_args
+            )
         elif strategy == SlackMessageStrategy.REPLACE:
             strategy_res = self._send_message_strategy_replace(
                 message, client, strategy_args, kwargs
@@ -353,8 +355,28 @@ class Conversation(models.Model):
         return res
 
     def _send_message_strategy_update(
-        self, message: SlackMessageSurface, client: WebClient, kwargs: dict[str, Any]
+        self,
+        message: SlackMessageSurface,
+        client: WebClient,
+        kwargs: dict[str, Any],
+        strategy_args: dict[str, Any] | None = None,
     ) -> SlackResponse:
+        """Update in place the last message with the same type.
+
+        When `strategy_args` carries an explicit `ts`/`channel_id` (e.g. from
+        the interaction payload of the button that was clicked), that exact
+        message is targeted instead of looked up - needed when more than one
+        message of this type can legitimately coexist (e.g. a resolved review
+        message and a newer, unrelated pending one), where "the last one"
+        would not necessarily be the message actually being resolved.
+        """
+        if strategy_args is not None and strategy_args.get("ts") is not None:
+            return client.chat_update(
+                channel=strategy_args.get("channel_id", self.channel_id),
+                ts=strategy_args["ts"],
+                **message.get_slack_message_params(),
+            )
+
         old_message = (
             self._get_message_manager()
             .filter(ff_type=message.id, conversation=self)

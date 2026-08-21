@@ -22,6 +22,9 @@ from firefighter.slack.views.modals.opening.check_current_incidents import (
 )
 from firefighter.slack.views.modals.opening.select_impact import modal_select_impact
 from firefighter.slack.views.modals.postmortem import PostMortemModal, modal_postmortem
+from firefighter.slack.views.modals.review_timeline import (  # XXX(dugab) move and rename (not a modal but a surface...)
+    SlackMessageReviewTimeline,
+)
 from firefighter.slack.views.modals.select import modal_select
 from firefighter.slack.views.modals.send_sos import SendSosModal, modal_send_sos
 from firefighter.slack.views.modals.status import StatusModal, modal_status
