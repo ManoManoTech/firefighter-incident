@@ -35,7 +35,10 @@ dependencies = [
     "whitenoise>=6.6.0",
     "dateparser>=1.2.0",
     "django-tables2>=2.6.0,<3",
-    "pagerduty>=6.2.0",
+    # Upper bound: 7.0 swapped its HTTP layer for httpx2, so the Response type
+    # returned by PagerDutyClient no longer matches our annotations and mypy
+    # fails on pagerduty/client.py. Lift it with the annotations, not alone.
+    "pagerduty>=6.2.0,<7",
     "django-components>=0.101",
     "django-htmx>=1.17.2",
     "django-simple-menu>=2.1.3",
@@ -169,7 +172,11 @@ tests = [
     "pytest>=7.4.3",
     "pytest-cov>=4.1.0",
     "pytest-deadfixtures>=2.2.1",
-    "pytest-django>=4.7.0",
+    # Upper bound: 4.13 breaks every test with "type object
+    # 'PytestDjangoTestCase' has no attribute '_pre_setup_ran_eagerly'", and
+    # 4.14 removed SettingsWrapper from pytest_django.fixtures. 4.12 is the
+    # last release this suite runs on; lift the bound with the fixes it needs.
+    "pytest-django>=4.7.0,<4.13",
     "pytest-mock>=3.12.0",
     "pytest-randomly>=3.15.0",
     "pytest-timeout>=2.2.0",
@@ -415,6 +422,7 @@ addopts = """
 --strict-config
 --fail-on-template-vars
 --tb=short
+-p no:randomly
 """
 
 # Pytest-django
