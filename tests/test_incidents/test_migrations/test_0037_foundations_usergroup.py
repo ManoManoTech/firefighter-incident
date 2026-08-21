@@ -10,6 +10,12 @@ from __future__ import annotations
 
 import pytest
 
+# `migrator` rewinds the database to an earlier migration and replays it. Those
+# are committed operations, outside the transaction pytest-django rolls back per
+# test, so the reference data loaded once per session is destroyed for every test
+# running afterwards. Kept in its own pytest session - see `pdm run tests`.
+pytestmark = pytest.mark.destructive
+
 MIGRATE_FROM = ("incidents", "0036_add_foundations_incident_category")
 MIGRATE_TO = ("incidents", "0037_link_foundations_slack_usergroup")
 
