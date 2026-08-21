@@ -141,8 +141,11 @@ fmt-ruff =  {cmd="ruff check . --fix --select I001", help="Run isort-like import
 fmt-dj = {cmd="djhtml src", help="Run HTML formatting with djhtml"}
 fmt = {composite= ["fmt-black", "fmt-ruff", "fmt-dj"], help="Run all formatters (black, isort-like ruff, djhtml)"}
 # Tests
-tests = {cmd="pytest", help="Run the tests"}
-tests-cov ={cmd= "pytest --junitxml=pytest-report.xml --cov --cov-report xml:pytest-coverage.xml --cov-fail-under=0 --cov-report html", help="Run the tests with coverage, and generate reports"}
+tests = {composite=["tests-main", "tests-destructive"], help="Run the whole test suite, destructive tests in their own session"}
+tests-main = {cmd="pytest", help="Run the tests, excluding the destructive ones"}
+tests-destructive = {cmd="pytest -m destructive -p no:cacheprovider", help="Run the tests that rewind the database, in an isolated session"}
+tests-cov = {composite=["tests-cov-main", "tests-destructive"], help="Run the tests with coverage, destructive tests in their own session"}
+tests-cov-main ={cmd= "pytest --junitxml=pytest-report.xml --cov --cov-report xml:pytest-coverage.xml --cov-fail-under=0 --cov-report html", help="Run the tests with coverage, excluding the destructive ones"}
 # Docs
 docs-serve = {cmd="mkdocs serve", help="Serve the docs locally"}
 docs-build = {cmd="mkdocs build", help="Build the docs"}
@@ -417,12 +420,15 @@ filterwarnings = [
 ## Coverage sample options
 # --cov-branch
 # --cov-report=term-missing:skip-covered --cov-report=html --cov-fail-under=100
+markers = [
+    "destructive: rewinds the database outside the per-test transaction, so it must run in its own pytest session (see pdm run tests-destructive)",
+]
 addopts = """
 --strict-markers
 --strict-config
 --fail-on-template-vars
 --tb=short
--p no:randomly
+-m "not destructive"
 """
 
 # Pytest-django
