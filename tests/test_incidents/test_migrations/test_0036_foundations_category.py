@@ -14,7 +14,7 @@ import pytest
 # are committed operations, outside the transaction pytest-django rolls back per
 # test, so the reference data loaded once per session is destroyed for every test
 # running afterwards. Kept in its own pytest session - see `pdm run tests`.
-pytestmark = pytest.mark.destructive
+pytestmark = [pytest.mark.destructive, pytest.mark.timeout(60)]
 
 MIGRATE_FROM = ("incidents", "0035_incidentcategory_enabled_create")
 MIGRATE_TO = ("incidents", "0036_add_foundations_incident_category")
