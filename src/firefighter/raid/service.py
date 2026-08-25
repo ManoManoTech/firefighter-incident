@@ -216,6 +216,7 @@ def create_issue_customer(
 
 
 def create_issue_seller(  # noqa: PLR0913
+    *,
     title: str,
     description: str,
     reporter: str,
