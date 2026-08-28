@@ -378,6 +378,57 @@ class SlackMessageIncidentDeclaredAnnouncementGeneral(SlackMessageSurface):
         return blocks
 
 
+class SlackMessageIncidentAutoRaisedCommanderCall(SlackMessageSurface):
+    """Prompt in the channel asking an invited responder to claim the Commander role.
+
+    Posted only for incidents raised automatically (no human declared them), where the
+    commander defaults to the automated creator. It pings the responders invited from the
+    incident category and offers the same Update Roles action used elsewhere, so anyone can
+    claim command in one click. Self-contained (carries its own button) so it does not depend
+    on the ordering of the other channel-creation messages.
+    """
+
+    id = "ff_auto_raised_commander_call"
+
+    incident: Incident
+
+    def __init__(self, incident: Incident) -> None:
+        self.incident = incident
+        super().__init__()
+
+    def get_text(self) -> str:
+        return (
+            f"Incident #{self.incident.id} was raised automatically — "
+            "please claim the Commander role."
+        )
+
+    def get_blocks(self) -> list[Block]:
+        mentions = " ".join(
+            f"<!subteam^{ug.usergroup_id}>"
+            for ug in self.incident.incident_category.usergroups.all()
+            if ug.usergroup_id
+        )
+        text = (
+            ":rotating_light: This incident was raised automatically, so it has no human "
+            "commander yet."
+        )
+        if mentions:
+            text += f" {mentions} — please claim the *Commander* role:"
+        else:
+            text += " Please claim the *Commander* role:"
+        return [
+            SectionBlock(
+                block_id="auto_raised_commander_call",
+                text=text,
+                accessory=ButtonElement(
+                    text="Claim Commander",
+                    value=str(self.incident.id),
+                    action_id=UpdateRolesModal.open_action,
+                ),
+            ),
+        ]
+
+
 class SlackMessageIncidentRolesUpdated(SlackMessageSurface):
     """The message to post in the incident channel when the roles are updated.
 
