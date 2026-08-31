@@ -1,7 +1,10 @@
-"""Celery task to send post-mortem reminders for incidents.
+"""Celery task reminding the Commander to drive a mitigated incident through to closure.
 
-This task runs periodically to check for incidents that were mitigated
-5 days ago and still need their post-mortem completed.
+An incident that stays mitigated is not finished: P1/P2 still need their post-mortem, P3 still
+needs its key events and its closure. This task nudges whoever holds command, first after
+`FF_PROCESS_REMINDER_FIRST_DELAY`, then every `FF_PROCESS_REMINDER_REPEAT_DELAY` for as long as
+nothing moves. Both delays are settings in seconds, so the whole flow can be rehearsed in
+minutes instead of days.
 """
 
 from __future__ import annotations
@@ -12,6 +15,7 @@ from typing import TYPE_CHECKING
 
 from celery import shared_task
 from django.conf import settings
+from django.db.models import Q
 from django.utils import timezone
 
 from firefighter.incidents.enums import IncidentStatus
@@ -20,65 +24,119 @@ from firefighter.slack.models.conversation import Conversation
 from firefighter.slack.rules import should_publish_pm_in_general_channel
 
 if TYPE_CHECKING:
+    from datetime import datetime
+
     from firefighter.slack.models import Message
 
 if settings.ENABLE_SLACK:
     from firefighter.slack.messages.slack_messages import (
-        SlackMessagePostMortemReminder5Days,
-        SlackMessagePostMortemReminder5DaysAnnouncement,
+        SlackMessageIncidentProcessReminder,
+        SlackMessageIncidentProcessReminderAnnouncement,
     )
     from firefighter.slack.models import Message
 
 logger = logging.getLogger(__name__)
 
-# Days after mitigation to send reminder
-POSTMORTEM_REMINDER_DAYS = 5
+
+def _first_delay() -> timedelta:
+    return timedelta(seconds=settings.FF_PROCESS_REMINDER_FIRST_DELAY)
+
+
+def _repeat_delay() -> timedelta | None:
+    """The delay between two reminders, or None when repeats are disabled."""
+    seconds = settings.FF_PROCESS_REMINDER_REPEAT_DELAY
+    return timedelta(seconds=seconds) if seconds > 0 else None
+
+
+def _last_reminder(incident: Incident) -> Message | None:
+    return (
+        Message.objects.filter(
+            ff_type=SlackMessageIncidentProcessReminder.id,
+            incident=incident,
+        )
+        .order_by("-ts")
+        .first()
+    )
+
+
+def _last_progress_at(incident: Incident) -> datetime | None:
+    """When the incident last moved: its latest update, or its mitigation."""
+    latest_update = incident.incidentupdate_set.order_by("-created_at").first()
+    candidates = [
+        moment
+        for moment in (
+            incident.mitigated_at,
+            latest_update.created_at if latest_update else None,
+        )
+        if moment is not None
+    ]
+    return max(candidates) if candidates else None
+
+
+def _reminder_due(
+    incident: Incident, now: datetime
+) -> tuple[bool, timedelta | None, bool]:
+    """Decide whether to remind, how long the process has been still, and if it is the first time.
+
+    Returns:
+        (due, stale_for, is_first_reminder). `stale_for` is None on the first reminder, where
+        the message already states how long the incident has been mitigated.
+    """
+    last_reminder = _last_reminder(incident)
+    if last_reminder is None:
+        # `mitigated_at` is guaranteed by the queryset filter, but a reminder must never crash
+        # the whole run for one malformed incident.
+        return (True, None, True)
+
+    repeat_delay = _repeat_delay()
+    if repeat_delay is None:
+        return (False, None, False)
+
+    last_progress_at = _last_progress_at(incident)
+    # Anything more recent than the last reminder counts as movement and restarts the clock.
+    quiet_since = max(
+        moment
+        for moment in (last_reminder.ts, last_progress_at)
+        if moment is not None
+    )
+    stale_for = now - quiet_since
+    return (stale_for >= repeat_delay, stale_for, False)
 
 
 @shared_task(name="slack.send_postmortem_reminders")
 def send_postmortem_reminders() -> None:
-    """Send post-mortem completion reminders for incidents mitigated 5+ days ago.
+    """Remind the Commander of every stalled mitigated incident to drive it to closure.
 
-    This task:
-    1. Finds incidents that were mitigated at least 5 days ago
-    2. Filters for incidents that still need their post-mortem completed
-    3. Sends reminders to both the incident channel and #critical-incidents
-    4. Tracks sent reminders to avoid duplicates
+    The Celery name is kept for compatibility: it is stored in the `PeriodicTask` row created by
+    the `slack.0009` migration, and renaming it would leave Beat dispatching a task nobody
+    registers.
     """
-    # Calculate the cutoff date (5 days ago)
-    cutoff_date = timezone.now() - timedelta(days=POSTMORTEM_REMINDER_DAYS)
+    now = timezone.now()
+    cutoff_date = now - _first_delay()
 
-    # Get incidents that:
-    # - Were mitigated at least 5 days ago
-    # - Still need post-mortem (P1-P3)
-    # - Are in MITIGATED or POST_MORTEM status (not yet closed)
-    # - Are not ignored
-    incidents_needing_reminder = Incident.objects.filter(
-        mitigated_at__lte=cutoff_date,
-        mitigated_at__isnull=False,
-        _status__in=[
-            IncidentStatus.MITIGATED.value,
-            IncidentStatus.POST_MORTEM.value,
-        ],
-        priority__needs_postmortem=True,
-        ignore=False,
-    ).select_related("conversation", "priority", "environment")
-
-    logger.info(
-        f"Found {incidents_needing_reminder.count()} incidents needing post-mortem reminders"
+    # P1-P3 are the priorities that run the Slack incident process. GAMEDAY sits at value 20 but
+    # requires a post-mortem, so it is matched on `needs_postmortem` rather than being dropped.
+    incidents_needing_reminder = (
+        Incident.objects.filter(
+            Q(priority__value__lte=3) | Q(priority__needs_postmortem=True),
+            mitigated_at__lte=cutoff_date,
+            mitigated_at__isnull=False,
+            _status__in=[
+                IncidentStatus.MITIGATED.value,
+                IncidentStatus.POST_MORTEM.value,
+            ],
+            ignore=False,
+        )
+        .select_related("conversation", "priority", "environment")
+        .prefetch_related("roles_set__role_type", "roles_set__user__slack_user")
     )
 
-    for incident in incidents_needing_reminder:
-        # Check if we already sent a reminder for this incident
-        if Message.objects.filter(
-            ff_type=SlackMessagePostMortemReminder5Days.id,
-            incident=incident,
-        ).exists():
-            logger.debug(
-                f"Skipping incident #{incident.id} - reminder already sent"
-            )
-            continue
+    logger.info(
+        f"Found {incidents_needing_reminder.count()} mitigated incidents in the process reminder scope"
+    )
 
+    reminded = 0
+    for incident in incidents_needing_reminder:
         # Skip if no conversation
         if not hasattr(incident, "conversation") or not incident.conversation:
             logger.warning(
@@ -86,32 +144,49 @@ def send_postmortem_reminders() -> None:
             )
             continue
 
-        # Send reminder to incident channel
-        try:
-            reminder_message = SlackMessagePostMortemReminder5Days(incident)
-            incident.conversation.send_message_and_save(reminder_message)
-            logger.info(
-                f"Sent post-mortem reminder to incident #{incident.id} channel"
-            )
-        except Exception:
-            logger.exception(
-                f"Failed to send post-mortem reminder to incident #{incident.id} channel"
+        due, stale_for, is_first_reminder = _reminder_due(incident, now)
+        if not due:
+            logger.debug(
+                f"Skipping incident #{incident.id} - reminded recently or the process moved"
             )
             continue
 
-        # Send announcement to #critical-incidents if applicable
-        if should_publish_pm_in_general_channel(incident):
+        # Send reminder to incident channel
+        try:
+            reminder_message = SlackMessageIncidentProcessReminder(
+                incident, stale_for=stale_for
+            )
+            incident.conversation.send_message_and_save(reminder_message)
+            reminded += 1
+            logger.info(f"Sent process reminder to incident #{incident.id} channel")
+            if _last_reminder(incident) is None:
+                # The cadence is anchored on the saved Message. If saving silently failed (an
+                # unknown bot SlackUser makes `create_from_slack_response` return None), every
+                # run would remind again, so make that loud rather than mysterious.
+                logger.error(
+                    f"Process reminder for incident #{incident.id} was sent but not saved: "
+                    "the repeat cadence cannot be tracked and reminders will be resent"
+                )
+        except Exception:
+            logger.exception(
+                f"Failed to send process reminder to incident #{incident.id} channel"
+            )
+            continue
+
+        # Announce in #critical-incidents on the first reminder only: the repeats are a
+        # conversation with the Commander, not a broadcast.
+        if is_first_reminder and should_publish_pm_in_general_channel(incident):
             try:
                 tech_incidents_conversation = Conversation.objects.get_or_none(
                     tag="tech_incidents"
                 )
                 if tech_incidents_conversation:
-                    announcement = SlackMessagePostMortemReminder5DaysAnnouncement(
+                    announcement = SlackMessageIncidentProcessReminderAnnouncement(
                         incident
                     )
                     tech_incidents_conversation.send_message_and_save(announcement)
                     logger.info(
-                        f"Sent post-mortem reminder to tech_incidents for incident #{incident.id}"
+                        f"Sent process reminder to tech_incidents for incident #{incident.id}"
                     )
                 else:
                     logger.warning(
@@ -119,9 +194,7 @@ def send_postmortem_reminders() -> None:
                     )
             except Exception:
                 logger.exception(
-                    f"Failed to send post-mortem reminder to tech_incidents for incident #{incident.id}"
+                    f"Failed to send process reminder to tech_incidents for incident #{incident.id}"
                 )
 
-    logger.info(
-        f"Post-mortem reminder task completed. Processed {incidents_needing_reminder.count()} incidents."
-    )
+    logger.info(f"Process reminder task completed. Sent {reminded} reminder(s).")

@@ -5,6 +5,7 @@ from __future__ import annotations
 from datetime import timedelta
 from typing import Any
 
+from django.conf import settings
 from django.core.management.base import BaseCommand, CommandParser
 from django.utils import timezone
 
@@ -24,9 +25,21 @@ class Command(BaseCommand):
         )
         parser.add_argument(
             "--days",
-            type=int,
-            default=6,
-            help="Number of days to backdate (default: 6, to trigger 5-day reminder)",
+            type=float,
+            default=0,
+            help="Number of days to backdate. Combined with --hours/--minutes; defaults to 6 days when none is given",
+        )
+        parser.add_argument(
+            "--hours",
+            type=float,
+            default=0,
+            help="Number of hours to backdate, to rehearse the reminders in accelerated mode",
+        )
+        parser.add_argument(
+            "--minutes",
+            type=float,
+            default=0,
+            help="Number of minutes to backdate, to rehearse the reminders in accelerated mode",
         )
         parser.add_argument(
             "--reset",
@@ -36,8 +49,14 @@ class Command(BaseCommand):
 
     def handle(self, *args: Any, **options: Any) -> None:
         incident_id = options["incident_id"]
-        days = options["days"]
         reset = options["reset"]
+        backdate_by = timedelta(
+            days=options["days"],
+            hours=options["hours"],
+            minutes=options["minutes"],
+        )
+        if not backdate_by:
+            backdate_by = timedelta(days=6)
 
         try:
             incident = Incident.objects.get(id=incident_id)
@@ -57,7 +76,7 @@ class Command(BaseCommand):
             )
         else:
             old_value = incident.mitigated_at
-            new_value = timezone.now() - timedelta(days=days)
+            new_value = timezone.now() - backdate_by
             incident.mitigated_at = new_value
             incident.save(update_fields=["mitigated_at"])
 
@@ -68,7 +87,7 @@ class Command(BaseCommand):
             )
             self.stdout.write(f"   Old value: {old_value}")
             self.stdout.write(f"   New value: {new_value}")
-            self.stdout.write(f"   Backdated by {days} days")
+            self.stdout.write(f"   Backdated by {backdate_by}")
 
         self.stdout.write("\nIncident details:")
         self.stdout.write(f"   ID: {incident.id}")
@@ -78,10 +97,11 @@ class Command(BaseCommand):
         self.stdout.write(f"   Needs postmortem: {incident.needs_postmortem}")
         self.stdout.write(f"   Mitigated at: {incident.mitigated_at}")
 
-        if incident.needs_postmortem and days >= 5:
+        first_delay = timedelta(seconds=settings.FF_PROCESS_REMINDER_FIRST_DELAY)
+        if not reset and backdate_by >= first_delay:
             self.stdout.write(
                 self.style.WARNING(
-                    "\n⚠️  This incident should now trigger a 5-day reminder!"
+                    f"\n⚠️  This incident is now past the {first_delay} first-reminder delay!"
                 )
             )
             self.stdout.write(

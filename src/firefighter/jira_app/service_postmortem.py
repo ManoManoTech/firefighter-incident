@@ -10,6 +10,7 @@ from django.conf import settings
 from django.template.loader import render_to_string
 
 from firefighter.incidents.enums import IncidentStatus
+from firefighter.incidents.models.incident_role_type import COMMANDER_ROLE_SLUG
 from firefighter.jira_app.client import (
     JiraClient,
     JiraUserDatabaseError,
@@ -140,7 +141,7 @@ class JiraPostMortemService:
         # Assign to incident commander if available
         commander = (
             incident.roles_set.select_related("user__jira_user", "role_type")
-            .filter(role_type__slug="commander")
+            .filter(role_type__slug=COMMANDER_ROLE_SLUG)
             .first()
         )
         if commander:

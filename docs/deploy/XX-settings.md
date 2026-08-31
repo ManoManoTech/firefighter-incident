@@ -33,6 +33,8 @@ Redis DBs:
 
 - [`BASE_URL`][firefighter.firefighter.settings.settings_utils.BASE_URL]
 - [`FF_ROLE_REMINDER_MIN_DAYS_INTERVAL`][firefighter.firefighter.settings.components.common.FF_ROLE_REMINDER_MIN_DAYS_INTERVAL]
+- [`FF_PROCESS_REMINDER_FIRST_DELAY`][firefighter.firefighter.settings.components.common.FF_PROCESS_REMINDER_FIRST_DELAY]
+- [`FF_PROCESS_REMINDER_REPEAT_DELAY`][firefighter.firefighter.settings.components.common.FF_PROCESS_REMINDER_REPEAT_DELAY]
 - [`FF_USER_ID_HEADER`][firefighter.firefighter.settings.components.common.FF_USER_ID_HEADER]
 - [`FF_OVERRIDE_MENUS_CREATION`][firefighter.firefighter.settings.components.common.FF_OVERRIDE_MENUS_CREATION]
 - [`FF_DEBUG_ERROR_PAGES`][firefighter.firefighter.settings.components.common.FF_DEBUG_ERROR_PAGES]
@@ -72,6 +74,7 @@ See [django-oauth2-codeflow](https://gitlab.com/systra/qeto/lib/django-oauth2-au
 - [`SLACK_INCIDENT_HELP_GUIDE_URL`][firefighter.firefighter.settings.components.slack.SLACK_INCIDENT_HELP_GUIDE_URL]
 - [`SLACK_SEVERITY_HELP_GUIDE_URL`][firefighter.firefighter.settings.components.slack.SLACK_SEVERITY_HELP_GUIDE_URL]
 - [`SLACK_EMERGENCY_COMMUNICATION_GUIDE_URL`][firefighter.firefighter.settings.components.slack.SLACK_EMERGENCY_COMMUNICATION_GUIDE_URL]
+- [`SLACK_ROLES_GUIDE_URL`][firefighter.firefighter.settings.components.slack.SLACK_ROLES_GUIDE_URL]
 - [`SLACK_EMERGENCY_USERGROUP_ID`][firefighter.firefighter.settings.components.slack.SLACK_EMERGENCY_USERGROUP_ID]
 - [`SLACK_APP_EMOJI`][firefighter.firefighter.settings.components.slack.SLACK_APP_EMOJI]
 - [`FF_SLACK_SKIP_CHECKS`][firefighter.firefighter.settings.components.slack.FF_SLACK_SKIP_CHECKS]

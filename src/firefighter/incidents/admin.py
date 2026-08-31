@@ -40,7 +40,10 @@ from firefighter.incidents.models.incident_membership import (
     IncidentMembership,
     IncidentRole,
 )
-from firefighter.incidents.models.incident_role_type import IncidentRoleType
+from firefighter.incidents.models.incident_role_type import (
+    COMMANDER_ROLE_SLUG,
+    IncidentRoleType,
+)
 from firefighter.incidents.models.metric_type import IncidentMetric, MetricType
 from firefighter.incidents.models.milestone_type import MilestoneType
 from firefighter.incidents.models.priority import Priority
@@ -574,7 +577,7 @@ class UserAdmin(BaseUserAdmin):  # type: ignore[type-arg]
 
     @staticmethod
     def commander_count(obj: User) -> int:
-        return obj.roles_set.filter(role_type__slug="commander").count()
+        return obj.roles_set.filter(role_type__slug=COMMANDER_ROLE_SLUG).count()
 
     @staticmethod
     def communication_lead_count(obj: User) -> int:
