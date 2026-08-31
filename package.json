@@ -14,10 +14,10 @@
   "keywords": [],
   "author": "",
   "dependencies": {
-    "@alpinejs/collapse": "^3.15.12",
-    "@alpinejs/focus": "^3.15.12",
-    "@alpinejs/morph": "^3.15.12",
-    "alpinejs": "^3.15.12",
+    "@alpinejs/collapse": "^3.16.3",
+    "@alpinejs/focus": "^3.16.3",
+    "@alpinejs/morph": "^3.16.3",
+    "alpinejs": "^3.16.3",
     "htmx.org": "^2.0.10",
     "hyperscript.org": "^0.9.93"
   },
