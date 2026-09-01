@@ -38,6 +38,8 @@ SLACK_EMERGENCY_COMMUNICATION_GUIDE_URL: str | None = config(
     "SLACK_EMERGENCY_COMMUNICATION_GUIDE_URL", default=None
 )
 """URL to add in the Slack emergency message. Useful to point to your own documentation."""
+SLACK_ROLES_GUIDE_URL: str | None = config("SLACK_ROLES_GUIDE_URL", default=None)
+"""URL to a guide describing the incident roles and their responsibilities. Added to the messages reminding a role holder of their ownership. Useful to point to your own documentation."""
 SLACK_EMERGENCY_USERGROUP_ID: str | None = config(
     "SLACK_EMERGENCY_USERGROUP_ID", default=None
 )

@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Any
 from django.dispatch.dispatcher import receiver
 
 from firefighter.incidents.enums import IncidentStatus
+from firefighter.incidents.models.incident_role_type import COMMANDER_ROLE_SLUG
 from firefighter.incidents.signals import incident_key_events_updated, incident_updated
 from firefighter.slack.messages.slack_messages import (
     SlackMessageDeployWarning,
@@ -126,7 +127,7 @@ def incident_updated_check_dowmgrade_handler(
 
     try:
         commander_role = (
-            incident.roles_set.filter(role_type__slug="commander")
+            incident.roles_set.filter(role_type__slug=COMMANDER_ROLE_SLUG)
             .select_related("user__slack_user")
             .get()
         )

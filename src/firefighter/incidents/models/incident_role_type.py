@@ -10,6 +10,9 @@ from django.urls import reverse
 from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 
+COMMANDER_ROLE_SLUG = "commander"
+"""Slug of the role that owns driving the incident process through to closure."""
+
 
 class IncidentRoleType(models.Model):
     name = models.CharField[str, str](max_length=255)

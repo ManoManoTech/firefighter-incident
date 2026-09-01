@@ -15,6 +15,7 @@ from firefighter.slack.models.conversation import Conversation
 if TYPE_CHECKING:
     from datetime import datetime
 
+    from firefighter.incidents.models.incident import Incident
     from firefighter.incidents.models.user import User
 
 logger = logging.getLogger(__name__)
@@ -120,3 +121,68 @@ def slack_block_help_tip() -> SectionBlock:
 
 def slack_block_quote(text: str, length: int = 2995) -> SectionBlock:
     return SectionBlock(text=f"> {shorten_long(md_quote_filter(text), length)}")
+
+
+COMMANDER_ACTION_OPENING = (
+    "you are the *Incident Commander*: you lead the process through to closure. You don't have to"
+    " do all the work, but you are in charge of guiding the team — including making sure the"
+    " post-mortem is carried out before the incident is closed."
+)
+"""Ownership sentence for the start of the incident, when roles are first announced."""
+
+COMMANDER_ACTION_POSTMORTEM = (
+    "as *Incident Commander*, it's on you to organize the post-mortem and see it through before"
+    " closure. You don't have to write it all yourself — you own getting it done."
+)
+"""Ownership sentence for incidents that require a post-mortem before closure."""
+
+COMMANDER_ACTION_CLOSURE = (
+    "as *Incident Commander*, it's on you to get the key events submitted and to close this"
+    " incident."
+)
+"""Ownership sentence for incidents that close without a post-mortem."""
+
+COMMANDER_UNASSIGNED = (
+    "No *Incident Commander* is assigned on this incident — someone needs to take the role to"
+    " drive it through to closure."
+)
+"""Shown instead of a mention when nobody holds command."""
+
+ROLE_REASSIGNMENT_HINT = (
+    ":bulb: _Not the right person for a role? Talk it over in this channel so a more suitable"
+    " responder can take it over, with their agreement, then reassign the role._"
+)
+"""Invitation to hand a role over, with the consent of whoever picks it up."""
+
+
+def _roles_guide_suffix() -> str:
+    roles_guide_url = settings.SLACK_ROLES_GUIDE_URL
+    if not roles_guide_url:
+        return ""
+    return f" <{roles_guide_url}|Your role in detail>."
+
+
+def commander_ownership_block(incident: Incident, action: str) -> SectionBlock:
+    """Remind whoever holds command that they own driving the process, or that nobody does.
+
+    Args:
+        incident: the incident to read the commander from. Callers looping over incidents should
+            `prefetch_related("roles_set__role_type", "roles_set__user__slack_user")`.
+        action: the ownership sentence to use, e.g. [COMMANDER_ACTION_POSTMORTEM][firefighter.slack.slack_templating.COMMANDER_ACTION_POSTMORTEM].
+    """
+    commander = incident.commander
+    if commander is None or commander.user is None:
+        return SectionBlock(
+            text=MarkdownTextObject(
+                text=f":rotating_light: {COMMANDER_UNASSIGNED}{_roles_guide_suffix()}"
+            )
+        )
+    return SectionBlock(
+        text=MarkdownTextObject(
+            text=f"{commander.role_type.emoji} {user_slack_handle_or_name(commander.user)} {action}{_roles_guide_suffix()}"
+        )
+    )
+
+
+def slack_block_role_reassignment_hint() -> ContextBlock:
+    return ContextBlock(elements=[MarkdownTextObject(text=ROLE_REASSIGNMENT_HINT)])

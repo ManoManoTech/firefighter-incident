@@ -6,6 +6,7 @@ from urllib.parse import urljoin
 
 from django.conf import settings
 from django.urls import reverse
+from django.utils import timezone
 from slack_sdk.models.blocks.basic_components import (
     MarkdownTextObject,
     PlainTextObject,
@@ -22,6 +23,7 @@ from slack_sdk.models.blocks.blocks import (
 )
 from slack_sdk.models.metadata import Metadata
 
+from firefighter.firefighter.filters import readable_time_delta
 from firefighter.incidents.enums import IncidentStatus
 from firefighter.incidents.models.impact import LevelChoices
 from firefighter.incidents.models.incident_membership import IncidentRole
@@ -33,8 +35,13 @@ from firefighter.slack.messages.base import (
 )
 from firefighter.slack.models.message import Message
 from firefighter.slack.slack_templating import (
+    COMMANDER_ACTION_CLOSURE,
+    COMMANDER_ACTION_OPENING,
+    COMMANDER_ACTION_POSTMORTEM,
+    commander_ownership_block,
     date_time,
     slack_block_quote,
+    slack_block_role_reassignment_hint,
     user_slack_handle_or_name,
 )
 from firefighter.slack.views.modals.close import CloseModal
@@ -46,6 +53,7 @@ from firefighter.slack.views.modals.update_status import UpdateStatusModal
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
+    from datetime import timedelta
 
     from firefighter.incidents.models.incident import Incident
     from firefighter.incidents.models.incident_update import IncidentUpdate
@@ -98,6 +106,7 @@ class SlackMessageIncidentPostMortemReminder(SlackMessageSurface):
             SectionBlock(
                 text="<!here> The post-mortem is *required* to close an incident P2 and below.\nPlease update the incident as you move in the post-mortem process, to keep track of incidents and avoid similar ones in the future. "
             ),
+            commander_ownership_block(self.incident, COMMANDER_ACTION_POSTMORTEM),
             DividerBlock(),
             SectionBlock(text=":arrow_down:  *Post-mortem process*  :arrow_down: "),
             SectionBlock(
@@ -167,7 +176,7 @@ class SlackMessageIncidentPostMortemReminder(SlackMessageSurface):
 
         if POSTMORTEM_HELP_URL:
             blocks.insert(
-                4,
+                5,
                 SectionBlock(
                     text='Need guidance on how to create a post-mortem? See our presentation "PostMortems // How to run them after incidents?"',
                     accessory=ButtonElement(
@@ -196,6 +205,7 @@ class SlackMessageIncidentFixedNextActions(SlackMessageSurface):
         blocks: list[Block] = [
             HeaderBlock(text=f":star:  Incident {self.incident.status.label}  :star:"),
             DividerBlock(),
+            commander_ownership_block(self.incident, COMMANDER_ACTION_CLOSURE),
             SectionBlock(text=":arrow_down:  *Next actions*  :arrow_down: "),
             SectionBlock(
                 text=f"1. Submit the key events to {APP_DISPLAY_NAME}",
@@ -459,6 +469,15 @@ class SlackMessageIncidentRolesUpdated(SlackMessageSurface):
                 ),
             ]
         )
+        # State who owns driving the process from the very start, but only where that process
+        # applies: P4/P5 incidents follow the Jira workflow, with no post-mortem to carry out.
+        if self.first_update and self.incident.priority.value <= 3:
+            blocks.extend(
+                [
+                    commander_ownership_block(self.incident, COMMANDER_ACTION_OPENING),
+                    slack_block_role_reassignment_hint(),
+                ]
+            )
         if not self.first_update:
             blocks.append(
                 ContextBlock(
@@ -768,32 +787,68 @@ class SlackMessageIncidentPostMortemCreatedAnnouncement(SlackMessageSurface):
         return blocks
 
 
-class SlackMessagePostMortemReminder5Days(SlackMessageSurface):
-    """Reminder message sent 5 days after incident reaches MITIGATED status.
+class SlackMessageIncidentProcessReminder(SlackMessageSurface):
+    """Reminder that a mitigated incident still has to be driven through to closure.
 
-    Sent to both the incident channel and #critical-incidents (tech_incidents tag).
+    Sent to the incident channel once the incident has sat mitigated for
+    `FF_PROCESS_REMINDER_FIRST_DELAY`, then again every `FF_PROCESS_REMINDER_REPEAT_DELAY`
+    of inactivity. The ask depends on the incident: complete the post-mortem when the
+    priority requires one (P1/P2), submit the key events and close otherwise (P3).
+
+    The `id` keeps its historical value: it is stored on every reminder already sent
+    (`Message.ff_type`) and is what the task reads to know when it last reminded.
     """
 
     id = "ff_incident_postmortem_reminder_5days"
     incident: Incident
 
-    def __init__(self, incident: Incident) -> None:
+    def __init__(self, incident: Incident, stale_for: timedelta | None = None) -> None:
         self.incident = incident
+        self.stale_for = stale_for
         super().__init__()
 
+    @property
+    def _needs_postmortem(self) -> bool:
+        return self.incident.needs_postmortem
+
     def get_text(self) -> str:
-        return f"⏰ Reminder: Post-mortem for incident #{self.incident.id} needs to be completed"
+        if self._needs_postmortem:
+            return f"⏰ Reminder: the post-mortem for incident #{self.incident.id} still has to be completed"
+        return f"⏰ Reminder: incident #{self.incident.id} still has to be closed"
+
+    def _situation_text(self) -> str:
+        mitigated_for = (
+            readable_time_delta(timezone.now() - self.incident.mitigated_at)
+            if self.incident.mitigated_at
+            else None
+        )
+        situation = (
+            f"This incident has been mitigated for {mitigated_for}."
+            if mitigated_for
+            else "This incident has been mitigated."
+        )
+        if self.stale_for is not None:
+            situation += (
+                f" The process has not moved for {readable_time_delta(self.stale_for)}."
+            )
+        if self._needs_postmortem:
+            return f"{situation} The post-mortem *must* be completed to close the incident."
+        return f"{situation} The key events *must* be submitted before the incident can be closed."
 
     def get_blocks(self) -> list[Block]:
         blocks: list[Block] = [
             HeaderBlock(
                 text=PlainTextObject(
-                    text="⏰ Post-mortem Reminder ⏰",
+                    text="⏰ Incident process reminder ⏰",
                     emoji=True,
                 )
             ),
-            SectionBlock(
-                text="This incident was mitigated 5 days ago. The post-mortem *must* be completed to close the incident."
+            SectionBlock(text=self._situation_text()),
+            commander_ownership_block(
+                self.incident,
+                COMMANDER_ACTION_POSTMORTEM
+                if self._needs_postmortem
+                else COMMANDER_ACTION_CLOSURE,
             ),
             DividerBlock(),
         ]
@@ -822,26 +877,44 @@ class SlackMessagePostMortemReminder5Days(SlackMessageSurface):
         if pm_links:
             blocks.append(ActionsBlock(elements=pm_links))
 
-        # Add action buttons
+        next_step = (
+            "Update the incident status or close it once the post-mortem is complete."
+            if self._needs_postmortem
+            else "Submit the key events, then close the incident."
+        )
         blocks.extend(
             [
                 DividerBlock(),
                 SectionBlock(
-                    text="Update the incident status or close it once the post-mortem is complete.",
+                    text=next_step,
                     accessory=ButtonElement(
                         text="Update status",
                         value=str(self.incident.id),
                         action_id=UpdateStatusModal.open_action,
                     ),
                 ),
+                # A process that stopped moving is often a sign that command sits with someone
+                # who has moved on, so offer the hand-over right here.
+                SectionBlock(
+                    text="Still the right owner?",
+                    accessory=ButtonElement(
+                        text="Update roles",
+                        value=str(self.incident.id),
+                        action_id=UpdateRolesModal.open_action,
+                    ),
+                ),
+                slack_block_role_reassignment_hint(),
             ]
         )
 
         return blocks
 
 
-class SlackMessagePostMortemReminder5DaysAnnouncement(SlackMessageSurface):
-    """Announcement version of 5-day reminder for #critical-incidents channel."""
+class SlackMessageIncidentProcessReminderAnnouncement(SlackMessageSurface):
+    """Announcement version of the process reminder, for the #critical-incidents channel.
+
+    Only published on the first reminder: the repeats stay in the incident channel.
+    """
 
     id = "ff_incident_postmortem_reminder_5days_announcement"
     incident: Incident
@@ -854,10 +927,12 @@ class SlackMessagePostMortemReminder5DaysAnnouncement(SlackMessageSurface):
         return f"⏰ Post-mortem reminder for {self.incident.priority} incident #{self.incident.id}: {self.incident.title}"
 
     def get_blocks(self) -> list[Block]:
+        commander = self.incident.commander
         fields = [
             f"{self.incident.priority.emoji} *Priority:* {self.incident.priority.name}",
             f":calendar: *Mitigated:* {date_time(self.incident.mitigated_at) if self.incident.mitigated_at else 'Unknown'}",
             f":slack: *Channel:* <#{self.incident.conversation.channel_id}>",
+            f"🧑‍✈️ *Commander:* {user_slack_handle_or_name(commander.user) if commander else '∅'}",
         ]
 
         # Add post-mortem links
@@ -872,12 +947,22 @@ class SlackMessagePostMortemReminder5DaysAnnouncement(SlackMessageSurface):
                 f":jira_new: <{jira_pm.issue_url}|*Jira Post-Mortem ({jira_pm.jira_issue_key})*>"
             )
 
+        mitigated_for = (
+            readable_time_delta(timezone.now() - self.incident.mitigated_at)
+            if self.incident.mitigated_at
+            else None
+        )
+        overdue = (
+            f"_This incident has been mitigated for {mitigated_for}. Post-mortem completion is overdue._"
+            if mitigated_for
+            else "_Post-mortem completion is overdue._"
+        )
         blocks: list[Block] = [
             SectionBlock(
                 text=f"⏰ *Post-mortem reminder for incident #{self.incident.id}*"
             ),
             SectionBlock(
-                text=f"*{shorten(self.incident.title, 2995, placeholder='...')}*\n_This incident was mitigated 5 days ago. Post-mortem completion is overdue._"
+                text=f"*{shorten(self.incident.title, 2995, placeholder='...')}*\n{overdue}"
             ),
             DividerBlock(),
             SectionBlock(fields=fields),
@@ -1090,7 +1175,7 @@ class SlackMessageRoleAssignedToYou(SlackMessageSurface):
         if self.first_update and self.role_type.required:
             context_elements.append(
                 MarkdownTextObject(
-                    text=":bulb: _You have been assigned this role automatically because you created the incident. You can reassign this role to someone else if you want._"
+                    text=":bulb: _You have been assigned this role automatically because you created the incident. If you're not the right person for it, talk it over in the incident channel so a more suitable responder can take it over, with their agreement._"
                 )
             )
         return [

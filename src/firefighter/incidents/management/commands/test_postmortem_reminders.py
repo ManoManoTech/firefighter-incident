@@ -1,25 +1,26 @@
-"""Django management command to test post-mortem reminders."""
+"""Django management command to test the incident process reminders."""
 
 from __future__ import annotations
 
-from datetime import timedelta
 from typing import Any
 
 from django.core.management.base import BaseCommand, CommandParser
+from django.db.models import DateTimeField, ExpressionWrapper, F, Q
 from django.utils import timezone
 
+from firefighter.firefighter.filters import readable_time_delta
 from firefighter.incidents.enums import IncidentStatus
 from firefighter.incidents.models.incident import Incident
+from firefighter.incidents.models.priority import Priority
 from firefighter.slack.tasks.send_postmortem_reminders import (
-    POSTMORTEM_REMINDER_DAYS,
     send_postmortem_reminders,
 )
 
 
 class Command(BaseCommand):
-    """Test post-mortem reminders by executing the task manually."""
+    """Test the process reminders by executing the task manually."""
 
-    help = "Execute the post-mortem reminder task manually for testing"
+    help = "Execute the incident process reminder task manually for testing"
 
     def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument(
@@ -31,30 +32,45 @@ class Command(BaseCommand):
     def handle(self, *args: Any, **options: Any) -> None:
         list_only = options["list_only"]
 
-        self.stdout.write(self.style.MIGRATE_HEADING("Post-Mortem Reminder Testing"))
+        self.stdout.write(self.style.MIGRATE_HEADING("Process Reminder Testing"))
         self.stdout.write("=" * 70)
 
-        # Calculate cutoff date
-        cutoff_date = timezone.now() - timedelta(days=POSTMORTEM_REMINDER_DAYS)
+        self.stdout.write("\n⏰ Delays configured per priority (Django admin):")
+        for priority in Priority.objects.filter(
+            Q(value__lte=3) | Q(needs_postmortem=True)
+        ):
+            repeat = priority.postmortem_reminder_repeat_time
+            repeat_fmt = readable_time_delta(repeat) if repeat else "no repeat"
+            self.stdout.write(
+                f"   {priority.name}: first after {readable_time_delta(priority.postmortem_reminder_time)}, "
+                f"then every {repeat_fmt}"
+            )
+        self.stdout.write(f"\n🕐 Current time: {timezone.now()}\n")
 
-        self.stdout.write(f"\n⏰ Reminder threshold: {POSTMORTEM_REMINDER_DAYS} days")
-        self.stdout.write(f"📅 Cutoff date: {cutoff_date}")
-        self.stdout.write(f"🕐 Current time: {timezone.now()}\n")
-
-        # Find eligible incidents
-        eligible_incidents = Incident.objects.filter(
-            mitigated_at__lte=cutoff_date,
-            mitigated_at__isnull=False,
-            _status__in=[
-                IncidentStatus.MITIGATED.value,
-                IncidentStatus.POST_MORTEM.value,
-            ],
-            priority__needs_postmortem=True,
-            ignore=False,
-        ).select_related("priority", "environment", "conversation")
+        # Same scope as the task itself
+        eligible_incidents = (
+            Incident.objects.filter(
+                Q(priority__value__lte=3) | Q(priority__needs_postmortem=True),
+                mitigated_at__isnull=False,
+                _status__in=[
+                    IncidentStatus.MITIGATED.value,
+                    IncidentStatus.POST_MORTEM.value,
+                ],
+                ignore=False,
+            )
+            .annotate(
+                reminder_due_at=ExpressionWrapper(
+                    F("mitigated_at") + F("priority__postmortem_reminder_time"),
+                    output_field=DateTimeField(),
+                )
+            )
+            .filter(reminder_due_at__lte=timezone.now())
+            .select_related("priority", "environment", "conversation")
+            .prefetch_related("roles_set__role_type", "roles_set__user__slack_user")
+        )
 
         count = eligible_incidents.count()
-        self.stdout.write(f"🔍 Found {count} incident(s) eligible for reminder\n")
+        self.stdout.write(f"🔍 Found {count} incident(s) in scope\n")
 
         if count == 0:
             self.stdout.write(
@@ -63,43 +79,51 @@ class Command(BaseCommand):
             self.stdout.write("\nTo test, you can backdate an incident with:")
             self.stdout.write(
                 self.style.NOTICE(
-                    "   pdm run python manage.py backdate_incident_mitigated <incident_id> --days 6"
+                    "   pdm run python manage.py backdate_incident_mitigated <incident_id> --days 3"
+                )
+            )
+            self.stdout.write(
+                "\nOr, to rehearse in minutes: lower the priority's postmortem_reminder_time in the"
+            )
+            self.stdout.write("Django admin, then:")
+            self.stdout.write(
+                self.style.NOTICE(
+                    "   pdm run python manage.py backdate_incident_mitigated <incident_id> --minutes 5"
                 )
             )
             return
 
         # Display eligible incidents
         for incident in eligible_incidents:
-            days_since_mitigated = (
-                timezone.now() - incident.mitigated_at
-            ).days if incident.mitigated_at else 0
+            commander = incident.commander
+            mitigated_for = (
+                readable_time_delta(timezone.now() - incident.mitigated_at)
+                if incident.mitigated_at
+                else "unknown"
+            )
 
             self.stdout.write(f"  📋 Incident #{incident.id}")
             self.stdout.write(f"     Title: {incident.title}")
             self.stdout.write(f"     Priority: {incident.priority.name}")
             self.stdout.write(f"     Status: {incident.status.label}")
             self.stdout.write(f"     Mitigated: {incident.mitigated_at}")
+            self.stdout.write(f"     Mitigated for: {mitigated_for}")
+            self.stdout.write(f"     Needs post-mortem: {incident.needs_postmortem}")
             self.stdout.write(
-                f"     Days since mitigated: {days_since_mitigated} days"
+                f"     Commander: {commander.user if commander else '∅ (unassigned)'}"
             )
             self.stdout.write(f"     Environment: {incident.environment.value}")
             self.stdout.write(f"     Private: {incident.private}")
             self.stdout.write("")
 
         if list_only:
-            self.stdout.write(
-                self.style.SUCCESS(
-                    "✅ List-only mode: No reminders sent"
-                )
-            )
+            self.stdout.write(self.style.SUCCESS("✅ List-only mode: No reminders sent"))
             self.stdout.write("\nTo send reminders, run without --list-only flag")
             return
 
         # Execute the task
         self.stdout.write("=" * 70)
-        self.stdout.write(
-            self.style.WARNING("🚀 Executing post-mortem reminder task...\n")
-        )
+        self.stdout.write(self.style.WARNING("🚀 Executing process reminder task...\n"))
 
         try:
             send_postmortem_reminders()

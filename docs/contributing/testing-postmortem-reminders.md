@@ -1,6 +1,31 @@
-# Testing Post-Mortem Reminders
+# Testing the Incident Process Reminders
 
-This guide explains how to test the post-mortem reminder system without waiting 5 days.
+This guide explains how to test the process reminders without waiting two days.
+
+The reminders tell the Incident Commander that they own driving a mitigated incident through to
+closure: completing the post-mortem when the priority requires one (P1/P2), submitting the key
+events and closing otherwise (P3).
+
+## The two delays
+
+Both live on the **Priority**, next to `reminder_time` and `sla`, so they are editable per
+priority in the Django admin - no environment variable, no deployment, no worker restart:
+
+| Priority field | Default | Meaning |
+| --- | --- | --- |
+| `postmortem_reminder_time` | 2 days | Time after mitigation before the first reminder |
+| `postmortem_reminder_repeat_time` | 2 days | Inactivity before the reminder is sent again. `0` reminds only once |
+
+Do not confuse `postmortem_reminder_time` with the existing **`reminder_time`** on the same
+model: that one drives the *other* reminder, the one nagging an **open** incident that has had no
+`IncidentUpdate` for a while (task `slack.send_reminders`, every 5 minutes during office hours).
+
+Anything that moves the incident - a new `IncidentUpdate`, a status change - restarts the repeat
+clock. The first reminder is also announced in `#critical-incidents` (tag `tech_incidents`) for
+P1/P2 production incidents; the repeats stay in the incident channel.
+
+Where to edit: **Django admin → Incidents → Priorities → \<the priority\>**. Durations accept the
+Django format, e.g. `2 00:00:00` for two days or `00:05:00` for five minutes.
 
 ## Prerequisites
 
@@ -11,9 +36,9 @@ pdm run python manage.py migrate incidents
 pdm run python manage.py migrate slack
 ```
 
-2. Have at least one incident in MITIGATED or POST_MORTEM status that requires a post-mortem (P1-P3)
+2. Have at least one incident in MITIGATED or POST_MORTEM status, P1 to P3.
 
-## Method 1: Backdate + Manual Test (RECOMMENDED)
+## Method 1: Backdate + manual run (RECOMMENDED)
 
 ### Step 1: List eligible incidents
 
@@ -23,71 +48,90 @@ POSTGRES_DB=ff_dev POSTGRES_SCHEMA= PYTHONDEVMODE=1 FF_SLACK_SKIP_CHECKS=true \
 ENABLE_JIRA=true ENABLE_RAID=true pdm run python manage.py test_postmortem_reminders --list-only
 ```
 
+The output lists the delays configured for each priority, and for each incident whether it needs
+a post-mortem and who holds command.
+
 ### Step 2: Backdate an incident
 
-If you have an incident (e.g., #123) that you want to test:
-
 ```bash
-# Backdate by 6 days (to exceed the 5-day threshold)
+# Backdate by 3 days, past the 2-day first delay
 POSTGRES_DB=ff_dev POSTGRES_SCHEMA= PYTHONDEVMODE=1 FF_SLACK_SKIP_CHECKS=true \
-ENABLE_JIRA=true ENABLE_RAID=true pdm run python manage.py backdate_incident_mitigated 123 --days 6
+ENABLE_JIRA=true ENABLE_RAID=true pdm run python manage.py backdate_incident_mitigated 123 --days 3
 ```
 
 Available options:
-- `--days N`: Number of days to backdate (default: 6)
-- `--reset`: Reset to current time
 
-### Step 3: Execute the reminder task
+- `--days N`, `--hours N`, `--minutes N`: how far back to move `mitigated_at`. They add up, and
+  default to 6 days when none is given. Use `--minutes` with lowered delays to rehearse in minutes.
+- `--reset`: reset `mitigated_at` to the current time.
+
+### Step 3: Run the reminder task
 
 ```bash
 POSTGRES_DB=ff_dev POSTGRES_SCHEMA= PYTHONDEVMODE=1 FF_SLACK_SKIP_CHECKS=true \
 ENABLE_JIRA=true ENABLE_RAID=true pdm run python manage.py test_postmortem_reminders
 ```
-
-This command will:
-1. List eligible incidents
-2. Display their details (days since mitigation, etc.)
-3. Send reminders in Slack
 
 ### Step 4: Verify in Slack
 
-Check that messages were sent:
-- In the incident channel
-- In #critical-incidents (tag `tech_incidents`) if it's a P1-P3 production incident
+- In the incident channel: the reminder mentions the Commander by name.
+- In `#critical-incidents`: only on the first reminder, and only for P1/P2 production incidents.
 
-## Method 2: Temporarily Modify the Delay
+## Method 2: Accelerated cadence, locally
 
-To test with a 5-minute delay instead of 5 days:
-
-### Step 1: Modify the delay
-
-Edit `src/firefighter/slack/tasks/send_postmortem_reminders.py`:
+Lower the delays on the priority you are testing with, then work in minutes. Either in the admin,
+or from a shell:
 
 ```python
-# Line 30 - Change from:
-POSTMORTEM_REMINDER_DAYS = 5
+from datetime import timedelta
+from firefighter.incidents.models.priority import Priority
 
-# To:
-POSTMORTEM_REMINDER_DAYS = 0.0035  # ~5 minutes (5/1440 days)
+Priority.objects.filter(value=3).update(
+    postmortem_reminder_time=timedelta(minutes=1),
+    postmortem_reminder_repeat_time=timedelta(minutes=2),
+)
 ```
 
-### Step 2: Create an incident and move it to MITIGATED
-
-Via the FireFighter interface, create a P1-P3 incident and move it to MITIGATED.
-
-### Step 3: Wait 5 minutes and execute
-
 ```bash
-# Wait 5 minutes, then:
+cd src
+POSTGRES_DB=ff_dev POSTGRES_SCHEMA= PYTHONDEVMODE=1 FF_SLACK_SKIP_CHECKS=true \
+ENABLE_JIRA=true ENABLE_RAID=true pdm run python manage.py backdate_incident_mitigated 123 --minutes 5
+
 POSTGRES_DB=ff_dev POSTGRES_SCHEMA= PYTHONDEVMODE=1 FF_SLACK_SKIP_CHECKS=true \
 ENABLE_JIRA=true ENABLE_RAID=true pdm run python manage.py test_postmortem_reminders
 ```
 
-### ⚠️ Important: Reset to original value
+Run the second command again after two minutes to see the **repeat** fire, then create an
+`IncidentUpdate` on the incident and run it once more to see the repeat correctly suppressed.
 
-Don't forget to reset `POSTMORTEM_REMINDER_DAYS = 5` after your tests!
+## Method 3: Accelerated rehearsal in production
 
-## Method 3: Via Django Console
+Everything the reminders read is database configuration, so a rehearsal needs no deployment and no
+environment change. Three knobs, all reversible from the Django admin:
+
+1. **Lower the delays** on the priority you rehearse with: `Incidents → Priorities → P3`, set
+   `postmortem_reminder_time` to `00:01:00` and `postmortem_reminder_repeat_time` to `00:02:00`.
+   Read on each task run, so it takes effect immediately - no worker restart.
+2. **Speed up the schedule**: `Periodic tasks` → *Send post-mortem reminders for mitigated
+   incidents*. Its crontab runs at 10:00 and 15:00 Europe/Paris. Point it at an interval schedule
+   (e.g. every minute) for the duration of the test.
+3. **Pick a test incident**: declare one in a channel of your own, move it to MITIGATED, then
+   backdate it with `backdate_incident_mitigated <id> --minutes N`.
+
+Lowering the delay on **one** priority keeps the rehearsal contained: every other priority keeps
+its production cadence while you test.
+
+Keep the blast radius small: the reminder posts in the incident channel and, for P1/P2 production
+incidents, announces in `#critical-incidents`. To rehearse without touching that channel, use a
+**P3** test incident (out of the announcement rule) or a non-PRD environment.
+
+### Restoring after the rehearsal
+
+- Put both delays back on the priority: `2 00:00:00` for each.
+- Restore the periodic task to its `0 10,15 * * *` Europe/Paris crontab.
+- `backdate_incident_mitigated <id> --reset`, then close the test incident.
+
+## Method 4: Django shell
 
 ```bash
 cd src
@@ -95,83 +139,62 @@ POSTGRES_DB=ff_dev POSTGRES_SCHEMA= PYTHONDEVMODE=1 FF_SLACK_SKIP_CHECKS=true \
 ENABLE_JIRA=true ENABLE_RAID=true pdm run python manage.py shell
 ```
 
-Then in the console:
-
 ```python
 from datetime import timedelta
 from django.utils import timezone
 from firefighter.incidents.models.incident import Incident
 
-# Find an incident
-incident = Incident.objects.get(id=123)  # Replace 123 with your ID
+incident = Incident.objects.get(id=123)
+incident.mitigated_at = timezone.now() - timedelta(days=3)
+incident.save(update_fields=["mitigated_at"])
+print(f"Incident #{incident.id} backdated to {incident.mitigated_at}, commander: {incident.commander}")
 
-# Backdate by 6 days
-incident.mitigated_at = timezone.now() - timedelta(days=6)
-incident.save(update_fields=['mitigated_at'])
-
-print(f"Incident #{incident.id} backdated to {incident.mitigated_at}")
-
-# Test the task
 from firefighter.slack.tasks.send_postmortem_reminders import send_postmortem_reminders
 send_postmortem_reminders()
 ```
 
-## Verifying Reminders
-
-After executing the task, verify:
+## Verifying reminders
 
 1. **In the incident channel**:
-   - Message with title "⏰ Post-mortem Reminder ⏰"
-   - Buttons to open post-mortem (Confluence/Jira)
-   - "Update status" button
-
-2. **In #critical-incidents** (if P1-P3 production):
-   - Message "⏰ Post-mortem reminder for incident #XXX"
-   - Incident information
-   - Links to channel and post-mortems
-
-3. **In the Message table**:
-   - A message with `ff_type = "ff_incident_postmortem_reminder_5days"`
-   - This prevents duplicate sends
+     - Title "⏰ Incident process reminder ⏰"
+     - How long the incident has been mitigated, and on a repeat, how long the process has been still
+     - The Commander mentioned, with what is expected of them
+     - Buttons to open the post-mortem (Confluence/Jira), "Update status" and "Update roles"
+2. **In #critical-incidents** (first reminder, P1/P2 production only):
+     - "⏰ Post-mortem reminder for incident #XXX", with the Commander in the fields
+3. **In the `Message` table**:
+     - A row with `ff_type = "ff_incident_postmortem_reminder_5days"` per reminder sent. The task
+       reads the most recent one to know when it last reminded, so the repeat cadence depends on
+       these rows being written. The task logs an error if a reminder is sent but not saved.
 
 ## Debugging
 
-To see detailed logs:
-
 ```bash
-# Increase log level
 export DJANGO_LOG_LEVEL=DEBUG
 
-# Then execute the test command
 POSTGRES_DB=ff_dev POSTGRES_SCHEMA= PYTHONDEVMODE=1 FF_SLACK_SKIP_CHECKS=true \
 ENABLE_JIRA=true ENABLE_RAID=true pdm run python manage.py test_postmortem_reminders
 ```
 
-## Reset an Incident After Testing
-
-To reset an incident to current time:
+## Resetting an incident after testing
 
 ```bash
 POSTGRES_DB=ff_dev POSTGRES_SCHEMA= PYTHONDEVMODE=1 FF_SLACK_SKIP_CHECKS=true \
 ENABLE_JIRA=true ENABLE_RAID=true pdm run python manage.py backdate_incident_mitigated 123 --reset
 ```
 
-## Testing the Celery Periodic Task
-
-To test that Celery executes the task automatically:
+## Testing the Celery periodic task
 
 ```bash
-# Start Celery Beat (scheduler)
+# Scheduler
 cd src
 celery -A firefighter.firefighter beat --loglevel=info
 
-# In another terminal, start the worker
+# Worker, in another terminal
 celery -A firefighter.firefighter worker --loglevel=info
 ```
 
-The task will automatically execute at 10 AM and 3 PM (Paris time).
-
-To view configured periodic tasks:
+The task runs at 10 AM and 3 PM (Paris time) by default. To inspect what is configured:
 
 ```bash
 POSTGRES_DB=ff_dev POSTGRES_SCHEMA= PYTHONDEVMODE=1 FF_SLACK_SKIP_CHECKS=true \
@@ -180,9 +203,11 @@ ENABLE_JIRA=true ENABLE_RAID=true pdm run python manage.py shell
 
 ```python
 from django_celery_beat.models import PeriodicTask
-tasks = PeriodicTask.objects.filter(task='slack.send_postmortem_reminders')
-for task in tasks:
+for task in PeriodicTask.objects.filter(task="slack.send_postmortem_reminders"):
     print(f"Task: {task.name}")
-    print(f"Schedule: {task.crontab}")
+    print(f"Schedule: {task.crontab or task.interval}")
     print(f"Enabled: {task.enabled}")
 ```
+
+The Celery task name stays `slack.send_postmortem_reminders`: it is stored in that `PeriodicTask`
+row, so renaming it would leave Beat dispatching a task no worker registers.

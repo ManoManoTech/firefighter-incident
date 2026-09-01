@@ -40,7 +40,10 @@ from firefighter.incidents.models.incident_membership import (
     IncidentMembership,
     IncidentRole,
 )
-from firefighter.incidents.models.incident_role_type import IncidentRoleType
+from firefighter.incidents.models.incident_role_type import (
+    COMMANDER_ROLE_SLUG,
+    IncidentRoleType,
+)
 from firefighter.incidents.models.metric_type import IncidentMetric, MetricType
 from firefighter.incidents.models.milestone_type import MilestoneType
 from firefighter.incidents.models.priority import Priority
@@ -201,11 +204,19 @@ class PriorityAdmin(admin.ModelAdmin[Priority]):
         "emoji",
         "description",
         "sla",
+        "reminder_time",
+        "postmortem_reminder_time",
+        "postmortem_reminder_repeat_time",
         "order",
         "enabled_create",
         "enabled_update",
     ]
+    # Editable from the list so the reminder cadence can be tuned, or accelerated for a rehearsal,
+    # without opening each priority.
     list_editable = [
+        "reminder_time",
+        "postmortem_reminder_time",
+        "postmortem_reminder_repeat_time",
         "order",
     ]
     list_display_links = ["name"]
@@ -574,7 +585,7 @@ class UserAdmin(BaseUserAdmin):  # type: ignore[type-arg]
 
     @staticmethod
     def commander_count(obj: User) -> int:
-        return obj.roles_set.filter(role_type__slug="commander").count()
+        return obj.roles_set.filter(role_type__slug=COMMANDER_ROLE_SLUG).count()
 
     @staticmethod
     def communication_lead_count(obj: User) -> int:

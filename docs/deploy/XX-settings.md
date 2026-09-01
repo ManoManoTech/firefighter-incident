@@ -72,6 +72,7 @@ See [django-oauth2-codeflow](https://gitlab.com/systra/qeto/lib/django-oauth2-au
 - [`SLACK_INCIDENT_HELP_GUIDE_URL`][firefighter.firefighter.settings.components.slack.SLACK_INCIDENT_HELP_GUIDE_URL]
 - [`SLACK_SEVERITY_HELP_GUIDE_URL`][firefighter.firefighter.settings.components.slack.SLACK_SEVERITY_HELP_GUIDE_URL]
 - [`SLACK_EMERGENCY_COMMUNICATION_GUIDE_URL`][firefighter.firefighter.settings.components.slack.SLACK_EMERGENCY_COMMUNICATION_GUIDE_URL]
+- [`SLACK_ROLES_GUIDE_URL`][firefighter.firefighter.settings.components.slack.SLACK_ROLES_GUIDE_URL]
 - [`SLACK_EMERGENCY_USERGROUP_ID`][firefighter.firefighter.settings.components.slack.SLACK_EMERGENCY_USERGROUP_ID]
 - [`SLACK_APP_EMOJI`][firefighter.firefighter.settings.components.slack.SLACK_APP_EMOJI]
 - [`FF_SLACK_SKIP_CHECKS`][firefighter.firefighter.settings.components.slack.FF_SLACK_SKIP_CHECKS]

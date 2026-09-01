@@ -37,7 +37,10 @@ from firefighter.incidents.models.incident_membership import (
     IncidentMembership,
     IncidentRole,
 )
-from firefighter.incidents.models.incident_role_type import IncidentRoleType
+from firefighter.incidents.models.incident_role_type import (
+    COMMANDER_ROLE_SLUG,
+    IncidentRoleType,
+)
 from firefighter.incidents.models.incident_update import IncidentUpdate
 from firefighter.incidents.models.metric_type import IncidentMetric, MetricType
 from firefighter.incidents.models.milestone_type import MilestoneType
@@ -351,6 +354,23 @@ class Incident(models.Model):
     def status_page_url(self) -> str:
         """Similar with `get_absolute_url` but with full domain, to be used out of the website."""
         return f"{settings.BASE_URL}{self.get_absolute_url()}"
+
+    @property
+    def commander(self) -> IncidentRole | None:
+        """The `IncidentRole` holding command, or None if nobody does.
+
+        Reads from `roles_set`, so a caller iterating over incidents should
+        `prefetch_related("roles_set__role_type", "roles_set__user__slack_user")` to avoid a
+        query per incident.
+        """
+        return next(
+            (
+                role
+                for role in self.roles_set.all()
+                if role.role_type.slug == COMMANDER_ROLE_SLUG
+            ),
+            None,
+        )
 
     @property
     def needs_postmortem(self) -> bool:
