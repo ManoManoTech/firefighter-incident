@@ -5,7 +5,6 @@ from __future__ import annotations
 from datetime import timedelta
 from typing import Any
 
-from django.conf import settings
 from django.core.management.base import BaseCommand, CommandParser
 from django.utils import timezone
 
@@ -27,7 +26,7 @@ class Command(BaseCommand):
             "--days",
             type=float,
             default=0,
-            help="Number of days to backdate. Combined with --hours/--minutes; defaults to 6 days when none is given",
+            help="Number of days to backdate. Combined with --hours/--minutes; defaults to 3 days when none is given, past the 2-day reminder delay",
         )
         parser.add_argument(
             "--hours",
@@ -56,7 +55,7 @@ class Command(BaseCommand):
             minutes=options["minutes"],
         )
         if not backdate_by:
-            backdate_by = timedelta(days=6)
+            backdate_by = timedelta(days=3)
 
         try:
             incident = Incident.objects.get(id=incident_id)
@@ -97,11 +96,11 @@ class Command(BaseCommand):
         self.stdout.write(f"   Needs postmortem: {incident.needs_postmortem}")
         self.stdout.write(f"   Mitigated at: {incident.mitigated_at}")
 
-        first_delay = timedelta(seconds=settings.FF_PROCESS_REMINDER_FIRST_DELAY)
+        first_delay = incident.priority.postmortem_reminder_time
         if not reset and backdate_by >= first_delay:
             self.stdout.write(
                 self.style.WARNING(
-                    f"\n⚠️  This incident is now past the {first_delay} first-reminder delay!"
+                    f"\n⚠️  This incident is now past the {first_delay} reminder delay of {incident.priority.name}!"
                 )
             )
             self.stdout.write(

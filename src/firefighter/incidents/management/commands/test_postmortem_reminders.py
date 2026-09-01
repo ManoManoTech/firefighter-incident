@@ -2,17 +2,16 @@
 
 from __future__ import annotations
 
-from datetime import timedelta
 from typing import Any
 
-from django.conf import settings
 from django.core.management.base import BaseCommand, CommandParser
-from django.db.models import Q
+from django.db.models import DateTimeField, ExpressionWrapper, F, Q
 from django.utils import timezone
 
 from firefighter.firefighter.filters import readable_time_delta
 from firefighter.incidents.enums import IncidentStatus
 from firefighter.incidents.models.incident import Incident
+from firefighter.incidents.models.priority import Priority
 from firefighter.slack.tasks.send_postmortem_reminders import (
     send_postmortem_reminders,
 )
@@ -36,33 +35,22 @@ class Command(BaseCommand):
         self.stdout.write(self.style.MIGRATE_HEADING("Process Reminder Testing"))
         self.stdout.write("=" * 70)
 
-        first_delay = timedelta(seconds=settings.FF_PROCESS_REMINDER_FIRST_DELAY)
-        repeat_seconds = settings.FF_PROCESS_REMINDER_REPEAT_DELAY
-        cutoff_date = timezone.now() - first_delay
-
-        self.stdout.write(
-            f"\n⏰ First reminder after: {readable_time_delta(first_delay)} "
-            f"(FF_PROCESS_REMINDER_FIRST_DELAY={settings.FF_PROCESS_REMINDER_FIRST_DELAY}s)"
-        )
-        if repeat_seconds > 0:
+        self.stdout.write("\n⏰ Delays configured per priority (Django admin):")
+        for priority in Priority.objects.filter(
+            Q(value__lte=3) | Q(needs_postmortem=True)
+        ):
+            repeat = priority.postmortem_reminder_repeat_time
+            repeat_fmt = readable_time_delta(repeat) if repeat else "no repeat"
             self.stdout.write(
-                f"🔁 Then repeated every: {readable_time_delta(timedelta(seconds=repeat_seconds))} "
-                f"of inactivity (FF_PROCESS_REMINDER_REPEAT_DELAY={repeat_seconds}s)"
+                f"   {priority.name}: first after {readable_time_delta(priority.postmortem_reminder_time)}, "
+                f"then every {repeat_fmt}"
             )
-        else:
-            self.stdout.write(
-                self.style.WARNING(
-                    f"🔁 Repeats disabled (FF_PROCESS_REMINDER_REPEAT_DELAY={repeat_seconds})"
-                )
-            )
-        self.stdout.write(f"📅 Cutoff date: {cutoff_date}")
-        self.stdout.write(f"🕐 Current time: {timezone.now()}\n")
+        self.stdout.write(f"\n🕐 Current time: {timezone.now()}\n")
 
         # Same scope as the task itself
         eligible_incidents = (
             Incident.objects.filter(
                 Q(priority__value__lte=3) | Q(priority__needs_postmortem=True),
-                mitigated_at__lte=cutoff_date,
                 mitigated_at__isnull=False,
                 _status__in=[
                     IncidentStatus.MITIGATED.value,
@@ -70,6 +58,13 @@ class Command(BaseCommand):
                 ],
                 ignore=False,
             )
+            .annotate(
+                reminder_due_at=ExpressionWrapper(
+                    F("mitigated_at") + F("priority__postmortem_reminder_time"),
+                    output_field=DateTimeField(),
+                )
+            )
+            .filter(reminder_due_at__lte=timezone.now())
             .select_related("priority", "environment", "conversation")
             .prefetch_related("roles_set__role_type", "roles_set__user__slack_user")
         )
@@ -84,14 +79,16 @@ class Command(BaseCommand):
             self.stdout.write("\nTo test, you can backdate an incident with:")
             self.stdout.write(
                 self.style.NOTICE(
-                    "   pdm run python manage.py backdate_incident_mitigated <incident_id> --days 6"
+                    "   pdm run python manage.py backdate_incident_mitigated <incident_id> --days 3"
                 )
             )
-            self.stdout.write("\nOr, to rehearse the flow in minutes:")
+            self.stdout.write(
+                "\nOr, to rehearse in minutes: lower the priority's postmortem_reminder_time in the"
+            )
+            self.stdout.write("Django admin, then:")
             self.stdout.write(
                 self.style.NOTICE(
-                    "   FF_PROCESS_REMINDER_FIRST_DELAY=60 FF_PROCESS_REMINDER_REPEAT_DELAY=120 \\\n"
-                    "     pdm run python manage.py backdate_incident_mitigated <incident_id> --minutes 5"
+                    "   pdm run python manage.py backdate_incident_mitigated <incident_id> --minutes 5"
                 )
             )
             return

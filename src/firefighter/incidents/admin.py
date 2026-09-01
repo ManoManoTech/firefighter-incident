@@ -204,11 +204,19 @@ class PriorityAdmin(admin.ModelAdmin[Priority]):
         "emoji",
         "description",
         "sla",
+        "reminder_time",
+        "postmortem_reminder_time",
+        "postmortem_reminder_repeat_time",
         "order",
         "enabled_create",
         "enabled_update",
     ]
+    # Editable from the list so the reminder cadence can be tuned, or accelerated for a rehearsal,
+    # without opening each priority.
     list_editable = [
+        "reminder_time",
+        "postmortem_reminder_time",
+        "postmortem_reminder_repeat_time",
         "order",
     ]
     list_display_links = ["name"]

@@ -1,6 +1,6 @@
 # Testing the Incident Process Reminders
 
-This guide explains how to test the process reminders without waiting five days.
+This guide explains how to test the process reminders without waiting two days.
 
 The reminders tell the Incident Commander that they own driving a mitigated incident through to
 closure: completing the post-mortem when the priority requires one (P1/P2), submitting the key
@@ -8,16 +8,24 @@ events and closing otherwise (P3).
 
 ## The two delays
 
-Both are settings, in **seconds**, so no code change is needed to accelerate them:
+Both live on the **Priority**, next to `reminder_time` and `sla`, so they are editable per
+priority in the Django admin - no environment variable, no deployment, no worker restart:
 
-| Setting | Default | Meaning |
+| Priority field | Default | Meaning |
 | --- | --- | --- |
-| `FF_PROCESS_REMINDER_FIRST_DELAY` | `432000` (5 days) | Time after mitigation before the first reminder |
-| `FF_PROCESS_REMINDER_REPEAT_DELAY` | `259200` (3 days) | Inactivity before the reminder is sent again. `0` disables repeats |
+| `postmortem_reminder_time` | 2 days | Time after mitigation before the first reminder |
+| `postmortem_reminder_repeat_time` | 2 days | Inactivity before the reminder is sent again. `0` reminds only once |
+
+Do not confuse `postmortem_reminder_time` with the existing **`reminder_time`** on the same
+model: that one drives the *other* reminder, the one nagging an **open** incident that has had no
+`IncidentUpdate` for a while (task `slack.send_reminders`, every 5 minutes during office hours).
 
 Anything that moves the incident - a new `IncidentUpdate`, a status change - restarts the repeat
 clock. The first reminder is also announced in `#critical-incidents` (tag `tech_incidents`) for
 P1/P2 production incidents; the repeats stay in the incident channel.
+
+Where to edit: **Django admin → Incidents → Priorities → \<the priority\>**. Durations accept the
+Django format, e.g. `2 00:00:00` for two days or `00:05:00` for five minutes.
 
 ## Prerequisites
 
@@ -40,15 +48,15 @@ POSTGRES_DB=ff_dev POSTGRES_SCHEMA= PYTHONDEVMODE=1 FF_SLACK_SKIP_CHECKS=true \
 ENABLE_JIRA=true ENABLE_RAID=true pdm run python manage.py test_postmortem_reminders --list-only
 ```
 
-The output states both configured delays, and for each incident whether it needs a post-mortem
-and who holds command.
+The output lists the delays configured for each priority, and for each incident whether it needs
+a post-mortem and who holds command.
 
 ### Step 2: Backdate an incident
 
 ```bash
-# Backdate by 6 days, past the 5-day first delay
+# Backdate by 3 days, past the 2-day first delay
 POSTGRES_DB=ff_dev POSTGRES_SCHEMA= PYTHONDEVMODE=1 FF_SLACK_SKIP_CHECKS=true \
-ENABLE_JIRA=true ENABLE_RAID=true pdm run python manage.py backdate_incident_mitigated 123 --days 6
+ENABLE_JIRA=true ENABLE_RAID=true pdm run python manage.py backdate_incident_mitigated 123 --days 3
 ```
 
 Available options:
@@ -71,15 +79,24 @@ ENABLE_JIRA=true ENABLE_RAID=true pdm run python manage.py test_postmortem_remin
 
 ## Method 2: Accelerated cadence, locally
 
-Lower both delays for the run, no source edit needed:
+Lower the delays on the priority you are testing with, then work in minutes. Either in the admin,
+or from a shell:
+
+```python
+from datetime import timedelta
+from firefighter.incidents.models.priority import Priority
+
+Priority.objects.filter(value=3).update(
+    postmortem_reminder_time=timedelta(minutes=1),
+    postmortem_reminder_repeat_time=timedelta(minutes=2),
+)
+```
 
 ```bash
 cd src
-FF_PROCESS_REMINDER_FIRST_DELAY=60 FF_PROCESS_REMINDER_REPEAT_DELAY=120 \
 POSTGRES_DB=ff_dev POSTGRES_SCHEMA= PYTHONDEVMODE=1 FF_SLACK_SKIP_CHECKS=true \
 ENABLE_JIRA=true ENABLE_RAID=true pdm run python manage.py backdate_incident_mitigated 123 --minutes 5
 
-FF_PROCESS_REMINDER_FIRST_DELAY=60 FF_PROCESS_REMINDER_REPEAT_DELAY=120 \
 POSTGRES_DB=ff_dev POSTGRES_SCHEMA= PYTHONDEVMODE=1 FF_SLACK_SKIP_CHECKS=true \
 ENABLE_JIRA=true ENABLE_RAID=true pdm run python manage.py test_postmortem_reminders
 ```
@@ -87,21 +104,22 @@ ENABLE_JIRA=true ENABLE_RAID=true pdm run python manage.py test_postmortem_remin
 Run the second command again after two minutes to see the **repeat** fire, then create an
 `IncidentUpdate` on the incident and run it once more to see the repeat correctly suppressed.
 
-Set the variables in your `.env` instead if you would rather not repeat them on every command.
-
 ## Method 3: Accelerated rehearsal in production
 
-Everything the reminders read is runtime configuration, so a rehearsal needs no deployment of new
-code. Three knobs, all reversible:
+Everything the reminders read is database configuration, so a rehearsal needs no deployment and no
+environment change. Three knobs, all reversible from the Django admin:
 
-1. **Lower the delays** on the deployment (`FF_PROCESS_REMINDER_FIRST_DELAY`,
-   `FF_PROCESS_REMINDER_REPEAT_DELAY`). They are read on each task run, so a worker restart is
-   enough to pick them up - no code change.
-2. **Speed up the schedule**: in Django admin, `Periodic tasks` → *Send post-mortem reminders for
-   mitigated incidents*. Its crontab runs at 10:00 and 15:00 Europe/Paris. Point it at an interval
-   schedule (e.g. every minute) for the duration of the test.
+1. **Lower the delays** on the priority you rehearse with: `Incidents → Priorities → P3`, set
+   `postmortem_reminder_time` to `00:01:00` and `postmortem_reminder_repeat_time` to `00:02:00`.
+   Read on each task run, so it takes effect immediately - no worker restart.
+2. **Speed up the schedule**: `Periodic tasks` → *Send post-mortem reminders for mitigated
+   incidents*. Its crontab runs at 10:00 and 15:00 Europe/Paris. Point it at an interval schedule
+   (e.g. every minute) for the duration of the test.
 3. **Pick a test incident**: declare one in a channel of your own, move it to MITIGATED, then
    backdate it with `backdate_incident_mitigated <id> --minutes N`.
+
+Lowering the delay on **one** priority keeps the rehearsal contained: every other priority keeps
+its production cadence while you test.
 
 Keep the blast radius small: the reminder posts in the incident channel and, for P1/P2 production
 incidents, announces in `#critical-incidents`. To rehearse without touching that channel, use a
@@ -109,7 +127,7 @@ incidents, announces in `#critical-incidents`. To rehearse without touching that
 
 ### Restoring after the rehearsal
 
-- Put both delays back to `432000` / `259200`.
+- Put both delays back on the priority: `2 00:00:00` for each.
 - Restore the periodic task to its `0 10,15 * * *` Europe/Paris crontab.
 - `backdate_incident_mitigated <id> --reset`, then close the test incident.
 
@@ -127,7 +145,7 @@ from django.utils import timezone
 from firefighter.incidents.models.incident import Incident
 
 incident = Incident.objects.get(id=123)
-incident.mitigated_at = timezone.now() - timedelta(days=6)
+incident.mitigated_at = timezone.now() - timedelta(days=3)
 incident.save(update_fields=["mitigated_at"])
 print(f"Incident #{incident.id} backdated to {incident.mitigated_at}, commander: {incident.commander}")
 

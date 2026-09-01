@@ -33,8 +33,6 @@ Redis DBs:
 
 - [`BASE_URL`][firefighter.firefighter.settings.settings_utils.BASE_URL]
 - [`FF_ROLE_REMINDER_MIN_DAYS_INTERVAL`][firefighter.firefighter.settings.components.common.FF_ROLE_REMINDER_MIN_DAYS_INTERVAL]
-- [`FF_PROCESS_REMINDER_FIRST_DELAY`][firefighter.firefighter.settings.components.common.FF_PROCESS_REMINDER_FIRST_DELAY]
-- [`FF_PROCESS_REMINDER_REPEAT_DELAY`][firefighter.firefighter.settings.components.common.FF_PROCESS_REMINDER_REPEAT_DELAY]
 - [`FF_USER_ID_HEADER`][firefighter.firefighter.settings.components.common.FF_USER_ID_HEADER]
 - [`FF_OVERRIDE_MENUS_CREATION`][firefighter.firefighter.settings.components.common.FF_OVERRIDE_MENUS_CREATION]
 - [`FF_DEBUG_ERROR_PAGES`][firefighter.firefighter.settings.components.common.FF_DEBUG_ERROR_PAGES]

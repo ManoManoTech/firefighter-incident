@@ -9,7 +9,6 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from __future__ import annotations
 
-from datetime import timedelta
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
@@ -292,20 +291,6 @@ FF_ROLE_REMINDER_MIN_DAYS_INTERVAL = config(
     "FF_ROLE_REMINDER_MIN_DAYS_INTERVAL", default=90, cast=int
 )
 "Number of days between role explanation/reminders, for each role. -1 disable the messages, and 0 will send the message everytime."
-
-FF_PROCESS_REMINDER_FIRST_DELAY: int = config(
-    "FF_PROCESS_REMINDER_FIRST_DELAY",
-    default=int(timedelta(days=5).total_seconds()),
-    cast=int,
-)
-"""Seconds after mitigation before the first reminder that the incident process must be driven to closure. Expressed in seconds so it can be lowered to a few minutes to rehearse the flow."""
-
-FF_PROCESS_REMINDER_REPEAT_DELAY: int = config(
-    "FF_PROCESS_REMINDER_REPEAT_DELAY",
-    default=int(timedelta(days=3).total_seconds()),
-    cast=int,
-)
-"""Seconds of inactivity before the process reminder is sent again. 0 or less disables the repeats, keeping a single reminder."""
 
 FF_HTTP_CLIENT_ADDITIONAL_HEADERS: dict[str, Any] | None = None
 "Additional headers to send with every HTTP request made using our HttpClient. Useful for global auth, or adding a specific User-Agent."

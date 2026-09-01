@@ -1,21 +1,21 @@
 """Celery task reminding the Commander to drive a mitigated incident through to closure.
 
 An incident that stays mitigated is not finished: P1/P2 still need their post-mortem, P3 still
-needs its key events and its closure. This task nudges whoever holds command, first after
-`FF_PROCESS_REMINDER_FIRST_DELAY`, then every `FF_PROCESS_REMINDER_REPEAT_DELAY` for as long as
-nothing moves. Both delays are settings in seconds, so the whole flow can be rehearsed in
-minutes instead of days.
+needs its key events and its closure. This task nudges whoever holds command once the incident
+has sat mitigated for its priority's `postmortem_reminder_time`, then again every
+`postmortem_reminder_repeat_time` for as long as nothing moves. Both live on the Priority, next
+to `reminder_time`, so they can be tuned per priority in the Django admin - including down to a
+few minutes to rehearse the flow.
 """
 
 from __future__ import annotations
 
 import logging
-from datetime import timedelta
 from typing import TYPE_CHECKING
 
 from celery import shared_task
 from django.conf import settings
-from django.db.models import Q
+from django.db.models import DateTimeField, ExpressionWrapper, F, Q
 from django.utils import timezone
 
 from firefighter.incidents.enums import IncidentStatus
@@ -24,7 +24,7 @@ from firefighter.slack.models.conversation import Conversation
 from firefighter.slack.rules import should_publish_pm_in_general_channel
 
 if TYPE_CHECKING:
-    from datetime import datetime
+    from datetime import datetime, timedelta
 
     from firefighter.slack.models import Message
 
@@ -36,16 +36,6 @@ if settings.ENABLE_SLACK:
     from firefighter.slack.models import Message
 
 logger = logging.getLogger(__name__)
-
-
-def _first_delay() -> timedelta:
-    return timedelta(seconds=settings.FF_PROCESS_REMINDER_FIRST_DELAY)
-
-
-def _repeat_delay() -> timedelta | None:
-    """The delay between two reminders, or None when repeats are disabled."""
-    seconds = settings.FF_PROCESS_REMINDER_REPEAT_DELAY
-    return timedelta(seconds=seconds) if seconds > 0 else None
 
 
 def _last_reminder(incident: Incident) -> Message | None:
@@ -78,26 +68,25 @@ def _reminder_due(
 ) -> tuple[bool, timedelta | None, bool]:
     """Decide whether to remind, how long the process has been still, and if it is the first time.
 
+    The queryset already selected incidents past their priority's `postmortem_reminder_time`, so
+    this only arbitrates the repeats.
+
     Returns:
         (due, stale_for, is_first_reminder). `stale_for` is None on the first reminder, where
         the message already states how long the incident has been mitigated.
     """
     last_reminder = _last_reminder(incident)
     if last_reminder is None:
-        # `mitigated_at` is guaranteed by the queryset filter, but a reminder must never crash
-        # the whole run for one malformed incident.
         return (True, None, True)
 
-    repeat_delay = _repeat_delay()
-    if repeat_delay is None:
+    repeat_delay = incident.priority.postmortem_reminder_repeat_time
+    if not repeat_delay:
         return (False, None, False)
 
     last_progress_at = _last_progress_at(incident)
     # Anything more recent than the last reminder counts as movement and restarts the clock.
     quiet_since = max(
-        moment
-        for moment in (last_reminder.ts, last_progress_at)
-        if moment is not None
+        moment for moment in (last_reminder.ts, last_progress_at) if moment is not None
     )
     stale_for = now - quiet_since
     return (stale_for >= repeat_delay, stale_for, False)
@@ -112,14 +101,14 @@ def send_postmortem_reminders() -> None:
     registers.
     """
     now = timezone.now()
-    cutoff_date = now - _first_delay()
 
     # P1-P3 are the priorities that run the Slack incident process. GAMEDAY sits at value 20 but
     # requires a post-mortem, so it is matched on `needs_postmortem` rather than being dropped.
+    # The reminder is due once mitigated_at + the priority's delay has passed, which Postgres
+    # computes directly rather than us reading every mitigated incident back.
     incidents_needing_reminder = (
         Incident.objects.filter(
             Q(priority__value__lte=3) | Q(priority__needs_postmortem=True),
-            mitigated_at__lte=cutoff_date,
             mitigated_at__isnull=False,
             _status__in=[
                 IncidentStatus.MITIGATED.value,
@@ -127,12 +116,19 @@ def send_postmortem_reminders() -> None:
             ],
             ignore=False,
         )
+        .annotate(
+            reminder_due_at=ExpressionWrapper(
+                F("mitigated_at") + F("priority__postmortem_reminder_time"),
+                output_field=DateTimeField(),
+            )
+        )
+        .filter(reminder_due_at__lte=now)
         .select_related("conversation", "priority", "environment")
         .prefetch_related("roles_set__role_type", "roles_set__user__slack_user")
     )
 
     logger.info(
-        f"Found {incidents_needing_reminder.count()} mitigated incidents in the process reminder scope"
+        f"Found {incidents_needing_reminder.count()} mitigated incidents past their reminder delay"
     )
 
     reminded = 0

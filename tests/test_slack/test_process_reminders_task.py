@@ -34,14 +34,22 @@ from firefighter.slack.tasks.send_postmortem_reminders import send_postmortem_re
 if TYPE_CHECKING:
     from firefighter.incidents.models.incident import Incident
 
-FIRST_DELAY_SECONDS = 5 * 24 * 3600
-REPEAT_DELAY_SECONDS = 3 * 24 * 3600
+FIRST_DELAY = timedelta(days=5)
+REPEAT_DELAY = timedelta(days=3)
 
 
 @pytest.fixture(autouse=True)
-def _reminder_delays(settings):
-    settings.FF_PROCESS_REMINDER_FIRST_DELAY = FIRST_DELAY_SECONDS
-    settings.FF_PROCESS_REMINDER_REPEAT_DELAY = REPEAT_DELAY_SECONDS
+def _reminder_delays(db, settings):
+    """Pin the per-priority delays, deliberately different from the model defaults.
+
+    Distinct values prove the task reads the configured delay rather than a constant.
+    Depends on `db` so the write happens inside the test transaction and is rolled back:
+    the priorities are session-scoped reference data shared by every test.
+    """
+    Priority.objects.all().update(
+        postmortem_reminder_time=FIRST_DELAY,
+        postmortem_reminder_repeat_time=REPEAT_DELAY,
+    )
     settings.ENABLE_JIRA_POSTMORTEM = True
 
 
@@ -146,6 +154,22 @@ class TestScope:
 
         assert incident.id not in _reminded_incidents(mock_send)
 
+    def test_each_priority_uses_its_own_delay(self, mock_send):
+        Priority.objects.filter(value=1).update(
+            postmortem_reminder_time=timedelta(days=1)
+        )
+        Priority.objects.filter(value=3).update(
+            postmortem_reminder_time=timedelta(days=10)
+        )
+        quick = _mitigated_incident(priority_value=1, mitigated_days_ago=2)
+        patient = _mitigated_incident(priority_value=3, mitigated_days_ago=2)
+
+        send_postmortem_reminders()
+
+        reminded = _reminded_incidents(mock_send)
+        assert quick.id in reminded
+        assert patient.id not in reminded
+
     def test_a_priority_requiring_a_post_mortem_stays_in_scope_whatever_its_value(
         self, mock_send
     ):
@@ -194,8 +218,8 @@ class TestRepeats:
 
         assert incident.id not in _reminded_incidents(mock_send)
 
-    def test_repeats_can_be_disabled(self, mock_send, settings):
-        settings.FF_PROCESS_REMINDER_REPEAT_DELAY = 0
+    def test_repeats_can_be_disabled(self, mock_send):
+        Priority.objects.all().update(postmortem_reminder_repeat_time=timedelta(0))
         incident = _mitigated_incident(mitigated_days_ago=30)
         _past_reminder(incident, days_ago=20)
 
@@ -203,9 +227,11 @@ class TestRepeats:
 
         assert incident.id not in _reminded_incidents(mock_send)
 
-    def test_an_accelerated_cadence_reminds_within_minutes(self, mock_send, settings):
-        settings.FF_PROCESS_REMINDER_FIRST_DELAY = 60
-        settings.FF_PROCESS_REMINDER_REPEAT_DELAY = 120
+    def test_an_accelerated_cadence_reminds_within_minutes(self, mock_send):
+        Priority.objects.all().update(
+            postmortem_reminder_time=timedelta(minutes=1),
+            postmortem_reminder_repeat_time=timedelta(minutes=2),
+        )
         incident = _mitigated_incident(mitigated_days_ago=1 / 24)  # an hour ago
         _past_reminder(incident, days_ago=10 / (24 * 60))  # ten minutes ago
 

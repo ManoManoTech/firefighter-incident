@@ -29,6 +29,14 @@ class Priority(models.Model):
         default=timedelta(hours=1),
         help_text="Time before an incident without any incident update will receive a reminder.",
     )
+    postmortem_reminder_time = models.DurationField(
+        default=timedelta(days=2),
+        help_text="Time after mitigation before the incident channel is reminded that the incident still has to be driven to closure (post-mortem completed, or key events submitted and incident closed).",
+    )
+    postmortem_reminder_repeat_time = models.DurationField(
+        default=timedelta(days=2),
+        help_text="Time without any progress before that reminder is sent again. Set to 0 to remind only once.",
+    )
     sla = models.DurationField(
         verbose_name="SLA",
         default=timedelta(hours=1),
