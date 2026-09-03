@@ -56,6 +56,10 @@ def request_incident_analysis(self: Any, incident_id: int, slack_channel_id: str
     2. Async self-invoke its internal component to run a multi-track investigation.
     3. Post a ranked root-cause analysis (Block Kit) into ``slack_channel_id``.
 
+    The payload names the incident commander so that Atlas can credit the analysis
+    to a human: what it posts is an unreviewed hypothesis, and it cannot own its own
+    claims. When nobody holds command, Atlas says so in its own words.
+
     Args:
         self: Celery task instance (bound task).
         incident_id: PK of the ``Incident`` to analyse.
@@ -71,13 +75,19 @@ def request_incident_analysis(self: Any, incident_id: int, slack_channel_id: str
 
     from firefighter.firefighter.http_client import HttpClient
     from firefighter.incidents.models.incident import Incident
+    from firefighter.slack.slack_templating import user_slack_handle_or_name
 
     try:
-        incident = Incident.objects.select_related(
-            "priority",
-            "environment",
-            "incident_category",
-        ).get(id=incident_id)
+        incident = (
+            Incident.objects.select_related(
+                "priority",
+                "environment",
+                "incident_category",
+            )
+            # `commander` scans `roles_set`, so select_related cannot reach it.
+            .prefetch_related("roles_set__role_type", "roles_set__user__slack_user")
+            .get(id=incident_id)
+        )
     except Incident.DoesNotExist:
         logger.error(  # noqa: TRY400
             "Atlas task: incident %s not found, aborting analysis",
@@ -85,6 +95,17 @@ def request_incident_analysis(self: Any, incident_id: int, slack_channel_id: str
             extra={"incident_id": incident_id},
         )
         return
+
+    # Prefer the Slack mention so the Atlas report footer pings whoever owns it;
+    # fall back to the full name for a commander with no linked Slack user. Both
+    # levels can legitimately be absent, and the helper's "no user" sentinel is not
+    # something Atlas should print, so guard rather than pass None through.
+    commander_role = incident.commander
+    commander: str | None = (
+        user_slack_handle_or_name(commander_role.user)
+        if commander_role and commander_role.user
+        else None
+    )
 
     payload: dict[str, Any] = {
         "incident_id": str(incident.id),
@@ -96,6 +117,7 @@ def request_incident_analysis(self: Any, incident_id: int, slack_channel_id: str
         "environment": incident.environment.value.lower(),
         "occurred_at": incident.created_at.isoformat(),
         "slack_channel_id": slack_channel_id,
+        "commander": commander,
     }
 
     # Sign the exact bytes we will send so Atlas can verify integrity.
