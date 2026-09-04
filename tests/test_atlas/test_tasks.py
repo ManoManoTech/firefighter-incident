@@ -14,6 +14,14 @@ from firefighter.atlas.tasks.request_analysis import request_incident_analysis
 from firefighter.incidents.models.incident import Incident
 
 
+def _make_commander(slack_id: str | None = "U123", full_name: str = "Jane Doe") -> Mock:
+    """An `IncidentRole` holding command, shaped as `user_slack_handle_or_name` reads it."""
+    role = Mock()
+    role.user.full_name = full_name
+    role.user.slack_user = Mock(slack_id=slack_id) if slack_id else None
+    return role
+
+
 def _make_incident(env_value: str = "PRD", priority_name: str = "P1") -> Mock:
     incident = Mock()
     incident.id = 42
@@ -24,14 +32,29 @@ def _make_incident(env_value: str = "PRD", priority_name: str = "P1") -> Mock:
     incident.description = "Something is broken"
     incident.incident_category.name = "checkout"
     incident.created_at.isoformat.return_value = "2024-01-01T00:00:00+00:00"
+    # Must be explicit: a bare Mock attribute is not JSON-serialisable.
+    incident.commander = _make_commander()
     return incident
 
 
-def _mock_select_related(incident: Mock) -> Mock:
+def _mock_queryset(incident: Mock) -> Mock:
     qs = MagicMock()
     qs.select_related.return_value = qs
+    qs.prefetch_related.return_value = qs
     qs.get.return_value = incident
     return qs
+
+
+def _sent_payload(mock_instance: Mock) -> dict:
+    """Decode the exact bytes POSTed, so assertions cover the signed body."""
+    return json.loads(mock_instance.post.call_args.kwargs["content"].decode("utf-8"))
+
+
+def _ok_response() -> Mock:
+    response = Mock()
+    response.status_code = 200
+    response.raise_for_status.return_value = None
+    return response
 
 
 def _setup_http_client_mock(mock_client_cls: Mock, mock_response: Mock) -> Mock:
@@ -58,7 +81,7 @@ def test_posts_payload_to_atlas() -> None:
     mock_response.raise_for_status.return_value = None
 
     with (
-        patch("firefighter.incidents.models.incident.Incident.objects", _mock_select_related(incident)),
+        patch("firefighter.incidents.models.incident.Incident.objects", _mock_queryset(incident)),
         patch("firefighter.firefighter.http_client.HttpClient") as mock_client_cls,
     ):
         mock_instance = _setup_http_client_mock(mock_client_cls, mock_response)
@@ -87,10 +110,75 @@ def test_posts_payload_to_atlas() -> None:
 
 
 @override_settings(ATLAS_URL="https://atlas.example.com/platform-ops/incident/analyze", ATLAS_SHARED_SECRET="secret")  # noqa: S106
+def test_sends_the_commander_as_a_slack_mention() -> None:
+    """Atlas drops the value into a mrkdwn footer, so a mention renders and pings."""
+    incident = _make_incident()
+    incident.commander = _make_commander(slack_id="U456")
+
+    with (
+        patch("firefighter.incidents.models.incident.Incident.objects", _mock_queryset(incident)),
+        patch("firefighter.firefighter.http_client.HttpClient") as mock_client_cls,
+    ):
+        mock_instance = _setup_http_client_mock(mock_client_cls, _ok_response())
+        request_incident_analysis.apply(args=[42, "C123"]).get()
+
+        assert _sent_payload(mock_instance)["commander"] == "<@U456>"
+
+
+@override_settings(ATLAS_URL="https://atlas.example.com/platform-ops/incident/analyze", ATLAS_SHARED_SECRET="secret")  # noqa: S106
+def test_falls_back_to_the_commander_full_name_without_a_slack_user() -> None:
+    incident = _make_incident()
+    incident.commander = _make_commander(slack_id=None, full_name="Jane Doe")
+
+    with (
+        patch("firefighter.incidents.models.incident.Incident.objects", _mock_queryset(incident)),
+        patch("firefighter.firefighter.http_client.HttpClient") as mock_client_cls,
+    ):
+        mock_instance = _setup_http_client_mock(mock_client_cls, _ok_response())
+        request_incident_analysis.apply(args=[42, "C123"]).get()
+
+        assert _sent_payload(mock_instance)["commander"] == "Jane Doe"
+
+
+@override_settings(ATLAS_URL="https://atlas.example.com/platform-ops/incident/analyze", ATLAS_SHARED_SECRET="secret")  # noqa: S106
+def test_commander_is_null_when_nobody_holds_command() -> None:
+    """Atlas supplies its own "unassigned" wording; never send the ∅ sentinel."""
+    incident = _make_incident()
+    incident.commander = None
+
+    with (
+        patch("firefighter.incidents.models.incident.Incident.objects", _mock_queryset(incident)),
+        patch("firefighter.firefighter.http_client.HttpClient") as mock_client_cls,
+    ):
+        mock_instance = _setup_http_client_mock(mock_client_cls, _ok_response())
+        request_incident_analysis.apply(args=[42, "C123"]).get()
+
+        assert _sent_payload(mock_instance)["commander"] is None
+
+
+@override_settings(ATLAS_URL="https://atlas.example.com/platform-ops/incident/analyze", ATLAS_SHARED_SECRET="secret")  # noqa: S106
+def test_commander_is_null_when_the_role_has_no_user() -> None:
+    incident = _make_incident()
+    role = Mock()
+    role.user = None
+    incident.commander = role
+
+    with (
+        patch("firefighter.incidents.models.incident.Incident.objects", _mock_queryset(incident)),
+        patch("firefighter.firefighter.http_client.HttpClient") as mock_client_cls,
+    ):
+        mock_instance = _setup_http_client_mock(mock_client_cls, _ok_response())
+        request_incident_analysis.apply(args=[42, "C123"]).get()
+
+        assert _sent_payload(mock_instance)["commander"] is None
+
+
+@override_settings(ATLAS_URL="https://atlas.example.com/platform-ops/incident/analyze", ATLAS_SHARED_SECRET="secret")  # noqa: S106
 def test_aborts_when_incident_missing() -> None:
     """C2: DoesNotExist is caught — task succeeds cleanly with no HTTP call."""
     qs = MagicMock()
     qs.select_related.return_value = qs
+    qs.prefetch_related.return_value = qs
     qs.get.side_effect = Incident.DoesNotExist
 
     with (
@@ -116,7 +204,7 @@ def test_does_not_retry_on_4xx() -> None:
     mock_response.raise_for_status.side_effect = http_error
 
     with (
-        patch("firefighter.incidents.models.incident.Incident.objects", _mock_select_related(incident)),
+        patch("firefighter.incidents.models.incident.Incident.objects", _mock_queryset(incident)),
         patch("firefighter.firefighter.http_client.HttpClient") as mock_client_cls,
     ):
         _setup_http_client_mock(mock_client_cls, mock_response)
@@ -137,7 +225,7 @@ def test_retries_on_5xx() -> None:
     mock_response.raise_for_status.side_effect = http_error
 
     with (
-        patch("firefighter.incidents.models.incident.Incident.objects", _mock_select_related(incident)),
+        patch("firefighter.incidents.models.incident.Incident.objects", _mock_queryset(incident)),
         patch("firefighter.firefighter.http_client.HttpClient") as mock_client_cls,
     ):
         _setup_http_client_mock(mock_client_cls, mock_response)
