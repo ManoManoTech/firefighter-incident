@@ -17,6 +17,7 @@ from firefighter.slack.factories import IncidentChannelFactory, SlackUserFactory
 from firefighter.slack.messages.base import SlackMessageStrategy
 from firefighter.slack.views.modals.review_timeline import (
     ACCEPT_ACTION_ID,
+    CORRECT_ACTION_ID,
     RECHECK_ACTION_ID,
     REJECT_ACTION_ID,
     SlackMessageReviewTimeline,
@@ -24,7 +25,10 @@ from firefighter.slack.views.modals.review_timeline import (
     TimelineCorrection,
     _resolved_message_strategy_args,
     build_carry_over_payload,
+    handle_open_timeline_correction,
     handle_review_timeline_accept,
+    handle_review_timeline_correct,
+    handle_review_timeline_recheck,
     handle_review_timeline_reject,
 )
 
@@ -135,12 +139,11 @@ class TestSlackMessageReviewTimelineBlocks:
         assert any("*Detected* —" in text for text in section_texts)
 
     @staticmethod
-    def test_accepted_shows_confirmation_and_no_buttons() -> None:
+    def test_accepted_shows_confirmation_and_only_the_correction_button() -> None:
         incident: Incident = IncidentFactory.create(_status=IncidentStatus.POST_MORTEM)
 
         blocks = SlackMessageReviewTimeline(incident, resolution="accepted").get_blocks()
 
-        assert not any(isinstance(b, ActionsBlock) for b in blocks)
         section_texts = [
             b.text.text for b in blocks if isinstance(b, SectionBlock)
         ]
@@ -148,6 +151,41 @@ class TestSlackMessageReviewTimelineBlocks:
             "Timeline accepted" in text and "Post-mortem" in text
             for text in section_texts
         )
+        # Neither accept nor reject: the review is over. Only the way back in,
+        # for a timeline found wrong after the fact.
+        action_ids = [
+            element.action_id
+            for block in blocks
+            if isinstance(block, ActionsBlock)
+            for element in block.elements
+        ]
+        assert action_ids == [CORRECT_ACTION_ID]
+
+    @staticmethod
+    def test_corrected_confirms_the_resync_and_keeps_the_correction_button() -> None:
+        incident: Incident = IncidentFactory.create(_status=IncidentStatus.POST_MORTEM)
+
+        blocks = SlackMessageReviewTimeline(
+            incident, resolution="corrected"
+        ).get_blocks()
+
+        section_texts = [b.text.text for b in blocks if isinstance(b, SectionBlock)]
+        assert any("Timeline corrected" in text for text in section_texts)
+        action_ids = [
+            element.action_id
+            for block in blocks
+            if isinstance(block, ActionsBlock)
+            for element in block.elements
+        ]
+        assert action_ids == [CORRECT_ACTION_ID]
+
+    @staticmethod
+    def test_closed_incident_offers_no_correction_button() -> None:
+        incident: Incident = IncidentFactory.create(_status=IncidentStatus.CLOSED)
+
+        blocks = SlackMessageReviewTimeline(incident, resolution="accepted").get_blocks()
+
+        assert not any(isinstance(b, ActionsBlock) for b in blocks)
 
     @staticmethod
     def test_accepted_shows_the_recorded_post_mortem_time() -> None:
@@ -565,3 +603,192 @@ class TestResolvedMessageStrategyArgs:
     @staticmethod
     def test_returns_none_when_fields_are_missing() -> None:
         assert _resolved_message_strategy_args({"actions": []}) is None
+
+
+@pytest.mark.django_db
+class TestTimelineCorrectionAfterReview:
+    """Correcting a timeline that was already accepted.
+
+    The same buttons drive a first review and a late correction; what must never
+    happen is a second Post-mortem transition, which would add a status row to
+    the very timeline being fixed.
+    """
+
+    @staticmethod
+    def test_recheck_on_reviewed_incident_does_not_transition_again(
+        mocker: MockerFixture,
+    ) -> None:
+        incident: Incident = IncidentFactory.create(_status=IncidentStatus.POST_MORTEM)
+        record_consistent_timeline(incident)
+        IncidentChannelFactory.create(incident=incident)
+        slack_user = SlackUserFactory.create()
+        # The transition that the first review already applied.
+        IncidentUpdate.objects.create(
+            incident=incident,
+            _status=IncidentStatus.POST_MORTEM,
+            event_ts=timezone.now(),
+            created_by=slack_user.user,
+        )
+        post_mortem_rows = IncidentUpdate.objects.filter(
+            incident=incident, _status=IncidentStatus.POST_MORTEM
+        ).count()
+
+        send_and_save = mocker.patch(
+            "firefighter.slack.models.conversation.Conversation.send_message_and_save"
+        )
+        body = {
+            "user": {"id": slack_user.slack_id},
+            "actions": [{"value": json.dumps({"incident_id": incident.id})}],
+        }
+
+        handle_review_timeline_recheck(ack=MagicMock(), body=body)
+
+        assert (
+            IncidentUpdate.objects.filter(
+                incident=incident, _status=IncidentStatus.POST_MORTEM
+            ).count()
+            == post_mortem_rows
+        )
+        review_calls = [
+            call
+            for call in send_and_save.call_args_list
+            if isinstance(call.args[0], SlackMessageReviewTimeline)
+        ]
+        assert len(review_calls) == 1
+        assert review_calls[0].args[0].resolution == "corrected"
+
+    @staticmethod
+    def test_recheck_on_reviewed_incident_still_resyncs_jira(
+        mocker: MockerFixture,
+    ) -> None:
+        incident: Incident = IncidentFactory.create(_status=IncidentStatus.POST_MORTEM)
+        record_consistent_timeline(incident)
+        IncidentChannelFactory.create(incident=incident)
+        slack_user = SlackUserFactory.create()
+        mocker.patch(
+            "firefighter.slack.models.conversation.Conversation.send_message_and_save"
+        )
+        mocker.patch("django.apps.apps.is_installed", return_value=True)
+        sync_timeline = mocker.patch(
+            "firefighter.jira_app.signals.sync_timeline_to_jira_postmortem"
+        )
+        body = {
+            "user": {"id": slack_user.slack_id},
+            "actions": [{"value": json.dumps({"incident_id": incident.id})}],
+        }
+
+        handle_review_timeline_recheck(ack=MagicMock(), body=body)
+
+        sync_timeline.assert_called_once_with(incident)
+
+    @staticmethod
+    def test_correct_button_reposts_the_correction_message(
+        mocker: MockerFixture,
+    ) -> None:
+        incident: Incident = IncidentFactory.create(_status=IncidentStatus.POST_MORTEM)
+        IncidentChannelFactory.create(incident=incident)
+        slack_user = SlackUserFactory.create()
+        send_and_save = mocker.patch(
+            "firefighter.slack.models.conversation.Conversation.send_message_and_save"
+        )
+        body = {
+            "user": {"id": slack_user.slack_id},
+            "actions": [{"value": json.dumps({"incident_id": incident.id})}],
+        }
+        ack = MagicMock()
+
+        handle_review_timeline_correct(ack=ack, body=body)
+
+        ack.assert_called_once_with()
+        correction_calls = [
+            call
+            for call in send_and_save.call_args_list
+            if isinstance(call.args[0], SlackMessageTimelineCorrection)
+        ]
+        assert len(correction_calls) == 1
+        assert correction_calls[0].kwargs["strategy"] == SlackMessageStrategy.REPLACE
+
+    @staticmethod
+    def test_correct_button_refuses_on_a_closed_incident(
+        mocker: MockerFixture,
+    ) -> None:
+        incident: Incident = IncidentFactory.create(_status=IncidentStatus.CLOSED)
+        IncidentChannelFactory.create(incident=incident)
+        slack_user = SlackUserFactory.create()
+        send_and_save = mocker.patch(
+            "firefighter.slack.models.conversation.Conversation.send_message_and_save"
+        )
+        respond = mocker.patch(
+            "firefighter.slack.views.modals.review_timeline.respond"
+        )
+        body = {
+            "user": {"id": slack_user.slack_id},
+            "actions": [{"value": json.dumps({"incident_id": incident.id})}],
+        }
+
+        handle_review_timeline_correct(ack=MagicMock(), body=body)
+
+        send_and_save.assert_not_called()
+        assert "closed" in respond.call_args.kwargs["text"]
+
+    @staticmethod
+    def test_recheck_refuses_on_a_closed_incident(mocker: MockerFixture) -> None:
+        incident: Incident = IncidentFactory.create(_status=IncidentStatus.CLOSED)
+        record_consistent_timeline(incident)
+        IncidentChannelFactory.create(incident=incident)
+        slack_user = SlackUserFactory.create()
+        send_and_save = mocker.patch(
+            "firefighter.slack.models.conversation.Conversation.send_message_and_save"
+        )
+        mocker.patch("firefighter.slack.views.modals.review_timeline.respond")
+        body = {
+            "user": {"id": slack_user.slack_id},
+            "actions": [{"value": json.dumps({"incident_id": incident.id})}],
+        }
+
+        handle_review_timeline_recheck(ack=MagicMock(), body=body)
+
+        send_and_save.assert_not_called()
+
+    @staticmethod
+    def test_open_from_update_menu_posts_the_message_and_reports_back(
+        mocker: MockerFixture,
+    ) -> None:
+        incident: Incident = IncidentFactory.create(_status=IncidentStatus.POST_MORTEM)
+        channel = IncidentChannelFactory.create(incident=incident)
+        send_and_save = mocker.patch(
+            "firefighter.slack.models.conversation.Conversation.send_message_and_save"
+        )
+        update_modal = mocker.patch(
+            "firefighter.slack.views.modals.review_timeline.update_modal"
+        )
+        body = {
+            "user": {"id": SlackUserFactory.create().slack_id},
+            "actions": [{"value": str(incident.id)}],
+            "view": {"id": "V123", "hash": "1.2"},
+        }
+
+        handle_open_timeline_correction(ack=MagicMock(), body=body)
+
+        assert any(
+            isinstance(call.args[0], SlackMessageTimelineCorrection)
+            for call in send_and_save.call_args_list
+        )
+        posted_view = update_modal.call_args.kwargs["view"]
+        assert channel.channel_id in posted_view.blocks[0].text.text
+
+    @staticmethod
+    def test_correction_message_button_switches_to_resync_once_reviewed() -> None:
+        incident: Incident = IncidentFactory.create(_status=IncidentStatus.POST_MORTEM)
+
+        blocks = TimelineCorrection().build_modal_fn(incident=incident)
+
+        buttons = [
+            element
+            for block in blocks
+            if isinstance(block, ActionsBlock)
+            for element in block.elements
+        ]
+        assert len(buttons) == 1
+        assert buttons[0].action_id == RECHECK_ACTION_ID
+        assert "re-sync" in buttons[0].text.text.lower()

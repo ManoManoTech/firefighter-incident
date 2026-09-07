@@ -1,6 +1,6 @@
 """Timeline review checkpoint shown before an incident moves to Post-mortem.
 
-This does not change how the timeline is recorded today — every status
+This does not change how the timeline is recorded today - every status
 change still comes from the normal Update Status modal. It only inserts a
 confirmation step right before the Post-mortem transition, showing the
 timeline as already recorded and letting a human accept it (the transition
@@ -9,6 +9,11 @@ incident's Jira post-mortem "Timeline" field, if any) or reject it (the
 transition is cancelled, and a correction message - same pattern as the Key
 Events message - lets the human edit the recorded times directly, each
 change saving immediately).
+
+Accepting is not the end of it: a timeline is often found wrong after the
+fact. The correction message can be reopened from the accepted review message
+and from the Update menu, and re-checking it then re-syncs the post-mortem and
+the metrics instead of transitioning a second time.
 """
 
 from __future__ import annotations
@@ -22,6 +27,7 @@ from slack_sdk.models.blocks import Block, ContextBlock, HeaderBlock, SectionBlo
 from slack_sdk.models.blocks.basic_components import MarkdownTextObject
 from slack_sdk.models.blocks.block_elements import ButtonElement
 from slack_sdk.models.blocks.blocks import ActionsBlock
+from slack_sdk.models.views import View
 
 from firefighter.incidents.enums import IncidentStatus
 from firefighter.incidents.forms.timeline import IncidentTimelineForm
@@ -37,6 +43,7 @@ from firefighter.slack.slack_app import SlackApp
 from firefighter.slack.slack_incident_context import get_user_from_context
 from firefighter.slack.utils import respond
 from firefighter.slack.views.modals.base_modal.base import MessageForm
+from firefighter.slack.views.modals.base_modal.modal_utils import update_modal
 from firefighter.slack.views.modals.timeline_preview import (
     timeline_chain,
     timeline_preview_blocks,
@@ -44,7 +51,6 @@ from firefighter.slack.views.modals.timeline_preview import (
 )
 
 if TYPE_CHECKING:
-
     from slack_bolt.context.ack.ack import Ack
 
     from firefighter.incidents.models.user import User
@@ -56,6 +62,8 @@ app = SlackApp()
 ACCEPT_ACTION_ID = "review_timeline_accept"
 REJECT_ACTION_ID = "review_timeline_reject"
 RECHECK_ACTION_ID = "review_timeline_recheck"
+CORRECT_ACTION_ID = "review_timeline_correct"
+OPEN_TIMELINE_CORRECTION_ACTION_ID = "open_timeline_correction"
 
 # Fields carried over from the Update Status submission so they aren't lost
 # while the human reviews the timeline (mirrors utils._build_carry_over_from_form).
@@ -130,7 +138,7 @@ class SlackMessageReviewTimeline(SlackMessageSurface):
         carry_over_payload: str | None = None,
         resolution: str | None = None,
     ) -> None:
-        """`resolution` is None while pending, or "accepted"/"rejected" once resolved."""
+        """`resolution` is None while pending, or "accepted"/"rejected"/"corrected"."""
         self.incident = incident
         self.carry_over_payload = carry_over_payload
         self.resolution = resolution
@@ -187,12 +195,8 @@ class SlackMessageReviewTimeline(SlackMessageSurface):
             )
         )
 
-        if self.resolution == "accepted":
-            blocks.append(
-                SectionBlock(
-                    text=":white_check_mark: Timeline accepted — incident moved to Post-mortem."
-                )
-            )
+        if self.resolution in {"accepted", "corrected"}:
+            blocks.extend(self._resolved_blocks())
         elif self.resolution == "rejected":
             blocks.append(
                 SectionBlock(
@@ -228,6 +232,34 @@ class SlackMessageReviewTimeline(SlackMessageSurface):
             blocks.append(ActionsBlock(elements=actions))
         return blocks
 
+    def _resolved_blocks(self) -> list[Block]:
+        """Outcome of the review, plus the way back into the correction form.
+
+        A timeline is regularly found wrong after it was accepted - that is the
+        whole reason this button exists. It stays on the message for as long as
+        corrections are allowed, so the reviewer does not have to remember which
+        surface to reopen.
+        """
+        text = (
+            ":white_check_mark: Timeline accepted — incident moved to Post-mortem."
+            if self.resolution == "accepted"
+            else ":white_check_mark: Timeline corrected — post-mortem and metrics re-synced."
+        )
+        blocks: list[Block] = [SectionBlock(text=text)]
+        if can_correct_timeline(self.incident):
+            blocks.append(
+                ActionsBlock(
+                    elements=[
+                        ButtonElement(
+                            text="Something's off — correct the timeline",
+                            action_id=CORRECT_ACTION_ID,
+                            value=build_carry_over_payload(self.incident, {}),
+                        )
+                    ]
+                )
+            )
+        return blocks
+
 
 def _resolved_message_strategy_args(body: dict[str, Any]) -> dict[str, Any] | None:
     """Target the exact message that was clicked, from the interaction payload.
@@ -246,15 +278,29 @@ def _resolved_message_strategy_args(body: dict[str, Any]) -> dict[str, Any] | No
     return {"ts": message_ts, "channel_id": channel_id}
 
 
+def post_timeline_correction(incident: Incident) -> None:
+    """Post a fresh correction message in the incident channel.
+
+    REPLACE, not UPDATE: a new correction cycle removes the stale message from
+    a previous one rather than editing it in place, wherever it was buried.
+    Editing a single field within the same cycle
+    (`TimelineCorrection.update_with_form`) still updates in place.
+    """
+    incident.conversation.send_message_and_save(
+        SlackMessageTimelineCorrection(incident),
+        strategy=SlackMessageStrategy.REPLACE,
+    )
+
+
 @app.action(ACCEPT_ACTION_ID)
 def handle_review_timeline_accept(ack: Ack, body: dict[str, Any]) -> None:
     ack()
-    _resolve_timeline_and_transition(body, update_in_place=True)
+    _resolve_timeline(body, update_in_place=True)
 
 
 @app.action(RECHECK_ACTION_ID)
 def handle_review_timeline_recheck(ack: Ack, body: dict[str, Any]) -> None:
-    """Re-run the checks from the correction message and transition if clean.
+    """Re-run the checks from the correction message, then transition or re-sync.
 
     Saves a round trip through the Update Status modal once the times are fixed.
     The transition it applies carries the status only: the message and any
@@ -262,20 +308,89 @@ def handle_review_timeline_recheck(ack: Ack, body: dict[str, Any]) -> None:
     across the correction step, so nothing pretends to carry them.
     """
     ack()
-    _resolve_timeline_and_transition(body, update_in_place=False)
+    _resolve_timeline(body, update_in_place=False)
 
 
-def _resolve_timeline_and_transition(
-    body: dict[str, Any], *, update_in_place: bool
-) -> None:
+@app.action(CORRECT_ACTION_ID)
+def handle_review_timeline_correct(ack: Ack, body: dict[str, Any]) -> None:
+    """Reopen the correction form from a resolved review message."""
+    ack()
+    payload = _parse_action_payload(body)
+    if payload is None:
+        return
+    incident = _get_incident(body, payload.get("incident_id"))
+    if incident is None:
+        return
+    if not can_correct_timeline(incident):
+        respond(
+            body,
+            text=":x: This incident is closed — its timeline can no longer be corrected here.",
+        )
+        return
+    post_timeline_correction(incident)
+
+
+@app.action(OPEN_TIMELINE_CORRECTION_ACTION_ID)
+def handle_open_timeline_correction(ack: Ack, body: dict[str, Any]) -> None:
+    """Open the correction form from the Update menu, outside any review cycle.
+
+    The form is a channel message, not a modal (see `TimelineCorrection`), so the
+    modal that was clicked from reports where the message went instead of
+    hosting the form itself.
+    """
+    ack()
+    actions = body.get("actions") or []
+    incident = _get_incident(body, actions[0].get("value") if actions else None)
+    if incident is None:
+        return
+    if not can_correct_timeline(incident):
+        respond(
+            body,
+            text=":x: This incident is closed — its timeline can no longer be corrected here.",
+        )
+        return
+
+    post_timeline_correction(incident)
+    update_modal(
+        body=body,
+        view=View(
+            type="modal",
+            title=f"Incident #{incident.id}"[:24],
+            blocks=[
+                SectionBlock(
+                    text=(
+                        ":stopwatch: A *Correct the timeline* message was posted in "
+                        f"<#{incident.conversation.channel_id}>.\n"
+                        "Each time you edit there saves immediately, and the preview "
+                        "at the top of the message updates with it."
+                    )
+                )
+            ],
+        ),
+    )
+
+
+def _resolve_timeline(body: dict[str, Any], *, update_in_place: bool) -> None:
+    """Finish a review: transition to Post-mortem, or re-sync an already-made one.
+
+    The same buttons serve both a first review (the incident has yet to reach
+    Post-mortem) and a late correction (it is already there). Re-running the
+    transition in the second case would record a second Post-mortem
+    `IncidentUpdate` and shift the timeline it is meant to fix, so the status
+    change is applied once and only once.
+    """
     payload = _parse_action_payload(body)
     if payload is None:
         return
     incident_id = payload.pop("incident_id")
-    try:
-        incident = Incident.objects.get(pk=incident_id)
-    except Incident.DoesNotExist:
-        respond(body, text=":x: Incident not found.")
+    incident = _get_incident(body, incident_id)
+    if incident is None:
+        return
+    if not can_correct_timeline(incident):
+        respond(
+            body,
+            text=":x: This incident is closed — its timeline can no longer be corrected here.",
+        )
         return
 
     # Re-check server-side: the button is not rendered when the timeline is
@@ -293,21 +408,29 @@ def _resolve_timeline_and_transition(
         )
         return
 
+    already_reviewed = incident.status >= IncidentStatus.POST_MORTEM
     user = get_user_from_context(body)
     # Flush the edits made in the correction form now that the reviewer is done:
     # this refreshes the Key Events form message (it shows the same milestones)
     # and re-syncs the Jira timeline, once instead of once per keystroke.
     incident_key_events_updated.send_robust(__name__, incident=incident)
-    incident.create_incident_update(
-        created_by=user, status=IncidentStatus.POST_MORTEM, **payload
-    )
+    if already_reviewed:
+        # Nothing to transition to: the carried-over fields, if any, belong to
+        # an Update Status submission that was applied at the original review.
+        incident.compute_metrics()
+    else:
+        incident.create_incident_update(
+            created_by=user, status=IncidentStatus.POST_MORTEM, **payload
+        )
     _push_confirmed_timeline_to_jira(incident)
     # Accept edits the review message it was clicked from; the re-check button
     # lives on the correction message, so it posts the outcome as a new message
     # rather than overwriting a form the reviewer may still be reading.
     strategy_args = _resolved_message_strategy_args(body) if update_in_place else None
     incident.conversation.send_message_and_save(
-        SlackMessageReviewTimeline(incident, resolution="accepted"),
+        SlackMessageReviewTimeline(
+            incident, resolution="corrected" if already_reviewed else "accepted"
+        ),
         strategy=SlackMessageStrategy.UPDATE if update_in_place else SlackMessageStrategy.APPEND,
         strategy_args=strategy_args,
     )
@@ -478,11 +601,8 @@ def handle_review_timeline_reject(ack: Ack, body: dict[str, Any]) -> None:
     payload = _parse_action_payload(body)
     if payload is None:
         return
-    incident_id = payload["incident_id"]
-    try:
-        incident = Incident.objects.get(pk=incident_id)
-    except Incident.DoesNotExist:
-        respond(body, text=":x: Incident not found.")
+    incident = _get_incident(body, payload.get("incident_id"))
+    if incident is None:
         return
 
     incident.conversation.send_message_and_save(
@@ -490,12 +610,4 @@ def handle_review_timeline_reject(ack: Ack, body: dict[str, Any]) -> None:
         strategy=SlackMessageStrategy.UPDATE,
         strategy_args=_resolved_message_strategy_args(body),
     )
-    # REPLACE here (not the class default UPDATE) so a new reject cycle
-    # removes a stale correction message from a previous one, rather than
-    # editing it in place. Editing a single field within the same cycle
-    # (TimelineCorrection.update_with_form) still uses UPDATE - cheap,
-    # in-place, no need to delete/repost on every field change.
-    incident.conversation.send_message_and_save(
-        SlackMessageTimelineCorrection(incident),
-        strategy=SlackMessageStrategy.REPLACE,
-    )
+    post_timeline_correction(incident)

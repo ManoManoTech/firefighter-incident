@@ -117,6 +117,7 @@ nav:
           - Project Architecture: architecture/overview.md
           - JIRA Integration: architecture/jira-integration.md
           - JIRA Post-mortem: architecture/jira-postmortem.md
+          - Timeline Review: architecture/timeline-review.md
           - Slack Conversation Tags: architecture/slack-conversation-tags.md
           - Test Configuration: architecture/test-config.md
           - Testing Post-mortem Reminders: contributing/testing-postmortem-reminders.md

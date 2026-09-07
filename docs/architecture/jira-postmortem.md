@@ -781,6 +781,7 @@ def create_postmortem_async(incident_id: int, created_by_id: int | None = None):
 - [JIRA Integration](jira-integration.md) - General Jira integration overview
 - [Test Configuration](test-config.md) - Testing setup for Jira tests
 - [Incident Workflow](incident-workflow.md) - Incident workflow and post-mortem requirements
+- [Timeline Review](timeline-review.md) - The review checkpoint, timeline corrections and how they sync back
 
 ## Changelog
 
