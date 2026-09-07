@@ -60,6 +60,11 @@ the declaration is the incident's creation time, and the Post-mortem stamp is
 written by the transition itself, at the instant it happens - the very
 transition this checkpoint gates.
 
+Every field carries the definition of its key event underneath, as Slack's hint:
+the milestones' come from `MilestoneType.summary` (minus the Markdown and the
+repeated name, neither of which Slack renders in a label), the statuses' from
+`timeline.STATUS_HINTS`.
+
 Each surface owns its action ids through `field_prefix` (`key_event_` for the Key
 Events message, none for the correction one), so an edit routes back to the
 message it was made in.

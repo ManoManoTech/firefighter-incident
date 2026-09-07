@@ -78,3 +78,18 @@ class TestKeyEventMessageBlocks:
         assert labels
         assert "Started" in labels
         assert all("*" not in label for label in labels)
+
+    @staticmethod
+    def test_each_field_explains_its_key_event_underneath() -> None:
+        """The definitions the summaries used to carry, as Slack hints."""
+        incident: Incident = IncidentFactory.create(_status=IncidentStatus.MITIGATED)
+
+        blocks = KeyEvents().build_modal_fn(incident=incident)
+
+        hints = [
+            block.hint.text
+            for block in blocks
+            if isinstance(block, InputBlock) and block.hint
+        ]
+        assert "When the first issues arose." in hints
+        assert "When the team started looking into it." in hints

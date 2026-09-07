@@ -14,6 +14,7 @@ from firefighter.incidents.forms.timeline import (
     KeyEventsTimelineForm,
 )
 from firefighter.incidents.models.incident_update import IncidentUpdate
+from firefighter.incidents.timeline import STATUS_HINTS
 
 if TYPE_CHECKING:
     from firefighter.incidents.models.incident import Incident
@@ -192,6 +193,26 @@ class TestGenerateFieldsDynamically:
         assert form.fields[f"status_{IncidentStatus.MITIGATED.value}"].label == (
             "Mitigated"
         )
+
+    @staticmethod
+    def test_every_field_carries_the_definition_of_its_key_event() -> None:
+        """A key event is only recorded consistently if everyone reads it alike."""
+        incident: Incident = IncidentFactory.create(_status=IncidentStatus.MITIGATED)
+
+        form = IncidentTimelineForm(incident=incident, user=UserFactory.create())
+
+        assert (
+            form.fields["milestone_started"].help_text
+            == "When the first issues arose."
+        )
+        assert (
+            form.fields[f"status_{IncidentStatus.MITIGATING.value}"].help_text
+            == STATUS_HINTS[IncidentStatus.MITIGATING]
+        )
+        # Every one of them, and none carrying the Markdown of the web labels:
+        # Slack renders a hint as plain text.
+        assert all(field.help_text for field in form.fields.values())
+        assert all("*" not in field.help_text for field in form.fields.values())
 
     @staticmethod
     def test_both_surfaces_render_the_very_same_fields() -> None:

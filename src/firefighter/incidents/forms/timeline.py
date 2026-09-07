@@ -25,6 +25,7 @@ from firefighter.incidents.timeline import (
     DEFAULT_OCCURRENCE,
     DEFINITIVE_OCCURRENCE,
     EXPECTED_STEPS,
+    STATUS_HINTS,
     milestone_timestamps,
 )
 
@@ -54,8 +55,25 @@ _NON_EDITABLE_STATUSES = frozenset({IncidentStatus.OPEN, IncidentStatus.POST_MOR
 class _FieldSpec(NamedTuple):
     name: str
     label: str
+    hint: str
+    """What this key event means - shown under the field, as Slack's hint."""
     initial: datetime | None
     required: bool
+
+
+def _hint_from_summary(milestone: MilestoneType) -> str:
+    """The milestone's own definition, sized for a hint under the field.
+
+    `MilestoneType.summary` is written for the web form's label, which renders
+    Markdown and repeats the name ("*Started*, when the first issues arose.").
+    Slack renders neither a label nor a hint as Markdown, and the name is right
+    above - so both are dropped, and what is left is the definition itself.
+    """
+    summary = (milestone.summary or "").replace("*", "").strip()
+    prefix = f"{milestone.name},"
+    if summary.lower().startswith(prefix.lower()):
+        summary = summary[len(prefix) :].strip()
+    return summary[:1].upper() + summary[1:]
 
 
 class IncidentTimelineForm(forms.Form):
@@ -101,6 +119,7 @@ class IncidentTimelineForm(forms.Form):
         for spec in self._field_specs():
             self.fields[spec.name] = forms.DateTimeField(
                 required=spec.required,
+                help_text=spec.hint,
                 # Slack itself appends "(optional)" next to the label for any
                 # non-required field (see form_utils.py's optional=not
                 # f.required) - adding it here too would show it twice.
@@ -150,6 +169,7 @@ class IncidentTimelineForm(forms.Form):
         return _FieldSpec(
             name=f"{self.field_prefix}milestone_{milestone.event_type}",
             label=milestone.name,
+            hint=_hint_from_summary(milestone),
             initial=self._milestone_updates.get(milestone.event_type),
             required=False,
         )
@@ -161,6 +181,7 @@ class IncidentTimelineForm(forms.Form):
         return _FieldSpec(
             name=f"{self.field_prefix}status_{status.value}",
             label=label,
+            hint=STATUS_HINTS.get(status, ""),
             initial=update.event_ts if update else None,
             required=update is not None,
         )

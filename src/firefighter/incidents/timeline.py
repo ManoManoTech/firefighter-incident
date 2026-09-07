@@ -60,6 +60,18 @@ EXPECTED_STEPS: tuple[tuple[str, str, str | IncidentStatus, bool], ...] = (
 
 EXPECTED_ORDER: tuple[str, ...] = tuple(label for label, *_ in EXPECTED_STEPS)
 
+# What each status means, in the same voice as `MilestoneType.summary` ("when
+# the first issues arose"), which supplies the milestones' own definitions. The
+# editable surfaces show these under their field: a key event is only recorded
+# consistently if everyone reads it the same way.
+STATUS_HINTS: dict[IncidentStatus, str] = {
+    IncidentStatus.INVESTIGATING: "When the team started looking into it.",
+    IncidentStatus.MITIGATING: (
+        "When a fix, a rollback or a workaround started being applied."
+    ),
+    IncidentStatus.MITIGATED: "When the actions applied stopped the impact.",
+}
+
 
 class TimelineEntry(NamedTuple):
     label: str
