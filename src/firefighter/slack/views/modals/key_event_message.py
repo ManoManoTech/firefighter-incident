@@ -7,13 +7,14 @@ from typing import TYPE_CHECKING, Any, cast
 
 from django.core.cache import cache as dj_cache
 from django.utils import timezone
-from slack_sdk.models.blocks import Block, ContextBlock, HeaderBlock, SectionBlock
+from slack_sdk.models.blocks import Block, ContextBlock, SectionBlock
 from slack_sdk.models.blocks.basic_components import MarkdownTextObject
 from slack_sdk.models.blocks.block_elements import ButtonElement
 
-from firefighter.incidents.forms.update_key_events import IncidentUpdateKeyEventsForm
+from firefighter.incidents.forms.timeline import KeyEventsTimelineForm
 from firefighter.slack.messages.base import SlackMessageStrategy, SlackMessageSurface
 from firefighter.slack.views.modals.base_modal.base import MessageForm
+from firefighter.slack.views.modals.timeline_preview import timeline_preview_blocks
 
 if TYPE_CHECKING:
     from django_redis.client.default import DefaultClient
@@ -33,30 +34,43 @@ MILESTONE_ID_REGEX = re.compile(
 TZ = timezone.get_current_timezone()
 
 
-class KeyEvents(MessageForm[IncidentUpdateKeyEventsForm]):
-    form_class = IncidentUpdateKeyEventsForm
+class KeyEvents(MessageForm[KeyEventsTimelineForm]):
+    # The whole timeline, not only the milestones: the statuses this message
+    # used to leave out (Investigating, Mitigating, Mitigated) are just as
+    # correctable, and just as visible in the preview above the fields. Same
+    # form as the correction message, under this message's own action ids.
+    form_class = KeyEventsTimelineForm
     callback_id = MILESTONE_ID_REGEX
     callback_action = True
     wrapper = "action"
 
     def build_modal_fn(self, incident: Incident) -> list[Block]:
-        slack_form: SlackForm[IncidentUpdateKeyEventsForm] = self.get_form_class()(
+        slack_form: SlackForm[KeyEventsTimelineForm] = self.get_form_class()(
             incident=incident
         )
 
         return self.get_blocks_from_form(slack_form.form)
 
-    def get_blocks_from_form(self, form: IncidentUpdateKeyEventsForm) -> list[Block]:
-        blocks: list[Block] = [HeaderBlock(text=":stopwatch:  Key events time")]
-        slack_form: SlackForm[IncidentUpdateKeyEventsForm] = self.get_form_class()
+    def get_blocks_from_form(self, form: KeyEventsTimelineForm) -> list[Block]:
+        # Same preview, same seven key events, same wording as the timeline
+        # correction message: two surfaces edit this timeline, and they should
+        # not describe it differently.
+        blocks: list[Block] = timeline_preview_blocks(
+            form.incident, title=":stopwatch: Key events"
+        )
+        slack_form: SlackForm[KeyEventsTimelineForm] = self.get_form_class()
         slack_form.form = form
         blocks += slack_form.slack_blocks()
         # XXX Check form.is_valid()
         missing_milestones = form.incident.missing_milestones()
         if len(missing_milestones) > 0:
             blocks.append(
-                SectionBlock(
-                    text=f":warning: Some required key events are missing: {', '.join(missing_milestones)}. Once all required key events have been submitted, you'll be able to to close this incident."
+                ContextBlock(
+                    elements=[
+                        MarkdownTextObject(
+                            text=f":warning: Still missing: {', '.join(missing_milestones)} — required before the incident can be closed."
+                        )
+                    ]
                 )
             )
         else:
@@ -64,7 +78,7 @@ class KeyEvents(MessageForm[IncidentUpdateKeyEventsForm]):
             if can_close:
                 blocks.append(
                     SectionBlock(
-                        text=":white_check_mark: All required key events have been submitted. Once you're ready, you can close the incident.",
+                        text=":white_check_mark: All required key events are set.",
                         accessory=ButtonElement(
                             text="Close incident",
                             value=str(form.incident.id),
@@ -75,9 +89,13 @@ class KeyEvents(MessageForm[IncidentUpdateKeyEventsForm]):
             else:
                 reason_texts = [reason[1] for reason in reasons]
                 blocks.append(
-                    SectionBlock(
-                        text=":white_check_mark: All required key events have been submitted.\n:warning: Before closing, the following must be resolved:\n"
-                        + "\n".join(f"• {r}" for r in reason_texts),
+                    ContextBlock(
+                        elements=[
+                            MarkdownTextObject(
+                                text=":white_check_mark: All required key events are set. Before closing: "
+                                + " · ".join(reason_texts)
+                            )
+                        ]
                     )
                 )
         blocks.append(
@@ -97,7 +115,7 @@ class KeyEvents(MessageForm[IncidentUpdateKeyEventsForm]):
         """Handle the time and date inputs for the key events."""
         logger.debug(body)
 
-        slack_form: SlackForm[IncidentUpdateKeyEventsForm] | None = (
+        slack_form: SlackForm[KeyEventsTimelineForm] | None = (
             self.handle_form_errors(
                 ack,
                 body,
@@ -150,12 +168,12 @@ class SlackMessageKeyEvents(SlackMessageSurface):
     id = "ff_incident_key_events_form"
     strategy: SlackMessageStrategy = SlackMessageStrategy.UPDATE
     incident: Incident | None
-    form: IncidentUpdateKeyEventsForm | None
+    form: KeyEventsTimelineForm | None
 
     def __init__(
         self,
         incident: Incident | None = None,
-        form: IncidentUpdateKeyEventsForm | None = None,
+        form: KeyEventsTimelineForm | None = None,
     ) -> None:
         if incident is None and form is None:
             raise ValueError("Either incident or form must be set")

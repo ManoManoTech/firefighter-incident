@@ -16,29 +16,34 @@ from __future__ import annotations
 import json
 import logging
 import re
-from typing import TYPE_CHECKING, Any, NamedTuple
+from typing import TYPE_CHECKING, Any
 
-from django.utils.timezone import localtime, now
 from slack_sdk.models.blocks import Block, ContextBlock, HeaderBlock, SectionBlock
 from slack_sdk.models.blocks.basic_components import MarkdownTextObject
 from slack_sdk.models.blocks.block_elements import ButtonElement
 from slack_sdk.models.blocks.blocks import ActionsBlock
 
 from firefighter.incidents.enums import IncidentStatus
-from firefighter.incidents.forms.timeline_correction import (
-    DEFINITIVE_OCCURRENCE,
-    TimelineCorrectionForm,
-)
+from firefighter.incidents.forms.timeline import IncidentTimelineForm
 from firefighter.incidents.models.incident import Incident
 from firefighter.incidents.signals import incident_key_events_updated
+from firefighter.incidents.timeline import (
+    EXPECTED_ORDER,
+    find_timeline_issues,
+    get_canonical_steps,
+)
 from firefighter.slack.messages.base import SlackMessageStrategy, SlackMessageSurface
 from firefighter.slack.slack_app import SlackApp
 from firefighter.slack.slack_incident_context import get_user_from_context
 from firefighter.slack.utils import respond
 from firefighter.slack.views.modals.base_modal.base import MessageForm
+from firefighter.slack.views.modals.timeline_preview import (
+    timeline_chain,
+    timeline_preview_blocks,
+    timeline_span,
+)
 
 if TYPE_CHECKING:
-    import datetime
 
     from slack_bolt.context.ack.ack import Ack
 
@@ -89,211 +94,23 @@ def _parse_action_payload(body: dict[str, Any]) -> dict[str, Any] | None:
         return None
 
 
-def get_status_timeline(incident: Incident) -> list[tuple[IncidentStatus, datetime.datetime]]:
-    """Every status transition, in chronological order, including reopen cycles.
+def _get_incident(body: dict[str, Any], incident_id: Any) -> Incident | None:
+    try:
+        return Incident.objects.get(pk=incident_id)
+    except (Incident.DoesNotExist, ValueError, TypeError):
+        respond(body, text=":x: Incident not found.")
+        return None
 
-    The declaration `OPEN` row always anchors to `incident.created_at` (the
-    incident's true start), never to whichever `OPEN` row happens to be
-    latest - so it's added explicitly rather than trusted from the DB row.
-    An incident can legitimately go back to `OPEN` later (a real reopen);
-    that row has a different `event_ts` than `created_at` and is kept, so it
-    shows up as its own entry rather than being silently dropped. Every
-    other status contributes one entry per row - a status revisited after a
-    reopen (MITIGATED -> INVESTIGATING/MITIGATING) shows every visit,
-    matching the full audit trail rendered in the Jira post-mortem timeline.
+
+def can_correct_timeline(incident: Incident) -> bool:
+    """Whether the timeline of this incident is still open to corrections.
+
+    A closed incident is out: its metrics are consolidated and its post-mortem
+    is out of FireFighter's hands, so a late edit would silently disagree with
+    what has already been reported. Those corrections go through the admin,
+    deliberately.
     """
-    timeline: list[tuple[IncidentStatus, datetime.datetime]] = [
-        (IncidentStatus.OPEN, incident.created_at)
-    ]
-    updates = incident.incidentupdate_set.filter(_status__isnull=False).order_by(
-        "event_ts"
-    )
-    for update in updates:
-        status = update.status
-        if status is None:
-            continue
-        if status == IncidentStatus.OPEN and update.event_ts == incident.created_at:
-            continue  # already represented by the anchor above
-        timeline.append((status, update.event_ts))
-    return sorted(timeline, key=lambda item: item[1])
-
-
-class TimelineEntry(NamedTuple):
-    label: str
-    event_ts: datetime.datetime | None
-    """None if this milestone was never recorded via the Key Events form."""
-
-
-# (event_type, display label), in the order they should appear before the
-# status timeline - both are collected via the Key Events form (see
-# fixtures/incidents/milestone_type.json) but aren't guaranteed to be filled
-# in, since that form is user-editable and can be skipped.
-# The expected chronological order of an incident, spanning both milestones and
-# status transitions. This interleaving lives nowhere else: MilestoneType has no
-# `order` field and IncidentStatus only orders the statuses among themselves.
-# Single source of truth for the displayed legend and the consistency checks.
-# label, emoji, source key, and which occurrence to keep when a status repeats
-# after a reopen: investigation *started* at its first occurrence, while the
-# mitigation that actually held is the last one - and that is the one the
-# post-mortem timeline must show.
-# label, emoji, source, and whether a missing time is an error. Only the
-# milestones are mandatory (MilestoneType.required): a status that never
-# happened - an incident going straight from Declared to Mitigated, say - is
-# not a mistake and must not be reported as one.
-_EXPECTED_STEPS: tuple[tuple[str, str, str | IncidentStatus, bool], ...] = (
-    ("Started", ":firecracker:", "started", True),
-    ("Detected", ":eyes:", "detected", True),
-    ("Declared", ":loudspeaker:", IncidentStatus.OPEN, False),
-    ("Investigating", ":mag:", IncidentStatus.INVESTIGATING, False),
-    ("Mitigating", ":wrench:", IncidentStatus.MITIGATING, False),
-    ("Mitigated", ":white_check_mark:", IncidentStatus.MITIGATED, False),
-    ("Post-mortem", ":memo:", IncidentStatus.POST_MORTEM, False),
-)
-
-_EXPECTED_ORDER: tuple[str, ...] = tuple(label for label, *_ in _EXPECTED_STEPS)
-
-_MILESTONE_EVENT_TYPES: tuple[tuple[str, str], ...] = (
-    ("started", "Started"),
-    ("detected", "Detected"),
-)
-
-
-def get_incident_timeline(incident: Incident) -> list[TimelineEntry]:
-    """Started/Detected milestones (if recorded), followed by the status timeline.
-
-    Milestones missing a recorded `event_ts` are still included, with
-    `event_ts=None`, so the reviewer notices the gap rather than the
-    milestone silently disappearing from the list. The milestone group
-    itself is sorted chronologically (Detected can legitimately be recorded
-    before Started, e.g. an automated alert fires before the actual start is
-    pinpointed) - unrecorded milestones sort last within the group, since
-    there's no time to place them by. The group as a whole always leads the
-    status timeline, since milestones routinely predate the incident being
-    declared in FireFighter. Only the first `OPEN` entry (the one anchored to
-    `incident.created_at`) is relabeled "Declared" - a later `OPEN` entry is
-    a genuine reopen and keeps reading "Open".
-    """
-    milestone_updates = dict(
-        incident.incidentupdate_set.filter(
-            event_type__in=[event_type for event_type, _ in _MILESTONE_EVENT_TYPES]
-        )
-        .order_by("event_ts")
-        .values_list("event_type", "event_ts")
-    )
-    milestones = sorted(
-        (
-            TimelineEntry(label=label, event_ts=milestone_updates.get(event_type))
-            for event_type, label in _MILESTONE_EVENT_TYPES
-        ),
-        key=lambda entry: (entry.event_ts is None, entry.event_ts),
-    )
-    status_entries = []
-    declared_shown = False
-    for status, event_ts in get_status_timeline(incident):
-        if status == IncidentStatus.OPEN and not declared_shown:
-            label = "Declared"
-            declared_shown = True
-        else:
-            label = status.label
-        status_entries.append(TimelineEntry(label=label, event_ts=event_ts))
-    return [*milestones, *status_entries]
-
-
-class TimelineIssue(NamedTuple):
-    label: str
-    message: str
-
-
-def _format_delta(delta: datetime.timedelta) -> str:
-    seconds = int(abs(delta).total_seconds())
-    days, seconds = divmod(seconds, 86400)
-    hours, seconds = divmod(seconds, 3600)
-    minutes, seconds = divmod(seconds, 60)
-    parts = [
-        f"{value}{unit}"
-        for value, unit in ((days, "d"), (hours, "h"), (minutes, "m"), (seconds, "s"))
-        if value
-    ]
-    return " ".join(parts[:2]) if parts else "0s"
-
-
-class TimelineStep(NamedTuple):
-    label: str
-    emoji: str
-    event_ts: datetime.datetime | None
-    occurrences: int
-    required: bool
-
-
-def get_canonical_steps(incident: Incident) -> list[TimelineStep]:
-    """One step per `_EXPECTED_STEPS` entry, collapsing reopen cycles.
-
-    A reopened incident goes through Investigating/Mitigating/Mitigated more than
-    once. Listing every occurrence makes the sequence impossible to check against
-    the expected order and buries the definitive times, so each step keeps a
-    single timestamp and carries its occurrence count instead.
-    """
-    milestone_updates = dict(
-        incident.incidentupdate_set.filter(
-            event_type__in=[event_type for event_type, _ in _MILESTONE_EVENT_TYPES]
-        )
-        .order_by("event_ts")
-        .values_list("event_type", "event_ts")
-    )
-    status_occurrences: dict[IncidentStatus, list[datetime.datetime]] = {}
-    for status, event_ts in get_status_timeline(incident):
-        status_occurrences.setdefault(status, []).append(event_ts)
-
-    steps: list[TimelineStep] = []
-    for label, emoji, source, required in _EXPECTED_STEPS:
-        step_ts: datetime.datetime | None
-        if isinstance(source, str):
-            step_ts = milestone_updates.get(source)
-            count = 1 if step_ts is not None else 0
-        else:
-            stamps = sorted(status_occurrences.get(source) or [])
-            count = len(stamps)
-            which = DEFINITIVE_OCCURRENCE.get(source, "last")
-            step_ts = (stamps[-1] if which == "last" else stamps[0]) if stamps else None
-        steps.append(TimelineStep(label, emoji, step_ts, count, required))
-    return steps
-
-
-def find_timeline_issues(steps: list[TimelineStep]) -> list[TimelineIssue]:
-    """Checks the recorded steps against the expected chronology.
-
-    Reports steps that break the order, required steps with no recorded time,
-    and times in the future - the three ways a hand-typed timeline goes wrong.
-    """
-    issues: list[TimelineIssue] = []
-    right_now = now()
-    previous: tuple[str, datetime.datetime] | None = None
-    for step in steps:
-        label = step.label
-        event_ts = step.event_ts
-        if event_ts is None:
-            if step.required:
-                issues.append(
-                    TimelineIssue(
-                        label, f"*{label}* is required and has no recorded time"
-                    )
-                )
-            continue
-        if event_ts > right_now:
-            issues.append(
-                TimelineIssue(label, f"*{label}* is in the future")
-            )
-        if previous is not None and event_ts < previous[1]:
-            issues.append(
-                TimelineIssue(
-                    label,
-                    f"*{label}* ({localtime(event_ts).strftime('%H:%M:%S')}) is "
-                    f"{_format_delta(previous[1] - event_ts)} before *{previous[0]}* "
-                    f"({localtime(previous[1]).strftime('%H:%M:%S')})",
-                )
-            )
-        previous = (label, event_ts)
-    return issues
+    return incident.status < IncidentStatus.CLOSED
 
 
 class SlackMessageReviewTimeline(SlackMessageSurface):
@@ -326,46 +143,20 @@ class SlackMessageReviewTimeline(SlackMessageSurface):
         steps = get_canonical_steps(self.incident)
         issues = find_timeline_issues(steps)
         flagged = {issue.label for issue in issues}
+        single_day, span = timeline_span(steps)
 
-        recorded = sorted(
-            localtime(step.event_ts) for step in steps if step.event_ts is not None
-        )
-        dates = {ts.date() for ts in recorded}
-        # Incidents can span several days, so the date is never dropped: a single
-        # day goes in the heading and the rows carry times only, otherwise the
-        # heading carries the range and every row carries its own day.
-        single_day = len(dates) == 1
         heading = ":stopwatch: Timeline Review"
-        if recorded:
-            first, last = recorded[0].date(), recorded[-1].date()
-            if single_day:
-                span = first.strftime("%d %b %Y")
-            elif (first.year, first.month) == (last.year, last.month):
-                span = f"{first.day} → {last.strftime('%d %b %Y')}"
-            elif first.year == last.year:
-                span = f"{first.strftime('%d %b')} → {last.strftime('%d %b %Y')}"
-            else:
-                span = f"{first.strftime('%d %b %Y')} → {last.strftime('%d %b %Y')}"
-            heading = f"{heading} — {span} ({recorded[0].strftime('%Z')})"
+        if span:
+            heading = f"{heading} — {span}"
 
-        blocks: list[Block] = [HeaderBlock(text=heading)]
-
-        # Horizontal chain: reads as a timeline at a glance and wraps on its own
-        # in Slack. Times are minute-precision here to keep the chain short - the
-        # exact seconds are in the issue list below and in the correction form.
-        chain = []
-        for step in steps:
-            if step.event_ts is None and not step.required:
-                continue
-            if step.event_ts is None:
-                stamp = "_not recorded_"
-            else:
-                local = localtime(step.event_ts)
-                stamp = local.strftime("%H:%M" if single_day else "%d/%m %H:%M")
-            marks = " :warning:" if step.label in flagged else ""
-            reopened = f" ↻{step.occurrences - 1}" if step.occurrences > 1 else ""
-            chain.append(f"{step.emoji} *{step.label}* {stamp}{marks}{reopened}")
-        blocks.append(SectionBlock(text="  ➜  ".join(chain)))
+        # Same chain as every other surface (Key Events, correction message):
+        # one line, the seven key events, unrecorded ones as a dash.
+        blocks: list[Block] = [
+            HeaderBlock(text=heading),
+            SectionBlock(
+                text=timeline_chain(steps, single_day=single_day, flagged=flagged)
+            ),
+        ]
 
         if issues:
             details = "\n".join(f"> • {issue.message}" for issue in issues)
@@ -389,7 +180,7 @@ class SlackMessageReviewTimeline(SlackMessageSurface):
             ContextBlock(
                 elements=[
                     MarkdownTextObject(
-                        text="Expected order: " + " → ".join(_EXPECTED_ORDER)
+                        text="Expected order: " + " → ".join(EXPECTED_ORDER)
                         + "   ·   ↻ = reopen cycles"
                     )
                 ]
@@ -548,7 +339,7 @@ def _push_confirmed_timeline_to_jira(incident: Incident) -> None:
 TIMELINE_CORRECTION_ID_REGEX = re.compile(r"^(milestone|status)_.*$")
 
 
-class TimelineCorrection(MessageForm[TimelineCorrectionForm]):
+class TimelineCorrection(MessageForm[IncidentTimelineForm]):
     """Correction message, same pattern as Key Events: edit a field, it saves immediately.
 
     Chosen over a modal because a modal's fixed height makes many fields
@@ -557,39 +348,46 @@ class TimelineCorrection(MessageForm[TimelineCorrectionForm]):
     users are already familiar with.
     """
 
-    form_class = TimelineCorrectionForm
+    form_class = IncidentTimelineForm
     callback_id = TIMELINE_CORRECTION_ID_REGEX
     callback_action = True
 
     def build_modal_fn(self, incident: Incident) -> list[Block]:
-        slack_form: SlackForm[TimelineCorrectionForm] = self.get_form_class()(
+        slack_form: SlackForm[IncidentTimelineForm] = self.get_form_class()(
             incident=incident
         )
         return self.get_blocks_from_form(slack_form.form)
 
-    def get_blocks_from_form(self, form: TimelineCorrectionForm) -> list[Block]:
-        blocks: list[Block] = [
-            HeaderBlock(text=":stopwatch: Correct the timeline"),
-            SectionBlock(
-                text="Edit any time below - each change saves immediately."
-            ),
-        ]
-        slack_form: SlackForm[TimelineCorrectionForm] = self.get_form_class()
+    def get_blocks_from_form(self, form: IncidentTimelineForm) -> list[Block]:
+        incident = form.incident
+        # The preview leads, so the effect of an edit is visible right where it
+        # is made - the fields below are the same seven key events, in order.
+        blocks: list[Block] = timeline_preview_blocks(
+            incident, title=":stopwatch: Correct the timeline"
+        )
+        slack_form: SlackForm[IncidentTimelineForm] = self.get_form_class()
         slack_form.form = form
         blocks += slack_form.slack_blocks()
-        # Deliberately not an "accept" button: it re-runs the checks and only
-        # transitions if they pass. Its payload is the incident id alone - the
-        # original Update Status submission (its message, any priority or
-        # category change) cannot be threaded across the correction step, and
-        # this way nothing pretends to carry it.
+
+        # Deliberately not an "accept" button: it re-runs the checks, and only
+        # then transitions (first review) or re-syncs (correction after the
+        # fact). Its payload is the incident id alone - the original Update
+        # Status submission (its message, any priority or category change)
+        # cannot be threaded across the correction step, and this way nothing
+        # pretends to carry it.
+        already_reviewed = incident.status >= IncidentStatus.POST_MORTEM
         blocks.append(
             ActionsBlock(
                 elements=[
                     ButtonElement(
-                        text="Re-check timeline & continue to Post-mortem",
+                        text=(
+                            "Re-check & re-sync the post-mortem"
+                            if already_reviewed
+                            else "Re-check timeline & continue to Post-mortem"
+                        ),
                         style="primary",
                         action_id=RECHECK_ACTION_ID,
-                        value=build_carry_over_payload(form.incident, {}),
+                        value=build_carry_over_payload(incident, {}),
                     ),
                 ]
             )
@@ -599,7 +397,10 @@ class TimelineCorrection(MessageForm[TimelineCorrectionForm]):
                 elements=[
                     MarkdownTextObject(
                         text=(
-                            "Re-checking applies the status change only. To also "
+                            "Each edit saves immediately; the post-mortem and the "
+                            "metrics are re-synced shortly after. Re-check to sync now."
+                            if already_reviewed
+                            else "Re-checking applies the status change only. To also "
                             "post an update message, run *Update Status* → "
                             "*Post-mortem* instead."
                         )
