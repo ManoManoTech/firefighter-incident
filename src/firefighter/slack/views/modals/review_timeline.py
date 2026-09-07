@@ -59,6 +59,13 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 app = SlackApp()
 
+# The Update Status modal's own open action, reused rather than re-registered:
+# a button carrying it and the incident id opens that modal from any message
+# (see `slack_incident_context.get_incident_from_button_value`). Referenced by
+# value, not by import - `update_status` imports this module through
+# `modals.utils`, so importing it back would close the cycle.
+UPDATE_STATUS_ACTION_ID = "open_modal_incident_update_status"
+
 ACCEPT_ACTION_ID = "review_timeline_accept"
 REJECT_ACTION_ID = "review_timeline_reject"
 RECHECK_ACTION_ID = "review_timeline_recheck"
@@ -254,11 +261,27 @@ class SlackMessageReviewTimeline(SlackMessageSurface):
                             text="Something's off — correct the timeline",
                             action_id=CORRECT_ACTION_ID,
                             value=build_carry_over_payload(self.incident, {}),
-                        )
+                        ),
+                        _update_incident_button(self.incident),
                     ]
                 )
             )
         return blocks
+
+
+def _update_incident_button(incident: Incident) -> ButtonElement:
+    """Open Update Status straight from the timeline.
+
+    Correcting a timeline and moving the incident on are two halves of the same
+    moment, and the timeline messages are where that moment happens. Without
+    this the reviewer has to scroll the channel back to the declaration message
+    or type the command again.
+    """
+    return ButtonElement(
+        text="Update incident",
+        value=str(incident.id),
+        action_id=UPDATE_STATUS_ACTION_ID,
+    )
 
 
 def _resolved_message_strategy_args(body: dict[str, Any]) -> dict[str, Any] | None:
@@ -512,6 +535,7 @@ class TimelineCorrection(MessageForm[IncidentTimelineForm]):
                         action_id=RECHECK_ACTION_ID,
                         value=build_carry_over_payload(incident, {}),
                     ),
+                    _update_incident_button(incident),
                 ]
             )
         )

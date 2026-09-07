@@ -20,6 +20,7 @@ from firefighter.slack.views.modals.review_timeline import (
     CORRECT_ACTION_ID,
     RECHECK_ACTION_ID,
     REJECT_ACTION_ID,
+    UPDATE_STATUS_ACTION_ID,
     SlackMessageReviewTimeline,
     SlackMessageTimelineCorrection,
     TimelineCorrection,
@@ -31,6 +32,7 @@ from firefighter.slack.views.modals.review_timeline import (
     handle_review_timeline_recheck,
     handle_review_timeline_reject,
 )
+from firefighter.slack.views.modals.update_status import UpdateStatusModal
 
 if TYPE_CHECKING:
     from pytest_mock import MockerFixture
@@ -139,7 +141,7 @@ class TestSlackMessageReviewTimelineBlocks:
         assert any("*Detected* —" in text for text in section_texts)
 
     @staticmethod
-    def test_accepted_shows_confirmation_and_only_the_correction_button() -> None:
+    def test_accepted_shows_confirmation_and_the_two_ways_on() -> None:
         incident: Incident = IncidentFactory.create(_status=IncidentStatus.POST_MORTEM)
 
         blocks = SlackMessageReviewTimeline(incident, resolution="accepted").get_blocks()
@@ -151,15 +153,15 @@ class TestSlackMessageReviewTimelineBlocks:
             "Timeline accepted" in text and "Post-mortem" in text
             for text in section_texts
         )
-        # Neither accept nor reject: the review is over. Only the way back in,
-        # for a timeline found wrong after the fact.
+        # Neither accept nor reject: the review is over. What is left is the way
+        # back in, for a timeline found wrong after the fact, and the way on.
         action_ids = [
             element.action_id
             for block in blocks
             if isinstance(block, ActionsBlock)
             for element in block.elements
         ]
-        assert action_ids == [CORRECT_ACTION_ID]
+        assert action_ids == [CORRECT_ACTION_ID, UPDATE_STATUS_ACTION_ID]
 
     @staticmethod
     def test_corrected_confirms_the_resync_and_keeps_the_correction_button() -> None:
@@ -177,7 +179,7 @@ class TestSlackMessageReviewTimelineBlocks:
             if isinstance(block, ActionsBlock)
             for element in block.elements
         ]
-        assert action_ids == [CORRECT_ACTION_ID]
+        assert action_ids == [CORRECT_ACTION_ID, UPDATE_STATUS_ACTION_ID]
 
     @staticmethod
     def test_closed_incident_offers_no_correction_button() -> None:
@@ -440,7 +442,6 @@ class TestTimelineCorrection:
         actions_blocks = [b for b in blocks if isinstance(b, ActionsBlock)]
         assert len(actions_blocks) == 1
         buttons = actions_blocks[0].elements
-        assert len(buttons) == 1
         assert buttons[0].action_id == RECHECK_ACTION_ID
         payload = json.loads(buttons[0].value)
         assert payload == {"incident_id": incident.id}
@@ -789,6 +790,57 @@ class TestTimelineCorrectionAfterReview:
             if isinstance(block, ActionsBlock)
             for element in block.elements
         ]
-        assert len(buttons) == 1
         assert buttons[0].action_id == RECHECK_ACTION_ID
         assert "re-sync" in buttons[0].text.text.lower()
+
+
+@pytest.mark.django_db
+class TestUpdateIncidentShortcut:
+    """Moving the incident on, from the timeline messages themselves."""
+
+    @staticmethod
+    def test_the_button_opens_the_update_status_modal() -> None:
+        # Hardcoded in review_timeline to avoid an import cycle: if the modal
+        # ever renames its open action, this is what catches it.
+        assert UpdateStatusModal.open_action == UPDATE_STATUS_ACTION_ID
+
+    @staticmethod
+    def test_the_correction_message_offers_it_next_to_the_re_check() -> None:
+        incident: Incident = IncidentFactory.create(_status=IncidentStatus.POST_MORTEM)
+
+        blocks = TimelineCorrection().build_modal_fn(incident=incident)
+
+        buttons = {
+            element.action_id: element
+            for block in blocks
+            if isinstance(block, ActionsBlock)
+            for element in block.elements
+        }
+        assert RECHECK_ACTION_ID in buttons
+        # The incident id travels in the value: that is how the modal resolves
+        # which incident it is opening for.
+        assert buttons[UPDATE_STATUS_ACTION_ID].value == str(incident.id)
+
+    @staticmethod
+    def test_a_resolved_review_offers_it_too() -> None:
+        incident: Incident = IncidentFactory.create(_status=IncidentStatus.POST_MORTEM)
+
+        blocks = SlackMessageReviewTimeline(
+            incident, resolution="corrected"
+        ).get_blocks()
+
+        action_ids = [
+            element.action_id
+            for block in blocks
+            if isinstance(block, ActionsBlock)
+            for element in block.elements
+        ]
+        assert action_ids == [CORRECT_ACTION_ID, UPDATE_STATUS_ACTION_ID]
+
+    @staticmethod
+    def test_a_closed_incident_offers_neither() -> None:
+        incident: Incident = IncidentFactory.create(_status=IncidentStatus.CLOSED)
+
+        blocks = SlackMessageReviewTimeline(incident, resolution="accepted").get_blocks()
+
+        assert not any(isinstance(block, ActionsBlock) for block in blocks)

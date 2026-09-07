@@ -89,6 +89,12 @@ depending on where the incident already is:
   post-mortem and the metrics. Transitioning a second time would add a Post-mortem
   row to the very timeline being corrected.
 
+Both the correction message and the resolved review message also carry an
+**Update incident** button, opening the Update Status modal for that incident:
+correcting a timeline and moving the incident on happen at the same moment, and
+this saves scrolling the channel back to the declaration message or typing the
+command again.
+
 Once the incident is **closed**, its metrics and post-mortem are consolidated:
 the buttons are no longer offered and the handlers refuse. Late corrections go
 through the Django admin (`IncidentUpdate.event_ts`, then the *Compute metrics*
