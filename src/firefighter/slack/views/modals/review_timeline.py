@@ -628,17 +628,23 @@ class TimelineCorrection(MessageForm[TimelineCorrectionForm]):
         # Metrics are cheap and local, so they stay in sync on every edit.
         incident.compute_metrics()
 
-        # `incident_key_events_updated` is deliberately NOT sent here. This
+        # `incident_key_events_updated` is deliberately NOT sent from here. This
         # method runs on every single field edit, and the signal fans out to a
         # Jira round trip plus a refresh of the Key Events form message - which
-        # shows the same started/detected values, so Slack marks it "(edited)"
-        # and resurfaces it on every keystroke. Both are done once the reviewer
-        # is finished, from `_resolve_timeline_and_transition`, which keeps the
-        # two surfaces consistent without the noise (and without ~2 Jira calls
-        # per edited field).
+        # shows the same milestones, so Slack marks it "(edited)" and resurfaces
+        # it on every keystroke. The sync is deferred and debounced instead, so
+        # a burst of corrections costs one round trip; the re-check button also
+        # forces it immediately, from `_resolve_timeline`.
         #
+        # Imported here: `slack.tasks` pulls in the whole task package, which
+        # imports the message surfaces back - a module-level import would close
+        # the cycle at startup.
+        from firefighter.slack.tasks.sync_timeline import schedule_timeline_sync
+
+        schedule_timeline_sync(incident)
+
         # Only the correction message itself is refreshed here, to echo the
-        # value that was just saved.
+        # value that was just saved - and the preview above the fields with it.
         self.update_with_form()
 
     def update_with_form(self) -> None:

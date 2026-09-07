@@ -58,3 +58,14 @@ ENABLE_DUST: bool = config("ENABLE_DUST", cast=bool, default=False)
 """Enable the 'Generate post-mortem with Dust' button in incident Slack messages."""
 DUST_SLACK_BOT_NAME: str = config("DUST_SLACK_BOT_NAME", default="dust")
 """Slack display name of the Dust app (used to resolve its user ID at runtime)."""
+
+FF_TIMELINE_SYNC_DEBOUNCE_SECONDS: int = config(
+    "FF_TIMELINE_SYNC_DEBOUNCE_SECONDS", cast=int, default=30
+)
+"""How long to wait after a timeline correction before re-syncing the post-mortem.
+
+Each field of the timeline correction message saves on its own, so a reviewer
+fixing four times would otherwise trigger four Jira round trips and four
+refreshes of the Key Events message. Corrections are batched into one deferred
+sync per window instead.
+"""

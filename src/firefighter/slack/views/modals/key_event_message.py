@@ -12,7 +12,6 @@ from slack_sdk.models.blocks.basic_components import MarkdownTextObject
 from slack_sdk.models.blocks.block_elements import ButtonElement
 
 from firefighter.incidents.forms.update_key_events import IncidentUpdateKeyEventsForm
-from firefighter.incidents.signals import incident_key_events_updated
 from firefighter.slack.messages.base import SlackMessageStrategy, SlackMessageSurface
 from firefighter.slack.views.modals.base_modal.base import MessageForm
 
@@ -119,14 +118,20 @@ class KeyEvents(MessageForm[IncidentUpdateKeyEventsForm]):
             return
         self.form.save()
 
-        # Send signal to update Jira post-mortem timeline if applicable
-        logger.debug("Sending signal incident_key_events_updated")
-        incident_key_events_updated.send_robust(
-            __name__,
-            incident=incident,
-        )
-
+        # Metrics are cheap and local, so they stay in sync on every edit.
         incident.compute_metrics()
+
+        # The Jira sync is deferred and debounced, like the correction message's:
+        # this runs on every single field edit, and `incident_key_events_updated`
+        # fans out to a Jira round trip plus a repost of this very message - which
+        # `update_with_form` below already refreshes, in place.
+        #
+        # Imported here: `slack.tasks` pulls in the whole task package, which
+        # imports the message surfaces back - a module-level import would close
+        # the cycle at startup.
+        from firefighter.slack.tasks.sync_timeline import schedule_timeline_sync
+
+        schedule_timeline_sync(incident)
 
         self.update_with_form()
 
