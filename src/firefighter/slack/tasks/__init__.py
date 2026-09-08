@@ -6,6 +6,7 @@ from firefighter.slack.tasks import (
     send_message,
     send_postmortem_reminders,
     send_reminders,
+    sync_timeline,
     sync_users,
     update_usergroups_members,
     update_users,
