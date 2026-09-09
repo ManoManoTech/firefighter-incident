@@ -59,6 +59,16 @@ def record_consistent_timeline(incident: Incident) -> None:
         event_ts=incident.created_at - timezone.timedelta(hours=1),
         created_by=user,
     )
+    # Recovered closes the sequence: it is where the SLA clock stops, so the
+    # consistency gate now requires it like the milestones that open it. Anchored
+    # to the declaration itself: the factory declares the incident at "now", so
+    # anything later would read as a time in the future.
+    IncidentUpdate.objects.create(
+        incident=incident,
+        event_type="recovered",
+        event_ts=incident.created_at,
+        created_by=user,
+    )
 
 
 class TestBuildCarryOverPayload:

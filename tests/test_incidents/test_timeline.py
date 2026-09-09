@@ -2,22 +2,21 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 import pytest
 from django.utils import timezone
 
 from firefighter.incidents.enums import IncidentStatus
 from firefighter.incidents.factories import IncidentFactory, UserFactory
+from firefighter.incidents.models.incident import Incident
 from firefighter.incidents.models.incident_update import IncidentUpdate
 from firefighter.incidents.timeline import (
     TimelineEntry,
+    TimelineStep,
+    find_timeline_issues,
+    get_canonical_steps,
     get_incident_timeline,
     get_status_timeline,
 )
-
-if TYPE_CHECKING:
-    from firefighter.incidents.models.incident import Incident
 
 
 @pytest.mark.django_db
@@ -238,3 +237,114 @@ class TestGetIncidentTimeline:
             TimelineEntry(label="Declared", event_ts=incident.created_at),
             TimelineEntry(label="Open", event_ts=reopened_at),
         ]
+
+
+@pytest.mark.django_db
+class TestRecoveredStep:
+    """Recovered closes the timeline: it is where the SLA clock stops.
+
+    `time_to_fix` is `Recovered - Declared`, so an incident without Recovered
+    cannot be graded against its target at all - hence required. But it is
+    business time typed by hand, while Mitigated is a status transition clicked
+    in Slack: on the support data the two share a timestamp on 77% of
+    incidents, Recovered comes first on 19.6% and later on 3.2%. Ordering it
+    against its neighbour would flag one incident in five for nothing.
+    """
+
+    @staticmethod
+    def _steps(incident: Incident) -> list[TimelineStep]:
+        return get_canonical_steps(incident)
+
+    @staticmethod
+    def test_missing_recovered_is_reported() -> None:
+        incident: Incident = IncidentFactory.create(_status=IncidentStatus.MITIGATED)
+        user = UserFactory.create()
+        for event_type in ("started", "detected"):
+            IncidentUpdate.objects.create(
+                incident=incident,
+                event_type=event_type,
+                event_ts=incident.created_at - timezone.timedelta(hours=1),
+                created_by=user,
+            )
+
+        issues = find_timeline_issues(get_canonical_steps(incident))
+
+        assert any(
+            "Recovered" in issue.message and "required" in issue.message
+            for issue in issues
+        )
+
+    @staticmethod
+    @pytest.mark.parametrize("offset_minutes", [-30, 0, 30])
+    def test_recovered_is_not_ordered_against_mitigated(offset_minutes: int) -> None:
+        """Before, at the same instant, or after: none of them is an issue."""
+        incident: Incident = IncidentFactory.create(_status=IncidentStatus.MITIGATED)
+        # `created_at` is auto_now_add, so the whole timeline is pushed into
+        # yesterday - otherwise anything after the declaration reads as future.
+        Incident.objects.filter(pk=incident.pk).update(
+            created_at=timezone.now() - timezone.timedelta(days=1)
+        )
+        incident.refresh_from_db()
+        user = UserFactory.create()
+        mitigated_at = incident.created_at + timezone.timedelta(hours=2)
+        IncidentUpdate.objects.create(
+            incident=incident,
+            _status=IncidentStatus.MITIGATED,
+            event_ts=mitigated_at,
+            created_by=user,
+        )
+        for event_type, ts in (
+            ("started", incident.created_at - timezone.timedelta(hours=2)),
+            ("detected", incident.created_at - timezone.timedelta(hours=1)),
+            (
+                "recovered",
+                mitigated_at + timezone.timedelta(minutes=offset_minutes),
+            ),
+        ):
+            IncidentUpdate.objects.create(
+                incident=incident, event_type=event_type, event_ts=ts, created_by=user
+            )
+
+        issues = find_timeline_issues(get_canonical_steps(incident))
+
+        assert [issue for issue in issues if issue.label == "Recovered"] == []
+
+    @staticmethod
+    def test_recovered_before_the_declaration_is_reported() -> None:
+        """`time_to_fix` would be negative - the metric itself refuses that."""
+        incident: Incident = IncidentFactory.create(_status=IncidentStatus.MITIGATED)
+        user = UserFactory.create()
+        for event_type, ts in (
+            ("started", incident.created_at - timezone.timedelta(hours=3)),
+            ("detected", incident.created_at - timezone.timedelta(hours=2)),
+            ("recovered", incident.created_at - timezone.timedelta(hours=1)),
+        ):
+            IncidentUpdate.objects.create(
+                incident=incident, event_type=event_type, event_ts=ts, created_by=user
+            )
+
+        issues = find_timeline_issues(get_canonical_steps(incident))
+
+        assert any(
+            issue.label == "Recovered" and "before *Declared*" in issue.message
+            for issue in issues
+        )
+
+    @staticmethod
+    def test_recovered_is_read_back_into_the_canonical_steps() -> None:
+        """It used to be fetched by no one, so the form always showed it empty."""
+        incident: Incident = IncidentFactory.create(_status=IncidentStatus.MITIGATED)
+        recovered_at = incident.created_at + timezone.timedelta(hours=1)
+        IncidentUpdate.objects.create(
+            incident=incident,
+            event_type="recovered",
+            event_ts=recovered_at,
+            created_by=UserFactory.create(),
+        )
+
+        step = next(
+            step for step in get_canonical_steps(incident) if step.label == "Recovered"
+        )
+
+        assert step.event_ts == recovered_at
+        assert step.required is True
