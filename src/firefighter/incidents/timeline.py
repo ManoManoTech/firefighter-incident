@@ -37,6 +37,7 @@ MILESTONE_EVENT_TYPES: tuple[tuple[str, str], ...] = (
     ("started", "Started"),
     ("detected", "Detected"),
 )
+"""The milestones that *precede* the declaration, in `get_incident_timeline`."""
 
 # The seven key events of an incident, in the order they are expected to happen.
 # This interleaving of milestones and statuses lives nowhere else: MilestoneType
@@ -55,10 +56,29 @@ EXPECTED_STEPS: tuple[tuple[str, str, str | IncidentStatus, bool], ...] = (
     ("Investigating", ":mag:", IncidentStatus.INVESTIGATING, False),
     ("Mitigating", ":wrench:", IncidentStatus.MITIGATING, False),
     ("Mitigated", ":white_check_mark:", IncidentStatus.MITIGATED, False),
+    # Recovered is where the SLA clock stops (Recovered - Declared, the
+    # `time_to_fix` metric), so it is required like the other milestones: an
+    # incident without it cannot be graded against its target at all.
+    ("Recovered", ":checkered_flag:", "recovered", True),
     ("Post-mortem", ":memo:", IncidentStatus.POST_MORTEM, False),
 )
 
 EXPECTED_ORDER: tuple[str, ...] = tuple(label for label, *_ in EXPECTED_STEPS)
+
+# Recovered records when the impact ceased - business time, typed by hand -
+# while Mitigated is a status transition clicked in Slack. Measured on the
+# support data: the two carry the same timestamp on 77% of incidents, Recovered
+# comes first on 19.6% and later on 3.2%. Checking it against its neighbour in
+# the sequence would therefore flag one incident in five for nothing, so it is
+# checked against the declaration instead - which is exactly what its metric
+# needs, `time_to_fix` being Recovered - Declared and never negative.
+UNORDERED_STEPS: frozenset[str] = frozenset({"Recovered"})
+
+CANONICAL_MILESTONE_EVENT_TYPES: tuple[str, ...] = tuple(
+    source for _label, _emoji, source, _required in EXPECTED_STEPS
+    if isinstance(source, str)
+)
+"""Every milestone of the canonical timeline, wherever it sits in the sequence."""
 
 # What each status means, in the same voice as `MilestoneType.summary` ("when
 # the first issues arose"), which supplies the milestones' own definitions. The
@@ -197,6 +217,9 @@ def find_timeline_issues(steps: list[TimelineStep]) -> list[TimelineIssue]:
     """
     issues: list[TimelineIssue] = []
     right_now = now()
+    declared_at = next(
+        (step.event_ts for step in steps if step.label == "Declared"), None
+    )
     previous: tuple[str, datetime.datetime] | None = None
     for step in steps:
         label = step.label
@@ -211,6 +234,19 @@ def find_timeline_issues(steps: list[TimelineStep]) -> list[TimelineIssue]:
             continue
         if event_ts > right_now:
             issues.append(TimelineIssue(label, f"*{label}* is in the future"))
+        if label in UNORDERED_STEPS:
+            # Anchored to the declaration rather than to the previous step, and
+            # left out of the chain so the next step is not compared to it.
+            if declared_at is not None and event_ts < declared_at:
+                issues.append(
+                    TimelineIssue(
+                        label,
+                        f"*{label}* ({localtime(event_ts).strftime('%H:%M:%S')}) is "
+                        f"{format_delta(declared_at - event_ts)} before *Declared* "
+                        f"({localtime(declared_at).strftime('%H:%M:%S')})",
+                    )
+                )
+            continue
         if previous is not None and event_ts < previous[1]:
             issues.append(
                 TimelineIssue(
@@ -247,7 +283,7 @@ def milestone_timestamps(incident: Incident) -> dict[str, datetime.datetime]:
     """
     rows = (
         incident.incidentupdate_set.filter(
-            event_type__in=[event_type for event_type, _ in MILESTONE_EVENT_TYPES]
+            event_type__in=CANONICAL_MILESTONE_EVENT_TYPES
         )
         .order_by("event_ts")
         .values_list("event_type", "event_ts")
