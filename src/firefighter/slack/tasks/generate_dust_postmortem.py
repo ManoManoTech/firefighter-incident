@@ -55,16 +55,28 @@ def _resolve_bot_user_id(client: WebClient, bot_name: str) -> str | None:
     return None
 
 
-def build_dust_message(incident: Incident, jira_issue_key: str) -> str:
-    """The instruction handed to the agent: which channel to read, which ticket to fill."""
+def build_dust_payload(incident: Incident, jira_issue_key: str) -> dict[str, Any]:
+    """What the agent is given: the channel to read and the ticket to fill in.
+
+    Dust does not impose a schema - "you define the structure based on your
+    webhook source", and the agent's instructions and filters address the
+    fields by path. So the two values the agent needs are sent as fields it can
+    address directly, and `message` carries the same thing as prose for an
+    agent that would rather read the instruction than the structure.
+    """
     channel = incident.conversation
-    return (
-        f"Please fill in the post-mortem Jira ticket {jira_issue_key} for incident "
-        f"#{incident.id} ({incident.title}). The incident was handled in the Slack "
-        f"channel #{channel.name} ({channel.channel_id}): read through it and "
-        "complete the post-mortem with the summary, timeline, root cause, impact "
-        "and action items."
-    )
+    return {
+        "message": (
+            f"Please fill in the post-mortem Jira ticket {jira_issue_key} for incident "
+            f"#{incident.id} ({incident.title}). The incident was handled in the Slack "
+            f"channel #{channel.name} ({channel.channel_id}): read through it and "
+            "complete the post-mortem with the summary, timeline, root cause, impact "
+            "and action items."
+        ),
+        "jira_issue_key": jira_issue_key,
+        "channel": {"id": channel.channel_id, "name": channel.name},
+        "incident": {"id": incident.id, "title": incident.title},
+    }
 
 
 def sign_payload(body: bytes, secret: str) -> str:
@@ -73,14 +85,14 @@ def sign_payload(body: bytes, secret: str) -> str:
     return f"{SIGNATURE_PREFIX}{digest}"
 
 
-def _call_dust_webhook(url: str, secret: str, message: str) -> None:
+def _call_dust_webhook(url: str, secret: str, payload: dict[str, Any]) -> None:
     """POST the signed payload.
 
     The body is serialized once and sent as raw bytes: signing a dict and
     letting the HTTP client re-serialize it would produce a signature over
     different bytes than the ones on the wire.
     """
-    body = json.dumps({"message": message}).encode("utf-8")
+    body = json.dumps(payload).encode("utf-8")
     headers = {
         "Content-Type": "application/json",
         SIGNATURE_HEADER: sign_payload(body, secret),
@@ -149,7 +161,7 @@ def generate_dust_postmortem(
     _call_dust_webhook(
         webhook_url,
         webhook_secret,
-        build_dust_message(incident, jira_postmortem.jira_issue_key),
+        build_dust_payload(incident, jira_postmortem.jira_issue_key),
     )
     logger.info(
         "Called the Dust webhook for incident %s (post-mortem %s)",

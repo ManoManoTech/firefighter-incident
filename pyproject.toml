@@ -143,7 +143,7 @@ fmt = {composite= ["fmt-black", "fmt-ruff", "fmt-dj"], help="Run all formatters 
 # Tests
 tests = {composite=["tests-main", "tests-destructive"], help="Run the whole test suite, destructive tests in their own session"}
 tests-main = {cmd="pytest", help="Run the tests, excluding the destructive ones"}
-tests-destructive = {cmd="pytest -m destructive -p no:cacheprovider", help="Run the tests that rewind the database, in an isolated session"}
+tests-destructive = {cmd="pytest -m destructive -p no:cacheprovider --create-db", help="Run the tests that rewind the database, in an isolated session on a freshly created one"}
 tests-cov = {composite=["tests-cov-main", "tests-destructive"], help="Run the tests with coverage, destructive tests in their own session"}
 tests-cov-main ={cmd= "pytest --junitxml=pytest-report.xml --cov --cov-report xml:pytest-coverage.xml --cov-fail-under=0 --cov-report html", help="Run the tests with coverage, excluding the destructive ones"}
 # Docs

@@ -84,7 +84,14 @@ def test_calls_the_webhook_with_the_channel_and_the_ticket(settings) -> None:
     )
     url, kwargs = http_client.post.call_args.args[0], http_client.post.call_args.kwargs
     assert url == WEBHOOK_URL
-    message = json.loads(kwargs["content"])["message"]
+    payload = json.loads(kwargs["content"])
+    # Dust imposes no schema: the agent addresses the fields we choose to send,
+    # so the two values it needs are fields of their own, not prose to parse.
+    assert payload["jira_issue_key"] == jira_pm.jira_issue_key
+    assert payload["channel"]["id"] == incident.conversation.channel_id
+    assert payload["channel"]["name"] == incident.conversation.name
+    assert payload["incident"]["id"] == incident.id
+    message = payload["message"]
     assert jira_pm.jira_issue_key in message
     assert incident.conversation.channel_id in message
     # The instruction is no longer posted in Slack: the webhook is the trigger.
