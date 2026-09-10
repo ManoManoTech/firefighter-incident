@@ -59,6 +59,20 @@ ENABLE_DUST: bool = config("ENABLE_DUST", cast=bool, default=False)
 DUST_SLACK_BOT_NAME: str = config("DUST_SLACK_BOT_NAME", default="dust")
 """Slack display name of the Dust app (used to resolve its user ID at runtime)."""
 
+DUST_WEBHOOK_URL: str | None = config("DUST_WEBHOOK_URL", default=None)
+"""Dust webhook that triggers the post-mortem agent.
+
+Posting an instruction in the channel and hoping the agent picks it up proved
+unreliable; Dust exposes a webhook for this, which is called directly instead.
+"""
+DUST_WEBHOOK_SECRET: str | None = config("DUST_WEBHOOK_SECRET", default=None)
+"""Shared secret signing the webhook payload (HMAC-SHA256, `signature: sha256=<hex>`).
+
+Same scheme as the inbound Jira webhooks (see `api.authentication`), in the
+other direction. Fed by Vault; without it the trigger is skipped rather than
+sending an unsigned call the webhook would reject anyway.
+"""
+
 FF_TIMELINE_SYNC_DEBOUNCE_SECONDS: int = config(
     "FF_TIMELINE_SYNC_DEBOUNCE_SECONDS", cast=int, default=30
 )

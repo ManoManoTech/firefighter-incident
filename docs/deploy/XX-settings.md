@@ -80,7 +80,9 @@ See [django-oauth2-codeflow](https://gitlab.com/systra/qeto/lib/django-oauth2-au
 ### Dust AI integration (optional)
 
 - [`ENABLE_DUST`][firefighter.firefighter.settings.components.slack.ENABLE_DUST]: set to `True` to show the "Generate post-mortem with Dust" button in Jira post-mortem Slack messages.
-- [`DUST_SLACK_BOT_NAME`][firefighter.firefighter.settings.components.slack.DUST_SLACK_BOT_NAME]: Slack display name of the Dust app (default: `dust`). Used to resolve its user ID at runtime to invite it to the incident channel and mention it.
+- [`DUST_SLACK_BOT_NAME`][firefighter.firefighter.settings.components.slack.DUST_SLACK_BOT_NAME]: Slack display name of the Dust app (default: `dust`). Used to resolve its user ID at runtime, to invite it to the incident channel so it can answer there.
+- [`DUST_WEBHOOK_URL`][firefighter.firefighter.settings.components.slack.DUST_WEBHOOK_URL]: the Dust webhook that triggers the post-mortem agent. Required for the button to do anything.
+- [`DUST_WEBHOOK_SECRET`][firefighter.firefighter.settings.components.slack.DUST_WEBHOOK_SECRET]: the shared secret configured on that webhook. The payload is signed with HMAC-SHA256 and sent as `signature: sha256=<hex>`. Without both URL and secret the trigger is skipped rather than issuing a call the webhook would reject.
 
 ## Confluence integration
 
