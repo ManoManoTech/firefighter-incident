@@ -171,7 +171,16 @@ class PagerDutyUserManager(models.Manager["PagerDutyUser"]):
         It will update a PagerDutyUser and its associated User if the name, phone, PagerDuty team changes.
         """
         # Get a user by its email and update the name. Create the user if necessary.
-        ff_user, _ = User.objects.update_or_create(email=email, defaults={"name": name})
+        ff_user = User.objects.get_or_none(email=email)
+        if ff_user is None:
+            ff_user = User.objects.create(
+                email=email,
+                name=name,
+                username=User.objects.generate_username(email),
+            )
+        elif ff_user.name != name:
+            ff_user.name = name
+            ff_user.save(update_fields=["name"])
 
         # Update or create a PD User, with the key being its user. Update other fields.
         try:

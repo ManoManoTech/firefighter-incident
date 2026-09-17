@@ -14,8 +14,6 @@ if TYPE_CHECKING:
 if settings.ENABLE_PAGERDUTY:
     from firefighter.pagerduty.models import PagerDutyOncall
     from firefighter.pagerduty.tasks import fetch_oncalls
-if settings.ENABLE_CONFLUENCE:
-    from firefighter.confluence.service import confluence_service
 if settings.ENABLE_SLACK:
     from firefighter.slack.models.conversation import Conversation
     from firefighter.slack.models.user import SlackUser
@@ -27,7 +25,7 @@ BASE_URL: str = settings.BASE_URL
 
 @shared_task(name="incidents.update_oncall")
 def update_oncall() -> None:
-    """Fetch current on-calls and update the on-call Slack topic and Confluence page."""
+    """Fetch current on-calls and update the on-call Slack topic."""
     task_chain: Any = (
         fetch_oncalls.s()  # pyright: ignore[reportUnboundVariable]
         | update_oncall_views.s()
@@ -37,7 +35,7 @@ def update_oncall() -> None:
 
 @shared_task(name="incidents.update_oncall_views")
 def update_oncall_views(*_args: Any, **_kwargs: Any) -> bool:
-    """Updates the on-call Slack topic and Confluence page containing the info for the on-call personnel."""
+    """Updates the on-call Slack topic containing the info for the on-call personnel."""
     if not settings.ENABLE_PAGERDUTY:
         logger.error("Can't update on-call users without PagerDuty enabled.")
         return False
@@ -54,8 +52,7 @@ def update_oncall_views(*_args: Any, **_kwargs: Any) -> bool:
     else:
         logger.warning("Not updating on-call Slack topic, Slack integration disabled.")
 
-    update_oncall_confluence(oncall_users_grouped_per_ep)
-    logger.info("Updated on-call users on Confluence and Slack topic.")
+    logger.info("Updated on-call users on Slack topic.")
     return True
 
 
@@ -102,10 +99,3 @@ def update_oncall_slack_topic(
         return False
     logger.error("Failed to update on-call Slack topic.")
     return False
-
-
-def update_oncall_confluence(users: dict[str, User]) -> bool:
-    if not settings.ENABLE_CONFLUENCE:
-        return False
-
-    return confluence_service.update_oncall_page(users)

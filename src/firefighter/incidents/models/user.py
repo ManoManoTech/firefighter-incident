@@ -35,6 +35,18 @@ class UserManager(BaseUserManager["User"]):
         except User.DoesNotExist:
             return None
 
+    def generate_username(self, email: str) -> str:
+        """Returns a username derived from an email address, free at call time.
+
+        `username` is unique and defaults to an empty string, so creating users
+        without one only ever works once: every later creation collides with the
+        first on the empty username.
+        """
+        base = email.split("@", maxsplit=1)[0][:140] or "user"
+        if not self.filter(username=base).exists():
+            return base
+        return f"{base}-{uuid.uuid4().hex[:8]}"
+
 
 class User(AbstractUser):
     objects: ClassVar[UserManager] = UserManager()
