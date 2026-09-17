@@ -3,17 +3,14 @@ from __future__ import annotations
 import logging
 from functools import cache, cached_property
 from typing import TYPE_CHECKING, Any, Literal
-from urllib.parse import urljoin
 
 from django.conf import settings
-from django.urls import reverse
 
 from firefighter.firefighter.utils import get_in
 
 if TYPE_CHECKING:
     from firefighter.confluence.client import ConfluenceClient
     from firefighter.confluence.utils import ConfluencePage, ConfluencePageId, PageInfo
-    from firefighter.incidents.models.user import User
 
 logger = logging.getLogger(__name__)
 
@@ -58,17 +55,6 @@ class ConfluenceService:
             )
         return self._client
 
-    def _build_page_from_django_template(
-        self, template_name: str, context: dict[str, Any]
-    ) -> str:
-        """Returns a unicode string, from a Django template (or path) and its arguments, if any."""
-        from django.template import loader
-
-        template = loader.get_template(template_name)
-        rendered_page = template.render(context)
-        logger.debug(rendered_page)
-        return rendered_page
-
     def parse_confluence_page(self, pm: dict[str, Any] | ConfluencePage) -> PageInfo:
         """Helper to parse a Confluence page into a PageInfo object.
 
@@ -100,53 +86,6 @@ class ConfluenceService:
             "page_url": page_url,
             "page_edit_url": page_edit_url,
         }
-
-    def update_oncall_page(self, users: dict[str, User]) -> bool:
-        """Update the Confluence list of On-Call users, if the page needs to be updated.
-        Users should have a SlackUser AND a PagerDutyUser associated.
-
-        Args:
-            users (list[User]): list of Users to update the page with.
-
-        Returns:
-            bool: has the page been updated?
-        """
-        if not settings.CONFLUENCE_ON_CALL_PAGE_ID:
-            logger.info("No Confluence OnCall page ID, skipping.")
-            return False
-
-        content = (self.client.get_page(settings.CONFLUENCE_ON_CALL_PAGE_ID)).json()
-
-        page_version = get_in(content, "version.number")
-        if not page_version:
-            logger.error("No page version in Confluence page! %s", content)
-            return False
-        page_version += 1
-        page_body = self._build_page_from_django_template(
-            "oncall_team.xml",
-            context={
-                "users": users.items(),
-                "oncall_page_link": urljoin(
-                    settings.BASE_URL, reverse("pagerduty:oncall-list")
-                ),
-            },
-        )
-        logger.debug("Confluence OnCall page body: %s", page_body)
-        if get_in(content, "body.storage.value") != page_body:
-            res = self.client.update_page(
-                content.get("id"),
-                content.get("type"),
-                content.get("title"),
-                page_body,
-                page_version,
-            )
-            if res.status_code != 200:
-                logger.error("Can't update OnCall page: %s", res.json())
-                return False
-            return True
-
-        logger.info("Confluence OnCall page is up to date, and was not updated.")
-        return False
 
     def create_postmortem(self, title: str) -> ConfluencePage | None:
         """Create a PostMortem page.
