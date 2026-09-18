@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
-from datetime import timedelta
+from datetime import UTC, timedelta
 from typing import TYPE_CHECKING
 from unittest.mock import patch
 
 import pytest
+from django.test import override_settings
 from django.utils import timezone
+from django_celery_beat.models import PeriodicTask
 
 from firefighter.incidents.enums import IncidentStatus
 from firefighter.incidents.factories import IncidentFactory, UserFactory
@@ -51,6 +53,21 @@ def _reminder_delays(db, settings):
         postmortem_reminder_repeat_time=REPEAT_DELAY,
     )
     settings.ENABLE_JIRA_POSTMORTEM = True
+
+
+@pytest.fixture(autouse=True)
+def office_hours_gate():
+    """Put every test inside office hours, whatever the wall clock says when the suite runs.
+
+    The task is otherwise a no-op at night and at the weekend, which would make the whole file
+    pass or fail depending on the time of day. `TestOfficeHours` overrides this to check the
+    guard itself; the window it applies is covered by `test_is_during_office_hours`.
+    """
+    with patch(
+        "firefighter.slack.tasks.send_postmortem_reminders.is_during_office_hours",
+        return_value=True,
+    ) as gate:
+        yield gate
 
 
 def _mitigated_incident(
@@ -278,3 +295,104 @@ class TestPublicAnnouncement:
 
         assert incident.id in _reminded_incidents(mock_send)
         assert incident.id not in _announced_incidents(mock_send)
+
+
+@pytest.mark.django_db
+class TestOfficeHours:
+    """The Commander is nudged during working hours only, whatever Beat asks for."""
+
+    def test_stays_quiet_out_of_office_hours(self, mock_send, office_hours_gate):
+        office_hours_gate.return_value = False
+        incident = _mitigated_incident(mitigated_days_ago=6)
+
+        send_postmortem_reminders()
+
+        assert _reminded_incidents(mock_send) == []
+        assert incident.id not in _announced_incidents(mock_send)
+
+    @override_settings(TIME_ZONE="Europe/Paris")
+    @pytest.mark.usefixtures("mock_send")
+    def test_the_guard_reads_the_local_time(self, office_hours_gate):
+        # `is_during_office_hours` compares `dt.hour` against 9-17, so it only means anything
+        # in the deployment's own timezone. Handing it `timezone.now()` would measure the
+        # office day in UTC and shift it by an hour or two.
+        send_postmortem_reminders()
+
+        office_hours_gate.assert_called_once()
+        (moment,) = office_hours_gate.call_args.args
+        assert moment.tzinfo == timezone.get_current_timezone()
+        assert moment.tzinfo != UTC
+
+
+@pytest.mark.django_db
+class TestBeatSchedule:
+    """The schedule the `slack` migrations leave behind, as Beat will read it."""
+
+    def test_the_reminders_are_scheduled_on_working_days_only(self):
+        periodic_task = PeriodicTask.objects.get(task="slack.send_postmortem_reminders")
+
+        assert periodic_task.enabled
+        assert periodic_task.crontab is not None
+        assert periodic_task.crontab.day_of_week == "1-5"
+
+    def test_the_schedule_keeps_its_hours(self):
+        # `slack.0010` only narrows the days: retiming the reminders stays an admin decision.
+        crontab = PeriodicTask.objects.get(
+            task="slack.send_postmortem_reminders"
+        ).crontab
+
+        assert crontab.minute == "0"
+        assert crontab.hour == "10,15"
+        assert str(crontab.timezone) == "Europe/Paris"
+
+
+@pytest.mark.django_db
+class TestResilience:
+    """One incident going wrong must not silence the reminders for all the others.
+
+    These paths are not hypothetical: a Commander who archives the incident channel makes
+    Slack answer `is_archived` to every later reminder.
+    """
+
+    def test_an_incident_without_a_channel_is_skipped(self, mock_send):
+        channelless = IncidentFactory.create(
+            _status=IncidentStatus.MITIGATED.value,
+            priority=Priority.objects.get(value=1),
+            environment=Environment.objects.get(value="PRD"),
+            mitigated_at=timezone.now() - timedelta(days=6),
+            private=False,
+        )
+        healthy = _mitigated_incident()
+
+        send_postmortem_reminders()
+
+        reminded = _reminded_incidents(mock_send)
+        assert channelless.id not in reminded
+        assert healthy.id in reminded
+
+    def test_a_channel_refusing_the_message_is_logged_and_survived(
+        self, mock_send, caplog
+    ):
+        incident = _mitigated_incident()
+        mock_send.side_effect = RuntimeError("is_archived")
+
+        send_postmortem_reminders()
+
+        assert f"Failed to send process reminder to incident #{incident.id}" in caplog.text
+
+    def test_a_failed_announcement_does_not_lose_the_reminder(self, mock_send, caplog):
+        SlackConversationFactory.create(tag="tech_incidents")
+        incident = _mitigated_incident(priority_value=1)
+
+        def refuse_the_announcement(message, *args, **kwargs):
+            # Matched on `id` rather than on the class, the way the task itself tells its
+            # messages apart when it reads them back from `Message.ff_type`.
+            if message.id == SlackMessageIncidentProcessReminderAnnouncement.id:
+                raise RuntimeError("channel_not_found")
+
+        mock_send.side_effect = refuse_the_announcement
+
+        send_postmortem_reminders()
+
+        assert incident.id in _reminded_incidents(mock_send)
+        assert "Failed to send process reminder to tech_incidents" in caplog.text
