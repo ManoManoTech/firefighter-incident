@@ -6,6 +6,10 @@ has sat mitigated for its priority's `postmortem_reminder_time`, then again ever
 `postmortem_reminder_repeat_time` for as long as nothing moves. Both live on the Priority, next
 to `reminder_time`, so they can be tuned per priority in the Django admin - including down to a
 few minutes to rehearse the flow.
+
+Reminders only go out during office hours. The Beat schedule already aims at working days, but
+it is a `PeriodicTask` row anyone can retime from the Django admin, so the guard lives here too:
+nudging a Commander on a Saturday morning does not make the post-mortem happen any sooner.
 """
 
 from __future__ import annotations
@@ -18,6 +22,7 @@ from django.conf import settings
 from django.db.models import DateTimeField, ExpressionWrapper, F, Q
 from django.utils import timezone
 
+from firefighter.firefighter.utils import is_during_office_hours
 from firefighter.incidents.enums import IncidentStatus
 from firefighter.incidents.models.incident import Incident
 from firefighter.slack.models.conversation import Conversation
@@ -100,6 +105,10 @@ def send_postmortem_reminders() -> None:
     the `slack.0009` migration, and renaming it would leave Beat dispatching a task nobody
     registers.
     """
+    if not is_during_office_hours(timezone.localtime()):
+        logger.debug("Out of office hours, skipping process reminders.")
+        return
+
     now = timezone.now()
 
     # P1-P3 are the priorities that run the Slack incident process. GAMEDAY sits at value 20 but
