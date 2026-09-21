@@ -15,6 +15,7 @@ import pytest
 from slack_sdk.errors import SlackApiError
 
 from firefighter.incidents.factories import IncidentFactory, UserFactory
+from firefighter.incidents.models import Environment, Priority
 from firefighter.slack.factories import IncidentChannelFactory, SlackUserFactory
 from firefighter.slack.signals.create_incident_conversation import (
     create_incident_slack_conversation,
@@ -28,7 +29,15 @@ def _build_incident_with_channel() -> tuple[object, object]:
     user = UserFactory.build()
     user.save()
     SlackUserFactory.create(user=user)
-    incident = IncidentFactory.build(created_by=user)
+    # Pin the priority and the environment: the factory draws them from
+    # session-wide cyclic iterators, so an unpinned incident lands on P1/PRD
+    # depending on the test order, and sev1_process_reminder then posts a
+    # second message in the channel these tests count the messages of.
+    incident = IncidentFactory.build(
+        created_by=user,
+        priority=Priority.objects.get(value=3),
+        environment=Environment.objects.get(value="STG"),
+    )
     incident.save()
     incident_channel = IncidentChannelFactory.build(incident=incident)
     incident_channel.save()
