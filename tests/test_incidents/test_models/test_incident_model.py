@@ -10,7 +10,7 @@ from hypothesis.strategies import builds
 
 from firefighter.incidents.enums import ClosureReason, IncidentStatus
 from firefighter.incidents.factories import IncidentFactory
-from firefighter.incidents.models import IncidentUpdate
+from firefighter.incidents.models import Environment, IncidentUpdate, Priority
 from firefighter.jira_app.models import JiraPostMortem
 
 if TYPE_CHECKING:
@@ -42,8 +42,13 @@ class TestIncidentCanBeClosed:
 
     def test_cannot_close_incident_below_mitigated_status(self) -> None:
         """Test that incidents below MITIGATED status cannot be closed without reason."""
-        # Create an incident in INVESTIGATING status (below MITIGATED)
-        incident = IncidentFactory.create(_status=IncidentStatus.INVESTIGATING)
+        # Create an incident in INVESTIGATING status (below MITIGATED).
+        # Pin a P3: STATUS_NOT_MITIGATED sits in the `elif` of `needs_postmortem`,
+        # so an unpinned incident landing on P1/P2 never reports that reason.
+        incident = IncidentFactory.create(
+            _status=IncidentStatus.INVESTIGATING,
+            priority=Priority.objects.get(value=3),
+        )
 
         can_close, reasons = incident.can_be_closed
 
@@ -56,7 +61,7 @@ class TestIncidentCanBeClosed:
         # Create a P3 incident in MITIGATED status (no postmortem required)
         incident = IncidentFactory.create(
             _status=IncidentStatus.MITIGATED,
-            priority__value=3,  # P3 doesn't require postmortem
+            priority=Priority.objects.get(value=3),  # P3 doesn't require postmortem
         )
 
         can_close, reasons = incident.can_be_closed
@@ -84,9 +89,8 @@ class TestIncidentCanBeClosed:
         settings.ENABLE_JIRA_POSTMORTEM = True
         incident = IncidentFactory.create(
             _status=IncidentStatus.POST_MORTEM,
-            priority__value=1,
-            priority__needs_postmortem=True,
-            environment__value="PRD",
+            priority=Priority.objects.get(value=1),
+            environment=Environment.objects.get(value="PRD"),
         )
         JiraPostMortem.objects.create(
             incident=incident,
@@ -122,9 +126,8 @@ class TestIncidentCanBeClosed:
         settings.ENABLE_JIRA_POSTMORTEM = True
         incident = IncidentFactory.create(
             _status=IncidentStatus.POST_MORTEM,
-            priority__value=1,
-            priority__needs_postmortem=True,
-            environment__value="PRD",
+            priority=Priority.objects.get(value=1),
+            environment=Environment.objects.get(value="PRD"),
         )
         JiraPostMortem.objects.create(
             incident=incident,
@@ -151,9 +154,8 @@ class TestIncidentCanBeClosed:
         settings.ENABLE_JIRA_POSTMORTEM = True
         incident = IncidentFactory.create(
             _status=IncidentStatus.POST_MORTEM,
-            priority__value=1,
-            priority__needs_postmortem=True,
-            environment__value="PRD",
+            priority=Priority.objects.get(value=1),
+            environment=Environment.objects.get(value="PRD"),
         )
         JiraPostMortem.objects.create(
             incident=incident,
@@ -188,7 +190,12 @@ class TestIncidentSetStatus:
 
     def test_set_status_to_mitigated_creates_recovered_event(self) -> None:
         """Test that setting status to MITIGATED creates a 'recovered' event."""
-        incident = IncidentFactory.create(_status=IncidentStatus.INVESTIGATING)
+        # P3 keeps the mitigation out of the post-mortem flow: a P1/P2 incident
+        # reaches the Confluence models, whose tables the test database lacks.
+        incident = IncidentFactory.create(
+            _status=IncidentStatus.INVESTIGATING,
+            priority=Priority.objects.get(value=3),
+        )
 
         # Set status to MITIGATED using create_incident_update
         incident.create_incident_update(
@@ -219,17 +226,15 @@ class TestIncidentNeedsPostmortem:
     def test_p3_does_not_need_postmortem(self) -> None:
         """Test that P3 incident does not require postmortem even in PRD."""
         incident = IncidentFactory.create(
-            priority__value=3,  # P3
-            priority__needs_postmortem=False,
-            environment__value="PRD",
+            priority=Priority.objects.get(value=3),  # P3
+            environment=Environment.objects.get(value="PRD"),
         )
         assert incident.needs_postmortem is False
 
     def test_p1_non_prd_does_not_need_postmortem(self) -> None:
         """Test that P1 incident in non-PRD environment does not require postmortem."""
         incident = IncidentFactory.create(
-            priority__value=1,  # P1
-            priority__needs_postmortem=True,
-            environment__value="STG",  # Use STG instead of DEV
+            priority=Priority.objects.get(value=1),  # P1
+            environment=Environment.objects.get(value="STG"),  # Use STG instead of DEV
         )
         assert incident.needs_postmortem is False
