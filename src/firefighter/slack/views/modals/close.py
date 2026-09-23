@@ -112,14 +112,15 @@ class CloseModal(
                         detail_text = f"This status is required. Please update the status to _{IncidentStatus.POST_MORTEM.label}_ and ensure the Jira post-mortem is *Ready* before closing the incident."
                     action_buttons: list[ButtonElement] = []
                     if has_confluence:
+                        confluence_pm = incident.confluence_postmortem
                         action_buttons.append(
                             ButtonElement(
                                 text="Fill the post-mortem on Confluence",
                                 action_id="open_link",
-                                url=incident.postmortem_for.page_edit_url,
+                                url=confluence_pm.page_edit_url,
                                 style="primary",
                             )
-                            if hasattr(incident, "postmortem_for")
+                            if confluence_pm
                             else ButtonElement(
                                 text="Create the post-mortem",
                                 action_id=str(PostMortemModal.push_action),
@@ -312,10 +313,10 @@ class CloseModal(
                 text=":warning: You're about to close this incident which will archive the Slack channel and execute any post-incident actions.\nPlease review the incident details below."
             ),
         ]
-        if hasattr(incident, "postmortem_for"):
+        if confluence_pm := incident.confluence_postmortem:
             context_elements.append(
                 MarkdownTextObject(
-                    text=f":page_facing_up: Make sure <{incident.postmortem_for.page_url}|your post-mortem> is complete before closing the incident."
+                    text=f":page_facing_up: Make sure <{confluence_pm.page_url}|your post-mortem> is complete before closing the incident."
                 )
             )
         blocks: list[Block] = [

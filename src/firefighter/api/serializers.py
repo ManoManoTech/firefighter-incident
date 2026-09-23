@@ -274,9 +274,8 @@ class IncidentSerializer(TaggitSerializer, serializers.ModelSerializer[Incident]
     @staticmethod
     def get_postmortem_url(obj: Incident) -> str | None:
         """Return the Confluence post-mortem page URL if it exists."""
-        if hasattr(obj, "postmortem_for"):
-            return obj.postmortem_for.page_url
-        return None
+        confluence_pm = obj.confluence_postmortem
+        return confluence_pm.page_url if confluence_pm else None
 
     @staticmethod
     def get_jira_ticket_key(obj: Incident) -> str | None:

@@ -25,7 +25,7 @@ class TestPostMortemModal:
 
     @staticmethod
     def test_p1_p2_shows_auto_creation_message(mocker):
-        incident = SimpleNamespace(id=123, needs_postmortem=True, status=IncidentStatus.OPEN)
+        incident = SimpleNamespace(id=123, confluence_postmortem=None, needs_postmortem=True, status=IncidentStatus.OPEN)
 
         # No existing PMs
         mocker.patch(
@@ -51,7 +51,7 @@ class TestPostMortemModal:
 
     @staticmethod
     def test_p1_p2_mitigated_shows_button(mocker):
-        incident = SimpleNamespace(id=124, needs_postmortem=True, status=IncidentStatus.MITIGATED)
+        incident = SimpleNamespace(id=124, confluence_postmortem=None, needs_postmortem=True, status=IncidentStatus.MITIGATED)
 
         mocker.patch(
             "firefighter.slack.views.modals.postmortem._safe_has_relation",
@@ -73,7 +73,7 @@ class TestPostMortemModal:
 
     @staticmethod
     def test_p3_shows_optional_message_and_button(mocker):
-        incident = SimpleNamespace(id=456, needs_postmortem=False)
+        incident = SimpleNamespace(id=456, confluence_postmortem=None, needs_postmortem=False)
 
         # No existing PMs
         mocker.patch(

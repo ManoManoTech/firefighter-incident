@@ -30,10 +30,10 @@ def postmortem_created_send(sender: Any, incident: Incident, **kwargs: Any) -> N
         return
 
     # Check if at least one post-mortem exists
-    has_confluence = hasattr(incident, "postmortem_for")
+    confluence_pm = incident.confluence_postmortem
     has_jira = hasattr(incident, "jira_postmortem_for")
 
-    if not has_confluence and not has_jira:
+    if confluence_pm is None and not has_jira:
         logger.warning(f"No PostMortem to post for incident {incident}.")
         return
 
@@ -54,11 +54,11 @@ def postmortem_created_send(sender: Any, incident: Incident, **kwargs: Any) -> N
     )
 
     # Add bookmarks for each available post-mortem
-    if has_confluence:
+    if confluence_pm is not None:
         try:
             incident.conversation.add_bookmark(
                 title="Postmortem (Confluence)",
-                link=incident.postmortem_for.page_url,
+                link=confluence_pm.page_url,
                 emoji=":confluence:",
             )
         except SlackApiError as e:
