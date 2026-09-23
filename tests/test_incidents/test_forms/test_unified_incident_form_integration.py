@@ -17,7 +17,6 @@ import pytest
 from firefighter.incidents.forms.unified_incident import UnifiedIncidentForm
 from firefighter.incidents.models.impact import ImpactLevel, ImpactType, LevelChoices
 from firefighter.incidents.signals import create_incident_conversation
-from firefighter.slack.messages.base import SlackMessageStrategy
 from firefighter.slack.views.modals.open import OpenModal
 from firefighter.slack.views.modals.opening.details.unified import (
     OpeningUnifiedModal,
@@ -25,23 +24,24 @@ from firefighter.slack.views.modals.opening.details.unified import (
 )
 
 
-def create_mock_slack_message(incident):
-    """Create a mock SlackMessageIncidentDeclaredAnnouncement with proper attributes."""
-    mock_slack_message_instance = MagicMock()
-    mock_slack_message_instance.strategy = SlackMessageStrategy.APPEND
-    mock_slack_message_instance.id = "test_message"
-    mock_slack_message_instance.incident = incident  # Store the real incident
-    mock_slack_message_instance.incident_update = None  # Declarations don't have incident updates
-    mock_slack_message_instance.get_slack_message_params.return_value = {
-        "text": "Test incident declared",
-        "blocks": []
-    }
-    return mock_slack_message_instance
+@pytest.fixture(autouse=True)
+def _no_slack_channel_creation():
+    """Keep the Slack channel receiver away from the real Slack API.
+
+    These tests only check what reaches the `create_incident_conversation` signal.
+    Without this patch, the real receiver calls `conversations.create` with the
+    configured `SLACK_BOT_TOKEN`: a real token creates an actual channel.
+    """
+    with patch(
+        "firefighter.slack.signals.create_incident_conversation.IncidentChannel.objects.create_incident_channel",
+        return_value=None,
+    ) as mock_create_channel:
+        yield mock_create_channel
 
 
 def setup_jira_mocks(mock_select_impact_used, mock_select_impact_source,
                      mock_get_jira_user, mock_jira_client, mock_prepare_fields,
-                     mock_jira_ticket_model, mock_slack_announcement):
+                     mock_jira_ticket_model):
     """Configure all Jira-related mocks for the unified workflow."""
     # Mock SelectImpactForm - we need to configure BOTH patches
     mock_form_instance = MagicMock()
@@ -69,9 +69,6 @@ def setup_jira_mocks(mock_select_impact_used, mock_select_impact_source,
     mock_jira_ticket.url = "https://jira.example.com/browse/TEST-123"
     mock_jira_ticket.id = "TEST-123"
     mock_jira_ticket_model.objects.create.return_value = mock_jira_ticket
-
-    # Mock SlackMessageIncidentDeclaredAnnouncement
-    mock_slack_announcement.side_effect = create_mock_slack_message
 
 
 @pytest.mark.django_db
@@ -151,12 +148,11 @@ class TestUnifiedIncidentFormCustomFieldsPropagation:
                  patch("firefighter.raid.client.client") as mock_jira_client, \
                  patch("firefighter.raid.forms.prepare_jira_fields") as mock_prepare_fields, \
                  patch("firefighter.raid.forms.set_jira_ticket_watchers_raid"), \
-                 patch("firefighter.raid.models.JiraTicket") as mock_jira_ticket_model, \
-                 patch("firefighter.slack.messages.slack_messages.SlackMessageIncidentDeclaredAnnouncement") as mock_slack_announcement:
+                 patch("firefighter.raid.models.JiraTicket") as mock_jira_ticket_model:
 
                 setup_jira_mocks(mock_select_impact_used, mock_select_impact_source,
                                 mock_get_jira_user, mock_jira_client, mock_prepare_fields,
-                                mock_jira_ticket_model, mock_slack_announcement)
+                                mock_jira_ticket_model)
 
                 # Trigger workflow
                 user = user_factory()
@@ -266,12 +262,11 @@ class TestUnifiedIncidentFormCustomFieldsPropagation:
                  patch("firefighter.raid.client.client") as mock_jira_client, \
                  patch("firefighter.raid.forms.prepare_jira_fields") as mock_prepare_fields, \
                  patch("firefighter.raid.forms.set_jira_ticket_watchers_raid"), \
-                 patch("firefighter.raid.models.JiraTicket") as mock_jira_ticket_model, \
-                 patch("firefighter.slack.messages.slack_messages.SlackMessageIncidentDeclaredAnnouncement") as mock_slack_announcement:
+                 patch("firefighter.raid.models.JiraTicket") as mock_jira_ticket_model:
 
                 setup_jira_mocks(mock_select_impact_used, mock_select_impact_source,
                                 mock_get_jira_user, mock_jira_client, mock_prepare_fields,
-                                mock_jira_ticket_model, mock_slack_announcement)
+                                mock_jira_ticket_model)
 
                 # Trigger workflow
                 user = user_factory()
@@ -388,12 +383,11 @@ class TestUnifiedIncidentFormCustomFieldsPropagation:
                  patch("firefighter.raid.client.client") as mock_jira_client, \
                  patch("firefighter.raid.forms.prepare_jira_fields") as mock_prepare_fields, \
                  patch("firefighter.raid.forms.set_jira_ticket_watchers_raid"), \
-                 patch("firefighter.raid.models.JiraTicket") as mock_jira_ticket_model, \
-                 patch("firefighter.slack.messages.slack_messages.SlackMessageIncidentDeclaredAnnouncement") as mock_slack_announcement:
+                 patch("firefighter.raid.models.JiraTicket") as mock_jira_ticket_model:
 
                 setup_jira_mocks(mock_select_impact_used, mock_select_impact_source,
                                 mock_get_jira_user, mock_jira_client, mock_prepare_fields,
-                                mock_jira_ticket_model, mock_slack_announcement)
+                                mock_jira_ticket_model)
 
                 # Trigger workflow
                 user = user_factory()
@@ -493,12 +487,11 @@ class TestUnifiedIncidentFormCustomFieldsPropagation:
                  patch("firefighter.raid.client.client") as mock_jira_client, \
                  patch("firefighter.raid.forms.prepare_jira_fields") as mock_prepare_fields, \
                  patch("firefighter.raid.forms.set_jira_ticket_watchers_raid"), \
-                 patch("firefighter.raid.models.JiraTicket") as mock_jira_ticket_model, \
-                 patch("firefighter.slack.messages.slack_messages.SlackMessageIncidentDeclaredAnnouncement") as mock_slack_announcement:
+                 patch("firefighter.raid.models.JiraTicket") as mock_jira_ticket_model:
 
                 setup_jira_mocks(mock_select_impact_used, mock_select_impact_source,
                                 mock_get_jira_user, mock_jira_client, mock_prepare_fields,
-                                mock_jira_ticket_model, mock_slack_announcement)
+                                mock_jira_ticket_model)
 
                 # Trigger workflow
                 user = user_factory()
@@ -670,8 +663,7 @@ class TestOpenModalPreservesCustomFieldsContext:
                  patch("firefighter.raid.client.client") as mock_jira_client, \
                  patch("firefighter.raid.forms.prepare_jira_fields") as mock_prepare_fields, \
                  patch("firefighter.raid.forms.set_jira_ticket_watchers_raid"), \
-                 patch("firefighter.raid.models.JiraTicket") as mock_jira_ticket_model, \
-                 patch("firefighter.slack.messages.slack_messages.SlackMessageIncidentDeclaredAnnouncement") as mock_slack_announcement:
+                 patch("firefighter.raid.models.JiraTicket") as mock_jira_ticket_model:
 
                 # Mock SelectImpactForm - we need to configure BOTH patches
                 # They both return the same mock instance
@@ -701,8 +693,6 @@ class TestOpenModalPreservesCustomFieldsContext:
                 mock_jira_ticket.id = "TEST-123"
                 mock_jira_ticket_model.objects.create.return_value = mock_jira_ticket
 
-                # Mock SlackMessageIncidentDeclaredAnnouncement
-                mock_slack_announcement.side_effect = create_mock_slack_message
 
                 user = user_factory()
                 form.trigger_incident_workflow(
