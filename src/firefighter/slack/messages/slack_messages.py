@@ -120,14 +120,14 @@ class SlackMessageIncidentPostMortemReminder(SlackMessageSurface):
         ]
 
         # Add post-mortem editing options based on available services
-        if hasattr(self.incident, "postmortem_for") and self.incident.postmortem_for:
+        if confluence_pm := self.incident.confluence_postmortem:
             blocks.append(
                 SectionBlock(
                     text="2. Edit your post-mortem on Confluence",
                     accessory=ButtonElement(
                         text="Edit post-mortem",
-                        value=self.incident.postmortem_for.page_edit_url,
-                        url=self.incident.postmortem_for.page_edit_url,
+                        value=confluence_pm.page_edit_url,
+                        url=confluence_pm.page_edit_url,
                         action_id="open_link",
                     ),
                 )
@@ -311,9 +311,9 @@ class SlackMessageIncidentDeclaredAnnouncement(SlackMessageSurface):
         """Build post-mortem links block if any PM exists."""
         pm_fields = []
 
-        if hasattr(self.incident, "postmortem_for") and self.incident.postmortem_for:
+        if confluence_pm := self.incident.confluence_postmortem:
             pm_fields.append(
-                f":confluence: <{self.incident.postmortem_for.page_url}|*Confluence Post-mortem*>"
+                f":confluence: <{confluence_pm.page_url}|*Confluence Post-mortem*>"
             )
 
         if (
@@ -694,8 +694,8 @@ class SlackMessageIncidentPostMortemCreated(SlackMessageSurface):
         parts = ["📔 The post-mortem has been created:"]
 
         # Add Confluence link if available
-        if getattr(settings, "ENABLE_CONFLUENCE", False) and hasattr(self.incident, "postmortem_for"):
-            parts.append(f"• Confluence: {self.incident.postmortem_for.page_url}")
+        if confluence_pm := self.incident.confluence_postmortem:
+            parts.append(f"• Confluence: {confluence_pm.page_url}")
 
         # Add Jira link if available
         if hasattr(self.incident, "jira_postmortem_for"):
@@ -761,9 +761,9 @@ class SlackMessageIncidentPostMortemCreatedAnnouncement(SlackMessageSurface):
         ]
 
         # Add Confluence link if available
-        if hasattr(self.incident, "postmortem_for"):
+        if confluence_pm := self.incident.confluence_postmortem:
             fields.append(
-                f":confluence: <{self.incident.postmortem_for.page_url}|*Confluence Post-Mortem*>"
+                f":confluence: <{confluence_pm.page_url}|*Confluence Post-Mortem*>"
             )
 
         # Add Jira link if available
@@ -855,11 +855,11 @@ class SlackMessageIncidentProcessReminder(SlackMessageSurface):
 
         # Add links to post-mortems
         pm_links = []
-        if hasattr(self.incident, "postmortem_for"):
+        if confluence_pm := self.incident.confluence_postmortem:
             pm_links.append(
                 ButtonElement(
                     text="Open Post-Mortem (Confluence)",
-                    url=self.incident.postmortem_for.page_edit_url,
+                    url=confluence_pm.page_edit_url,
                     action_id="open_link",
                 )
             )
@@ -936,9 +936,9 @@ class SlackMessageIncidentProcessReminderAnnouncement(SlackMessageSurface):
         ]
 
         # Add post-mortem links
-        if hasattr(self.incident, "postmortem_for"):
+        if confluence_pm := self.incident.confluence_postmortem:
             fields.append(
-                f":confluence: <{self.incident.postmortem_for.page_url}|*Confluence Post-Mortem*>"
+                f":confluence: <{confluence_pm.page_url}|*Confluence Post-Mortem*>"
             )
 
         if hasattr(self.incident, "jira_postmortem_for"):

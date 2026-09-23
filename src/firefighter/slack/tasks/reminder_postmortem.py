@@ -24,7 +24,7 @@ def publish_postmortem_reminder(
     client: WebClient = DefaultWebClient,
 ) -> None:
     """XXX Should return a message object, not send it."""
-    if not hasattr(incident, "postmortem_for"):
+    if incident.confluence_postmortem is None:
         logger.warning(
             "Trying to send PostMortem reminder for incident #%s with no PostMortem!",
             incident.id,

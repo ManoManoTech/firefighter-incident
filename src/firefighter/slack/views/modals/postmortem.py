@@ -36,18 +36,18 @@ class PostMortemModal(
         blocks: list[Block] = []
 
         # Check existing post-mortems
-        has_confluence = _safe_has_relation(incident, "postmortem_for")
+        confluence_pm = incident.confluence_postmortem
         has_jira = _safe_has_relation(incident, "jira_postmortem_for")
 
-        if has_confluence or has_jira:
+        if confluence_pm or has_jira:
             blocks.append(
                 SectionBlock(text=f"Post-mortem(s) for incident #{incident.id}:")
             )
 
-            if has_confluence:
+            if confluence_pm:
                 blocks.append(
                     SectionBlock(
-                        text=f"• Confluence: <{incident.postmortem_for.page_url}|View page>"
+                        text=f"• Confluence: <{confluence_pm.page_url}|View page>"
                     )
                 )
 

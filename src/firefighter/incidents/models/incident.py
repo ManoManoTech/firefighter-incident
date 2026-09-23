@@ -11,6 +11,7 @@ from django.apps import apps
 from django.conf import settings
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import models, transaction
 from django.urls import reverse
 from django.utils.text import Truncator
@@ -371,6 +372,21 @@ class Incident(models.Model):
             ),
             None,
         )
+
+    @property
+    def confluence_postmortem(self) -> PostMortem | None:
+        """The Confluence post-mortem of this incident, or None.
+
+        Always None when the Confluence app is not installed: its models are still
+        imported (so the `postmortem_for` reverse relation exists) but their tables
+        are not migrated, and reading the relation would query a missing table.
+        """
+        if not apps.is_installed("firefighter.confluence"):
+            return None
+        try:
+            return self.postmortem_for
+        except ObjectDoesNotExist:
+            return None
 
     @property
     def needs_postmortem(self) -> bool:

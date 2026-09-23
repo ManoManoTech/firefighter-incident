@@ -35,10 +35,6 @@ def _incident(priority_value: int, *, with_commander: bool = True) -> Incident:
         environment=Environment.objects.get(value="PRD"),
         mitigated_at=timezone.now() - timedelta(days=6),
     )
-    # The reminders look for a Confluence post-mortem. The Confluence models are importable even
-    # when the app is disabled, so the lookup would hit a table the test database never creates.
-    # Priming the cache with "no related object" stands in for a deployment without Confluence.
-    incident._state.fields_cache["postmortem_for"] = None
     IncidentChannelFactory.create(incident=incident)
     if with_commander:
         user = UserFactory.create()
