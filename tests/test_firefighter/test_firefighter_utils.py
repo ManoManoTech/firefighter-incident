@@ -102,6 +102,21 @@ def test_is_during_office_hours() -> None:
     dt = datetime(2021, 9, 1, 18, 30, tzinfo=UTC)  # Wednesday, 6:30 PM
     assert is_during_office_hours(dt) is False
 
+    dt = datetime(2021, 9, 1, 8, 30, tzinfo=UTC)  # Wednesday, 8:30 AM
+    assert is_during_office_hours(dt) is False
+
+
+def test_is_during_office_hours_excludes_the_weekend() -> None:
+    """A working hour on a non-working day is still out of office hours."""
+    dt = datetime(2021, 9, 4, 10, 0, tzinfo=UTC)  # Saturday, 10:00 AM
+    assert is_during_office_hours(dt) is False
+
+    dt = datetime(2021, 9, 5, 15, 0, tzinfo=UTC)  # Sunday, 3:00 PM
+    assert is_during_office_hours(dt) is False
+
+    dt = datetime(2021, 9, 6, 10, 0, tzinfo=UTC)  # Monday, 10:00 AM
+    assert is_during_office_hours(dt) is True
+
 
 def test_htmx_http_request() -> None:
     htmx_details = HtmxDetails("test")
