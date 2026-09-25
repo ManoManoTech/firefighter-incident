@@ -134,8 +134,8 @@ class RaidJiraClient(JiraClient):
     ) -> Any:
         """Create the issue in `project`, falling back to the default project on a 403.
 
-        A feature team project may not grant "Create Issues" to our Jira account:
-        the ticket is then created in the default project rather than lost.
+        A feature team project may be archived, or not grant "Create Issues" to our
+        Jira account: the ticket is then created in the default project rather than lost.
         """
         try:
             return self.jira.create_issue(
@@ -151,7 +151,7 @@ class RaidJiraClient(JiraClient):
             )
         description += (
             f"\n\n_Automatic creation in the {project} project was refused by Jira "
-            f"(missing permission): created in {RAID_JIRA_PROJECT_KEY} instead._"
+            f"(archived project or missing permission): created in {RAID_JIRA_PROJECT_KEY} instead._"
         )
         return self.jira.create_issue(
             project=RAID_JIRA_PROJECT_KEY, description=description, **issue_fields
