@@ -12,6 +12,7 @@ from slack_sdk.models.blocks.blocks import ActionsBlock, HeaderBlock, SectionBlo
 
 from firefighter.incidents.enums import IncidentStatus
 from firefighter.incidents.factories import IncidentFactory, UserFactory
+from firefighter.incidents.models import Environment, Priority
 from firefighter.incidents.models.incident_update import IncidentUpdate
 from firefighter.slack.factories import IncidentChannelFactory, SlackUserFactory
 from firefighter.slack.messages.base import SlackMessageStrategy
@@ -38,6 +39,25 @@ if TYPE_CHECKING:
     from pytest_mock import MockerFixture
 
     from firefighter.incidents.models.incident import Incident
+
+
+def patch_jira_app_installed(mocker: MockerFixture, *, installed: bool) -> None:
+    """Toggle only the Jira app, leave every other app as actually installed.
+
+    Patching `is_installed` for all apps would also turn on Confluence, whose tables
+    do not exist in the test database: for an incident that needs a post-mortem the
+    transition then aborts the transaction, and the test fails depending on the
+    priority `IncidentFactory` happens to pick.
+    """
+    from django.apps import apps
+
+    real_is_installed = apps.is_installed
+    mocker.patch(
+        "django.apps.apps.is_installed",
+        side_effect=lambda name: installed
+        if name == "firefighter.jira_app"
+        else real_is_installed(name),
+    )
 
 
 def record_consistent_timeline(incident: Incident) -> None:
@@ -283,14 +303,20 @@ class TestReviewTimelineActions:
     def test_accept_pushes_confirmed_timeline_to_jira_when_installed(
         mocker: MockerFixture,
     ) -> None:
-        incident: Incident = IncidentFactory.create(_status=IncidentStatus.MITIGATED)
+        # Pinned to an incident that needs a post-mortem: the transition then runs the
+        # post-mortem handlers too, which is where an over-broad `is_installed` patch broke.
+        incident: Incident = IncidentFactory.create(
+            _status=IncidentStatus.MITIGATED,
+            priority=Priority.objects.get(value=1),
+            environment=Environment.objects.get(value="PRD"),
+        )
         record_consistent_timeline(incident)
         IncidentChannelFactory.create(incident=incident)
         slack_user = SlackUserFactory.create()
         mocker.patch(
             "firefighter.slack.models.conversation.Conversation.send_message_and_save"
         )
-        mocker.patch("django.apps.apps.is_installed", return_value=True)
+        patch_jira_app_installed(mocker, installed=True)
         sync_timeline = mocker.patch(
             "firefighter.jira_app.signals.sync_timeline_to_jira_postmortem"
         )
@@ -313,7 +339,7 @@ class TestReviewTimelineActions:
         mocker.patch(
             "firefighter.slack.models.conversation.Conversation.send_message_and_save"
         )
-        mocker.patch("django.apps.apps.is_installed", return_value=False)
+        patch_jira_app_installed(mocker, installed=False)
         sync_timeline = mocker.patch(
             "firefighter.jira_app.signals.sync_timeline_to_jira_postmortem"
         )
@@ -679,7 +705,7 @@ class TestTimelineCorrectionAfterReview:
         mocker.patch(
             "firefighter.slack.models.conversation.Conversation.send_message_and_save"
         )
-        mocker.patch("django.apps.apps.is_installed", return_value=True)
+        patch_jira_app_installed(mocker, installed=True)
         sync_timeline = mocker.patch(
             "firefighter.jira_app.signals.sync_timeline_to_jira_postmortem"
         )
