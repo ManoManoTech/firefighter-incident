@@ -12,6 +12,12 @@ from slack_sdk.models.blocks.blocks import (
 from firefighter.incidents.factories import IncidentCategoryFactory
 from firefighter.incidents.forms.create_incident import CreateIncidentFormBase
 from firefighter.incidents.models.user import User
+from firefighter.slack.factories import SlackUserFactory
+from firefighter.slack.messages.slack_messages import (
+    SlackMessageIncidentDeclarationFailed,
+)
+from firefighter.slack.models.conversation import Conversation
+from firefighter.slack.models.user import SlackUser
 from firefighter.slack.views.modals.open import OpeningData, OpenModal
 from firefighter.slack.views.modals.opening.set_details import SetIncidentDetails
 
@@ -283,3 +289,64 @@ def test_get_done_review_blocks_normal_includes_only_jira_message(
     assert "Slack channel" not in message_text
     assert ":jira_new:" in message_text
     assert "A Jira ticket will be created" in message_text
+
+
+class _FailingWorkflowForm:
+    """Details form whose workflow always fails, like a Jira refusal would."""
+
+    def __init__(self, data: dict[str, Any]) -> None:
+        self.data = data
+
+    def is_valid(self) -> bool:
+        return True
+
+    def trigger_incident_workflow(self, **_kwargs: Any) -> None:
+        raise RuntimeError("Jira said no")
+
+
+def test_handle_modal_fn_warns_user_when_workflow_fails(user: User, ack: MagicMock) -> None:
+    details_modal = Mock(form_class=_FailingWorkflowForm)
+    body = {"view": {"private_metadata": '{"details_form_data": {}}'}}
+
+    with (
+        patch.object(OpenModal, "get_details_modal_form_class", return_value=details_modal),
+        patch.object(OpenModal, "_warn_user_declaration_failed") as warn,
+    ):
+        OpenModal().handle_modal_fn(ack=ack, body=body, user=user)
+
+    ack.assert_called_once()
+    warn.assert_called_once_with(user)
+
+
+@pytest.mark.django_db
+def test_warn_user_declaration_failed_points_to_support_channel() -> None:
+
+    Conversation.objects.create(name="incident-management-support", channel_id="C0SUPPORT", tag="dev_firefighter")
+    slack_user = SlackUserFactory()
+
+    with patch.object(SlackUser, "send_private_message") as send:
+        OpenModal._warn_user_declaration_failed(slack_user.user)
+
+    message = send.call_args.args[0]
+    assert isinstance(message, SlackMessageIncidentDeclarationFailed)
+    assert "<#C0SUPPORT>" in message.get_text()
+
+
+@pytest.mark.django_db
+def test_warn_user_declaration_failed_without_support_channel_still_informs() -> None:
+
+    assert "incident management team" in SlackMessageIncidentDeclarationFailed().get_text()
+
+
+@pytest.mark.django_db
+def test_warn_user_declaration_failed_without_slack_user_does_not_raise(user: User) -> None:
+    OpenModal._warn_user_declaration_failed(user)
+
+
+@pytest.mark.django_db
+def test_warn_user_declaration_failed_swallows_slack_errors() -> None:
+
+    slack_user = SlackUserFactory()
+
+    with patch.object(SlackUser, "send_private_message", side_effect=RuntimeError("Slack down")):
+        OpenModal._warn_user_declaration_failed(slack_user.user)
