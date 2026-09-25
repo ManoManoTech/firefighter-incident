@@ -450,6 +450,40 @@ class TestRaidJiraClientBasics:
             )
         mock_jira_client.jira.create_issue.assert_called_once()
 
+    @staticmethod
+    def _grant_create(client, *, allowed: bool) -> None:
+        client.jira.my_permissions.return_value = {
+            "permissions": {"CREATE_ISSUES": {"havePermission": allowed}}
+        }
+
+    def test_project_creation_problem_none_for_open_project(self, mock_jira_client):
+        mock_jira_client.jira.project.return_value = Mock(raw={"key": "DATA"})
+        self._grant_create(mock_jira_client, allowed=True)
+
+        assert mock_jira_client.get_project_creation_problem("DATA") is None
+
+    def test_project_creation_problem_archived(self, mock_jira_client):
+        mock_jira_client.jira.project.return_value = Mock(raw={"key": "UP", "archived": True})
+
+        assert mock_jira_client.get_project_creation_problem("UP") == "archived"
+
+    def test_project_creation_problem_not_found(self, mock_jira_client):
+        mock_jira_client.jira.project.side_effect = JIRAError(status_code=404, text="No project")
+
+        assert "not found" in mock_jira_client.get_project_creation_problem("SEC")
+
+    def test_project_creation_problem_no_create_permission(self, mock_jira_client):
+        mock_jira_client.jira.project.return_value = Mock(raw={"key": "PO"})
+        self._grant_create(mock_jira_client, allowed=False)
+
+        assert "not open to issue creation" in mock_jira_client.get_project_creation_problem("PO")
+
+    def test_project_creation_problem_raises_other_errors(self, mock_jira_client):
+        mock_jira_client.jira.project.side_effect = JIRAError(status_code=500, text="Jira down")
+
+        with pytest.raises(JIRAError):
+            mock_jira_client.get_project_creation_problem("DATA")
+
     def test_create_issue_zendesk_field_mapping(self, mock_jira_client):
         """Test that zendesk_ticket_id is correctly mapped to customfield_10895."""
         mock_issue = Mock()

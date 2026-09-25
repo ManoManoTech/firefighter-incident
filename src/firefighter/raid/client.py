@@ -157,6 +157,27 @@ class RaidJiraClient(JiraClient):
             project=RAID_JIRA_PROJECT_KEY, description=description, **issue_fields
         )
 
+    def get_project_creation_problem(self, project_key: str) -> str | None:
+        """Tell why issues cannot be created in a Jira project, or None if they can.
+
+        Catches projects archived or deleted in Jira, and projects our Jira account
+        cannot see or create issues in.
+        """
+        try:
+            project = self.jira.project(project_key)
+        except JIRAError as err:
+            if err.status_code == 404:
+                return "not found (deleted, or not visible to our Jira account)"
+            raise
+        if project.raw.get("archived"):
+            return "archived"
+        permissions = self.jira.my_permissions(
+            projectKey=project_key, permissions="CREATE_ISSUES"
+        )["permissions"]
+        if not permissions["CREATE_ISSUES"]["havePermission"]:
+            return "not open to issue creation for our Jira account"
+        return None
+
     def get_projects(self) -> list[Project]:
         return self.jira.projects()
 
