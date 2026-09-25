@@ -112,17 +112,50 @@ class RaidJiraClient(JiraClient):
                 feature_team.jira_project_key if feature_team else RAID_JIRA_PROJECT_KEY
             )
 
-        issue = self.jira.create_issue(
-            project=project,
-            summary=summary,
-            description=description,
-            issuetype={"name": issuetype},
-            reporter={"id": reporter},
-            customfield_11064={"value": priority_value},
-            labels=labels,
+        issue_fields: dict[str, Any] = {
+            "summary": summary,
+            "issuetype": {"name": issuetype},
+            "reporter": {"id": reporter},
+            "customfield_11064": {"value": priority_value},
+            "labels": labels,
             **extra_args,
+        }
+        issue = self._create_issue_with_fallback(
+            project, description, suggested_team_routing, issue_fields
         )
         return self._jira_object(issue.raw)
+
+    def _create_issue_with_fallback(
+        self,
+        project: str,
+        description: str,
+        suggested_team_routing: str | None,
+        issue_fields: dict[str, Any],
+    ) -> Any:
+        """Create the issue in `project`, falling back to the default project on a 403.
+
+        A feature team project may not grant "Create Issues" to our Jira account:
+        the ticket is then created in the default project rather than lost.
+        """
+        try:
+            return self.jira.create_issue(
+                project=project, description=description, **issue_fields
+            )
+        except JIRAError as err:
+            if err.status_code != 403 or project == RAID_JIRA_PROJECT_KEY:
+                raise
+            logger.exception(
+                f"Jira refused to create an issue in project {project} "
+                f"(feature team: {suggested_team_routing}), falling back to "
+                f"{RAID_JIRA_PROJECT_KEY}: {err.text}"
+            )
+        description += (
+            f"\n\n_Automatic creation in the {project} project was refused by Jira "
+            f"(missing permission): created in {RAID_JIRA_PROJECT_KEY} instead._"
+        )
+        return self.jira.create_issue(
+            project=RAID_JIRA_PROJECT_KEY, description=description, **issue_fields
+        )
 
     def get_projects(self) -> list[Project]:
         return self.jira.projects()
