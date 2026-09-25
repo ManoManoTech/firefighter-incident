@@ -33,6 +33,7 @@ from firefighter.slack.messages.base import (
     SlackMessageStrategy,
     SlackMessageSurface,
 )
+from firefighter.slack.models.conversation import Conversation
 from firefighter.slack.models.message import Message
 from firefighter.slack.slack_templating import (
     COMMANDER_ACTION_CLOSURE,
@@ -1243,3 +1244,25 @@ class SlackMessageIncidentDowngradeHint(SlackMessageSurface):
 
     def get_text(self) -> str:
         return f"Incident #{self.incident.id} might not need an incident channel, as it is {self.incident.priority.name}."
+
+
+class SlackMessageIncidentDeclarationFailed(SlackMessageSurface):
+    """Private message sent to the reporter when the incident declaration workflow fails."""
+
+    id = "ff_incident_declaration_failed"
+
+    def __init__(self) -> None:
+        self.support_channel = Conversation.objects.get_or_none(tag="dev_firefighter")
+        super().__init__()
+
+    def get_text(self) -> str:
+        where = (
+            f"in <#{self.support_channel.channel_id}>"
+            if self.support_channel
+            else "to the incident management team"
+        )
+        return (
+            f"{SLACK_APP_EMOJI} :warning: Something went wrong while declaring your incident: "
+            "it may have been only partially created (for example without its Jira ticket). "
+            f"Please leave a message {where} so we can check it."
+        )

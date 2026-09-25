@@ -658,9 +658,25 @@ class OpenModal(SlackModal):
                             workflow_kwargs["response_type"] = data.get("response_type", "critical")
 
                         details_form.trigger_incident_workflow(**workflow_kwargs)
-                except:  # noqa: E722
+                except Exception:
                     logger.exception("Error triggering incident workflow")
-                    # XXX warn the user via DM!
+                    OpenModal._warn_user_declaration_failed(user)
+
+    @staticmethod
+    def _warn_user_declaration_failed(user: User) -> None:
+        """Tell the reporter the declaration failed, so it does not go unnoticed."""
+        from firefighter.slack.messages.slack_messages import (
+            SlackMessageIncidentDeclarationFailed,
+        )
+
+        slack_user = getattr(user, "slack_user", None)
+        if slack_user is None:
+            logger.warning(f"Cannot warn user {user.id} of the failed declaration: no Slack user")
+            return
+        try:
+            slack_user.send_private_message(SlackMessageIncidentDeclarationFailed())
+        except Exception:
+            logger.exception(f"Could not warn user {user.id} of the failed declaration")
 
 # Response type buttons removed - now auto-determined based on priority
 

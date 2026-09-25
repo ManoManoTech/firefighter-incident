@@ -83,7 +83,7 @@ class TestUpdateStatusModal:
 
     @staticmethod
     def test_cannot_close_without_required_key_events(
-        mocker: MockerFixture, priority_factory
+        mocker: MockerFixture, priority_factory, caplog: pytest.LogCaptureFixture
     ) -> None:
         """Test that closing is prevented when required key events are missing.
 
@@ -160,6 +160,11 @@ class TestUpdateStatusModal:
         modal.handle_modal_fn(
             ack=ack, body=submission_copy, incident=incident, user=user
         )
+
+        # A refused closure is an expected user-facing outcome, not an application error
+        refusals = [r for r in caplog.records if "Cannot close incident" in r.getMessage()]
+        assert refusals
+        assert all(r.levelname == "WARNING" for r in refusals)
 
         # Assert that ack was called with errors (may be 1 or 2 calls depending on form validation)
         assert ack.called, "ack should have been called"

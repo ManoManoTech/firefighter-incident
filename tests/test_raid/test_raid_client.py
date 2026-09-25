@@ -8,7 +8,11 @@ import pytest
 from httpx import HTTPError
 from jira.exceptions import JIRAError
 
-from firefighter.raid.client import JiraAttachmentError, RaidJiraClient
+from firefighter.raid.client import (
+    RAID_JIRA_PROJECT_KEY,
+    JiraAttachmentError,
+    RaidJiraClient,
+)
 from firefighter.raid.models import FeatureTeam
 
 
@@ -367,6 +371,118 @@ class TestRaidJiraClientBasics:
                 reporter="test_reporter",
                 priority=1,
             )
+
+    @staticmethod
+    def _issue(key: str) -> Mock:
+        issue = Mock()
+        issue.raw = {
+            "id": "4242",
+            "key": key,
+            "fields": {
+                "summary": "Routed issue",
+                "description": "Routed description",
+                "assignee": None,
+                "reporter": {"accountId": "reporter123"},
+                "issuetype": {"name": "Incident"},
+            },
+        }
+        return issue
+
+    def test_create_issue_falls_back_to_default_project_on_403(
+        self, mock_jira_client, caplog
+    ):
+        """A feature team project refusing creation must not lose the ticket."""
+        mock_jira_client.jira.create_issue.side_effect = [
+            JIRAError(status_code=403, text="You do not have permission to create issues in this project."),
+            self._issue(f"{RAID_JIRA_PROJECT_KEY}-1"),
+        ]
+
+        result = mock_jira_client.create_issue(
+            issuetype="Incident",
+            summary="Routed issue",
+            description="Routed description",
+            assignee=None,
+            reporter="reporter123",
+            priority=5,
+            suggested_team_routing="Customer Activation",
+            project="UP",
+        )
+
+        assert result["key"] == f"{RAID_JIRA_PROJECT_KEY}-1"
+        first_call, second_call = mock_jira_client.jira.create_issue.call_args_list
+        assert first_call.kwargs["project"] == "UP"
+        assert second_call.kwargs["project"] == RAID_JIRA_PROJECT_KEY
+        assert "project was refused by Jira" in second_call.kwargs["description"]
+        assert second_call.kwargs["summary"] == first_call.kwargs["summary"]
+        assert "Jira refused to create an issue in project UP" in caplog.text
+
+    def test_create_issue_does_not_fall_back_when_default_project_refuses(
+        self, mock_jira_client
+    ):
+        """No retry loop when the default project itself refuses creation."""
+        mock_jira_client.jira.create_issue.side_effect = JIRAError(status_code=403, text="Forbidden")
+
+        with pytest.raises(JIRAError):
+            mock_jira_client.create_issue(
+                issuetype="Incident",
+                summary="Issue",
+                description="Description",
+                assignee=None,
+                reporter="reporter123",
+                priority=3,
+                project=RAID_JIRA_PROJECT_KEY,
+            )
+        mock_jira_client.jira.create_issue.assert_called_once()
+
+    def test_create_issue_does_not_fall_back_on_other_errors(self, mock_jira_client):
+        """Only a permission refusal triggers the fallback, not e.g. an invalid field."""
+        mock_jira_client.jira.create_issue.side_effect = JIRAError(status_code=400, text="Field invalid")
+
+        with pytest.raises(JIRAError):
+            mock_jira_client.create_issue(
+                issuetype="Incident",
+                summary="Issue",
+                description="Description",
+                assignee=None,
+                reporter="reporter123",
+                priority=5,
+                project="UP",
+            )
+        mock_jira_client.jira.create_issue.assert_called_once()
+
+    @staticmethod
+    def _grant_create(client, *, allowed: bool) -> None:
+        client.jira.my_permissions.return_value = {
+            "permissions": {"CREATE_ISSUES": {"havePermission": allowed}}
+        }
+
+    def test_project_creation_problem_none_for_open_project(self, mock_jira_client):
+        mock_jira_client.jira.project.return_value = Mock(raw={"key": "DATA"})
+        self._grant_create(mock_jira_client, allowed=True)
+
+        assert mock_jira_client.get_project_creation_problem("DATA") is None
+
+    def test_project_creation_problem_archived(self, mock_jira_client):
+        mock_jira_client.jira.project.return_value = Mock(raw={"key": "UP", "archived": True})
+
+        assert mock_jira_client.get_project_creation_problem("UP") == "archived"
+
+    def test_project_creation_problem_not_found(self, mock_jira_client):
+        mock_jira_client.jira.project.side_effect = JIRAError(status_code=404, text="No project")
+
+        assert "not found" in mock_jira_client.get_project_creation_problem("SEC")
+
+    def test_project_creation_problem_no_create_permission(self, mock_jira_client):
+        mock_jira_client.jira.project.return_value = Mock(raw={"key": "PO"})
+        self._grant_create(mock_jira_client, allowed=False)
+
+        assert "not open to issue creation" in mock_jira_client.get_project_creation_problem("PO")
+
+    def test_project_creation_problem_raises_other_errors(self, mock_jira_client):
+        mock_jira_client.jira.project.side_effect = JIRAError(status_code=500, text="Jira down")
+
+        with pytest.raises(JIRAError):
+            mock_jira_client.get_project_creation_problem("DATA")
 
     def test_create_issue_zendesk_field_mapping(self, mock_jira_client):
         """Test that zendesk_ticket_id is correctly mapped to customfield_10895."""
