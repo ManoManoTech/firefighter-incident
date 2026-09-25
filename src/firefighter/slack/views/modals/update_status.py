@@ -132,7 +132,9 @@ class UpdateStatusModal(ModalForm[UpdateStatusFormSlack]):
                     # Build error message from reasons
                     error_messages = [reason[1] for reason in reasons]
                     error_text = "\n".join([f"• {msg}" for msg in error_messages])
-                    logger.error(
+                    # Expected user-facing refusal, not an application failure: keep it
+                    # out of the error-level alerting.
+                    logger.warning(
                         f"Cannot close incident #{incident.id} via Update Status: {error_text}"
                     )
                     ack(
