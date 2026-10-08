@@ -71,6 +71,17 @@ graph TD
 
 ---
 
+## Downgrade from P1-P3 to P4-P5
+
+Lowering the priority of an incident that has a Slack channel does not close the channel by itself.
+
+1. A public message is posted in the channel, mentioning the Incident Commander (or the author of the downgrade when nobody holds command): the decision is theirs. A non-critical incident usually follows its Jira ticket, without a channel; keeping the channel to coordinate the response is possible, but not the usual process.
+2. To leave Slack, the Commander clicks **Change workflow** (or runs `/incident downgrade`). Only the Commander may confirm it; without a Commander, anyone may.
+3. The incident is marked `ignore`, closed with the `downgrade_workflow` event type, and its channel is archived.
+4. The Jira ticket stays **open**: the incident goes on there. A comment on the ticket says who closed the channel.
+
+---
+
 ## Implementation
 
 See [incident-workflows.md](incident-workflows.md) for technical details on form and signals.

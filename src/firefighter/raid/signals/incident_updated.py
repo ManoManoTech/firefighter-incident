@@ -8,7 +8,7 @@ from django.core.cache import cache
 from django.db.models.signals import post_save
 from django.dispatch.dispatcher import receiver
 
-from firefighter.incidents.enums import IncidentStatus
+from firefighter.incidents.enums import DOWNGRADE_WORKFLOW_EVENT_TYPE, IncidentStatus
 from firefighter.incidents.models.incident import Incident
 from firefighter.incidents.signals import incident_updated
 from firefighter.raid.client import RAID_JIRA_WORKFLOW_NAME, client
@@ -43,6 +43,23 @@ def _set_impact_to_jira_cache(
         f"sync:impact_to_jira:{incident_id}:{field}:{normalize_cache_value(value)}"
     )
     cache.set(cache_key, value=True, timeout=timeout)
+
+
+def _comment_downgrade_workflow(incident: Incident, incident_update: IncidentUpdate) -> None:
+    """Tell the Jira ticket that the incident left Slack and now continues on it."""
+    author = incident_update.created_by.full_name if incident_update.created_by else "Someone"
+    try:
+        client.add_comment(
+            incident.jira_ticket.id,
+            f"{author} closed the Slack channel of incident #{incident.id}: it is no longer "
+            "handled as a critical incident and continues on this ticket.",
+        )
+    except Exception:
+        logger.exception(
+            "Failed to comment the workflow switch on Jira ticket %s for incident #%s",
+            incident.jira_ticket.id,
+            incident.id,
+        )
 
 
 @receiver(signal=incident_updated, sender="update_status")
@@ -88,6 +105,12 @@ def incident_updated_close_ticket_when_mitigated_or_postmortem(
             "Trying to close Jira ticket for incident %s but no Jira ticket found",
             getattr(incident, "id", "unknown"),
         )
+        return
+
+    # Switching to the Jira-ticket workflow closes the incident channel, not the incident:
+    # it goes on, on its Jira ticket. Leave the ticket open and tell its watchers instead.
+    if incident_update.event_type == DOWNGRADE_WORKFLOW_EVENT_TYPE:
+        _comment_downgrade_workflow(incident, incident_update)
         return
 
     # Special case: when Impact moves to INVESTIGATING or MITIGATING, Jira must go

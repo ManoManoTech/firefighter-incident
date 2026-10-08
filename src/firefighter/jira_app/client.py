@@ -70,6 +70,15 @@ class JiraClient:
             options={"headers": settings.FF_HTTP_CLIENT_ADDITIONAL_HEADERS or {}},
         )
 
+    def add_comment(self, issue_id: str | int, body: str) -> None:
+        """Add a comment to a Jira issue, as the FireFighter service account.
+
+        Args:
+            issue_id (str | int): Jira issue id
+            body (str): comment text, in Jira wiki markup
+        """
+        self.jira.add_comment(str(issue_id), body)
+
     def transition_issue_auto(
         self, issue_id: str | int, target_status_name: str, workflow_name: str
     ) -> None:

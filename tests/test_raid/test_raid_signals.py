@@ -7,7 +7,7 @@ from unittest.mock import ANY, Mock, call, patch
 import pytest
 from django.test import override_settings
 
-from firefighter.incidents.enums import IncidentStatus
+from firefighter.incidents.enums import DOWNGRADE_WORKFLOW_EVENT_TYPE, IncidentStatus
 from firefighter.incidents.models.incident_update import IncidentUpdate
 from firefighter.raid.signals.incident_updated import (
     IMPACT_TO_JIRA_STATUS_MAP,
@@ -152,6 +152,79 @@ class TestIncidentUpdatedCloseJiraTicket:
         )
 
         mock_transition.assert_called_once_with(jira_ticket.id, "Closed", ANY)
+
+    @patch("firefighter.raid.signals.incident_updated.client.add_comment")
+    @patch("firefighter.raid.signals.incident_updated.client.transition_issue_auto")
+    def test_keep_jira_ticket_open_when_switching_to_jira_workflow(
+        self,
+        mock_transition: Mock,
+        mock_add_comment: Mock,
+        incident_factory,
+        user_factory,
+        jira_ticket_factory,
+    ) -> None:
+        """Switching to the Jira-ticket workflow closes the channel, not the incident: the ticket stays open."""
+        user = user_factory()
+        incident = incident_factory(created_by=user)
+        jira_ticket = jira_ticket_factory(incident=incident)
+        incident.jira_ticket = jira_ticket
+
+        incident_update = IncidentUpdate(
+            incident=incident,
+            status=IncidentStatus.CLOSED,
+            created_by=user,
+            event_type=DOWNGRADE_WORKFLOW_EVENT_TYPE,
+        )
+
+        incident_updated_close_ticket_when_mitigated_or_postmortem(
+            sender="update_status",
+            incident=incident,
+            incident_update=incident_update,
+            updated_fields=["_status"],
+        )
+
+        mock_transition.assert_not_called()
+        mock_add_comment.assert_called_once_with(jira_ticket.id, ANY)
+        comment = mock_add_comment.call_args.args[1]
+        assert user.full_name in comment
+        assert f"#{incident.id}" in comment
+
+    @patch("firefighter.raid.signals.incident_updated.logger")
+    @patch(
+        "firefighter.raid.signals.incident_updated.client.add_comment",
+        side_effect=Exception("Jira is down"),
+    )
+    @patch("firefighter.raid.signals.incident_updated.client.transition_issue_auto")
+    def test_switching_to_jira_workflow_survives_comment_failure(
+        self,
+        mock_transition: Mock,
+        mock_add_comment: Mock,
+        mock_logger: Mock,
+        incident_factory,
+        jira_ticket_factory,
+    ) -> None:
+        """A Jira error on the comment is logged and never closes the ticket instead."""
+        incident = incident_factory()
+        jira_ticket = jira_ticket_factory(incident=incident)
+        incident.jira_ticket = jira_ticket
+
+        incident_update = IncidentUpdate(
+            incident=incident,
+            status=IncidentStatus.CLOSED,
+            created_by=None,
+            event_type=DOWNGRADE_WORKFLOW_EVENT_TYPE,
+        )
+
+        incident_updated_close_ticket_when_mitigated_or_postmortem(
+            sender="update_status",
+            incident=incident,
+            incident_update=incident_update,
+            updated_fields=["_status"],
+        )
+
+        mock_transition.assert_not_called()
+        assert mock_add_comment.call_args.args[1].startswith("Someone closed")
+        mock_logger.exception.assert_called_once()
 
     @patch("firefighter.raid.signals.incident_updated.client.transition_issue_auto")
     def test_do_not_close_jira_ticket_when_status_not_terminal(
