@@ -27,6 +27,7 @@ if TYPE_CHECKING:
     from firefighter.incidents.models.incident_update import IncidentUpdate
     from firefighter.incidents.models.priority import Priority
     from firefighter.incidents.models.user import User
+    from firefighter.slack.models.user import SlackUser
 logger = logging.getLogger(__name__)
 # pylint: disable=unused-argument
 
@@ -125,30 +126,26 @@ def incident_updated_check_dowmgrade_handler(
     if not (new_priority_is_normal and old_priority_was_critical):
         return
 
+    # The decision to leave the channel belongs to the Commander: mention them, or the author
+    # of the downgrade when nobody holds command. Posted publicly so responders know it is
+    # pending and who owns it.
+    decider: SlackUser | None = None
     try:
         commander_role = (
             incident.roles_set.filter(role_type__slug=COMMANDER_ROLE_SLUG)
             .select_related("user__slack_user")
             .get()
         )
-        slack_user = commander_role.user.slack_user
+        decider = getattr(commander_role.user, "slack_user", None)
     except incident.roles_set.model.DoesNotExist:
-        slack_user = None
+        pass
+    if decider is None and incident_update.created_by is not None:
+        decider = getattr(incident_update.created_by, "slack_user", None)
 
-    if slack_user is None:
-        if (
-            incident_update.created_by is None
-            or not hasattr(incident_update.created_by, "slack_user")
-            or incident_update.created_by.slack_user is None
-        ):
-            return
-        slack_user = incident_update.created_by.slack_user
-
-    incident.conversation.send_message_ephemeral(
-        message=SlackMessageIncidentDowngradeHint(
-            incident=incident, incident_update=incident_update
-        ),
-        user=slack_user,
+    incident.conversation.send_message_and_save(
+        SlackMessageIncidentDowngradeHint(
+            incident=incident, incident_update=incident_update, decider=decider
+        )
     )
 
 

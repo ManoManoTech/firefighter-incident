@@ -59,6 +59,7 @@ if TYPE_CHECKING:
     from firefighter.incidents.models.incident import Incident
     from firefighter.incidents.models.incident_update import IncidentUpdate
     from firefighter.incidents.models.priority import Priority
+    from firefighter.slack.models.user import SlackUser
 
 POSTMORTEM_HELP_URL: str | None = settings.SLACK_POSTMORTEM_HELP_URL
 EMERGENCY_COMMUNICATION_GUIDE_URL: str | None = (
@@ -1199,33 +1200,44 @@ class SlackMessageRoleAssignedToYou(SlackMessageSurface):
 
 
 class SlackMessageIncidentDowngradeHint(SlackMessageSurface):
+    """Public message asking the Incident Commander whether to keep the channel of a downgraded incident."""
+
     id = "ff_incident_downgrade_hint"
 
-    def __init__(self, incident: Incident, incident_update: IncidentUpdate) -> None:
+    def __init__(
+        self,
+        incident: Incident,
+        incident_update: IncidentUpdate,
+        decider: SlackUser | None = None,
+    ) -> None:
         self.incident = incident
         self.incident_update = incident_update
+        self.decider = decider
         super().__init__()
+
+    @property
+    def _decider_mention(self) -> str:
+        return f"<@{self.decider.slack_id}>" if self.decider else "Incident Commander"
 
     def get_blocks(self) -> list[Block]:
         return [
             SectionBlock(
                 text=MarkdownTextObject(
-                    text=f"{SLACK_APP_EMOJI} *Incident #{self.incident.conversation.name}*:"
+                    text=f"{SLACK_APP_EMOJI} *Incident #{self.incident.conversation.name}* is now {self.incident.priority.name}, a non-critical priority."
                 )
             ),
             SectionBlock(
                 text=MarkdownTextObject(
-                    text=f"The incident was updated to a {self.incident.priority.name} priority."
+                    text=(
+                        f"{self._decider_mention}, as Incident Commander the decision is yours. "
+                        "A non-critical incident usually follows its Jira ticket, without a Slack channel. "
+                        "You may keep this channel if it helps coordinate the response, but this is not the usual process for a non-critical incident."
+                    )
                 )
             ),
             SectionBlock(
                 text=MarkdownTextObject(
-                    text="You may choose to use the Jira-ticket based workflow instead of the Slack channel one."
-                )
-            ),
-            SectionBlock(
-                text=MarkdownTextObject(
-                    text="Do to so, click the button. After confirmation, it will close the incident channel, but keep the Jira ticket open."
+                    text="To switch to the Jira-ticket workflow, click the button. After confirmation, it will close this channel and keep the Jira ticket open."
                 ),
                 accessory=ButtonElement(
                     text="Change workflow",
@@ -1236,14 +1248,14 @@ class SlackMessageIncidentDowngradeHint(SlackMessageSurface):
             ContextBlock(
                 elements=[
                     MarkdownTextObject(
-                        text=f":bulb: You can change to a normal workflow with `{settings.SLACK_INCIDENT_COMMAND} downgrade`"
+                        text=f":bulb: You can also switch with `{settings.SLACK_INCIDENT_COMMAND} downgrade`"
                     )
                 ]
             ),
         ]
 
     def get_text(self) -> str:
-        return f"Incident #{self.incident.id} might not need an incident channel, as it is {self.incident.priority.name}."
+        return f"Incident #{self.incident.id} is now {self.incident.priority.name}: {self._decider_mention}, please decide whether to keep this channel or switch to the Jira-ticket workflow."
 
 
 class SlackMessageIncidentDeclarationFailed(SlackMessageSurface):

@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any
 from slack_sdk.models.blocks.blocks import Block, SectionBlock
 from slack_sdk.models.views import View
 
-from firefighter.incidents.enums import IncidentStatus
+from firefighter.incidents.enums import DOWNGRADE_WORKFLOW_EVENT_TYPE, IncidentStatus
 from firefighter.slack.views.modals.base_modal.base import SlackModal
 from firefighter.slack.views.modals.base_modal.mixins import (
     IncidentSelectableModalMixin,
@@ -22,6 +22,17 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
+def can_switch_workflow(incident: Incident, user: User | None) -> bool:
+    """Whether `user` may switch `incident` to the Jira-ticket workflow.
+
+    The decision belongs to the Incident Commander. Without one, anyone may take it.
+    """
+    commander = incident.commander
+    if commander is None:
+        return True
+    return user is not None and commander.user_id == user.id
+
+
 class DowngradeWorkflowModal(
     IncidentSelectableModalMixin,
     SlackModal,
@@ -31,7 +42,7 @@ class DowngradeWorkflowModal(
     update_action: str = "update_modal_downgrade_workflow"
     callback_id: str = "incident_downgrade_workflow"
 
-    def build_modal_fn(self, incident: Incident, **kwargs: Any) -> View:
+    def build_modal_fn(self, incident: Incident, user: User | None, **kwargs: Any) -> View:
         blocks: list[Block] = []
         if hasattr(incident, "jira_ticket") and incident.jira_ticket:
             jira_txt = f":jira_new: <{incident.jira_ticket.url}|*Jira ticket*>"
@@ -44,13 +55,26 @@ class DowngradeWorkflowModal(
                 SectionBlock(text=jira_txt),
             ))
             submit = None
+        elif not can_switch_workflow(incident, user):
+            commander = incident.commander
+            commander_txt = (
+                f"<@{commander.user.slack_user.slack_id}>"
+                if commander and hasattr(commander.user, "slack_user") and commander.user.slack_user
+                else "the Incident Commander"
+            )
+            blocks.append(
+                SectionBlock(
+                    text=f"Only the Incident Commander can switch incident #{incident.id} to the Jira-ticket workflow. Please ask {commander_txt}."
+                )
+            )
+            submit = None
         else:
             blocks.extend((
                 SectionBlock(
                     text=f"By clicking this button you will close incident #{incident.id}."
                 ),
                 SectionBlock(
-                    text=f"It will:\n- Archive the Slack channel #{incident.conversation.name}\n- Ignore the critical incident\n- Keep it as a normal incident, with its {jira_txt}."
+                    text=f"It will:\n- Archive the Slack channel #{incident.conversation.name}\n- Ignore the critical incident\n- Keep it as a normal incident, still open on its {jira_txt}."
                 ),
             ))
             submit = "Mark as regular incident"[:24]
@@ -70,6 +94,15 @@ class DowngradeWorkflowModal(
         # Acknowledge the modal submission immediately (must be within 3 seconds)
         ack()
 
+        # The modal offers no submit button to anyone else; this guards stale or forged views.
+        if not can_switch_workflow(incident, user):
+            logger.warning(
+                "User %s tried to switch incident #%s to the Jira-ticket workflow without being its Commander",
+                user.id,
+                incident.id,
+            )
+            return
+
         # XXX(dugab): error handling
         incident.ignore = True
         incident.save()
@@ -82,6 +115,7 @@ class DowngradeWorkflowModal(
             created_by=user,
             status=IncidentStatus.CLOSED,
             message=f"Incident channel closed - follow the incident on its Jira Ticket{jira_txt}",
+            event_type=DOWNGRADE_WORKFLOW_EVENT_TYPE,
         )
 
     def get_select_title(self) -> str:

@@ -50,3 +50,11 @@ class ClosureReason(models.TextChoices):
     SUPERSEDED = "superseded", "Superseded by another incident"
     EXTERNAL = "external", "External dependency/known issue"
     CANCELLED = "cancelled", "Cancelled - no longer relevant"
+
+
+DOWNGRADE_WORKFLOW_EVENT_TYPE = "downgrade_workflow"
+"""`IncidentUpdate.event_type` of the closure made by switching to the Jira-ticket workflow.
+
+The incident channel is closed but the incident goes on, on its Jira ticket: integrations
+must not treat this closure as the end of the incident.
+"""
