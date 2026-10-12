@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import time
 from functools import cache
 from typing import Any, Never
 
@@ -14,7 +15,13 @@ from django.urls import NoReverseMatch, reverse
 from django.views.decorators.http import require_safe
 from django.views.generic import DetailView
 
+from firefighter.firefighter.tasks import CELERY_HEARTBEAT_CACHE_KEY
+
 logger = logging.getLogger(__name__)
+
+CELERY_HEARTBEAT_MAX_AGE = 5 * 60
+"""Seconds after which the last heartbeat is too old: beat schedules one every
+minute, the margin absorbs beat or worker restarts."""
 
 
 def _check_db() -> bool:
@@ -37,16 +44,25 @@ def _check_redis() -> bool:
 
 
 def _check_celery() -> bool:
-    try:
-        from firefighter.firefighter.celery_client import app as celery_app
+    """Check that a worker recently ran the heartbeat task scheduled by beat.
 
-        inspector = celery_app.control.inspect(timeout=2.0)
-        ping = inspector.ping()
-        if not ping:
-            logger.error("Healthcheck failed: no Celery workers responding!")
-            return False
+    Pinging the workers is not reliable: with the gevent pool, the worker stops
+    answering broadcast commands for good once their idle Redis connection is
+    closed (e.g. by a proxy idle timeout), while it keeps consuming tasks.
+    """
+    try:
+        last_heartbeat = caches["default"].get(CELERY_HEARTBEAT_CACHE_KEY)
     except Exception:
-        logger.exception("Healthcheck failed: can't reach Celery workers!")
+        logger.exception("Healthcheck failed: can't read the Celery heartbeat!")
+        return False
+    if last_heartbeat is None:
+        logger.error("Healthcheck failed: no Celery heartbeat recorded!")
+        return False
+    age = time.time() - last_heartbeat
+    if age > CELERY_HEARTBEAT_MAX_AGE:
+        logger.error(
+            "Healthcheck failed: last Celery heartbeat is %d seconds old!", age
+        )
         return False
     return True
 

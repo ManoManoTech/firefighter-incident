@@ -36,4 +36,14 @@ CELERY_SETTINGS = {
     # https://docs.celeryq.dev/en/stable/userguide/configuration.html#std-setting-broker_connection_retry
     "broker_connection_retry": True,
     "broker_connection_retry_on_startup": True,
+    # https://docs.celeryq.dev/en/stable/userguide/configuration.html#beat-schedule
+    # DatabaseScheduler syncs these entries to the database when beat starts.
+    "beat_schedule": {
+        "celery-heartbeat": {
+            "task": "firefighter.celery_heartbeat",
+            "schedule": 60.0,
+            # Don't pile up heartbeats while no worker is consuming
+            "options": {"expires": 60},
+        },
+    },
 }
