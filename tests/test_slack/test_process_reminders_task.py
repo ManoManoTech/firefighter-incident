@@ -10,6 +10,7 @@ import pytest
 from django.test import override_settings
 from django.utils import timezone
 from django_celery_beat.models import PeriodicTask
+from slack_sdk.errors import SlackApiError
 
 from firefighter.incidents.enums import IncidentStatus
 from firefighter.incidents.factories import IncidentFactory, UserFactory
@@ -31,6 +32,7 @@ from firefighter.slack.messages.slack_messages import (
     SlackMessageIncidentProcessReminder,
     SlackMessageIncidentProcessReminderAnnouncement,
 )
+from firefighter.slack.models.conversation import ConversationStatus
 from firefighter.slack.tasks.send_postmortem_reminders import send_postmortem_reminders
 
 if TYPE_CHECKING:
@@ -396,3 +398,33 @@ class TestResilience:
 
         assert incident.id in _reminded_incidents(mock_send)
         assert "Failed to send process reminder to tech_incidents" in caplog.text
+
+
+@pytest.mark.django_db
+class TestArchivedChannel:
+    def test_skips_incidents_whose_channel_is_archived(self, mock_send):
+        incident = _mitigated_incident()
+        incident.conversation.status = ConversationStatus.ARCHIVED
+        incident.conversation.save()
+
+        send_postmortem_reminders()
+
+        assert incident.id not in _reminded_incidents(mock_send)
+
+    def test_records_a_channel_archived_without_the_event(self, mock_send):
+        incident = _mitigated_incident()
+        mock_send.side_effect = SlackApiError("archived", {"ok": False, "error": "is_archived"})
+
+        send_postmortem_reminders()
+
+        incident.conversation.refresh_from_db()
+        assert incident.conversation.status == ConversationStatus.ARCHIVED
+
+    def test_keeps_the_channel_open_on_other_slack_errors(self, mock_send):
+        incident = _mitigated_incident()
+        mock_send.side_effect = SlackApiError("boom", {"ok": False, "error": "ratelimited"})
+
+        send_postmortem_reminders()
+
+        incident.conversation.refresh_from_db()
+        assert incident.conversation.status != ConversationStatus.ARCHIVED
