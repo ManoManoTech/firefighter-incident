@@ -7,6 +7,7 @@ from unittest.mock import patch
 
 import pytest
 from django.core.cache import caches
+from django_celery_beat.schedulers import ModelEntry
 
 from firefighter.firefighter.celery_client import app as celery_app
 from firefighter.firefighter.tasks import CELERY_HEARTBEAT_CACHE_KEY, celery_heartbeat
@@ -42,6 +43,18 @@ def test_beat_schedules_registered_heartbeat_task() -> None:
 
     assert entry["task"] == celery_heartbeat.name
     assert entry["schedule"] < CELERY_HEARTBEAT_MAX_AGE
+
+
+@pytest.mark.django_db
+def test_beat_sends_heartbeat_with_expiration() -> None:
+    """The entry goes through DatabaseScheduler, which silently drops unknown options."""
+    entry = ModelEntry.from_entry(
+        "celery-heartbeat",
+        app=celery_app,
+        **celery_app.conf.beat_schedule["celery-heartbeat"],
+    )
+
+    assert entry.options["expires"] == 60
 
 
 @pytest.mark.django_db
