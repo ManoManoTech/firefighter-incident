@@ -5,6 +5,7 @@ from __future__ import annotations
 from unittest.mock import MagicMock, patch
 
 import pytest
+from slack_sdk.errors import SlackApiError
 
 from firefighter.incidents.enums import IncidentStatus
 from firefighter.incidents.factories import IncidentFactory, UserFactory
@@ -142,4 +143,16 @@ class TestNotifyOutOfProcessArchive:
         notify_out_of_process_archive(incident.id, HUMAN_ID)
 
         mock_send.assert_not_called()
+        mock_dm.assert_called_once()
+
+    def test_slack_failures_do_not_fail_the_task(self, mock_send, mock_dm):
+        SlackConversationFactory.create(tag="dev_firefighter")
+        incident = _incident_channel().incident
+        SlackUserFactory.create(user=UserFactory.create(), slack_id=HUMAN_ID)
+        mock_send.side_effect = SlackApiError("not_in_channel", {"ok": False})
+        mock_dm.side_effect = SlackApiError("cannot_dm", {"ok": False})
+
+        notify_out_of_process_archive(incident.id, HUMAN_ID)
+
+        mock_send.assert_called_once()
         mock_dm.assert_called_once()

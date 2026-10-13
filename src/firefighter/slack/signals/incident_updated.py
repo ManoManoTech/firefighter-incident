@@ -19,6 +19,10 @@ from firefighter.slack.rules import (
     should_publish_in_general_channel,
     should_publish_in_it_deploy_channel,
 )
+from firefighter.slack.tasks.open_escalated_incident_channel import (
+    needs_escalation_channel,
+    open_escalated_incident_channel,
+)
 
 if TYPE_CHECKING:
     from django.db.models.fields.related_descriptors import ManyRelatedManager
@@ -146,6 +150,32 @@ def incident_updated_check_dowmgrade_handler(
         SlackMessageIncidentDowngradeHint(
             incident=incident, incident_update=incident_update, decider=decider
         )
+    )
+
+
+@receiver(signal=incident_updated, sender="update_status")
+def incident_updated_open_channel_on_escalation_handler(
+    sender: Any,
+    incident: Incident,
+    incident_update: IncidentUpdate,
+    updated_fields: list[str],
+    **kwargs: Any,
+) -> None:
+    """Open the Slack channel of a P4/P5 incident escalated to P1-P3.
+
+    Mirror of the downgrade hint. Covers both IMPACT updates and the Jira priority sync, which
+    goes through the same signal with no author. Deferred to Celery: opening a channel takes
+    several Slack calls, and this signal runs inside the Jira webhook request.
+    """
+    old_priority: Priority | None = kwargs.get("old_priority")
+    if "priority_id" not in updated_fields or old_priority is None:
+        return
+    if old_priority.value <= 3 or not needs_escalation_channel(incident):
+        return
+
+    escalated_by_id = incident_update.created_by_id
+    open_escalated_incident_channel.delay(
+        incident.id, str(escalated_by_id) if escalated_by_id else None
     )
 
 
