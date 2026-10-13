@@ -1278,3 +1278,40 @@ class SlackMessageIncidentDeclarationFailed(SlackMessageSurface):
             "it may have been only partially created (for example without its Jira ticket). "
             f"Please leave a message {where} so we can check it."
         )
+
+
+class SlackMessageIncidentChannelArchivedAlert(SlackMessageSurface):
+    """Posted in the support channel when an incident channel is archived before closure."""
+
+    id = "ff_incident_channel_archived_alert"
+
+    def __init__(self, incident: Incident, archiver_slack_id: str) -> None:
+        self.incident = incident
+        self.archiver_slack_id = archiver_slack_id
+        super().__init__()
+
+    def get_text(self) -> str:
+        return (
+            f":file_cabinet: <@{self.archiver_slack_id}> archived the channel of incident "
+            f"<{self.incident.status_page_url}|#{self.incident.id}> while it is still "
+            f"{self.incident.status.label}. The incident is not closed in IMPACT and its "
+            "reminders stop: unarchive the channel, then close the incident with `/incident close`."
+        )
+
+
+class SlackMessageIncidentChannelArchivedDM(SlackMessageSurface):
+    """Sent to whoever archived an incident channel before the incident was closed."""
+
+    id = "ff_incident_channel_archived_dm"
+
+    def __init__(self, incident: Incident) -> None:
+        self.incident = incident
+        super().__init__()
+
+    def get_text(self) -> str:
+        return (
+            f":file_cabinet: You archived the channel of incident "
+            f"<{self.incident.status_page_url}|#{self.incident.id}>, which is still "
+            f"{self.incident.status.label}: archiving does not close it in IMPACT. "
+            "Ask a Slack admin to unarchive the channel, then close the incident with `/incident close`."
+        )
