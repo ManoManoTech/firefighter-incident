@@ -42,8 +42,9 @@ CELERY_SETTINGS = {
         "celery-heartbeat": {
             "task": "firefighter.celery_heartbeat",
             "schedule": 60.0,
-            # Don't pile up heartbeats while no worker is consuming
-            "options": {"expires": 60},
+            # Don't pile up heartbeats while no worker is consuming. DatabaseScheduler
+            # only reads `expire_seconds` from the options: `expires` is dropped.
+            "options": {"expire_seconds": 60},
         },
     },
 }
