@@ -1315,3 +1315,20 @@ class SlackMessageIncidentChannelArchivedDM(SlackMessageSurface):
             f"{self.incident.status.label}: archiving does not close it in IMPACT. "
             "Ask a Slack admin to unarchive the channel, then close the incident with `/incident close`."
         )
+
+class SlackMessageIncidentEscalatedDM(SlackMessageSurface):
+    """Sent to the declarer (and the escalator) when an escalation opens the incident channel."""
+
+    id = "ff_incident_escalated_dm"
+
+    def __init__(self, incident: Incident) -> None:
+        self.incident = incident
+        super().__init__()
+
+    def get_text(self) -> str:
+        conversation = self.incident.conversation
+        return (
+            f':rotating_light: Incident #{self.incident.id} "{self.incident.title}" was escalated '
+            f"to {self.incident.priority.name}. Its incident channel is now open: "
+            f"<#{conversation.channel_id}> — join it to follow and coordinate the response."
+        )

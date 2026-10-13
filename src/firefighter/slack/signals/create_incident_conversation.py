@@ -68,10 +68,14 @@ def create_incident_slack_conversation(
 
     Kwargs:
         jira_extra_fields (dict): Optional dictionary of customer/seller fields for Jira ticket
+        announce_globally (bool): Post the "declared" announcements in #tech-incidents and
+            #it-deploy. False when the channel is opened for an escalated incident: the
+            escalation itself is already broadcast as an incident update.
 
     """
     # Extract jira_extra_fields from kwargs
     jira_extra_fields = _kwargs.get("jira_extra_fields", {})
+    announce_globally: bool = _kwargs.get("announce_globally", True)
     channel: IncidentChannel | None = IncidentChannel.objects.create_incident_channel(
         incident=incident
     )
@@ -125,7 +129,9 @@ def create_incident_slack_conversation(
     )
 
     # Post in general channel #tech-incidents if needed
-    if should_publish_in_general_channel(incident, incident_update=None):
+    if announce_globally and should_publish_in_general_channel(
+        incident, incident_update=None
+    ):
         announcement_general = SlackMessageIncidentDeclaredAnnouncementGeneral(incident)
 
         tech_incidents_conversation = Conversation.objects.get_or_none(
@@ -150,7 +156,7 @@ def create_incident_slack_conversation(
     incident.conversation.invite_users(users_list)
 
     # Post in #it-deploy if needed
-    if should_publish_in_it_deploy_channel(incident):
+    if announce_globally and should_publish_in_it_deploy_channel(incident):
         announcement_it_deploy = SlackMessageDeployWarning(incident)
         announcement_it_deploy.id = f"{announcement_it_deploy.id}_{incident.id}"
 

@@ -82,6 +82,28 @@ Lowering the priority of an incident that has a Slack channel does not close the
 
 ---
 
+## Escalation from P4-P5 to P1-P3
+
+Raising the priority of a P4/P5 incident, from IMPACT or through the Jira priority sync, opens its Slack channel as if it had been declared critical, provided it is still being handled (Open to Mitigated) and has no channel yet.
+
+1. The escalation is broadcast as an incident update in `#tech-incidents`, like any priority change; the channel adds no "declared" announcement on top.
+2. The channel is created through the same flow as a declaration: responders are invited from the incident category (its Slack user groups and conversations, plus the P1 group and the on-call where applicable), and the usual setup follows (bookmark, roles message, off-hours message).
+3. Whoever escalated the incident from IMPACT is invited too. The Jira sync has no author.
+4. A comment on the Jira ticket links the new channel, and the declarer (and the escalator) get a direct message pointing to it.
+
+The channel is opened by the `slack.open_escalated_incident_channel` Celery task, so the Jira webhook that carries the escalation is not slowed down. Two escalations close together open a single channel.
+
+---
+
+## Archived incident channels
+
+The bot archives an incident channel itself when the incident is closed. A channel archived by someone before that does not close the incident in IMPACT, and the bot cannot unarchive it (Slack refuses it to bot tokens):
+
+- reminders stop for incidents whose channel is archived;
+- the support channel (tag `dev_firefighter`) gets an alert, and whoever archived the channel gets a direct message asking to unarchive it and close the incident with `/incident close`.
+
+---
+
 ## Implementation
 
 See [incident-workflows.md](incident-workflows.md) for technical details on form and signals.
