@@ -77,7 +77,9 @@ class TestIncidentUpdatedCloseJiraTicket:
         p1_priority = priority_factory(value=1, name="P1", needs_postmortem=True)
         prd_env = environment_factory(value="PRD", name="Production")
         incident = incident_factory(
-            created_by=user, priority=p1_priority, environment=prd_env,
+            created_by=user,
+            priority=p1_priority,
+            environment=prd_env,
             _status=IncidentStatus.MITIGATED,
         )
         jira_ticket = jira_ticket_factory(incident=incident)
@@ -249,7 +251,9 @@ class TestIncidentUpdatedCloseJiraTicket:
         Pending resolution → in progress (to avoid webhook bouncing Impact back to OPEN).
         """
         user = user_factory()
-        incident = incident_factory(created_by=user, _status=IncidentStatus.INVESTIGATING)
+        incident = incident_factory(
+            created_by=user, _status=IncidentStatus.INVESTIGATING
+        )
         jira_ticket = jira_ticket_factory(incident=incident)
         incident.jira_ticket = jira_ticket
 
@@ -460,3 +464,59 @@ class TestIncidentUpdatedConcurrentStatusChanges:
         mock_transition.assert_called_once_with(
             incident.jira_ticket.id, "Pending resolution", ANY
         )
+
+
+@pytest.mark.django_db
+class TestComputeMetricsDoesNotResyncJira:
+    """Recomputing metrics must not push the status and priority to Jira again.
+
+    `compute_metrics()` runs on every key event edit and on mitigation: a full
+    save there used to fire the post_save fallbacks, so Jira got the status
+    twice on mitigation (fallback + signal handler).
+    """
+
+    @patch("firefighter.raid.signals.incident_updated.client.update_issue_fields")
+    @patch("firefighter.raid.signals.incident_updated.client.transition_issue_auto")
+    def test_compute_metrics_does_not_push_to_jira(
+        self,
+        mock_transition: Mock,
+        mock_update_fields: Mock,
+        incident_factory,
+        jira_ticket_factory,
+    ) -> None:
+        incident = incident_factory(_status=IncidentStatus.MITIGATED)
+        jira_ticket_factory(incident=incident)
+        updated_at = incident.updated_at
+
+        incident.compute_metrics()
+
+        mock_transition.assert_not_called()
+        mock_update_fields.assert_not_called()
+        incident.refresh_from_db()
+        assert incident.updated_at > updated_at
+
+    @patch("firefighter.raid.signals.incident_updated.client.update_issue_fields")
+    @patch("firefighter.raid.signals.incident_updated.client.transition_issue_auto")
+    def test_mitigation_pushes_status_to_jira_once(
+        self,
+        mock_transition: Mock,
+        mock_update_fields: Mock,
+        incident_factory,
+        jira_ticket_factory,
+        user_factory,
+        priority_factory,
+    ) -> None:
+        incident = incident_factory(
+            _status=IncidentStatus.INVESTIGATING,
+            priority=priority_factory(value=3, needs_postmortem=False),
+        )
+        jira_ticket = jira_ticket_factory(incident=incident)
+
+        incident.create_incident_update(
+            status=IncidentStatus.MITIGATED, created_by=user_factory()
+        )
+
+        mock_transition.assert_called_once_with(
+            jira_ticket.id, "Reporter validation", ANY
+        )
+        mock_update_fields.assert_not_called()
