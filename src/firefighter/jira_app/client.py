@@ -79,6 +79,14 @@ class JiraClient:
         """
         self.jira.add_comment(str(issue_id), body)
 
+    def get_issue_status_name(self, issue_id: str | int) -> str:
+        """Return the name of the current status of a Jira issue.
+
+        Args:
+            issue_id (str | int): Jira issue id
+        """
+        return str(self.jira.issue(str(issue_id), fields="status").fields.status.name)
+
     def transition_issue_auto(
         self, issue_id: str | int, target_status_name: str, workflow_name: str
     ) -> None:

@@ -6,6 +6,7 @@ from unittest.mock import ANY, Mock, call, patch
 
 import pytest
 from django.test import override_settings
+from requests.exceptions import RequestException
 
 from firefighter.incidents.enums import DOWNGRADE_WORKFLOW_EVENT_TYPE, IncidentStatus
 from firefighter.incidents.models.incident_update import IncidentUpdate
@@ -32,7 +33,9 @@ class TestIncidentUpdatedCloseJiraTicket:
         user = user_factory()
         # Create P3 priority (no postmortem needed)
         p3_priority = priority_factory(value=3, name="P3", needs_postmortem=False)
-        incident = incident_factory(created_by=user, priority=p3_priority)
+        incident = incident_factory(
+            created_by=user, priority=p3_priority, _status=IncidentStatus.MITIGATED
+        )
         jira_ticket = jira_ticket_factory(incident=incident)
         incident.jira_ticket = jira_ticket
 
@@ -74,7 +77,8 @@ class TestIncidentUpdatedCloseJiraTicket:
         p1_priority = priority_factory(value=1, name="P1", needs_postmortem=True)
         prd_env = environment_factory(value="PRD", name="Production")
         incident = incident_factory(
-            created_by=user, priority=p1_priority, environment=prd_env
+            created_by=user, priority=p1_priority, environment=prd_env,
+            _status=IncidentStatus.MITIGATED,
         )
         jira_ticket = jira_ticket_factory(incident=incident)
         incident.jira_ticket = jira_ticket
@@ -106,7 +110,7 @@ class TestIncidentUpdatedCloseJiraTicket:
         when the incident reaches CLOSED status.
         """
         user = user_factory()
-        incident = incident_factory(created_by=user)
+        incident = incident_factory(created_by=user, _status=IncidentStatus.POST_MORTEM)
         jira_ticket = jira_ticket_factory(incident=incident)
         incident.jira_ticket = jira_ticket
 
@@ -133,7 +137,7 @@ class TestIncidentUpdatedCloseJiraTicket:
     ) -> None:
         """Test that Jira ticket is closed when incident status changes to CLOSED (direct close)."""
         user = user_factory()
-        incident = incident_factory(created_by=user)
+        incident = incident_factory(created_by=user, _status=IncidentStatus.CLOSED)
         jira_ticket = jira_ticket_factory(incident=incident)
         incident.jira_ticket = jira_ticket
 
@@ -226,9 +230,18 @@ class TestIncidentUpdatedCloseJiraTicket:
         assert mock_add_comment.call_args.args[1].startswith("Someone closed")
         mock_logger.exception.assert_called_once()
 
+    @patch(
+        "firefighter.raid.signals.incident_updated.client.get_issue_status_name",
+        return_value="Incoming",
+    )
     @patch("firefighter.raid.signals.incident_updated.client.transition_issue_auto")
     def test_do_not_close_jira_ticket_when_status_not_terminal(
-        self, mock_transition: Mock, incident_factory, user_factory, jira_ticket_factory
+        self,
+        mock_transition: Mock,
+        mock_status: Mock,
+        incident_factory,
+        user_factory,
+        jira_ticket_factory,
     ) -> None:
         """Test that Jira ticket is NOT closed for non-terminal statuses.
 
@@ -236,7 +249,7 @@ class TestIncidentUpdatedCloseJiraTicket:
         Pending resolution → in progress (to avoid webhook bouncing Impact back to OPEN).
         """
         user = user_factory()
-        incident = incident_factory(created_by=user)
+        incident = incident_factory(created_by=user, _status=IncidentStatus.INVESTIGATING)
         jira_ticket = jira_ticket_factory(incident=incident)
         incident.jira_ticket = jira_ticket
 
@@ -254,6 +267,7 @@ class TestIncidentUpdatedCloseJiraTicket:
             updated_fields=["_status"],
         )
 
+        mock_status.assert_called_once_with(jira_ticket.id)
         # Two-step transition: Pending resolution then in progress
         assert mock_transition.call_count == 2
         mock_transition.assert_has_calls(
@@ -322,3 +336,127 @@ class TestIncidentUpdatedCloseJiraTicket:
 
         # Verify a warning was logged
         mock_logger.warning.assert_called_once()
+
+
+@pytest.mark.django_db
+class TestIncidentUpdatedConcurrentStatusChanges:
+    """Status changes made in quick succession must not move the Jira ticket backwards.
+
+    E.g. INVESTIGATING -> MITIGATING -> MITIGATED within seconds, each synced
+    by a different pod: the outdated sync must stop once the incident moved on.
+    """
+
+    @pytest.fixture
+    def make_incident(self, incident_factory, jira_ticket_factory):
+        def _make(status: IncidentStatus):
+            incident = incident_factory(_status=status)
+            incident.jira_ticket = jira_ticket_factory(incident=incident)
+            return incident
+
+        return _make
+
+    @staticmethod
+    def _run(incident, status: IncidentStatus) -> None:
+        incident_updated_close_ticket_when_mitigated_or_postmortem(
+            sender="update_status",
+            incident=incident,
+            incident_update=IncidentUpdate(incident=incident, status=status),
+            updated_fields=["_status"],
+        )
+
+    @patch("firefighter.raid.signals.incident_updated.client.get_issue_status_name")
+    @patch("firefighter.raid.signals.incident_updated.client.transition_issue_auto")
+    def test_skip_two_steps_when_incident_moved_on(
+        self, mock_transition: Mock, mock_status: Mock, make_incident
+    ) -> None:
+        incident = make_incident(IncidentStatus.MITIGATED)
+
+        self._run(incident, IncidentStatus.MITIGATING)
+
+        mock_status.assert_not_called()
+        mock_transition.assert_not_called()
+
+    @patch("firefighter.raid.signals.incident_updated.client.transition_issue_auto")
+    def test_skip_target_transition_when_incident_moved_on(
+        self, mock_transition: Mock, make_incident
+    ) -> None:
+        incident = make_incident(IncidentStatus.CLOSED)
+
+        self._run(incident, IncidentStatus.MITIGATED)
+
+        mock_transition.assert_not_called()
+
+    @patch(
+        "firefighter.raid.signals.incident_updated.client.get_issue_status_name",
+        return_value="in progress",
+    )
+    @patch("firefighter.raid.signals.incident_updated.client.transition_issue_auto")
+    def test_no_round_trip_when_ticket_already_in_progress(
+        self, mock_transition: Mock, mock_status: Mock, make_incident
+    ) -> None:
+        incident = make_incident(IncidentStatus.MITIGATING)
+
+        self._run(incident, IncidentStatus.MITIGATING)
+        mock_status.assert_called_once_with(incident.jira_ticket.id)
+
+        mock_transition.assert_not_called()
+
+    @patch(
+        "firefighter.raid.signals.incident_updated.client.get_issue_status_name",
+        side_effect=RequestException("Jira down"),
+    )
+    @patch("firefighter.raid.signals.incident_updated.client.transition_issue_auto")
+    def test_two_steps_applied_when_ticket_status_unreadable(
+        self, mock_transition: Mock, mock_status: Mock, make_incident
+    ) -> None:
+        incident = make_incident(IncidentStatus.INVESTIGATING)
+
+        self._run(incident, IncidentStatus.INVESTIGATING)
+        mock_status.assert_called_once_with(incident.jira_ticket.id)
+
+        assert [c.args[1] for c in mock_transition.call_args_list] == [
+            "Pending resolution",
+            "in progress",
+        ]
+
+    @patch(
+        "firefighter.raid.signals.incident_updated.client.get_issue_status_name",
+        return_value="Incoming",
+    )
+    @patch("firefighter.raid.signals.incident_updated.client.transition_issue_auto")
+    def test_stop_after_failed_step(
+        self, mock_transition: Mock, mock_status: Mock, make_incident
+    ) -> None:
+        incident = make_incident(IncidentStatus.MITIGATING)
+        mock_transition.side_effect = RuntimeError("Invalid transition name")
+
+        self._run(incident, IncidentStatus.MITIGATING)
+        mock_status.assert_called_once_with(incident.jira_ticket.id)
+
+        mock_transition.assert_called_once_with(
+            incident.jira_ticket.id, "Pending resolution", ANY
+        )
+
+    @patch(
+        "firefighter.raid.signals.incident_updated.client.get_issue_status_name",
+        return_value="Incoming",
+    )
+    @patch("firefighter.raid.signals.incident_updated.client.transition_issue_auto")
+    def test_stop_between_steps_when_incident_moved_on(
+        self, mock_transition: Mock, mock_status: Mock, make_incident
+    ) -> None:
+        incident = make_incident(IncidentStatus.MITIGATING)
+
+        def _incident_mitigated_meanwhile(*_args: object) -> None:
+            type(incident).objects.filter(pk=incident.pk).update(
+                _status=IncidentStatus.MITIGATED
+            )
+
+        mock_transition.side_effect = _incident_mitigated_meanwhile
+
+        self._run(incident, IncidentStatus.MITIGATING)
+        mock_status.assert_called_once_with(incident.jira_ticket.id)
+
+        mock_transition.assert_called_once_with(
+            incident.jira_ticket.id, "Pending resolution", ANY
+        )
