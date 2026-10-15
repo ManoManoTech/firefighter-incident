@@ -178,3 +178,22 @@ class TestCreateIncidentSlackConversationResilience:
         new_channel.send_message_and_save.assert_called_once()
         tech_conv.send_message_and_save.assert_called_once()
         it_deploy_conv.send_message_and_save.assert_called_once()
+
+
+@pytest.mark.django_db
+def test_escalation_channel_skips_the_declared_announcements(
+    mocker: MockerFixture,
+) -> None:
+    """An escalation is already broadcast as an update: no "declared" announcement on top."""
+    incident, _ = _build_incident_with_channel()
+    mocker.patch.object(incident, "build_invite_list", return_value=[])
+    mocker.patch.object(incident.conversation, "invite_users")
+    tech_conv = MagicMock()
+    it_deploy_conv = MagicMock()
+    _patch_handler_dependencies(mocker, tech_conv=tech_conv, it_deploy_conv=it_deploy_conv)
+
+    create_incident_slack_conversation(incident=incident, announce_globally=False)
+
+    tech_conv.send_message_and_save.assert_not_called()
+    it_deploy_conv.send_message_and_save.assert_not_called()
+    incident.conversation.invite_users.assert_called_once()

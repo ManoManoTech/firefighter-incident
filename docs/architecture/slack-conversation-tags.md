@@ -118,9 +118,11 @@ Partner-specific alert channels based on reporter email domain.
 **When used**:
 - Error messages and support links in Slack messages
 - Help links in modals and messages
+- Alert when an incident channel is archived before the incident is closed
 
 **Code references**:
 - `slack/slack_templating.py:76` - Support links
+- `slack/tasks/notify_out_of_process_archive.py` - Archived channel alert
 
 ## Configuration Guide
 

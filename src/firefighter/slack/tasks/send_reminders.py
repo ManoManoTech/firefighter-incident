@@ -14,6 +14,7 @@ from firefighter.incidents.enums import IncidentStatus
 from firefighter.incidents.models.incident import Incident
 from firefighter.incidents.models.incident_update import IncidentUpdate
 from firefighter.slack.models import IncidentChannel
+from firefighter.slack.models.conversation import ConversationStatus
 from firefighter.slack.models.user import SlackUser
 from firefighter.slack.tasks.send_message import send_message
 
@@ -74,11 +75,16 @@ def send_reminders() -> None:
         return
     # Get all incidents that have reminders (not Gameday, not resolved) and are not ignored
     # Only P1-P3 have Slack conversations, so we filter for priority <= 3
-    opened_incidents = Incident.objects.filter(
-        _status__lt=IncidentStatus.POST_MORTEM.value,
-        priority__value__lte=3,
-        ignore=False,
-    ).select_related("conversation")
+    # Nothing can be posted in an archived channel: Slack answers `is_archived`.
+    opened_incidents = (
+        Incident.objects.filter(
+            _status__lt=IncidentStatus.POST_MORTEM.value,
+            priority__value__lte=3,
+            ignore=False,
+        )
+        .exclude(conversation___status=ConversationStatus.ARCHIVED)
+        .select_related("conversation")
+    )
 
     list_fn = []
 

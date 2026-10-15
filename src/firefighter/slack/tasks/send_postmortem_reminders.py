@@ -21,11 +21,12 @@ from celery import shared_task
 from django.conf import settings
 from django.db.models import DateTimeField, ExpressionWrapper, F, Q
 from django.utils import timezone
+from slack_sdk.errors import SlackApiError
 
 from firefighter.firefighter.utils import is_during_office_hours
 from firefighter.incidents.enums import IncidentStatus
 from firefighter.incidents.models.incident import Incident
-from firefighter.slack.models.conversation import Conversation
+from firefighter.slack.models.conversation import Conversation, ConversationStatus
 from firefighter.slack.rules import should_publish_pm_in_general_channel
 
 if TYPE_CHECKING:
@@ -125,6 +126,8 @@ def send_postmortem_reminders() -> None:
             ],
             ignore=False,
         )
+        # Nothing can be posted in an archived channel: Slack answers `is_archived`.
+        .exclude(conversation___status=ConversationStatus.ARCHIVED)
         .annotate(
             reminder_due_at=ExpressionWrapper(
                 F("mitigated_at") + F("priority__postmortem_reminder_time"),
@@ -172,6 +175,20 @@ def send_postmortem_reminders() -> None:
                     f"Process reminder for incident #{incident.id} was sent but not saved: "
                     "the repeat cadence cannot be tracked and reminders will be resent"
                 )
+        except SlackApiError as error:
+            if error.response.get("error") == "is_archived":
+                # Archived without us receiving the channel_archive event: record it, so the
+                # next runs skip this incident instead of failing again.
+                incident.conversation.status = ConversationStatus.ARCHIVED
+                incident.conversation.save(update_fields=["_status"])
+                logger.info(
+                    f"Incident #{incident.id} channel is archived, no more process reminders"
+                )
+            else:
+                logger.exception(
+                    f"Failed to send process reminder to incident #{incident.id} channel"
+                )
+            continue
         except Exception:
             logger.exception(
                 f"Failed to send process reminder to incident #{incident.id} channel"
