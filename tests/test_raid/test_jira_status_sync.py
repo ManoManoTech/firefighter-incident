@@ -128,6 +128,10 @@ def test_signal_transitions_non_close_status(mocker) -> None:
         needs_postmortem=False,
     )
     incident_update = SimpleNamespace(status=IncidentStatus.MITIGATING, event_type=None)
+    mocker.patch(
+        "firefighter.raid.signals.incident_updated.client.get_issue_status_name",
+        return_value="Incoming",
+    )
     mock_transition = mocker.patch(
         "firefighter.raid.signals.incident_updated.client.transition_issue_auto"
     )
@@ -272,6 +276,10 @@ def test_signal_mitigating_runs_two_transitions(mocker) -> None:
         needs_postmortem=False,
     )
     incident_update = SimpleNamespace(status=IncidentStatus.MITIGATING, event_type=None)
+    mocker.patch(
+        "firefighter.raid.signals.incident_updated.client.get_issue_status_name",
+        return_value="Incoming",
+    )
     mock_transition = mocker.patch(
         "firefighter.raid.signals.incident_updated.client.transition_issue_auto"
     )

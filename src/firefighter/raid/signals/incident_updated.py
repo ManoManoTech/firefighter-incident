@@ -7,6 +7,8 @@ from django.conf import settings
 from django.core.cache import cache
 from django.db.models.signals import post_save
 from django.dispatch.dispatcher import receiver
+from jira.exceptions import JIRAError
+from requests.exceptions import RequestException
 
 from firefighter.incidents.enums import DOWNGRADE_WORKFLOW_EVENT_TYPE, IncidentStatus
 from firefighter.incidents.models.incident import Incident
@@ -45,6 +47,30 @@ def _set_impact_to_jira_cache(
     cache.set(cache_key, value=True, timeout=timeout)
 
 
+def _is_stale_status_update(incident: Incident, incident_update: IncidentUpdate) -> bool:
+    """Tell whether the incident has moved to another status since this update.
+
+    Status changes made in quick succession can be synced concurrently (e.g. by
+    two pods). Pushing an outdated status would move the Jira ticket backwards,
+    and the newer update syncs Jira on its own, so the outdated one must stop.
+    """
+    incident_id = getattr(incident, "id", None)
+    if incident_id is None:
+        return False
+    current_status = (
+        Incident.objects.filter(pk=incident_id).values_list("_status", flat=True).first()
+    )
+    if current_status is None or current_status == incident_update.status:
+        return False
+    logger.info(
+        "Skipping Jira transition: incident #%s moved from status %s to %s since this update",
+        incident_id,
+        incident_update.status,
+        current_status,
+    )
+    return True
+
+
 def _comment_downgrade_workflow(incident: Incident, incident_update: IncidentUpdate) -> None:
     """Tell the Jira ticket that the incident left Slack and now continues on it."""
     author = incident_update.created_by.full_name if incident_update.created_by else "Someone"
@@ -60,6 +86,82 @@ def _comment_downgrade_workflow(incident: Incident, incident_update: IncidentUpd
             incident.jira_ticket.id,
             incident.id,
         )
+
+
+def _read_jira_status(incident: Incident) -> str | None:
+    """Return the current status name of the incident's Jira ticket, or None if unreadable."""
+    try:
+        return client.get_issue_status_name(incident.jira_ticket.id)
+    except (JIRAError, RequestException):
+        logger.warning(
+            "Could not read the status of Jira ticket %s for incident #%s",
+            incident.jira_ticket.id,
+            getattr(incident, "id", "unknown"),
+            exc_info=True,
+        )
+        return None
+
+
+def _transition_through_pending_resolution(
+    incident: Incident, incident_update: IncidentUpdate
+) -> None:
+    """Move the Jira ticket to "in progress" through "Pending resolution".
+
+    Cache keys are set for both steps to prevent the Jira→Impact webhook from
+    bouncing Impact back to OPEN on the intermediate hop.
+    """
+    if _is_stale_status_update(incident, incident_update):
+        return
+
+    # Already "in progress" (e.g. INVESTIGATING -> MITIGATING): the two steps
+    # would only take the ticket on a useless round trip through Incoming.
+    if _read_jira_status(incident) == JIRA_STATUS_IN_PROGRESS:
+        logger.info(
+            "Jira ticket %s is already %s, nothing to transition for Impact status %s (incident #%s)",
+            incident.jira_ticket.id,
+            JIRA_STATUS_IN_PROGRESS,
+            incident_update.status.label if incident_update.status else "Unknown",
+            getattr(incident, "id", "unknown"),
+        )
+        return
+
+    steps = (JIRA_STATUS_PENDING_RESOLUTION, JIRA_STATUS_IN_PROGRESS)
+    incident_id = getattr(incident, "id", None)
+    if incident_id is not None:
+        for step in steps:
+            _set_impact_to_jira_cache(incident_id, "status", step)
+
+    for step in steps:
+        # The incident may have moved on while the previous step was running
+        if _is_stale_status_update(incident, incident_update):
+            return
+        try:
+            logger.debug(
+                "Transitioning Jira ticket %s via workflow %s to status %s (incident #%s, impact status %s)",
+                incident.jira_ticket.id,
+                RAID_JIRA_WORKFLOW_NAME,
+                step,
+                getattr(incident, "id", "unknown"),
+                incident_update.status,
+            )
+            client.transition_issue_auto(
+                incident.jira_ticket.id, step, RAID_JIRA_WORKFLOW_NAME
+            )
+        except Exception:
+            # The next step starts from where this one should have led:
+            # applying it anyway could move the ticket backwards.
+            logger.exception(
+                "Failed to transition Jira ticket %s to %s for incident %s; skipping the remaining steps",
+                incident.jira_ticket.id,
+                step,
+                getattr(incident, "id", "unknown"),
+            )
+            return
+    logger.info(
+        "Transitioned Jira ticket %s through Pending resolution -> in progress from Impact status %s",
+        incident.jira_ticket.id,
+        incident_update.status.label if incident_update.status else "Unknown",
+    )
 
 
 @receiver(signal=incident_updated, sender="update_status")
@@ -114,50 +216,9 @@ def incident_updated_close_ticket_when_mitigated_or_postmortem(
         return
 
     # Special case: when Impact moves to INVESTIGATING or MITIGATING, Jira must go
-    # through two steps: "Pending resolution" then "in progress". We also set
-    # cache keys for both steps to prevent the Jira→Impact webhook from bouncing
-    # Impact back to OPEN on the intermediate hop.
+    # through two steps: "Pending resolution" then "in progress".
     if incident_update.status in (IncidentStatus.INVESTIGATING, IncidentStatus.MITIGATING):
-        steps = (JIRA_STATUS_PENDING_RESOLUTION, JIRA_STATUS_IN_PROGRESS)
-        incident_id = getattr(incident, "id", None)
-        if incident_id is not None:
-            for step in steps:
-                _set_impact_to_jira_cache(incident_id, "status", step)
-
-        all_steps_succeeded = True
-        for step in steps:
-            try:
-                logger.debug(
-                    "Transitioning Jira ticket %s via workflow %s to status %s (incident #%s, impact status %s)",
-                    incident.jira_ticket.id,
-                    RAID_JIRA_WORKFLOW_NAME,
-                    step,
-                    getattr(incident, "id", "unknown"),
-                    incident_update.status,
-                )
-                client.transition_issue_auto(
-                    incident.jira_ticket.id, step, RAID_JIRA_WORKFLOW_NAME
-                )
-            except Exception:
-                all_steps_succeeded = False
-                logger.exception(
-                    "Failed to transition Jira ticket %s to %s for incident %s",
-                    incident.jira_ticket.id,
-                    step,
-                    getattr(incident, "id", "unknown"),
-                )
-        if all_steps_succeeded:
-            logger.info(
-                "Transitioned Jira ticket %s through Pending resolution -> in progress from Impact status %s",
-                incident.jira_ticket.id,
-                incident_update.status.label if incident_update.status else "Unknown",
-            )
-        else:
-            logger.warning(
-                "At least one Jira transition failed while moving ticket %s to MITIGATING (incident #%s)",
-                incident.jira_ticket.id,
-                getattr(incident, "id", "unknown"),
-            )
+        _transition_through_pending_resolution(incident, incident_update)
         return
 
     # Decide target Jira status based on Impact status and postmortem requirement.
@@ -183,6 +244,9 @@ def incident_updated_close_ticket_when_mitigated_or_postmortem(
             incident_update.status,
             getattr(incident, "id", "unknown"),
         )
+        return
+
+    if _is_stale_status_update(incident, incident_update):
         return
 
     try:
