@@ -603,7 +603,9 @@ class Incident(models.Model):
                 metric_type=metric_type,
                 defaults={"duration": duration},
             )
-        self.save()
+        # Only bump `updated_at`: a full save would make the post_save fallbacks
+        # push the status and priority to Jira again.
+        self.save(update_fields=["updated_at"])
 
     def build_invite_list(self) -> list[User]:
         """Send a Django Signal to get the list of users to invite from different integrations (Slack, Confluence, PagerDuty...).
