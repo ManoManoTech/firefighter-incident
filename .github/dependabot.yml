@@ -1,20 +1,32 @@
 ---
 version: 2
+
+# All version updates (GitHub Actions + npm) land in a single weekly pull request.
+multi-ecosystem-groups:
+  all-dependencies:
+    schedule:
+      interval: "weekly"
+
 updates:
 
   # Maintain dependencies for GitHub Actions
   - package-ecosystem: "github-actions"
     directory: "/"
-    schedule:
-      interval: "weekly"
+    patterns: ["*"]
+    multi-ecosystem-group: "all-dependencies"
+    # Security updates are not scheduled: batch them in one pull request
+    groups:
+      github-actions-security:
+        applies-to: security-updates
+        patterns: ["*"]
 
   # Maintain dependencies for npm
   - package-ecosystem: "npm"
     directory: "/"
-    schedule:
-      interval: "weekly"
+    patterns: ["*"]
+    multi-ecosystem-group: "all-dependencies"
+    # Security updates are not scheduled: batch them in one pull request
     groups:
-      development-dependencies:
-        dependency-type: "development"
-      production-dependencies:
-        dependency-type: "production"
+      npm-security:
+        applies-to: security-updates
+        patterns: ["*"]
