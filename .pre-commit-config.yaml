@@ -22,7 +22,7 @@ repos:
       - id: fix-byte-order-marker
   # Versions must be kept in sync with lockfile (managed by sync-pre-commit-lock PDM plugin)
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: 'v0.16.4'
+    rev: 'v0.17.1'
     hooks:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix]
@@ -40,7 +40,7 @@ repos:
       - id: djjs
 
   - repo: https://github.com/adamchainz/djade-pre-commit
-    rev: "1.9.0"
+    rev: "1.10.0"
     hooks:
       - id: djade
         args: [--target-version, "4.2"]
