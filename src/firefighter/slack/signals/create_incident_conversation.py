@@ -15,6 +15,7 @@ from slack_sdk.errors import SlackApiError
 from firefighter.incidents.signals import create_incident_conversation
 from firefighter.slack.messages.slack_messages import (
     SlackMessageDeployWarning,
+    SlackMessageIncidentChannelMustBePrivate,
     SlackMessageIncidentDeclaredAnnouncement,
     SlackMessageIncidentDeclaredAnnouncementGeneral,
 )
@@ -92,9 +93,7 @@ def create_incident_slack_conversation(
             SlackUser.objects.add_slack_id_to_user(incident.created_by)
         logger.debug(incident.created_by)
 
-    # Join the channel. We are already in the channel if it is a private channel.
-    if not incident.private:
-        channel.conversations_join()
+    channel.conversations_join()
 
     channel.set_incident_channel_topic()
 
@@ -123,6 +122,16 @@ def create_incident_slack_conversation(
         incident_id=incident.id,
         pin=True,
     )
+
+    # The channel is public even for a private incident: ask for a Slack admin to convert it
+    if incident.private:
+        _safely_send_announcement(
+            channel,
+            SlackMessageIncidentChannelMustBePrivate(incident),
+            context="channel must be private notice",
+            incident_id=incident.id,
+            pin=True,
+        )
 
     # Post in general channel #tech-incidents if needed
     if should_publish_in_general_channel(incident, incident_update=None):

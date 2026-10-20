@@ -58,25 +58,20 @@ class ConversationManager[T: "Conversation"](models.Manager[T]):
         self,
         name: str,
         *,
-        is_private: bool = False,
         client: WebClient = DefaultWebClient,
         **kwargs: Any,
     ) -> T | None:
-        def attempt_creation(name: str, *, is_private: bool) -> SlackResponse | None:
-            try:
-                return client.conversations_create(name=name, is_private=is_private)
-            except SlackApiError:
-                logger.exception(
-                    f"Could not create {'private ' if is_private else ''}channel with name: {name}."
-                )
-                return None
+        """Create a public Slack channel.
 
-        slack_conv = attempt_creation(name, is_private=is_private)
-        if slack_conv is None and is_private:
-            logger.info(
-                f"Retrying to create public Slack channel with name: {name} after failing to create as a private channel."
-            )
-            slack_conv = attempt_creation(name, is_private=False)
+        Channels are never created as private: workspaces commonly restrict private channel
+        creation to Slack admins, and an app cannot be granted admin rights.
+        """
+        slack_conv: SlackResponse | None
+        try:
+            slack_conv = client.conversations_create(name=name)
+        except SlackApiError:
+            logger.exception(f"Could not create channel with name: {name}.")
+            slack_conv = None
 
         if slack_conv is None or not slack_conv.get("ok"):
             logger.error(

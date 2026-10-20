@@ -349,6 +349,34 @@ class SlackMessageIncidentDeclaredAnnouncement(SlackMessageSurface):
         ]
 
 
+class SlackMessageIncidentChannelMustBePrivate(SlackMessageSurface):
+    """Posted in the channel of a private incident, which the app can only create as public."""
+
+    id = "ff_incident_channel_must_be_private"
+    incident: Incident
+
+    def __init__(self, incident: Incident) -> None:
+        self.incident = incident
+        super().__init__()
+
+    def get_text(self) -> str:
+        return f"Sensitive incident category ({self.incident.incident_category.name}): a Slack admin must convert this channel to private."
+
+    def get_blocks(self) -> list[Block]:
+        return [
+            SectionBlock(
+                text=MarkdownTextObject(
+                    text=(
+                        f":lock: *Sensitive incident category: {self.incident.incident_category.name}*\n"
+                        "Only Slack admins can create private channels, so this channel was created as public. "
+                        "*A Slack admin must convert it to private.* "
+                        "Until then, do not share sensitive details here."
+                    )
+                )
+            ),
+        ]
+
+
 class SlackMessageIncidentDeclaredAnnouncementGeneral(SlackMessageSurface):
     id = "ff_general_incident_declared"
     incident: Incident
