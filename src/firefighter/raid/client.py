@@ -16,7 +16,6 @@ from firefighter.raid.models import FeatureTeam
 if TYPE_CHECKING:
     from jira import Project
 
-    from firefighter.jira_app.types import WorkflowBuilderResponse
     from firefighter.raid.types import (
         JiraObject,
     )
@@ -27,7 +26,6 @@ RAID_JIRA_PROJECT_KEY: Final[str] = settings.RAID_JIRA_PROJECT_KEY
 TOOLBOX_URL: Final[str] = settings.RAID_TOOLBOX_URL
 # XXX Do not hardcode this, it should be a setting or fetched from Jira
 RAID_JIRA_WORKFLOW_NAME: Final[str] = "Incident workflow - v2023.03.13"
-TARGET_STATUS_NAME: Final[str] = "Closed"
 
 
 class JiraAttachmentError(Exception):
@@ -216,26 +214,6 @@ class RaidJiraClient(JiraClient):
             except (HTTPError, JIRAError) as err:
                 msg = f"Error while adding attachment to issue: {err}"
                 raise JiraAttachmentError(msg) from err
-
-    def close_issue(
-        self,
-        issue_id: str | int,
-    ) -> None:
-        return self.transition_issue_auto(
-            issue_id, TARGET_STATUS_NAME, RAID_JIRA_WORKFLOW_NAME
-        )
-
-    def _get_project_config_workflow(
-        self, project_key: str = RAID_JIRA_PROJECT_KEY
-    ) -> dict[str, Any]:
-        return self._get_project_config_workflow_base(
-            project_key, RAID_JIRA_WORKFLOW_NAME
-        )
-
-    def _get_project_config_workflow_from_builder(self) -> WorkflowBuilderResponse:
-        return self._get_project_config_workflow_from_builder_base(
-            RAID_JIRA_WORKFLOW_NAME
-        )
 
     @staticmethod
     def _jira_object(issue: dict[str, Any]) -> JiraObject:

@@ -44,11 +44,6 @@ def initial_priority() -> Priority:
     return Priority.objects.get(default=True)
 
 
-def initial_platform() -> str:
-    """Get default platform."""
-    return PlatformChoices.ALL.value
-
-
 class UnifiedIncidentForm(CreateIncidentFormBase):
     """Unified form for all incident types and priorities (P1-P5).
 
@@ -261,9 +256,8 @@ class UnifiedIncidentForm(CreateIncidentFormBase):
 
     def clean(self) -> dict[str, Any]:
         """Custom validation based on response type and impacts."""
-        cleaned_data = super().clean()
-        if cleaned_data is None:
-            cleaned_data = {}
+        super().clean()
+        cleaned_data = self.cleaned_data
 
         # Get response_type from initial data if available
         initial = self.initial or {}

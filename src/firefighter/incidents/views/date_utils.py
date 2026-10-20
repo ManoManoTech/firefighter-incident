@@ -151,18 +151,9 @@ def make_bounds_timezone_aware(
     return lower_bound, upper_bound
 
 
-def make_timezone_aware(lower_bound: datetime) -> datetime:
-    if settings.USE_TZ:
-        tz = timezone.get_current_timezone()
-        lower_bound = timezone.make_aware(lower_bound, tz)
-    return lower_bound
-
-
 def get_biggest_date(a: datetime | None, b: datetime) -> datetime:
     if not a:
         return b
-    if not b:
-        return a
     if a < b:
         return b
     return a

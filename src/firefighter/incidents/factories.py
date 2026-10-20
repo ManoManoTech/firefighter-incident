@@ -56,15 +56,6 @@ class PriorityFactory(DjangoModelFactory[Priority]):
 SeverityFactory = PriorityFactory
 
 
-class EnvironmentFactory(DjangoModelFactory[Environment]):
-    class Meta:
-        model = Environment
-
-    name = Faker("text", max_nb_chars=20)  # type: ignore[no-untyped-call]
-    description = Faker("text", max_nb_chars=50)  # type: ignore[no-untyped-call]
-    order = FuzzyInteger(100, 1000)  # type: ignore[no-untyped-call]
-
-
 class IncidentCategoryFactory(DjangoModelFactory[IncidentCategory]):
     class Meta:
         model = IncidentCategory

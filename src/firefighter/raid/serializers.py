@@ -111,19 +111,6 @@ def _validate_attachment_url(url: str) -> None:
             )
 
 
-class IgnoreEmptyStringListField(serializers.ListField):
-    def to_internal_value(self, data: list[Any] | Any) -> list[str]:
-        # Check if data is a list
-        if not isinstance(data, list):
-            msg = f'Expected a list but got type "{type(data).__name__}".'
-            raise serializers.ValidationError(msg)
-
-        # Filter out any empty string values
-        data = [item for item in data if item != ""]
-
-        return super().to_internal_value(data)
-
-
 def validate_no_spaces(value: str) -> None:
     """Ensure the string does not contain spaces."""
     if " " in value:
