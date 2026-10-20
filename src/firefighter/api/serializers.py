@@ -65,7 +65,7 @@ class GroupedModelSerializer[T: Model](serializers.RelatedField[T, Any, Any]):
 
 
 class GroupedModelSerializerOpenAPI(OpenApiSerializerExtension):  # type: ignore[no-untyped-call]
-    target_class = "api.serializers.GroupedModelSerializer"
+    target_class = "firefighter.api.serializers.GroupedModelSerializer"
     target: GroupedModelSerializer[Any]
 
     def map_serializer(
