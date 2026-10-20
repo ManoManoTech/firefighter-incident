@@ -430,15 +430,12 @@ class JiraClient:
                 logger.debug(f"Ignoring Transition {transition['name']} is initial")
                 continue
 
-            source_id = step_id_to_status_id[transition["source_id"]]
-            target_id = step_id_to_status_id[transition["target_id"]]
+            source_id = step_id_to_status_id.get(transition["source_id"])
+            target_id = step_id_to_status_id.get(transition["target_id"])
 
-            if (
-                source_id not in step_id_to_status_id.values()
-                or target_id not in step_id_to_status_id.values()
-            ):
+            if source_id is None or target_id is None:
                 logger.info(
-                    f"Ignoring Transition {transition['name']} has invalid status: {source_id} and {target_id} not in {step_id_to_status_id}"
+                    f"Ignoring Transition {transition['name']}: unknown step {transition['source_id']} or {transition['target_id']} not in {step_id_to_status_id}"
                 )
                 continue  # Ignore transitions that refer to non-existent statuses
 

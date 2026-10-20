@@ -148,6 +148,43 @@ class TestWorkflowBuilder:
         assert by_source[1]["transition_to_status"][3] == "Abort"
         assert by_source[2]["transition_to_status"][3] == "Abort"
 
+    @staticmethod
+    def test_transition_to_an_unknown_step_is_ignored(
+        caplog: pytest.LogCaptureFixture,
+    ) -> None:
+        def transition(name: str, source: int, target: int) -> dict[str, Any]:
+            return {
+                "id": name,
+                "name": name,
+                "source_id": source,
+                "target_id": target,
+                "action_id": 1,
+                "initial": False,
+                "global_transition": False,
+                "looped_transition": False,
+                "transition_options": [],
+            }
+
+        with caplog.at_level(logging.INFO, logger="firefighter.jira_app.client"):
+            infos = JiraClient._get_transitions(
+                {
+                    "statuses": [
+                        {"id": "1", "name": "Open", "initial": False, "step_id": 1},
+                        {"id": "2", "name": "Done", "initial": False, "step_id": 2},
+                    ],
+                    "transitions": [
+                        transition("Finish", 1, 2),
+                        # Step 99 is not a status of the workflow
+                        transition("Ghost", 1, 99),
+                    ],
+                }
+            )
+
+        by_source = {info["status_id"]: info for info in infos}
+        assert by_source[1]["target_statuses"] == {2}
+        assert "Ghost" not in by_source[1]["transition_to_status"].values()
+        assert "Ignoring Transition Ghost: unknown step 1 or 99" in caplog.text
+
 
 class TestTransitionIssueAuto:
     @staticmethod
