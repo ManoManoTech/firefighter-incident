@@ -58,25 +58,20 @@ class ConversationManager[T: "Conversation"](models.Manager[T]):
         self,
         name: str,
         *,
-        is_private: bool = False,
         client: WebClient = DefaultWebClient,
         **kwargs: Any,
     ) -> T | None:
-        def attempt_creation(name: str, *, is_private: bool) -> SlackResponse | None:
-            try:
-                return client.conversations_create(name=name, is_private=is_private)
-            except SlackApiError:
-                logger.exception(
-                    f"Could not create {'private ' if is_private else ''}channel with name: {name}."
-                )
-                return None
+        """Create a public Slack channel.
 
-        slack_conv = attempt_creation(name, is_private=is_private)
-        if slack_conv is None and is_private:
-            logger.info(
-                f"Retrying to create public Slack channel with name: {name} after failing to create as a private channel."
-            )
-            slack_conv = attempt_creation(name, is_private=False)
+        Channels are never created as private: workspaces commonly restrict private channel
+        creation to Slack admins, and an app cannot be granted admin rights.
+        """
+        slack_conv: SlackResponse | None
+        try:
+            slack_conv = client.conversations_create(name=name)
+        except SlackApiError:
+            logger.exception(f"Could not create channel with name: {name}.")
+            slack_conv = None
 
         if slack_conv is None or not slack_conv.get("ok"):
             logger.error(
@@ -95,36 +90,6 @@ class ConversationManager[T: "Conversation"](models.Manager[T]):
             type=channel_type,
             **kwargs,
         )
-
-    @slack_client
-    def import_channel(
-        self,
-        slack_conversation_id: str,
-        client: WebClient = DefaultWebClient,
-        **kwargs: Any,
-    ) -> Conversation | None:
-        try:
-            slack_conv = client.conversations_info(channel=slack_conversation_id)
-            logger.debug(f"Conversation fetched: {slack_conversation_id}, {slack_conv}")
-        except SlackApiError:
-            logger.exception(f"Could not fetch channel: {slack_conversation_id}.")
-            return None
-
-        if not slack_conv.get("ok"):
-            return None
-
-        (channel_id, channel_name, channel_type, status) = self.parse_slack_response(
-            slack_conv=slack_conv
-        )
-
-        channel, _ = self.update_or_create(
-            defaults={"channel_id": channel_id},
-            name=channel_name,
-            status=status,
-            type=channel_type,
-            **kwargs,
-        )
-        return channel
 
     @staticmethod
     def parse_slack_response(

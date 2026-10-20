@@ -494,3 +494,45 @@ def test_rename_if_needed_error(incident_channel: IncidentChannel) -> None:
 
     result = incident_channel.rename_if_needed(client=mock_client)
     assert result is None
+
+
+@pytest.mark.django_db
+def test_set_incident_channel_topic_truncates_long_topics(
+    incident_channel: IncidentChannel, caplog: pytest.LogCaptureFixture
+) -> None:
+    incident_channel.incident.incident_category.name = "c" * 200
+    mock_client = MagicMock(spec=WebClient)
+    mock_client.conversations_setTopic.return_value = {"ok": True}
+
+    incident_channel.set_incident_channel_topic(client=mock_client)
+
+    topic = mock_client.conversations_setTopic.call_args.kwargs["topic"]
+    assert len(topic) <= 250
+    assert topic.endswith("...")
+    assert "longer than the maximum" in caplog.text
+
+
+@pytest.mark.django_db
+def test_invite_users_warns_and_only_adds_the_invited_members(
+    incident_channel: IncidentChannel,
+    mock_web_client: WebClient,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    invited, refused = UserFactory.create_batch(2)
+    SlackUserFactory.create(user=invited, slack_id="UINVITED01")
+    SlackUserFactory.create(user=refused, slack_id="UREFUSED01")
+
+    def _invite(channel: str, users: list[str]) -> dict[str, bool]:
+        if "UREFUSED01" in users:
+            raise SlackApiError("cant_invite", response={"ok": False})
+        return {"ok": True}
+
+    mock_web_client.conversations_invite.side_effect = _invite
+
+    incident_channel.invite_users([invited, refused], client=mock_web_client)
+
+    assert "Could not invite all users" in caplog.text
+    assert "UREFUSED01" in caplog.text
+    members = set(incident_channel.incident.members.all())
+    assert invited in members
+    assert refused not in members

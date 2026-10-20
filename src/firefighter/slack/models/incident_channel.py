@@ -40,7 +40,6 @@ class IncidentChannelManager(ConversationManager["IncidentChannel"]):
             name=channel_name,
             client=client,
             incident=incident,
-            is_private=incident.private,
             **kwargs,
         )
         return channel
