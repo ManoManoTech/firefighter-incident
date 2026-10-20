@@ -137,22 +137,6 @@ class UpdateStatusForm(forms.Form):
         # For any other status, return None to use the default choices
         return None
 
-    def _set_default_choices(
-        self, status_field: Any, current_status: IncidentStatus, default_choices: Any
-    ) -> None:
-        """Set status field choices to default, ensuring current status is included."""
-        # Convert default_choices to string keys to match Slack form submissions
-        status_field.choices = [
-            (str(choice[0]), choice[1]) for choice in default_choices
-        ]
-        existing_values = {choice[0] for choice in status_field.choices}
-        if str(current_status.value) not in existing_values:
-            # Insert current status at the beginning
-            status_field.choices = [
-                (str(current_status.value), current_status.label),
-                *status_field.choices,
-            ]
-
     @staticmethod
     def requires_closure_reason(
         incident: Incident, target_status: IncidentStatus

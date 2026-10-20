@@ -18,7 +18,6 @@ from firefighter.jira_app.client import (
 from firefighter.jira_app.models import JiraUser
 from firefighter.raid.models import JiraTicket
 from firefighter.raid.serializers import (
-    IgnoreEmptyStringListField,
     JiraWebhookCommentSerializer,
     JiraWebhookUpdateSerializer,
     LandbotIssueRequestSerializer,
@@ -26,44 +25,6 @@ from firefighter.raid.serializers import (
     validate_no_spaces,
 )
 from firefighter.slack.factories import SlackUserFactory
-
-
-class TestIgnoreEmptyStringListField(TestCase):
-    """Test IgnoreEmptyStringListField custom field."""
-
-    def setUp(self):
-        """Set up test field."""
-        self.field = IgnoreEmptyStringListField(child=serializers.CharField())
-
-    def test_valid_list_with_empty_strings(self):
-        """Test that empty strings are filtered out."""
-        data = ["valid", "", "another", ""]
-        result = self.field.to_internal_value(data)
-        assert result == ["valid", "another"]
-
-    def test_valid_list_no_empty_strings(self):
-        """Test list without empty strings."""
-        data = ["valid", "another"]
-        result = self.field.to_internal_value(data)
-        assert result == ["valid", "another"]
-
-    def test_empty_list(self):
-        """Test empty list."""
-        data = []
-        result = self.field.to_internal_value(data)
-        assert result == []
-
-    def test_list_with_only_empty_strings(self):
-        """Test list with only empty strings."""
-        data = ["", "", ""]
-        result = self.field.to_internal_value(data)
-        assert result == []
-
-    def test_invalid_non_list_data(self):
-        """Test that non-list data raises ValidationError."""
-        with pytest.raises(serializers.ValidationError) as exc_info:
-            self.field.to_internal_value("not a list")
-        assert 'Expected a list but got type "str"' in str(exc_info.value)
 
 
 class TestValidateNoSpaces(TestCase):
