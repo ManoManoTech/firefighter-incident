@@ -432,6 +432,21 @@ class TestSendMessageToWatchers:
         assert result is True
         mock_jira_client.get_jira_user_from_jira_id.assert_not_called()
 
+    @patch("firefighter.raid.forms.jira_client")
+    def test_send_message_to_watchers_skips_unmapped_jira_user(self, mock_jira_client):
+        """Watchers with no JiraUser row are skipped without asking Jira for the user."""
+        # Given
+        watchers = [{"accountId": "jira-unknown", "accountType": "atlassian"}]
+        mock_jira_client.get_watchers_from_jira_ticket.return_value = watchers
+        mock_message = Mock()
+
+        # When
+        result = send_message_to_watchers(10001, mock_message)
+
+        # Then
+        assert result is True
+        mock_jira_client.get_jira_user_from_jira_id.assert_not_called()
+
 
 @pytest.mark.django_db
 class TestGetBusinessImpact:

@@ -50,6 +50,18 @@ class TestRaidJiraClientBasics:
         mock_jira_client.jira.projects.assert_called_once()
         assert result == mock_projects
 
+    def test_update_issue_fields(self, mock_jira_client):
+        """Fields, custom ones included, are pushed to the issue fetched by its id."""
+        mock_issue = Mock()
+        mock_jira_client.jira.issue.return_value = mock_issue
+
+        mock_jira_client.update_issue_fields(12345, customfield_11064="seller-42")
+
+        mock_jira_client.jira.issue.assert_called_once_with("12345")
+        mock_issue.update.assert_called_once_with(
+            fields={"customfield_11064": "seller-42"}
+        )
+
     def test_create_issue_basic_success(self, mock_jira_client):
         """Test basic create_issue success."""
         # Mock a JIRA issue response with .raw attribute
