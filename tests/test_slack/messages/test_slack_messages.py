@@ -19,9 +19,6 @@ try:
 except (ImportError, AttributeError):
     PostMortem = None
 
-if not apps.is_installed("firefighter.confluence"):
-    pytest.skip("Confluence app not installed; skipping slack message tests", allow_module_level=True)
-
 
 @pytest.mark.django_db
 class TestSlackMessageIncidentStatusUpdated:
@@ -422,7 +419,7 @@ class TestSlackMessageIncidentDeclaredAnnouncement:
 
     def test_confluence_postmortem_link_displayed_when_present(self) -> None:
         """Test that Confluence post-mortem link is displayed when available."""
-        if PostMortem is None:
+        if PostMortem is None or not apps.is_installed("firefighter.confluence"):
             pytest.skip("Confluence app not installed")
 
         # Create an incident

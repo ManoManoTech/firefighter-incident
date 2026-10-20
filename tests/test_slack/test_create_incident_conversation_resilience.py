@@ -178,3 +178,56 @@ class TestCreateIncidentSlackConversationResilience:
         new_channel.send_message_and_save.assert_called_once()
         tech_conv.send_message_and_save.assert_called_once()
         it_deploy_conv.send_message_and_save.assert_called_once()
+
+
+@pytest.mark.django_db
+class TestCreateIncidentSlackConversationBranches:
+    """Degraded paths that must stop early or only log a warning."""
+
+    @staticmethod
+    def test_missing_channel_id_stops_the_flow(mocker: MockerFixture) -> None:
+        incident, _ = _build_incident_with_channel()
+        new_channel = _patch_handler_dependencies(
+            mocker, tech_conv=None, it_deploy_conv=None
+        )
+        new_channel.channel_id = ""
+
+        assert create_incident_slack_conversation(incident=incident) is None
+
+        new_channel.conversations_join.assert_not_called()
+        new_channel.send_message_and_save.assert_not_called()
+
+    @staticmethod
+    def test_opener_invite_failure_does_not_abort_flow(
+        mocker: MockerFixture, caplog: pytest.LogCaptureFixture
+    ) -> None:
+        incident, _ = _build_incident_with_channel()
+        mocker.patch.object(incident, "build_invite_list", return_value=[])
+        mocker.patch.object(incident.conversation, "invite_users")
+        new_channel = _patch_handler_dependencies(
+            mocker, tech_conv=None, it_deploy_conv=None, publish_general=False, publish_it_deploy=False
+        )
+        new_channel.invite_users.side_effect = SlackApiError(
+            "cant_invite", response={}
+        )
+
+        create_incident_slack_conversation(incident=incident)
+
+        assert "Could not import Slack opener user!" in caplog.text
+        new_channel.send_message_and_save.assert_called_once()
+        incident.conversation.invite_users.assert_called_once()
+
+    @staticmethod
+    def test_missing_announcement_channels_only_warn(
+        mocker: MockerFixture, caplog: pytest.LogCaptureFixture
+    ) -> None:
+        incident, _ = _build_incident_with_channel()
+        mocker.patch.object(incident, "build_invite_list", return_value=[])
+        mocker.patch.object(incident.conversation, "invite_users")
+        _patch_handler_dependencies(mocker, tech_conv=None, it_deploy_conv=None)
+
+        create_incident_slack_conversation(incident=incident)
+
+        assert "Could not find tech_incidents conversation!" in caplog.text
+        assert "Could not find it_deploy conversation!" in caplog.text
+        incident.conversation.invite_users.assert_called_once()

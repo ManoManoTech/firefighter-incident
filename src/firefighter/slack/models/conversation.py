@@ -91,36 +91,6 @@ class ConversationManager[T: "Conversation"](models.Manager[T]):
             **kwargs,
         )
 
-    @slack_client
-    def import_channel(
-        self,
-        slack_conversation_id: str,
-        client: WebClient = DefaultWebClient,
-        **kwargs: Any,
-    ) -> Conversation | None:
-        try:
-            slack_conv = client.conversations_info(channel=slack_conversation_id)
-            logger.debug(f"Conversation fetched: {slack_conversation_id}, {slack_conv}")
-        except SlackApiError:
-            logger.exception(f"Could not fetch channel: {slack_conversation_id}.")
-            return None
-
-        if not slack_conv.get("ok"):
-            return None
-
-        (channel_id, channel_name, channel_type, status) = self.parse_slack_response(
-            slack_conv=slack_conv
-        )
-
-        channel, _ = self.update_or_create(
-            defaults={"channel_id": channel_id},
-            name=channel_name,
-            status=status,
-            type=channel_type,
-            **kwargs,
-        )
-        return channel
-
     @staticmethod
     def parse_slack_response(
         slack_conv: dict[str, Any] | SlackResponse,
