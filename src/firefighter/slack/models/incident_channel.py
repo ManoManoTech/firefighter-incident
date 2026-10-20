@@ -203,7 +203,3 @@ class IncidentChannel(Conversation):
                     exc_info=True,
                 )
         return done
-
-
-class BatchInviteError(SlackApiError):
-    pass

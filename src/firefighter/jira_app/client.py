@@ -47,14 +47,6 @@ class SlackNotificationError(Exception):
     pass
 
 
-class GetWatchersError(Exception):
-    pass
-
-
-class GetReporterError(Exception):
-    pass
-
-
 class JiraClient:
     def __init__(self) -> None:
         self.url = RAID_JIRA_API_URL
@@ -348,28 +340,6 @@ class JiraClient:
             logger.warning("User %s has no email address", jira_account_id)
             raise JiraUserNotFoundError("User not Found: no email address for user")
         return jira_api_user, email
-
-    def _get_project_config_workflow_base(
-        self, project_key: str, workflow_name: str
-    ) -> dict[str, Any]:
-        """This is an undocumented API. Make sure your error handling is robust."""
-        ts_ms = int(time.time() * 1000)
-        # XXX Incident workflow name resolution
-        # XXX Check if INCIDENT is configured the same way, try to get it dynamically
-        workflow_name_url_encoded = urllib.parse.quote_plus(workflow_name)
-
-        get_workflow = f"/rest/projectconfig/latest/workflow?projectKey={project_key}&workflowName={workflow_name_url_encoded}&_={ts_ms}"
-        url = f"{self.jira.server_url}{get_workflow}"
-
-        # XXX Try catch
-        # XXX Override Jira Class / split client and service
-        return cast(
-            "dict[str, Any]",
-            self.jira._session.get(  # noqa: SLF001
-                url,
-                headers=self.jira._options["headers"],  # noqa: SLF001
-            ).json(),
-        )
 
     def _get_project_config_workflow_from_builder_base(
         self, workflow_name: str

@@ -108,8 +108,8 @@ def test_signal_skips_when_event_from_jira(mocker) -> None:
     incident_update = SimpleNamespace(
         status=IncidentStatus.CLOSED, event_type="jira_status_sync"
     )
-    mock_close = mocker.patch(
-        "firefighter.raid.signals.incident_updated.client.close_issue"
+    mock_transition = mocker.patch(
+        "firefighter.raid.signals.incident_updated.client.transition_issue_auto"
     )
     incident_updated_close_ticket_when_mitigated_or_postmortem(
         sender="update_status",
@@ -117,7 +117,7 @@ def test_signal_skips_when_event_from_jira(mocker) -> None:
         incident_update=incident_update,
         updated_fields=["_status"],
     )
-    mock_close.assert_not_called()
+    mock_transition.assert_not_called()
 
 
 @pytest.mark.django_db
