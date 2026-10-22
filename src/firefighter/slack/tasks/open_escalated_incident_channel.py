@@ -106,7 +106,15 @@ def _notify_people_involved(incident: Incident, escalated_by: User | None) -> No
             continue
         try:
             slack_user.send_private_message(SlackMessageIncidentEscalatedDM(incident))
-        except SlackApiError:
-            logger.exception(
-                "Could not DM %s about the escalation of incident #%s", user.id, incident.id
-            )
+        except SlackApiError as e:
+            # The user turned off messages from apps: nothing to fix on our side
+            if e.response.get("error") == "messages_tab_disabled":
+                logger.warning(
+                    "%s has disabled private messages from bots: no DM about the escalation of incident #%s",
+                    user.id,
+                    incident.id,
+                )
+            else:
+                logger.exception(
+                    "Could not DM %s about the escalation of incident #%s", user.id, incident.id
+                )

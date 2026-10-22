@@ -53,9 +53,17 @@ def notify_out_of_process_archive(incident_id: int, archiver_slack_id: str) -> N
         return
     try:
         archiver.send_private_message(SlackMessageIncidentChannelArchivedDM(incident))
-    except SlackApiError:
-        logger.exception(
-            "Could not DM %s about the archived channel of incident #%s",
-            archiver_slack_id,
-            incident.id,
-        )
+    except SlackApiError as e:
+        # The user turned off messages from apps: nothing to fix on our side
+        if e.response.get("error") == "messages_tab_disabled":
+            logger.warning(
+                "%s has disabled private messages from bots: no DM about the archived channel of incident #%s",
+                archiver_slack_id,
+                incident.id,
+            )
+        else:
+            logger.exception(
+                "Could not DM %s about the archived channel of incident #%s",
+                archiver_slack_id,
+                incident.id,
+            )

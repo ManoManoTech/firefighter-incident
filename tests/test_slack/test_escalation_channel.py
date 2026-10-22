@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -241,7 +242,7 @@ class TestOpenEscalatedIncidentChannel:
 
         dm.assert_called_once()
 
-    def test_a_dm_failure_does_not_fail_the_task(self, mock_slack):
+    def test_a_dm_failure_does_not_fail_the_task(self, mock_slack, caplog):
         _, dm = mock_slack
         dm.side_effect = SlackApiError("cannot_dm_bot", {"ok": False})
         incident = _incident()
@@ -249,6 +250,22 @@ class TestOpenEscalatedIncidentChannel:
         open_escalated_incident_channel(incident.id)
 
         dm.assert_called_once()
+        assert [r.levelno for r in caplog.records if "Could not DM" in r.getMessage()] == [
+            logging.ERROR
+        ]
+
+    def test_dms_turned_off_by_the_user_only_warn(self, mock_slack, caplog):
+        _, dm = mock_slack
+        dm.side_effect = SlackApiError(
+            "messages_tab_disabled", {"ok": False, "error": "messages_tab_disabled"}
+        )
+        incident = _incident()
+
+        open_escalated_incident_channel(incident.id)
+
+        dm.assert_called_once()
+        assert "has disabled private messages from bots" in caplog.text
+        assert not [r for r in caplog.records if r.levelno >= logging.ERROR]
 
 
 @pytest.mark.django_db

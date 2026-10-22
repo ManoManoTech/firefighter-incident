@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -156,3 +157,18 @@ class TestNotifyOutOfProcessArchive:
 
         mock_send.assert_called_once()
         mock_dm.assert_called_once()
+
+    @pytest.mark.usefixtures("mock_send")
+    def test_dms_turned_off_by_the_archiver_only_warn(self, mock_dm, caplog):
+        SlackConversationFactory.create(tag="dev_firefighter")
+        incident = _incident_channel().incident
+        SlackUserFactory.create(user=UserFactory.create(), slack_id=HUMAN_ID)
+        mock_dm.side_effect = SlackApiError(
+            "messages_tab_disabled", {"ok": False, "error": "messages_tab_disabled"}
+        )
+
+        notify_out_of_process_archive(incident.id, HUMAN_ID)
+
+        mock_dm.assert_called_once()
+        assert "has disabled private messages from bots" in caplog.text
+        assert not [r for r in caplog.records if r.levelno >= logging.ERROR]
