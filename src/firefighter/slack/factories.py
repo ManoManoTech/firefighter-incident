@@ -77,6 +77,9 @@ class IncidentChannelFactory(SlackConversationFactory):
         model = IncidentChannel
 
     incident = SubFactory(IncidentFactory)  # type: ignore[no-untyped-call]
+    # Open, not random: reminders skip archived channels, so a randomly archived channel
+    # would make any test relying on a reminder flaky.
+    _status = FuzzyChoice([ConversationStatus.OPENED])  # type: ignore[no-untyped-call]
 
 
 class MessageFactory(DjangoModelFactory):  # type: ignore[type-arg]
