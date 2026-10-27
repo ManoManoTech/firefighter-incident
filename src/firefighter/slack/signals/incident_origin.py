@@ -16,7 +16,10 @@ from firefighter.slack.messages.slack_messages import (
     SlackMessageIncidentOriginUpdated,
     SlackMessagePartnerCreated,
 )
-from firefighter.slack.models.conversation import Conversation, ConversationStatus
+from firefighter.slack.models.conversation import (
+    Conversation,
+    incident_has_writable_channel,
+)
 
 if TYPE_CHECKING:
     from firefighter.incidents.models.incident import Incident
@@ -31,10 +34,10 @@ def incident_origin_updated_handler(
     sender: Any, incident: Incident, user: User | None = None, **kwargs: Any
 ) -> None:
     """Show the new origin to everyone in the incident channel."""
-    conversation = getattr(incident, "conversation", None)
     # Nothing can be posted in an archived channel: Slack answers `is_archived`
-    if conversation is None or conversation.status == ConversationStatus.ARCHIVED:
+    if not incident_has_writable_channel(incident):
         return
+    conversation = incident.conversation
     slack_user = getattr(user, "slack_user", None) if user else None
     try:
         conversation.send_message_and_save(
