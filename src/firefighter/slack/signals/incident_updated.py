@@ -14,7 +14,11 @@ from firefighter.slack.messages.slack_messages import (
     SlackMessageIncidentRolesUpdated,
     SlackMessageIncidentStatusUpdated,
 )
-from firefighter.slack.models.conversation import Conversation, ConversationType
+from firefighter.slack.models.conversation import (
+    Conversation,
+    ConversationType,
+    incident_has_writable_channel,
+)
 from firefighter.slack.rules import (
     should_publish_in_general_channel,
     should_publish_in_it_deploy_channel,
@@ -49,9 +53,11 @@ def incident_updated_channel_maintenance_handler(
     Registered on its own so a Slack failure here is contained by
     Signal.send_robust() instead of suppressing the publications below.
     """
-    # Skip Slack operations for incidents without channels (e.g., P4-P5)
-    if not hasattr(incident, "conversation"):
-        logger.debug(f"Skipping Slack channel update for incident {incident.id} (no conversation)")
+    # Skip incidents without a channel (e.g., P4-P5) or whose channel is archived
+    if not incident_has_writable_channel(incident):
+        logger.debug(
+            f"Skipping Slack channel update for incident {incident.id} (no writable channel)"
+        )
         return
 
     incident.conversation.rename_if_needed()
@@ -109,8 +115,8 @@ def incident_updated_check_dowmgrade_handler(
     updated_fields: list[str],
     **kwargs: Any,
 ) -> None:
-    # Skip Slack operations for incidents without channels (e.g., P4-P5)
-    if not hasattr(incident, "conversation"):
+    # Skip incidents without a channel (e.g., P4-P5) or whose channel is archived
+    if not incident_has_writable_channel(incident):
         return
 
     # Only show downgrade hint when downgrading from critical (P1/P2/P3) to normal (P4/P5)
@@ -187,8 +193,8 @@ def incident_updated_update_roles_handler(
     updated_fields: list[str],
     **kwargs: Any,
 ) -> None:
-    # Skip Slack operations for incidents without channels (e.g., P4-P5)
-    if not hasattr(incident, "conversation"):
+    # Skip incidents without a channel (e.g., P4-P5) or whose channel is archived
+    if not incident_has_writable_channel(incident):
         return
 
     # Publish a message to the conversation
@@ -223,8 +229,8 @@ def incident_updated_reinvite_handler(
     updated_fields: list[str],
     **kwargs: Any,
 ) -> None:
-    # Skip Slack operations for incidents without channels (e.g., P4-P5)
-    if not hasattr(incident, "conversation"):
+    # Skip incidents without a channel (e.g., P4-P5) or whose channel is archived
+    if not incident_has_writable_channel(incident):
         return
 
     if incident.conversation.type == ConversationType.PRIVATE_CHANNEL:
@@ -252,9 +258,11 @@ def incident_key_events_updated_handler(
 ) -> None:
     logger.info("Received incident_key_events_updated signal")
 
-    # Skip Slack operations for incidents without channels (e.g., P4-P5)
-    if not hasattr(incident, "conversation"):
-        logger.debug(f"Skipping key events update for incident {incident.id} (no conversation)")
+    # Skip incidents without a channel (e.g., P4-P5) or whose channel is archived
+    if not incident_has_writable_channel(incident):
+        logger.debug(
+            f"Skipping key events update for incident {incident.id} (no writable channel)"
+        )
         return
 
     # Skip key events for incidents closed directly
@@ -276,9 +284,11 @@ def publish_incident_channel_update(
     status_changed: bool = False,
 ) -> None:
     """Publishes the status update and the Key Events form in the incident channel."""
-    # Skip Slack operations for incidents without channels (e.g., P4-P5)
-    if not hasattr(incident, "conversation"):
-        logger.debug(f"Skipping status update publication for incident {incident.id} (no conversation)")
+    # Skip incidents without a channel (e.g., P4-P5) or whose channel is archived
+    if not incident_has_writable_channel(incident):
+        logger.debug(
+            f"Skipping status update publication for incident {incident.id} (no writable channel)"
+        )
         return
 
     message = SlackMessageIncidentStatusUpdated(

@@ -25,6 +25,7 @@ if TYPE_CHECKING:
     from slack_sdk.web.client import WebClient
     from slack_sdk.web.slack_response import SlackResponse
 
+    from firefighter.incidents.models.incident import Incident
     from firefighter.slack.models.message import MessageManager
 
 
@@ -45,6 +46,18 @@ class ConversationType(IntegerChoices):
 logger = logging.getLogger(__name__)
 
 T = TypeVar("T", bound="Conversation")
+
+
+def incident_has_writable_channel(incident: Incident) -> bool:
+    """Whether the incident has a Slack channel the app can still write to.
+
+    Slack refuses any write in an archived channel (`is_archived`), and an incident can
+    still change once its channel is archived: e.g. reopened by the Jira status sync.
+    """
+    conversation = getattr(incident, "conversation", None)
+    return (
+        conversation is not None and conversation.status != ConversationStatus.ARCHIVED
+    )
 
 
 class ConversationManager[T: "Conversation"](models.Manager[T]):
