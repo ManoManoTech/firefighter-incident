@@ -369,6 +369,8 @@ def get_incident_time_to_by_priority(
 ) -> tuple[dict[str, str], QuerySet[Priority]]:
     ttr_q = (
         Q(incident___status__gte=IncidentStatus.MITIGATED)
+        # A rejected incident was not a real one: it must not weigh on the metrics
+        & ~Q(incident___status=IncidentStatus.REJECTED)
         & Q(metric_type__type=time_to)
         & Q(duration__gte=timedelta(seconds=1))
         & Q(incident__in=incidents)
@@ -536,6 +538,11 @@ def get_incident_by_status_chart_data(
             filter=Q(_status=IncidentStatus.CLOSED),
             output_field=FloatField(),
         ),
+        incident_rejected=Count(
+            "_status",
+            filter=Q(_status=IncidentStatus.REJECTED),
+            output_field=FloatField(),
+        ),
         incident_total=Count(
             "_status",
             output_field=FloatField(),
@@ -547,7 +554,8 @@ def get_incident_by_status_chart_data(
             "values": [],
         }
     val = list(incident_by_status.values())
-    val.pop(6)
+    # Drop the total: the remaining values follow IncidentStatus.labels
+    val.pop(len(IncidentStatus.labels))
     return {
         "keys": list(IncidentStatus.labels),
         "values": val,

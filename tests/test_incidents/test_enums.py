@@ -40,13 +40,13 @@ class TestIncidentStatus:
     def test_gt_method(self):
         """Test the gt static method."""
         result = IncidentStatus.gt(30)
-        expected = [IncidentStatus.MITIGATED, IncidentStatus.POST_MORTEM, IncidentStatus.CLOSED]
+        expected = [IncidentStatus.MITIGATED, IncidentStatus.POST_MORTEM, IncidentStatus.CLOSED, IncidentStatus.REJECTED]
         assert result == expected
 
     def test_gte_method(self):
         """Test the gte static method."""
         result = IncidentStatus.gte(30)
-        expected = [IncidentStatus.MITIGATING, IncidentStatus.MITIGATED, IncidentStatus.POST_MORTEM, IncidentStatus.CLOSED]
+        expected = [IncidentStatus.MITIGATING, IncidentStatus.MITIGATED, IncidentStatus.POST_MORTEM, IncidentStatus.CLOSED, IncidentStatus.REJECTED]
         assert result == expected
 
     def test_choices_lt_method(self):

@@ -25,6 +25,7 @@ from firefighter.incidents.models import (
     Incident,
     IncidentCategory,
     IncidentUpdate,
+    Partner,
     Severity,
     User,
 )
@@ -264,6 +265,43 @@ class IncidentUpdateInline(admin.StackedInline[IncidentUpdate, Incident]):
         )
 
 
+@admin.register(Partner)
+class PartnerAdmin(admin.ModelAdmin[Partner]):
+    list_display = ["name", "slug", "is_active", "is_reviewed", "created_by", "created_at"]
+    list_display_links = ["name"]
+    list_editable = ["is_active", "is_reviewed"]
+    list_filter = ["is_active", "is_reviewed"]
+    search_fields = ["name", "slug"]
+    prepopulated_fields = {"slug": ["name"]}
+    readonly_fields = ["created_by", "created_at", "updated_at"]
+
+    @action(description=_("Merge selected partners into the oldest one"))
+    def merge_into_oldest(
+        self, request: HttpRequest, queryset: QuerySet[Partner]
+    ) -> None:
+        """Keep the oldest partner: move the incidents of the others to it, then deactivate them."""
+        partners = list(queryset.order_by("created_at"))
+        if len(partners) < 2:
+            self.message_user(
+                request, _("Select at least two partners to merge."), constants.WARNING
+            )
+            return
+        kept, *merged = partners
+        moved = Incident.objects.filter(partner__in=merged).update(partner=kept)
+        Partner.objects.filter(id__in=[p.id for p in merged]).update(is_active=False)
+        if not kept.is_reviewed:
+            kept.is_reviewed = True
+            kept.save(update_fields=["is_reviewed", "updated_at"])
+        self.message_user(
+            request,
+            _("Merged %(count)d partner(s) into %(kept)s (%(moved)d incident(s) moved).")
+            % {"count": len(merged), "kept": kept.name, "moved": moved},
+            constants.SUCCESS,
+        )
+
+    actions: list[_ActionCallable[Any, Partner]] = [merge_into_oldest]
+
+
 @admin.register(Incident)
 class IncidentAdmin(admin.ModelAdmin[Incident]):
     model = Incident
@@ -411,7 +449,7 @@ class IncidentAdmin(admin.ModelAdmin[Incident]):
         # Return None to display the change list page again.
 
     date_hierarchy = "created_at"
-    autocomplete_fields = ["created_by", "incident_category"]
+    autocomplete_fields = ["created_by", "incident_category", "partner"]
     actions: list[_ActionCallable[Any, Incident]] = [
         compute_metrics,
         compute_and_purge_metrics,
@@ -430,7 +468,15 @@ class IncidentAdmin(admin.ModelAdmin[Incident]):
     ]
 
     list_display_links = ["id", "title"]
-    list_filter = ("_status", "priority", "incident_category", "environment")
+    list_filter = (
+        "_status",
+        "priority",
+        "incident_category",
+        "environment",
+        "origin",
+        "partner",
+        "closure_reason",
+    )
     readonly_fields = (
         "created_at",
         "updated_at",
@@ -464,6 +510,17 @@ class IncidentAdmin(admin.ModelAdmin[Incident]):
             },
         ),
         (_("Relations"), {"fields": ("priority", "incident_category", "environment")}),
+        (
+            _("Origin & closure"),
+            {
+                "fields": (
+                    "origin",
+                    "partner",
+                    "closure_reason",
+                    "closure_reference",
+                ),
+            },
+        ),
         (
             _("User Roles"),
             {

@@ -73,7 +73,9 @@ class IncidentFactory(DjangoModelFactory[Incident]):
     id = Sequence(lambda n: n + 1)  # type: ignore[no-untyped-call]
     title = Faker("text", max_nb_chars=50)  # type: ignore[no-untyped-call]
     description = Faker("text")  # type: ignore[no-untyped-call]
-    _status = FuzzyChoice(IncidentStatus.choices, getter=operator.itemgetter(0))  # type: ignore[no-untyped-call]
+    # REJECTED is reached only through a closure reason: a random one would make the
+    # tests built on "a closed incident" depend on the draw
+    _status = FuzzyChoice(IncidentStatus.choices_lte(IncidentStatus.CLOSED), getter=operator.itemgetter(0))  # type: ignore[no-untyped-call]
     created_at = FuzzyDateTime(
         start_dt=datetime(2018, 1, 1, tzinfo=timezone.get_current_timezone()),
         end_dt=datetime(2022, 1, 1, tzinfo=timezone.get_current_timezone()),

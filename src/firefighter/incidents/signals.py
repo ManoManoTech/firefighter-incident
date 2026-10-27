@@ -71,3 +71,21 @@ create_incident_conversation = django.dispatch.Signal()
 Args:
     incident (Incident): The incident for which to create a conversation.
 """
+
+incident_origin_updated = django.dispatch.Signal()
+"""Signal sent when the origin of an incident (internal / partner) changes.
+
+Args:
+    sender (str | Any): The sender of the signal __name__
+    incident (Incident): The incident whose origin changed
+    user (User | None): Who changed it
+"""
+
+partner_created = django.dispatch.Signal()
+"""Signal sent when a user adds a partner that was not in the list yet.
+
+Args:
+    sender (str | Any): The sender of the signal __name__
+    partner (Partner): The partner that was created
+    incident (Incident): The incident for which it was added
+"""

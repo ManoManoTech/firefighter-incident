@@ -88,7 +88,7 @@ class TestClosureReasonModalMessageTabDisabled:
 
             # Verify incident was closed
             incident.refresh_from_db()
-            assert incident.status == IncidentStatus.CLOSED
+            assert incident.status == IncidentStatus.REJECTED
             assert incident.closure_reason == ClosureReason.CANCELLED
 
             # Verify warning was logged
@@ -233,7 +233,7 @@ class TestClosureReasonModalEarlyClosureBypass:
         # Early closure should succeed and close the incident
         assert result is True
         incident.refresh_from_db()
-        assert incident.status == IncidentStatus.CLOSED
+        assert incident.status == IncidentStatus.REJECTED
         assert incident.closure_reason == ClosureReason.CANCELLED
         assert incident.closure_reference == "INC-42"
 
@@ -363,7 +363,7 @@ class TestClosureReasonModalCarryOver:
 
         assert result is True
         incident.refresh_from_db()
-        assert incident.status == IncidentStatus.CLOSED
+        assert incident.status == IncidentStatus.REJECTED
         assert incident.priority_id == priority_new.id, (
             "The priority change submitted in the Update Status modal must be "
             "applied alongside the closure."
@@ -419,7 +419,7 @@ class TestClosureReasonModalCarryOver:
 
         assert result is True
         incident.refresh_from_db()
-        assert incident.status == IncidentStatus.CLOSED
+        assert incident.status == IncidentStatus.REJECTED
 
 
 @pytest.mark.django_db
