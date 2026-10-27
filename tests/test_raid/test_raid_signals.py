@@ -390,14 +390,14 @@ class TestIncidentUpdatedConcurrentStatusChanges:
 
         mock_transition.assert_not_called()
 
-    @patch(
-        "firefighter.raid.signals.incident_updated.client.get_issue_status_name",
-        return_value="in progress",
-    )
+    # "In Progress" is what the REST API returns; the webhooks spell it "in progress"
+    @pytest.mark.parametrize("jira_status", ["In Progress", "in progress"])
+    @patch("firefighter.raid.signals.incident_updated.client.get_issue_status_name")
     @patch("firefighter.raid.signals.incident_updated.client.transition_issue_auto")
     def test_no_round_trip_when_ticket_already_in_progress(
-        self, mock_transition: Mock, mock_status: Mock, make_incident
+        self, mock_transition: Mock, mock_status: Mock, make_incident, jira_status: str
     ) -> None:
+        mock_status.return_value = jira_status
         incident = make_incident(IncidentStatus.MITIGATING)
 
         self._run(incident, IncidentStatus.MITIGATING)

@@ -28,6 +28,14 @@ logger = logging.getLogger(__name__)
 # transiently marks the ticket as Done on mitigation (see GT-2184).
 TERMINAL_STATUS_NAMES: Final[frozenset[str]] = frozenset({"Closed"})
 
+# Transitions the path-finder must never take. "Reject" sends a ticket to "Reporter
+# validation" as rejected, and its screen requires a Reason and a comment, which an
+# automatic transition does not provide: Jira refuses it. Being the only direct edge
+# from "Incoming" or "Pending resolution", it made the shortest path when the ticket
+# had not reached "In Progress", and it could also shadow "Complete resolution" (the
+# graph keeps one transition name per pair of statuses).
+EXCLUDED_TRANSITION_NAMES: Final[frozenset[str]] = frozenset({"Reject"})
+
 
 def _transition_path[T](
     statuses_transitions: dict[T, set[T]],
