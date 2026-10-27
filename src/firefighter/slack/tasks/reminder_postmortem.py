@@ -8,6 +8,7 @@ from firefighter.slack.messages.slack_messages import (
     SlackMessageIncidentFixedNextActions,
     SlackMessageIncidentPostMortemReminder,
 )
+from firefighter.slack.models.conversation import incident_has_writable_channel
 from firefighter.slack.slack_app import DefaultWebClient, slack_client
 
 if TYPE_CHECKING:
@@ -34,9 +35,11 @@ def publish_postmortem_reminder(
         )
         return
 
-    if not (hasattr(incident, "conversation") and incident.conversation.channel_id):
+    if not (
+        incident_has_writable_channel(incident) and incident.conversation.channel_id
+    ):
         logger.warning(
-            "No conversation to post PM reminder for incident #%s.", incident.id
+            "No writable channel to post PM reminder for incident #%s.", incident.id
         )
         return
     update_status_message = SlackMessageIncidentPostMortemReminder(incident)
@@ -58,9 +61,11 @@ def publish_fixed_next_actions(
     incident: Incident,
     client: WebClient = DefaultWebClient,
 ) -> None:
-    if not (hasattr(incident, "conversation") and incident.conversation.channel_id):
+    if not (
+        incident_has_writable_channel(incident) and incident.conversation.channel_id
+    ):
         logger.warning(
-            "No conversation to post next actions for incident #%s.", incident.id
+            "No writable channel to post next actions for incident #%s.", incident.id
         )
         return
     update_status_message = SlackMessageIncidentFixedNextActions(incident)
