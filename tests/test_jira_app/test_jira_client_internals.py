@@ -18,6 +18,7 @@ from firefighter.jira_app.client import (
     JiraUserNotFoundError,
 )
 from firefighter.jira_app.models import JiraUser
+from firefighter.jira_app.utils import get_transitions_to_apply
 
 INCOMING, IN_PROGRESS, CLOSED = 10, 20, 30
 
@@ -147,6 +148,60 @@ class TestWorkflowBuilder:
         # The global "Abort" is reachable from every status
         assert by_source[1]["transition_to_status"][3] == "Abort"
         assert by_source[2]["transition_to_status"][3] == "Abort"
+
+    @staticmethod
+    def test_reject_is_never_on_the_path() -> None:
+        """Mirror the incident workflow: "Reject" leads to Reporter validation from
+        Pending resolution and from In Progress, but its screen requires a Reason and a
+        comment, so Jira refuses it from an automatic transition."""
+
+        def transition(name: str, source: int, target: int) -> dict[str, Any]:
+            return {
+                "id": name,
+                "name": name,
+                "source_id": source,
+                "target_id": target,
+                "action_id": 1,
+                "initial": False,
+                "global_transition": False,
+                "looped_transition": False,
+                "transition_options": [],
+            }
+
+        infos = JiraClient._get_transitions(
+            {
+                "statuses": [
+                    {
+                        "id": "1",
+                        "name": "Pending resolution",
+                        "initial": False,
+                        "step_id": 1,
+                    },
+                    {"id": "2", "name": "in progress", "initial": False, "step_id": 2},
+                    {
+                        "id": "3",
+                        "name": "Reporter validation",
+                        "initial": False,
+                        "step_id": 3,
+                    },
+                ],
+                "transitions": [
+                    transition("Start resolution", 1, 2),
+                    transition("Complete resolution", 2, 3),
+                    # Listed last, it used to win the in progress -> Reporter validation pair
+                    transition("Reject", 1, 3),
+                    transition("Reject", 2, 3),
+                ],
+            }
+        )
+
+        by_source = {info["status_id"]: info for info in infos}
+        assert by_source[1]["target_statuses"] == {2}
+        assert by_source[2]["transition_to_status"][3] == "Complete resolution"
+        assert get_transitions_to_apply(1, infos, 3) == [
+            "Start resolution",
+            "Complete resolution",
+        ]
 
     @staticmethod
     def test_transition_to_an_unknown_step_is_ignored(

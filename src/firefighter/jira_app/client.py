@@ -20,6 +20,7 @@ from firefighter.jira_app.types import (
     WorkflowBuilderResponse,
 )
 from firefighter.jira_app.utils import (
+    EXCLUDED_TRANSITION_NAMES,
     get_status_id_from_name,
     get_transitions_to_apply,
     pythonic_keys,
@@ -414,6 +415,9 @@ class JiraClient:
         }
 
         for transition in transitions:
+            if transition["name"] in EXCLUDED_TRANSITION_NAMES:
+                logger.debug(f"Ignoring Transition {transition['name']}: excluded")
+                continue
             if "screen_name" in transition:
                 # A screen does NOT make a transition unusable over the API: it
                 # only fails if the screen has a *required* field (we submit an
@@ -461,7 +465,10 @@ class JiraClient:
 
         # For global transitions, add the transition to all statuses
         for transition in transitions:
-            if transition["global_transition"]:
+            if (
+                transition["global_transition"]
+                and transition["name"] not in EXCLUDED_TRANSITION_NAMES
+            ):
                 for status_info in statuses_info_list:
                     status_info["target_statuses"].add(
                         step_id_to_status_id[int(transition["target_id"])]

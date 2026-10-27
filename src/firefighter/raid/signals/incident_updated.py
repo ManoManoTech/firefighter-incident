@@ -115,7 +115,9 @@ def _transition_through_pending_resolution(
 
     # Already "in progress" (e.g. INVESTIGATING -> MITIGATING): the two steps
     # would only take the ticket on a useless round trip through Incoming.
-    if _read_jira_status(incident) == JIRA_STATUS_IN_PROGRESS:
+    # Case-insensitive: the REST API names the status "In Progress", webhooks "in progress".
+    jira_status = _read_jira_status(incident)
+    if jira_status is not None and jira_status.casefold() == JIRA_STATUS_IN_PROGRESS.casefold():
         logger.info(
             "Jira ticket %s is already %s, nothing to transition for Impact status %s (incident #%s)",
             incident.jira_ticket.id,
