@@ -49,9 +49,9 @@ class DowngradeWorkflowModal(
         else:
             jira_txt = "No Jira ticket!"
             # XXX Return error (weird state)
-        if incident.status == IncidentStatus.CLOSED:
+        if incident.status.is_terminal:
             blocks.extend((
-                SectionBlock(text=f"Incident #{incident.id} is already closed."),
+                SectionBlock(text=f"Incident #{incident.id} is already {incident.status.label.lower()}."),
                 SectionBlock(text=jira_txt),
             ))
             submit = None

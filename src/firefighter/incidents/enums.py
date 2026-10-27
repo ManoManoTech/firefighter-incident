@@ -10,6 +10,14 @@ class IncidentStatus(models.IntegerChoices):
     MITIGATED = 40, "Mitigated"
     POST_MORTEM = 50, "Post-mortem"
     CLOSED = 60, "Closed"
+    # Closed as not a real incident (duplicate, false alarm...). Terminal like CLOSED,
+    # and after it so that "status < CLOSED" keeps meaning "still open".
+    REJECTED = 70, "Rejected"
+
+    @property
+    def is_terminal(self) -> bool:
+        """Closed or rejected: nothing happens to the incident any more."""
+        return self.value >= IncidentStatus.CLOSED.value
 
     @staticmethod
     def lt(val: int) -> list[IncidentStatus]:
@@ -48,8 +56,42 @@ class ClosureReason(models.TextChoices):
     DUPLICATE = "duplicate", "Duplicate incident"
     FALSE_POSITIVE = "false_positive", "False alarm - no actual issue"
     SUPERSEDED = "superseded", "Superseded by another incident"
+    # Deprecated: a third-party cause is now recorded as the incident origin
+    # (IncidentOrigin.PARTNER) on a real incident. Kept for historical rows only.
     EXTERNAL = "external", "External dependency/known issue"
     CANCELLED = "cancelled", "Cancelled - no longer relevant"
+
+
+REJECTION_CLOSURE_REASONS: frozenset[ClosureReason] = frozenset({
+    ClosureReason.DUPLICATE,
+    ClosureReason.FALSE_POSITIVE,
+    ClosureReason.SUPERSEDED,
+    ClosureReason.CANCELLED,
+})
+"""Closure reasons meaning the incident was not a real one: it ends REJECTED."""
+
+OFFERED_CLOSURE_REASONS: tuple[ClosureReason, ...] = (
+    ClosureReason.RESOLVED,
+    ClosureReason.DUPLICATE,
+    ClosureReason.FALSE_POSITIVE,
+    ClosureReason.SUPERSEDED,
+    ClosureReason.CANCELLED,
+)
+"""Closure reasons a user can pick: EXTERNAL is replaced by the incident origin."""
+
+
+def status_for_closure_reason(reason: str | None) -> IncidentStatus:
+    """Terminal status of an incident closed with this reason."""
+    if reason in REJECTION_CLOSURE_REASONS:
+        return IncidentStatus.REJECTED
+    return IncidentStatus.CLOSED
+
+
+class IncidentOrigin(models.TextChoices):
+    """Where an incident comes from, independently of how it ended."""
+
+    INTERNAL = "internal", "Internal"
+    PARTNER = "partner", "Partner (third party)"
 
 
 DOWNGRADE_WORKFLOW_EVENT_TYPE = "downgrade_workflow"
