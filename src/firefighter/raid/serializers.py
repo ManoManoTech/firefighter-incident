@@ -10,7 +10,8 @@ from django.conf import settings
 from django.core.cache import cache
 from rest_framework import serializers
 
-from firefighter.incidents.enums import IncidentStatus
+from firefighter.firefighter.utils import get_in
+from firefighter.incidents.enums import ClosureReason, IncidentStatus
 from firefighter.incidents.models.priority import Priority
 from firefighter.incidents.models.user import User
 from firefighter.jira_app.client import (
@@ -531,6 +532,13 @@ class JiraWebhookUpdateSerializer(serializers.Serializer[Any]):
             )
             return True
 
+        # A rejected ticket (Reject, then Validate) means the incident was not a real
+        # one: reject it rather than mitigating or closing it as a real incident.
+        if impact_status in {IncidentStatus.MITIGATED, IncidentStatus.CLOSED} and (
+            self._is_rejected(validated_data)
+        ):
+            return self._reject_incident(validated_data, incident, jira_status_to)
+
         if incident.status == impact_status:
             logger.debug(
                 "Incident %s already at status %s from Jira webhook; no-op",
@@ -569,6 +577,44 @@ class JiraWebhookUpdateSerializer(serializers.Serializer[Any]):
             created_by=None,
             status=impact_status,
             message=f"Status synced from Jira ({jira_status_to})",
+            event_type="jira_status_sync",
+        )
+        return True
+
+    @staticmethod
+    def _is_rejected(validated_data: dict[str, Any]) -> bool:
+        resolution = get_in(validated_data, "issue.fields.resolution.name")
+        return bool(resolution) and resolution == settings.RAID_JIRA_REJECTED_RESOLUTION
+
+    @staticmethod
+    def _closure_reason_from_jira(validated_data: dict[str, Any]) -> ClosureReason:
+        """Closure reason matching the ticket's reject reason; false alarm by default."""
+        reason_field = settings.RAID_JIRA_REJECT_REASON_FIELD
+        jira_reason = (
+            get_in(validated_data, f"issue.fields.{reason_field}.value")
+            if reason_field
+            else None
+        )
+        if jira_reason == settings.RAID_JIRA_REJECT_REASON_VALUES.get(ClosureReason.DUPLICATE):
+            return ClosureReason.DUPLICATE
+        return ClosureReason.FALSE_POSITIVE
+
+    def _reject_incident(
+        self,
+        validated_data: dict[str, Any],
+        incident: Incident,
+        jira_status_to: str,
+    ) -> bool:
+        if incident.status == IncidentStatus.REJECTED:
+            logger.debug("Incident %s already rejected from Jira webhook; no-op", incident.id)
+            return True
+        reason = self._closure_reason_from_jira(validated_data)
+        incident.closure_reason = reason
+        incident.save(update_fields=["closure_reason", "updated_at"])
+        incident.create_incident_update(
+            created_by=None,
+            status=IncidentStatus.REJECTED,
+            message=f"Rejected in Jira ({jira_status_to}): {reason.label}",
             event_type="jira_status_sync",
         )
         return True

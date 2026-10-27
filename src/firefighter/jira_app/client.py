@@ -80,6 +80,32 @@ class JiraClient:
         """
         return str(self.jira.issue(str(issue_id), fields="status").fields.status.name)
 
+    def transition_issue_by_name(
+        self,
+        issue_id: str | int,
+        transition_name: str,
+        *,
+        fields: dict[str, Any] | None = None,
+        comment: str | None = None,
+    ) -> None:
+        """Apply one transition, by name, with the fields and comment its screen requires.
+
+        Unlike `transition_issue_auto`, which walks a path of screen-free transitions,
+        this applies a transition chosen on purpose (e.g. "Reject" with its reason).
+
+        Raises:
+            ValueError: the transition is not available from the issue's current status
+        """
+        issue_id = str(issue_id)
+        available = {t["name"]: t["id"] for t in self.jira.transitions(issue_id)}
+        transition_id = available.get(transition_name)
+        if transition_id is None:
+            err_msg = f"Transition '{transition_name}' is not available on issue {issue_id} (available: {sorted(available)})"
+            raise ValueError(err_msg)
+        self.jira.transition_issue(
+            issue=issue_id, transition=transition_id, fields=fields or {}, comment=comment
+        )
+
     def transition_issue_auto(
         self, issue_id: str | int, target_status_name: str, workflow_name: str
     ) -> None:
