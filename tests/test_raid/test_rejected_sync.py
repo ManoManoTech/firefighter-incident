@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 from typing import Any
-from unittest.mock import ANY, MagicMock, Mock, patch
+from unittest.mock import ANY, Mock, patch
 
 import pytest
 from django.core.cache import cache
@@ -128,21 +128,19 @@ class TestRejectTicket:
 
 @pytest.mark.django_db
 class TestOriginLabels:
-    @staticmethod
-    def _issue(labels: list[str]) -> MagicMock:
-        issue = MagicMock()
-        issue.fields.labels = labels
-        return issue
-
     @patch(f"{CLIENT}.update_issue_fields")
-    @patch(f"{CLIENT}.jira")
+    @patch(f"{CLIENT}.get_issue_labels")
     def test_a_partner_origin_adds_its_labels(
-        self, jira: Mock, update: Mock, incident_factory: Any, jira_ticket_factory: Any
+        self,
+        get_labels: Mock,
+        update: Mock,
+        incident_factory: Any,
+        jira_ticket_factory: Any,
     ) -> None:
         algolia = Partner.objects.create(name="Algolia", slug="algolia")
         incident = incident_factory(origin=IncidentOrigin.PARTNER, partner=algolia)
         incident.jira_ticket = jira_ticket_factory(incident=incident)
-        jira.issue.return_value = self._issue(["goldenList", "partner:stripe"])
+        get_labels.return_value = ["goldenList", "partner:stripe"]
 
         incident_origin_updated_sync_jira_labels(sender=None, incident=incident)
 
@@ -152,15 +150,17 @@ class TestOriginLabels:
         )
 
     @patch(f"{CLIENT}.update_issue_fields")
-    @patch(f"{CLIENT}.jira")
+    @patch(f"{CLIENT}.get_issue_labels")
     def test_an_internal_origin_removes_them(
-        self, jira: Mock, update: Mock, incident_factory: Any, jira_ticket_factory: Any
+        self,
+        get_labels: Mock,
+        update: Mock,
+        incident_factory: Any,
+        jira_ticket_factory: Any,
     ) -> None:
         incident = incident_factory(origin=IncidentOrigin.INTERNAL)
         incident.jira_ticket = jira_ticket_factory(incident=incident)
-        jira.issue.return_value = self._issue(
-            ["partner-caused", "partner:algolia", "keep"]
-        )
+        get_labels.return_value = ["partner-caused", "partner:algolia", "keep"]
 
         incident_origin_updated_sync_jira_labels(sender=None, incident=incident)
 

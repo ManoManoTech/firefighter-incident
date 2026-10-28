@@ -561,10 +561,9 @@ def incident_origin_updated_sync_jira_labels(
     if jira_ticket is None:
         return
     try:
-        issue = client.jira.issue(str(jira_ticket.id), fields="labels")
         labels = [
             label
-            for label in issue.fields.labels
+            for label in client.get_issue_labels(jira_ticket.id)
             if label != PARTNER_CAUSED_LABEL and not label.startswith(PARTNER_LABEL_PREFIX)
         ]
         if incident.origin == IncidentOrigin.PARTNER:
