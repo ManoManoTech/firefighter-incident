@@ -30,7 +30,12 @@ from firefighter.firefighter.fields_forms_widgets import (
     GroupedCheckboxSelectMultiple,
 )
 from firefighter.incidents import signals
-from firefighter.incidents.enums import ClosureReason, IncidentOrigin, IncidentStatus
+from firefighter.incidents.enums import (
+    REJECTION_CLOSURE_REASONS,
+    ClosureReason,
+    IncidentOrigin,
+    IncidentStatus,
+)
 from firefighter.incidents.models.environment import Environment
 from firefighter.incidents.models.group import Group
 from firefighter.incidents.models.incident_category import IncidentCategory
@@ -442,8 +447,8 @@ class Incident(models.Model):
         # XXX-ZOR we should use a proper FSM abstraction
         cant_closed_reasons: list[tuple[str, str]] = []
 
-        # Allow direct closure when closure_reason is provided (bypasses normal workflow)
-        if self.closure_reason:
+        # Only a non-incident skips the workflow: a real one is mitigated before being closed
+        if self.closure_reason in REJECTION_CLOSURE_REASONS:
             return True, []
 
         if self.ignore:

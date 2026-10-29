@@ -22,11 +22,11 @@ Separately, many real incidents are caused by a third party the platform depends
 
 `IncidentStatus.REJECTED = 70`, after `CLOSED` so that `status < CLOSED` keeps meaning "still open" and `status >= CLOSED` (`IncidentStatus.is_terminal`) means "finished". An incident is rejected by closing it with a reason meaning it was not a real incident: `duplicate`, `false_positive`, `superseded`, `cancelled`. A closure with `resolved` stays `CLOSED`.
 
-The early-closure modal now asks the question first ("Was this a real incident?"): *Yes* closes it, every *No* reason rejects it. Rejected incidents are counted apart in the status chart and kept out of the time-to-X metrics.
+Closing early (before mitigation) is only for non-incidents: the early-closure modal offers the rejection reasons only, and every early closure rejects. A real incident is never closed early, even one caused by a partner while we wait for its fix: it follows the normal workflow, is mitigated once the fix is in, then closed. Accordingly, `Incident.can_be_closed` only lets a rejection reason skip the workflow (`resolved` and the deprecated `external` no longer do), and a modal submitted with another reason is refused. Rejected incidents are counted apart in the status chart and kept out of the time-to-X metrics.
 
 ### 2. An origin independent of the status
 
-`Incident.origin` (`internal` by default, or `partner`) and `Incident.partner` (a `Partner`, possibly empty for historical data). The origin only describes a real incident; a rejected one keeps the default.
+`Incident.origin` (`internal` by default, or `partner`) and `Incident.partner` (a `Partner`, possibly empty for historical data). The origin only describes a real incident: it is never asked when rejecting, and on a rejected incident it is ignored, whatever was recorded before.
 
 It is recorded where the Commander describes what happened:
 
@@ -35,7 +35,6 @@ It is recorded where the Commander describes what happened:
 | Key Events message, posted at mitigation | main capture (origin + partner list) |
 | Edit modal | any time, e.g. a provider outage known from the start |
 | Close modal | confirmation, pre-filled; may be corrected after the post-mortem |
-| Early-closure modal | for a real incident closed before mitigation |
 
 Each change is recorded as an `IncidentUpdate` (`event_type="origin_updated"`, with its author) and posted in the incident channel. The `external` closure reason is deprecated: it is no longer offered, and historical incidents closed with it become `CLOSED` with origin `partner`.
 
@@ -54,6 +53,7 @@ Each change is recorded as an `IncidentUpdate` (`event_type="origin_updated"`, w
 - **Keep `CLOSED` and derive "rejected" from `closure_reason`**: no migration of the status, but every consumer (API clients, BI, reports) would have to learn the rule; the status alone would keep lying.
 - **Use the existing `ignore` flag**: it hides incidents but says nothing about why, and is also used for the downgrade workflow.
 - **A dedicated Jira field for the origin**: cleaner in Jira, but depends on Jira administrators; labels work today and a field can replace them later.
+- **Let the early-closure modal close a real incident ("Yes, already resolved") and ask its origin there**: tried during the review, dropped. A real incident is mitigated before being closed; asking an origin in a form that otherwise rejects confused Commanders, and the historical `external` early closures were real partner incidents that should have been mitigated.
 - **Record the origin only at closure**: too late for P1/P2 (closure comes after the post-mortem), and closure is not always done by whoever knew the cause.
 
 ## Consequences

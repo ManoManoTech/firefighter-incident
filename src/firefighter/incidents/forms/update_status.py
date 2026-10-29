@@ -76,8 +76,18 @@ class UpdateStatusForm(forms.Form):
             if current_status not in allowed_statuses:
                 allowed_statuses.insert(0, current_status)
             # Convert values to strings to match what Slack sends in form submissions
-            choices = [(str(s.value), s.label) for s in allowed_statuses]
+            choices = [
+                (str(s.value), self._status_choice_label(incident, s))
+                for s in allowed_statuses
+            ]
             status_field.choices = choices  # type: ignore[attr-defined]
+
+    @classmethod
+    def _status_choice_label(cls, incident: Incident, status: IncidentStatus) -> str:
+        """Closing before mitigation rejects the incident: say so in the choice."""
+        if cls.requires_closure_reason(incident, status):
+            return "Rejected (not a real incident)"
+        return status.label
 
     def _get_allowed_statuses(
         self, current_status: IncidentStatus, *, requires_postmortem: bool
