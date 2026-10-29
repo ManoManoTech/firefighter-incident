@@ -7,7 +7,7 @@ from unittest.mock import MagicMock, PropertyMock
 import pytest
 from pytest_mock import MockerFixture
 
-from firefighter.incidents.enums import IncidentStatus
+from firefighter.incidents.enums import IncidentOrigin, IncidentStatus
 from firefighter.incidents.factories import IncidentFactory, UserFactory
 from firefighter.incidents.models.incident import Incident
 from firefighter.slack.views import CloseModal
@@ -40,7 +40,9 @@ class TestCloseModal:
 
         values = res.to_dict()
         assert "blocks" in values
-        assert len(values["blocks"]) == 7
+        # + "Origin of the incident" and "Partner not in the list? Add it" (no
+        # partner list: none exists in the test database)
+        assert len(values["blocks"]) == 9
 
     @staticmethod
     def test_close_modal_build_initial_values(
@@ -150,7 +152,7 @@ class TestCloseModal:
         values = res.to_dict()
         assert "blocks" in values
         # Should show closure reason form
-        assert "Closure Reason Required" in values["blocks"][0]["text"]["text"]
+        assert "Close incident" in values["blocks"][0]["text"]["text"]
 
     @staticmethod
     def test_submit_empty_bodied_form() -> None:
@@ -158,7 +160,12 @@ class TestCloseModal:
         ack = MagicMock()
         user = UserFactory.build()
         with pytest.raises(TypeError, match="Expected a values dict in the body"):
-            modal.handle_modal_fn(ack=ack, body={}, incident=MagicMock(), user=user)
+            modal.handle_modal_fn(
+                ack=ack,
+                body={},
+                incident=MagicMock(origin=IncidentOrigin.INTERNAL, partner=None),
+                user=user,
+            )
 
     @staticmethod
     def test_submit_valid_form_open_incident(

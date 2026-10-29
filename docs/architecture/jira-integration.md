@@ -142,6 +142,20 @@ IMPACT_TO_JIRA_STATUS_MAP = {
 }
 ```
 
+### Rejected incidents
+
+A **REJECTED** incident (closed as not a real incident) does not follow `IMPACT_TO_JIRA_STATUS_MAP`: its ticket is **rejected**, not resolved.
+
+- IMPACT applies the workflow's reject transition (`RAID_JIRA_REJECT_TRANSITION`, default `Reject`) explicitly, with the select field its screen requires (`RAID_JIRA_REJECT_REASON_FIELD`) set from `RAID_JIRA_REJECT_REASON_VALUES` (e.g. `duplicate` → `Duplicated`), and a comment carrying the exact reason, reference and message. The ticket is then closed (`Validate`).
+- A ticket already in *Reporter validation* only gets the comment and is closed; a closed ticket only gets the comment.
+- The automatic path-finder never takes the reject transition: it is only applied on purpose, with its fields.
+
+Jira → IMPACT: a ticket whose resolution is `RAID_JIRA_REJECTED_RESOLUTION` (default `Rejected`) rejects its incident instead of mitigating or closing it. The closure reason is `duplicate` when the reject reason maps to it, `false_positive` otherwise.
+
+### Origin labels
+
+The incident origin is mirrored on the ticket as labels: `partner-caused` and `partner:<slug>` for an incident coming from a partner, none for an internal one.
+
 ### Priority Mapping
 
 **JIRA → Impact**:
@@ -220,6 +234,7 @@ if instance.created_by is None and "from Jira" in (instance.message or ""):
 - `RAID_JIRA_PROJECT_KEY` - Default JIRA project
 - `RAID_JIRA_INCIDENT_CATEGORY_FIELD` - Custom field mapping
 - `RAID_TOOLBOX_URL` - Integration URL
+- `RAID_JIRA_REJECT_TRANSITION`, `RAID_JIRA_REJECTED_RESOLUTION`, `RAID_JIRA_REJECT_REASON_FIELD`, `RAID_JIRA_REJECT_REASON_*` - Rejected incidents (see above)
 
 ### Environment Variables
 

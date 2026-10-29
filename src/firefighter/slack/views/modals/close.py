@@ -17,6 +17,7 @@ from slack_sdk.models.views import View
 
 from firefighter.incidents.enums import IncidentStatus
 from firefighter.incidents.forms.close_incident import CloseIncidentForm
+from firefighter.incidents.forms.origin import origin_initial
 from firefighter.slack.slack_templating import slack_block_footer, slack_block_separator
 from firefighter.slack.utils import respond
 from firefighter.slack.views.modals.base_modal.base import ModalForm
@@ -371,6 +372,8 @@ class CloseModal(
                 text=f"It looks like this incident #{incident.id} could not be closed.\nReasons: {reasons}.\nPlease tell @pulse (#tech-pe-pulse) if you think this is an error.",
             )
             return False
+        # Before the closure, so that everything reacting to it sees the final origin
+        form.save_origin_fields(incident, user)
         self._trigger_incident_workflow(incident, user, update_kwargs)
         return None
 
@@ -386,6 +389,7 @@ class CloseModal(
             "title": incident.title,
             "description": incident.description,
             "incident_category": incident.incident_category,
+            **origin_initial(incident),
         }
 
     @staticmethod

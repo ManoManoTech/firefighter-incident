@@ -179,6 +179,10 @@ class RaidJiraClient(JiraClient):
     def get_projects(self) -> list[Project]:
         return self.jira.projects()
 
+    def get_issue_labels(self, issue_id: str | int) -> list[str]:
+        """Return the labels of a Jira issue."""
+        return list(self.jira.issue(str(issue_id), fields="labels").fields.labels)
+
     def update_issue_fields(self, issue_id: str | int, **fields: Any) -> None:
         """Update Jira issue fields (supports custom fields like customfield_11064)."""
         issue = self.jira.issue(str(issue_id))

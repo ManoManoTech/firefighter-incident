@@ -25,6 +25,7 @@ from firefighter.incidents.models.incident_cost import IncidentCost
 from firefighter.incidents.models.incident_cost_type import IncidentCostType
 from firefighter.incidents.models.incident_membership import IncidentRole
 from firefighter.incidents.models.metric_type import IncidentMetric, MetricType
+from firefighter.incidents.models.partner import Partner
 from firefighter.incidents.models.priority import Priority
 from firefighter.incidents.models.user import User
 
@@ -220,6 +221,9 @@ class IncidentSerializer(TaggitSerializer, serializers.ModelSerializer[Incident]
     )
 
     status = serializers.SerializerMethodField()
+    origin = serializers.CharField(read_only=True)
+    partner = serializers.SlugRelatedField[Partner](slug_field="name", read_only=True)
+    closure_reason = serializers.CharField(read_only=True)
     created_by = UserSerializer(read_only=True)
     slack_channel_name = serializers.SerializerMethodField()
     postmortem_url = serializers.SerializerMethodField()
@@ -354,4 +358,7 @@ class IncidentSerializer(TaggitSerializer, serializers.ModelSerializer[Incident]
             "roles",
             "ignore",
             "dedup_key",
+            "origin",
+            "partner",
+            "closure_reason",
         ]

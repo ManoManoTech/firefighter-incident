@@ -8,7 +8,11 @@ from hypothesis import given
 from hypothesis.extra import django
 from hypothesis.strategies import builds
 
-from firefighter.incidents.enums import ClosureReason, IncidentStatus
+from firefighter.incidents.enums import (
+    REJECTION_CLOSURE_REASONS,
+    ClosureReason,
+    IncidentStatus,
+)
 from firefighter.incidents.factories import IncidentFactory
 from firefighter.incidents.models import Environment, IncidentUpdate, Priority
 from firefighter.jira_app.models import JiraPostMortem
@@ -71,18 +75,35 @@ class TestIncidentCanBeClosed:
             r[0] for r in reasons
         ]
 
-    def test_can_close_incident_with_closure_reason(self) -> None:
-        """Test that incidents with closure_reason can always be closed."""
-        # Create an incident in early status but with closure reason
+    @pytest.mark.parametrize("reason", sorted(REJECTION_CLOSURE_REASONS))
+    def test_can_close_incident_with_closure_reason(self, reason: ClosureReason) -> None:
+        """A non-incident (rejection reason) can be closed from any status."""
         incident = IncidentFactory.create(
             _status=IncidentStatus.INVESTIGATING,
-            closure_reason=ClosureReason.DUPLICATE,
+            closure_reason=reason,
         )
 
         can_close, reasons = incident.can_be_closed
 
         assert can_close is True
         assert reasons == []
+
+    @pytest.mark.parametrize(
+        "reason", [ClosureReason.RESOLVED, ClosureReason.EXTERNAL]
+    )
+    def test_a_real_incident_reason_does_not_skip_mitigation(
+        self, reason: ClosureReason
+    ) -> None:
+        """A real incident, even a partner's, is mitigated before being closed."""
+        incident = IncidentFactory.create(
+            _status=IncidentStatus.INVESTIGATING,
+            closure_reason=reason,
+        )
+
+        can_close, reasons = incident.can_be_closed
+
+        assert can_close is False
+        assert reasons
 
     def test_cannot_close_when_jira_postmortem_not_ready(self, settings: None) -> None:
         """Block closure if Jira post-mortem exists but is not in Ready status."""

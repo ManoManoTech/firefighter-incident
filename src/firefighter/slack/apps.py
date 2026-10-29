@@ -16,6 +16,7 @@ class SlackConfig(AppConfig):
             get_users,
             handle_incident_channel_done,
             incident_closed,
+            incident_origin,
             incident_updated,
             postmortem_created,
             roles_reminders,

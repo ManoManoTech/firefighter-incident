@@ -645,7 +645,7 @@ class SlackMessageIncidentStatusUpdated(SlackMessageSurface):
                                 action_id=UpdateStatusModal.open_action,
                             )
                             if self.in_channel
-                            and self.incident.status != IncidentStatus.CLOSED
+                            and not self.incident.status.is_terminal
                             else None
                         ),
                     ),
@@ -1324,6 +1324,41 @@ class SlackMessageIncidentChannelArchivedAlert(SlackMessageSurface):
             f"<{self.incident.status_page_url}|#{self.incident.id}> while it is still "
             f"{self.incident.status.label}. The incident is not closed in IMPACT and its "
             "reminders stop: unarchive the channel, then close the incident with `/incident close`."
+        )
+
+
+class SlackMessageIncidentOriginUpdated(SlackMessageSurface):
+    """Posted in the incident channel when the Commander records where the incident comes from."""
+
+    id = "ff_incident_origin_updated"
+
+    def __init__(self, incident: Incident, origin: str, author_slack_id: str | None) -> None:
+        self.incident = incident
+        self.origin = origin
+        self.author_slack_id = author_slack_id
+        super().__init__()
+
+    def get_text(self) -> str:
+        author = f" by <@{self.author_slack_id}>" if self.author_slack_id else ""
+        return f":handshake: Origin of the incident set to *{self.origin}*{author}."
+
+
+class SlackMessagePartnerCreated(SlackMessageSurface):
+    """Posted in the support channel when a user adds a partner, so the list stays curated."""
+
+    id = "ff_partner_created"
+
+    def __init__(self, partner_name: str, incident: Incident, admin_url: str) -> None:
+        self.partner_name = partner_name
+        self.incident = incident
+        self.admin_url = admin_url
+        super().__init__()
+
+    def get_text(self) -> str:
+        return (
+            f":heavy_plus_sign: New partner *{self.partner_name}* added for incident "
+            f"<{self.incident.status_page_url}|#{self.incident.id}>. Check it is not a "
+            f"duplicate of an existing one, then mark it reviewed (or merge it) in <{self.admin_url}|the admin>."
         )
 
 
