@@ -71,13 +71,16 @@ REJECTION_CLOSURE_REASONS: frozenset[ClosureReason] = frozenset({
 """Closure reasons meaning the incident was not a real one: it ends REJECTED."""
 
 OFFERED_CLOSURE_REASONS: tuple[ClosureReason, ...] = (
-    ClosureReason.RESOLVED,
     ClosureReason.DUPLICATE,
     ClosureReason.FALSE_POSITIVE,
     ClosureReason.SUPERSEDED,
     ClosureReason.CANCELLED,
 )
-"""Closure reasons a user can pick: EXTERNAL is replaced by the incident origin."""
+"""Closure reasons offered for an early closure: only ones meaning it was not a real incident.
+
+A real incident, even one caused by a partner, follows the normal workflow and is
+mitigated before being closed. EXTERNAL is replaced by the incident origin.
+"""
 
 
 def status_for_closure_reason(reason: str | None) -> IncidentStatus:

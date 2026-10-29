@@ -21,11 +21,9 @@ graph TD
     F --> G1
 
     G1 --> H1["🔍 INVESTIGATING"]
-    G1 -->|Early closure:<br/>real incident| CLOSED["✅ CLOSED"]
     G1 -->|Early closure:<br/>not a real incident| REJECTED["🚫 REJECTED"]
 
     H1 --> I1["🔧 MITIGATING"]
-    H1 -->|Early closure:<br/>real incident| CLOSED
     H1 -->|Early closure:<br/>not a real incident| REJECTED
     H1 -.->|Reopen with reason<br/>(10+ chars)| K1
     H1 -.->|Reopen with reason<br/>(10+ chars)| K2
@@ -100,10 +98,13 @@ The channel is opened by the `slack.open_escalated_incident_channel` Celery task
 
 ## Rejected incidents
 
-An incident closed early (from Open or Investigating) answers a first question: *was it a real incident?*
+Closing an incident before mitigation (from Open or Investigating) means it was **not a real incident**: duplicate, false alarm, superseded or cancelled. The incident is **Rejected**. Like Closed, it is final and its channel is archived; it is counted apart in the reports and kept out of the time-to-X metrics. Its Jira ticket is rejected rather than resolved (see [JIRA Integration](jira-integration.md#rejected-incidents)).
 
-- **Yes, already resolved**: the incident is **Closed**, like any real incident, and its origin is asked (see below).
-- **No** (duplicate, false alarm, superseded, cancelled): the incident is **Rejected**. Like Closed, it is final and its channel is archived; it is counted apart in the reports and kept out of the time-to-X metrics. Its Jira ticket is rejected rather than resolved (see [JIRA Integration](jira-integration.md#rejected-incidents)).
+A **real incident is never closed early**, even when a partner caused it and we are waiting for the partner's fix: it follows the normal workflow and is mitigated once the fix is in, then closed. Hence:
+
+- the early-closure modal (the *Close* button, or *Closed* picked in *Update status* before mitigation, shown as *Rejected (not a real incident)*) only offers rejection reasons, and asks no origin: the origin of a non-incident does not matter;
+- only a rejection reason lets an incident skip the workflow (`Incident.can_be_closed`): an incident carrying `resolved` or the deprecated `external` still has to be mitigated;
+- a modal opened before this rule and submitted with another reason is refused.
 
 Rejecting the Jira ticket of an incident rejects the incident too. See [ADR-0001](adr/0001-rejected-status-and-incident-origin.md).
 
@@ -111,14 +112,13 @@ Rejecting the Jira ticket of an incident rejects the incident too. See [ADR-0001
 
 ## Incident origin (internal / partner)
 
-A real incident comes from our own systems (**Internal**, the default) or from a **Partner**: a third-party provider the platform depends on (search, CDN, payment...). The Commander records it:
+Only a real incident has an origin: on a rejected incident it is ignored, whatever was recorded before the rejection. It comes from our own systems (**Internal**, the default) or from a **Partner**: a third-party provider the platform depends on (search, CDN, payment...). The Commander records it:
 
 | Where | When |
 |---|---|
 | **Key Events** message | at mitigation, while describing what happened (main moment) |
 | **Edit** modal | any time, as soon as the origin is known |
 | **Close** modal | at closure, pre-filled: a confirmation, which may be corrected after the post-mortem |
-| **Early-closure** modal | for a real incident closed before mitigation |
 
 The partner is picked from a list curated in the admin. A Commander can add a missing one ("Partner not in the list? Add it", in the modals): an existing partner with the same name is reused, otherwise it is created as *not reviewed* and the support channel (tag `dev_firefighter`) is asked to review it. In the admin, a partner can be deactivated (it stays on past incidents) or merged with a duplicate. Load an initial list with `manage.py create_partners NAME...`.
 

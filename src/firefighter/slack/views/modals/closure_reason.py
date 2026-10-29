@@ -22,12 +22,9 @@ from slack_sdk.models.views import View
 from firefighter.incidents.enums import (
     OFFERED_CLOSURE_REASONS,
     ClosureReason,
-    IncidentOrigin,
     IncidentStatus,
     status_for_closure_reason,
 )
-from firefighter.incidents.models.partner import Partner
-from firefighter.incidents.origin import apply_origin, resolve_partner
 from firefighter.slack.slack_templating import slack_block_footer, slack_block_separator
 from firefighter.slack.utils import respond
 from firefighter.slack.views.modals.base_modal.base import SlackModal
@@ -41,100 +38,6 @@ if TYPE_CHECKING:
     from firefighter.incidents.models.incident import Incident, User
 
 logger = logging.getLogger(__name__)
-
-CLOSURE_CHOICE_LABELS: dict[ClosureReason, str] = {
-    ClosureReason.RESOLVED: "Yes, a real incident, already resolved",
-    ClosureReason.DUPLICATE: "No: duplicate of another incident",
-    ClosureReason.FALSE_POSITIVE: "No: false alarm, no actual issue",
-    ClosureReason.SUPERSEDED: "No: superseded by another incident",
-    ClosureReason.CANCELLED: "No: cancelled, no longer relevant",
-}
-"""The question asked first: was it a real incident? Rejection reasons all say no."""
-
-SLACK_MAX_OPTIONS = 100
-
-
-def origin_blocks(incident: Incident) -> list[Block]:
-    """Origin of a real incident: internal by default, or a partner."""
-    origin = IncidentOrigin(incident.origin)
-    blocks: list[Block] = [
-        InputBlock(
-            block_id="closure_origin",
-            label="Origin of the incident (real incident only)",
-            element=StaticSelectElement(
-                action_id="select_closure_origin",
-                options=[Option(value=o.value, label=o.label) for o in IncidentOrigin],
-                initial_option=Option(value=origin.value, label=origin.label),
-            ),
-            hint="Partner: the incident comes from a third party we depend on (search, CDN, payment...).",
-        )
-    ]
-    partners = list(Partner.objects.filter(is_active=True).order_by("name")[:SLACK_MAX_OPTIONS])
-    if partners:
-        partner_options = [Option(value=str(p.id), label=p.name) for p in partners]
-        current = next((o for o in partner_options if incident.partner_id and o.value == str(incident.partner_id)), None)
-        blocks.append(
-            InputBlock(
-                block_id="closure_partner",
-                label="Partner",
-                element=StaticSelectElement(
-                    action_id="select_closure_partner",
-                    options=partner_options,
-                    initial_option=current,
-                    placeholder="Select a partner...",
-                ),
-                optional=True,
-            )
-        )
-    blocks.append(
-        InputBlock(
-            block_id="closure_new_partner",
-            label="Partner not in the list? Add it",
-            element=PlainTextInputElement(
-                action_id="input_closure_new_partner", max_length=128
-            ),
-            optional=True,
-        )
-    )
-    return blocks
-
-
-def _read_origin(
-    state_values: dict[str, Any],
-) -> tuple[IncidentOrigin, str | None, str | None]:
-    """Origin, selected partner id and typed partner name submitted with the modal."""
-    origin = IncidentOrigin(
-        _selected_value(state_values, "closure_origin", "select_closure_origin")
-        or IncidentOrigin.INTERNAL
-    )
-    partner_id = _selected_value(state_values, "closure_partner", "select_closure_partner")
-    new_partner = _selected_value(
-        state_values, "closure_new_partner", "input_closure_new_partner"
-    )
-    return origin, partner_id, new_partner
-
-
-def _apply_origin(
-    incident: Incident,
-    origin: IncidentOrigin,
-    partner_id: str | None,
-    new_partner: str | None,
-    user: User,
-) -> None:
-    partner = resolve_partner(
-        Partner.objects.filter(id=partner_id).first() if partner_id else None,
-        new_partner,
-        user=user,
-        incident=incident,
-    )
-    apply_origin(incident, origin, partner, user=user)
-
-
-def _selected_value(state_values: dict[str, Any], block_id: str, action_id: str) -> str | None:
-    action = state_values.get(block_id, {}).get(action_id) or {}
-    if "selected_option" in action:
-        return (action.get("selected_option") or {}).get("value")
-    return (action.get("value") or "").strip() or None
 
 
 class ClosureReasonModal(IncidentSelectableModalMixin, SlackModal):
@@ -166,35 +69,24 @@ class ClosureReasonModal(IncidentSelectableModalMixin, SlackModal):
                 elements=[
                     MarkdownTextObject(
                         text=f"This incident is currently in *{incident.status.label}* status. "
-                        "Tell whether it was a real incident: a real one is *Closed*, "
-                        "any other is *Rejected* and kept out of the incident statistics."
+                        "Closing it now means it was not a real incident: it will be *Rejected* "
+                        "and kept out of the incident statistics. A real incident, even one "
+                        "caused by a partner, follows the normal workflow until it is mitigated."
                     )
                 ]
             ),
             DividerBlock(),
             InputBlock(
                 block_id="closure_reason",
-                label="Was this a real incident?",
+                label="Why was it not a real incident?",
                 element=StaticSelectElement(
                     action_id="select_closure_reason",
                     options=[
-                        Option(value=reason.value, label=CLOSURE_CHOICE_LABELS[reason])
+                        Option(value=reason.value, label=reason.label)
                         for reason in OFFERED_CLOSURE_REASONS
                     ],
                     placeholder="Select...",
                 ),
-            ),
-            *origin_blocks(incident),
-            InputBlock(
-                block_id="closure_reference",
-                label="Reference (optional)",
-                element=PlainTextInputElement(
-                    action_id="input_closure_reference",
-                    placeholder="e.g., #1234 or https://...",
-                    max_length=100,
-                ),
-                hint="Related incident ID or external reference",
-                optional=True,
             ),
             InputBlock(
                 block_id="closure_message",
@@ -205,6 +97,17 @@ class ClosureReasonModal(IncidentSelectableModalMixin, SlackModal):
                     placeholder="Brief explanation of why this incident is being closed...",
                 ),
                 hint="This message will be added to the incident timeline",
+            ),
+            InputBlock(
+                block_id="closure_reference",
+                label="Reference (optional)",
+                element=PlainTextInputElement(
+                    action_id="input_closure_reference",
+                    placeholder="e.g., #1234 or https://...",
+                    max_length=100,
+                ),
+                hint="Related incident ID or external reference",
+                optional=True,
             ),
             slack_block_separator(),
             slack_block_footer(),
@@ -236,21 +139,18 @@ class ClosureReasonModal(IncidentSelectableModalMixin, SlackModal):
         )
         message = state_values["closure_message"]["input_closure_message"]["value"]
         carry_over = _extract_carry_over(body)
-        target_status = status_for_closure_reason(closure_reason)
-        origin, partner_id, new_partner = _read_origin(state_values)
-        # The origin only describes a real incident: a rejected one has none to give
-        if (
-            target_status == IncidentStatus.CLOSED
-            and origin == IncidentOrigin.PARTNER
-            and not (partner_id or new_partner)
-        ):
+        # A modal opened before the reasons changed may still send "resolved" or
+        # "external": a real incident is never closed early, it goes on to mitigation
+        if closure_reason not in OFFERED_CLOSURE_REASONS:
             ack(
                 response_action="errors",
                 errors={
-                    "closure_new_partner": "Pick the partner, or add it if it is not in the list."
+                    "closure_reason": "A real incident is not closed early: mitigate it first. "
+                    "Pick a reason only if it was not a real incident."
                 },
             )
             return False
+        target_status = status_for_closure_reason(closure_reason)
 
         # For early closure (OPEN/INVESTIGATING), we bypass normal workflow checks
         # For normal closure (MITIGATED/POST_MORTEM), we must validate key events
@@ -301,9 +201,6 @@ class ClosureReasonModal(IncidentSelectableModalMixin, SlackModal):
             incident.closure_reason = closure_reason
             incident.closure_reference = closure_reference
             incident.save(update_fields=["closure_reason", "closure_reference"])
-
-            if target_status == IncidentStatus.CLOSED:
-                _apply_origin(incident, origin, partner_id, new_partner, user)
 
             # Create incident update with closure
             incident.create_incident_update(
