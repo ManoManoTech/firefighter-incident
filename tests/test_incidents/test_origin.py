@@ -35,7 +35,7 @@ from firefighter.incidents.signals import (
 from firefighter.incidents.views.reports import get_incident_by_status_chart_data
 
 backfill = importlib.import_module(
-    "firefighter.incidents.migrations.0040_backfill_rejected_status_and_origin"
+    "firefighter.incidents.migrations.0041_backfill_rejected_status_and_origin"
 )
 
 

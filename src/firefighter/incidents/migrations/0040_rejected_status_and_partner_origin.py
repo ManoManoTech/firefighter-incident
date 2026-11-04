@@ -10,7 +10,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("incidents", "0038_priority_postmortem_reminder_delays"),
+        ("incidents", "0039_incidentcategory_channel_guidance"),
     ]
 
     operations = [

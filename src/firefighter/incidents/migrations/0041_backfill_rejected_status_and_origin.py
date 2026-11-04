@@ -45,7 +45,7 @@ def backwards(apps: Any, _schema_editor: Any) -> None:
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("incidents", "0039_rejected_status_and_partner_origin"),
+        ("incidents", "0040_rejected_status_and_partner_origin"),
     ]
 
     operations = [
