@@ -4,6 +4,7 @@ import logging
 from typing import TYPE_CHECKING, Any
 
 from django.dispatch.dispatcher import receiver
+from slack_sdk.errors import SlackApiError
 
 from firefighter.incidents.enums import IncidentStatus
 from firefighter.incidents.models.incident_role_type import COMMANDER_ROLE_SLUG
@@ -17,6 +18,7 @@ from firefighter.slack.messages.slack_messages import (
 )
 from firefighter.slack.models.conversation import (
     Conversation,
+    ConversationStatus,
     ConversationType,
     incident_has_writable_channel,
 )
@@ -39,6 +41,11 @@ if TYPE_CHECKING:
     from firefighter.incidents.models.user import User
     from firefighter.slack.models.user import SlackUser
 logger = logging.getLogger(__name__)
+
+# Slack errors meaning the channel can no longer be written to: `chat.postMessage`
+# answers `is_archived`, `chat.update` answers `is_inactive` (frozen, archived or
+# deleted channel).
+_CHANNEL_NOT_WRITABLE_ERRORS = frozenset({"is_archived", "is_inactive"})
 # pylint: disable=unused-argument
 
 
@@ -310,7 +317,20 @@ def incident_key_events_updated_handler(
         SlackMessageKeyEvents,
     )
 
-    incident.conversation.send_message_and_save(SlackMessageKeyEvents(incident))
+    try:
+        incident.conversation.send_message_and_save(SlackMessageKeyEvents(incident))
+    except SlackApiError as error:
+        if error.response.get("error") not in _CHANNEL_NOT_WRITABLE_ERRORS:
+            raise
+        # The channel stopped being writable after the check above: typically the
+        # incident was closed (which archives its channel) while a deferred timeline
+        # sync was pending. Record it so later updates skip the channel.
+        incident.conversation.status = ConversationStatus.ARCHIVED
+        incident.conversation.save(update_fields=["_status"])
+        logger.info(
+            f"Skipping key events update for incident {incident.id}: "
+            f"channel no longer writable ({error.response.get('error')})"
+        )
 
 
 def publish_incident_channel_update(
