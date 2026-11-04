@@ -10,6 +10,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import pytest
+from slack_sdk.errors import SlackApiError
 
 from firefighter.incidents.enums import IncidentStatus
 from firefighter.incidents.factories import IncidentFactory, UserFactory
@@ -22,6 +23,9 @@ from firefighter.slack.models.conversation import (
     incident_has_writable_channel,
 )
 from firefighter.slack.models.incident_channel import IncidentChannel
+from firefighter.slack.signals.incident_updated import (
+    incident_key_events_updated_handler,
+)
 
 if TYPE_CHECKING:
     from unittest.mock import MagicMock
@@ -94,3 +98,57 @@ class TestStatusUpdateOnArchivedChannel:
 
         assert writes["send_message_and_save"].called
         assert writes["rename_if_needed"].called
+
+
+@pytest.mark.django_db
+class TestKeyEventsUpdateOnChannelArchivedMeanwhile:
+    """The channel can be archived between the writable check and the Slack call.
+
+    Typically: a timeline correction arms a deferred sync, then the incident is closed
+    (which archives its channel) before the sync runs. Slack then answers `is_inactive`
+    to `chat.update`, or `is_archived` to `chat.postMessage`.
+    """
+
+    @staticmethod
+    def _send_fails_with(mocker: MockerFixture, slack_error: str) -> MagicMock:
+        mocker.patch(
+            "firefighter.slack.views.modals.key_event_message.SlackMessageKeyEvents"
+        )
+        return mocker.patch.object(
+            Conversation,
+            "send_message_and_save",
+            side_effect=SlackApiError(slack_error, {"ok": False, "error": slack_error}),
+        )
+
+    @staticmethod
+    @pytest.mark.parametrize("slack_error", ["is_inactive", "is_archived"])
+    def test_records_the_archive_instead_of_failing(
+        mocker: MockerFixture, slack_error: str
+    ) -> None:
+        incident = _incident(ConversationStatus.OPENED)
+        send = TestKeyEventsUpdateOnChannelArchivedMeanwhile._send_fails_with(
+            mocker, slack_error
+        )
+
+        incident_key_events_updated_handler(sender=__name__, incident=incident)
+
+        send.assert_called_once()
+        assert (
+            Conversation.objects.get(pk=incident.conversation.pk).status
+            == ConversationStatus.ARCHIVED
+        )
+
+    @staticmethod
+    def test_other_slack_errors_still_raise(mocker: MockerFixture) -> None:
+        incident = _incident(ConversationStatus.OPENED)
+        TestKeyEventsUpdateOnChannelArchivedMeanwhile._send_fails_with(
+            mocker, "ratelimited"
+        )
+
+        with pytest.raises(SlackApiError):
+            incident_key_events_updated_handler(sender=__name__, incident=incident)
+
+        assert (
+            Conversation.objects.get(pk=incident.conversation.pk).status
+            == ConversationStatus.OPENED
+        )
