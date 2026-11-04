@@ -37,8 +37,8 @@ from firefighter.slack.models.conversation import Conversation
 from firefighter.slack.models.message import Message
 from firefighter.slack.slack_templating import (
     COMMANDER_ACTION_CLOSURE,
-    COMMANDER_ACTION_OPENING,
     COMMANDER_ACTION_POSTMORTEM,
+    commander_action_opening,
     commander_ownership_block,
     date_time,
     slack_block_quote,
@@ -504,7 +504,7 @@ class SlackMessageIncidentRolesUpdated(SlackMessageSurface):
         if self.first_update and self.incident.priority.value <= 3:
             blocks.extend(
                 [
-                    commander_ownership_block(self.incident, COMMANDER_ACTION_OPENING),
+                    commander_ownership_block(self.incident, commander_action_opening()),
                     slack_block_role_reassignment_hint(),
                 ]
             )
