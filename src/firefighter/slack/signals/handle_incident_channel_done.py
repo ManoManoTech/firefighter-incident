@@ -7,6 +7,7 @@ from django.conf import settings
 from django.dispatch.dispatcher import receiver
 
 from firefighter.slack.messages.slack_messages import (
+    SlackMessageIncidentAutoRaisedCommanderCall,
     SlackMessageIncidentComProcess,
     SlackMessageIncidentRolesUpdated,
 )
@@ -52,3 +53,21 @@ def send_roles_message_in_conversation(
         first_update=True,
     )
     incident.conversation.send_message_and_save(update_roles_message)
+
+
+# noinspection PyUnusedLocal
+@receiver(incident_channel_done)
+def prompt_commander_when_auto_raised(
+    incident: Incident, channel: IncidentChannel, **kwargs: Any
+) -> None:
+    """Ask an invited responder to claim Commander when the incident was raised automatically.
+
+    Automated sources (e.g. the Datadog->IMPACT receiver) always set a `dedup_key`, while
+    incidents declared by a person leave it empty. So a set `dedup_key` reliably marks an
+    incident that has no human commander yet, which is when this prompt is useful.
+    """
+    if not getattr(incident, "dedup_key", None):
+        return
+    incident.conversation.send_message_and_save(
+        SlackMessageIncidentAutoRaisedCommanderCall(incident)
+    )
