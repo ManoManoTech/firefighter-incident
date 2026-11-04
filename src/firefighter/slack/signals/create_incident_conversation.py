@@ -15,6 +15,7 @@ from slack_sdk.errors import SlackApiError
 from firefighter.incidents.signals import create_incident_conversation
 from firefighter.slack.messages.slack_messages import (
     SlackMessageDeployWarning,
+    SlackMessageIncidentCategoryGuidance,
     SlackMessageIncidentChannelMustBePrivate,
     SlackMessageIncidentDeclaredAnnouncement,
     SlackMessageIncidentDeclaredAnnouncementGeneral,
@@ -23,6 +24,7 @@ from firefighter.slack.models.conversation import Conversation
 from firefighter.slack.models.incident_channel import IncidentChannel
 from firefighter.slack.models.user import SlackUser
 from firefighter.slack.rules import (
+    should_post_category_guidance,
     should_publish_in_general_channel,
     should_publish_in_it_deploy_channel,
 )
@@ -126,6 +128,16 @@ def create_incident_slack_conversation(
         incident_id=incident.id,
         pin=True,
     )
+
+    # Point the responders to the resources set on the incident category
+    if should_post_category_guidance(incident):
+        _safely_send_announcement(
+            channel,
+            SlackMessageIncidentCategoryGuidance(incident),
+            context="incident category guidance",
+            incident_id=incident.id,
+            pin=True,
+        )
 
     # The channel is public even for a private incident: ask for a Slack admin to convert it
     if incident.private:

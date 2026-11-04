@@ -130,6 +130,17 @@ COMMANDER_ACTION_OPENING = (
 )
 """Ownership sentence for the start of the incident, when roles are first announced."""
 
+
+def commander_action_opening() -> str:
+    """Ownership sentence for the start of the incident, with the AI guidelines when configured."""
+    ai_guidelines_url = settings.SLACK_AI_GUIDELINES_URL
+    if not ai_guidelines_url:
+        return COMMANDER_ACTION_OPENING
+    return (
+        f"{COMMANDER_ACTION_OPENING.removesuffix('.')}, and that the"
+        f" <{ai_guidelines_url}|guidelines> for AI analysis and reporting are respected."
+    )
+
 COMMANDER_ACTION_POSTMORTEM = (
     "as *Incident Commander*, it's on you to organize the post-mortem and see it through before"
     " closure. You don't have to write it all yourself — you own getting it done."
