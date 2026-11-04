@@ -10,6 +10,7 @@ from firefighter.incidents.models.incident_role_type import COMMANDER_ROLE_SLUG
 from firefighter.incidents.signals import incident_key_events_updated, incident_updated
 from firefighter.slack.messages.slack_messages import (
     SlackMessageDeployWarning,
+    SlackMessageIncidentCategoryGuidance,
     SlackMessageIncidentDowngradeHint,
     SlackMessageIncidentRolesUpdated,
     SlackMessageIncidentStatusUpdated,
@@ -20,6 +21,7 @@ from firefighter.slack.models.conversation import (
     incident_has_writable_channel,
 )
 from firefighter.slack.rules import (
+    should_post_category_guidance,
     should_publish_in_general_channel,
     should_publish_in_it_deploy_channel,
 )
@@ -182,6 +184,40 @@ def incident_updated_open_channel_on_escalation_handler(
     escalated_by_id = incident_update.created_by_id
     open_escalated_incident_channel.delay(
         incident.id, str(escalated_by_id) if escalated_by_id else None
+    )
+
+
+@receiver(signal=incident_updated, sender="update_status")
+def incident_updated_category_guidance_handler(
+    sender: Any,
+    incident: Incident,
+    incident_update: IncidentUpdate,
+    updated_fields: list[str],
+    **kwargs: Any,
+) -> None:
+    """Post the incident category guidance when it starts to apply to an existing channel.
+
+    That is when the incident moves to another category, or when it is escalated from P4/P5 to
+    P1-P3 while it already has a channel. An escalated incident with no channel yet gets the
+    guidance from the channel creation instead.
+    """
+    if not incident_has_writable_channel(incident):
+        return
+
+    old_priority: Priority | None = kwargs.get("old_priority")
+    category_changed = "incident_category_id" in updated_fields
+    escalated = (
+        "priority_id" in updated_fields
+        and old_priority is not None
+        and old_priority.value > 3
+    )
+    if not (category_changed or escalated) or not should_post_category_guidance(
+        incident
+    ):
+        return
+
+    incident.conversation.send_message_and_save(
+        SlackMessageIncidentCategoryGuidance(incident)
     )
 
 

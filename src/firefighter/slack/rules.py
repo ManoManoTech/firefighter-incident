@@ -45,6 +45,13 @@ def should_publish_in_general_channel(
     return False
 
 
+def should_post_category_guidance(incident: Incident) -> bool:
+    """Post the incident category guidance in the channel of P1-P3 incidents, when it has some."""
+    return incident.priority.value <= 3 and bool(
+        incident.incident_category.channel_guidance.strip()
+    )
+
+
 def should_publish_in_it_deploy_channel(incident: Incident) -> bool:
     return (
         incident.environment.value == "PRD"

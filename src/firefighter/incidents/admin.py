@@ -129,6 +129,7 @@ class IncidentCategoryAdmin(admin.ModelAdmin[IncidentCategory]):
                     "private",
                     "deploy_warning",
                     "enabled_create",
+                    "channel_guidance",
                     "created_at",
                     "updated_at",
                 )
