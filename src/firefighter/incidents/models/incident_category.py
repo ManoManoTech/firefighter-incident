@@ -39,6 +39,9 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 TZ = timezone.get_current_timezone()
 
+CHANNEL_GUIDANCE_MAX_LENGTH = 2800
+"""Keeps the guidance, with its heading and the category name, within one Slack section (3000 characters)."""
+
 
 class IncidentCategoryManager(models.Manager["IncidentCategory"]):
     model: type[IncidentCategory]
@@ -157,6 +160,11 @@ class IncidentCategory(models.Model):
     enabled_create = models.BooleanField(
         default=True,
         help_text="Can you create a new incident with this incident category? Disable to retire a category without losing the incidents already filed against it.",
+    )
+    channel_guidance = models.TextField(
+        blank=True,
+        max_length=CHANNEL_GUIDANCE_MAX_LENGTH,
+        help_text="Useful information for the responders of a P1 to P3 incident in this category (runbooks, dashboards, contacts...). Posted in the incident channel when it opens, and again when an incident moves to this category or is escalated to P1-P3. Slack formatting: *bold*, _italic_, <https://example.com|link text>. Leave empty to post nothing.",
     )
 
     created_at = models.DateTimeField(auto_now_add=True)

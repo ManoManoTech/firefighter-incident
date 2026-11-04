@@ -37,8 +37,8 @@ from firefighter.slack.models.conversation import Conversation
 from firefighter.slack.models.message import Message
 from firefighter.slack.slack_templating import (
     COMMANDER_ACTION_CLOSURE,
-    COMMANDER_ACTION_OPENING,
     COMMANDER_ACTION_POSTMORTEM,
+    commander_action_opening,
     commander_ownership_block,
     date_time,
     slack_block_quote,
@@ -377,6 +377,32 @@ class SlackMessageIncidentChannelMustBePrivate(SlackMessageSurface):
         ]
 
 
+class SlackMessageIncidentCategoryGuidance(SlackMessageSurface):
+    """Useful information for the responders, set on the incident category in the back office."""
+
+    id = "ff_incident_category_guidance"
+    incident: Incident
+
+    def __init__(self, incident: Incident) -> None:
+        self.incident = incident
+        super().__init__()
+
+    def get_text(self) -> str:
+        return f"Useful information for {self.incident.incident_category.name} incidents."
+
+    def get_blocks(self) -> list[Block]:
+        return [
+            SectionBlock(
+                text=MarkdownTextObject(
+                    text=(
+                        f":books: *Useful information for {self.incident.incident_category.name} incidents*\n"
+                        f"{self.incident.incident_category.channel_guidance.strip()}"
+                    )
+                )
+            ),
+        ]
+
+
 class SlackMessageIncidentDeclaredAnnouncementGeneral(SlackMessageSurface):
     id = "ff_general_incident_declared"
     incident: Incident
@@ -504,7 +530,7 @@ class SlackMessageIncidentRolesUpdated(SlackMessageSurface):
         if self.first_update and self.incident.priority.value <= 3:
             blocks.extend(
                 [
-                    commander_ownership_block(self.incident, COMMANDER_ACTION_OPENING),
+                    commander_ownership_block(self.incident, commander_action_opening()),
                     slack_block_role_reassignment_hint(),
                 ]
             )
