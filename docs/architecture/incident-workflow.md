@@ -95,6 +95,22 @@ The channel is opened by the `slack.open_escalated_incident_channel` Celery task
 
 ---
 
+## Incident category guidance
+
+An incident category can carry useful information for its responders (runbooks, dashboards, contacts...), set in the back office on the **Channel guidance** field of the category. It uses Slack formatting and is limited to 2800 characters, so that it fits in a single Slack message section.
+
+It is posted only for P1-P3 incidents, and only when the field is not empty:
+
+| When | How |
+|---|---|
+| The incident channel opens, at declaration or on escalation | Posted and pinned right after the "declared" announcement |
+| An incident with a channel moves to another category | Posted, with the new category's guidance |
+| An incident with a channel is escalated from P4/P5 to P1-P3 | Posted |
+
+A priority change within P1-P3 and other updates post nothing. Editing the guidance does not change the messages already posted.
+
+---
+
 ## Archived incident channels
 
 The bot archives an incident channel itself when the incident is closed. A channel archived by someone before that does not close the incident in IMPACT, and the bot cannot unarchive it (Slack refuses it to bot tokens):

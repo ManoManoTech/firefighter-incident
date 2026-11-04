@@ -377,6 +377,32 @@ class SlackMessageIncidentChannelMustBePrivate(SlackMessageSurface):
         ]
 
 
+class SlackMessageIncidentCategoryGuidance(SlackMessageSurface):
+    """Useful information for the responders, set on the incident category in the back office."""
+
+    id = "ff_incident_category_guidance"
+    incident: Incident
+
+    def __init__(self, incident: Incident) -> None:
+        self.incident = incident
+        super().__init__()
+
+    def get_text(self) -> str:
+        return f"Useful information for {self.incident.incident_category.name} incidents."
+
+    def get_blocks(self) -> list[Block]:
+        return [
+            SectionBlock(
+                text=MarkdownTextObject(
+                    text=(
+                        f":books: *Useful information for {self.incident.incident_category.name} incidents*\n"
+                        f"{self.incident.incident_category.channel_guidance.strip()}"
+                    )
+                )
+            ),
+        ]
+
+
 class SlackMessageIncidentDeclaredAnnouncementGeneral(SlackMessageSurface):
     id = "ff_general_incident_declared"
     incident: Incident
