@@ -137,6 +137,44 @@ class TestCommanderOwnershipAtOpening:
 
         assert "https://example.test/roles|Your role in detail" in blocks_text
 
+    def test_ai_guidelines_are_part_of_the_ownership_when_configured(self, settings):
+        settings.SLACK_AI_GUIDELINES_URL = "https://example.test/ai"
+        incident = _incident(1)
+
+        blocks_text = str(
+            SlackMessageIncidentRolesUpdated(
+                incident=incident, incident_update=None, first_update=True
+            ).get_blocks()
+        )
+
+        assert (
+            "post-mortem is carried out before the incident is closed, and that the"
+            " <https://example.test/ai|guidelines> for AI analysis and reporting are respected."
+        ) in blocks_text
+
+    def test_ai_guidelines_are_not_mentioned_when_not_configured(self, settings):
+        settings.SLACK_AI_GUIDELINES_URL = None
+        incident = _incident(1)
+
+        blocks_text = str(
+            SlackMessageIncidentRolesUpdated(
+                incident=incident, incident_update=None, first_update=True
+            ).get_blocks()
+        )
+
+        assert "post-mortem is carried out before the incident is closed." in blocks_text
+        assert "AI analysis" not in blocks_text
+
+    def test_ai_guidelines_stay_out_of_the_mitigation_reminders(self, settings):
+        settings.SLACK_AI_GUIDELINES_URL = "https://example.test/ai"
+        incident = _incident(1)
+
+        blocks_text = str(
+            SlackMessageIncidentPostMortemReminder(incident).get_blocks()
+        )
+
+        assert "AI analysis" not in blocks_text
+
 
 @pytest.mark.django_db
 class TestCommanderOwnershipAtMitigation:
