@@ -356,3 +356,25 @@ class TestUpdateStatusWorkflow(TestCase):
 
         # Should use default choices_lte for unknown/closed status
         assert IncidentStatus.CLOSED in available_statuses
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    ("current", "closed_label"),
+    [
+        (IncidentStatus.OPEN, "Rejected (not a real incident)"),
+        (IncidentStatus.INVESTIGATING, "Rejected (not a real incident)"),
+        (IncidentStatus.MITIGATED, "Closed"),
+    ],
+)
+def test_closing_before_mitigation_is_offered_as_a_rejection(
+    current: IncidentStatus, closed_label: str
+) -> None:
+    """Before mitigation, closing means rejecting: a real incident is mitigated first."""
+    incident = IncidentFactory.create(
+        _status=current, priority=Priority.objects.get(value=3)
+    )
+
+    choices = dict(UpdateStatusForm(incident=incident).fields["status"].choices)
+
+    assert choices[str(IncidentStatus.CLOSED.value)] == closed_label

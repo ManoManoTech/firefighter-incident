@@ -30,7 +30,12 @@ from firefighter.firefighter.fields_forms_widgets import (
     GroupedCheckboxSelectMultiple,
 )
 from firefighter.incidents import signals
-from firefighter.incidents.enums import ClosureReason, IncidentStatus
+from firefighter.incidents.enums import (
+    REJECTION_CLOSURE_REASONS,
+    ClosureReason,
+    IncidentOrigin,
+    IncidentStatus,
+)
 from firefighter.incidents.models.environment import Environment
 from firefighter.incidents.models.group import Group
 from firefighter.incidents.models.incident_category import IncidentCategory
@@ -45,6 +50,7 @@ from firefighter.incidents.models.incident_role_type import (
 from firefighter.incidents.models.incident_update import IncidentUpdate
 from firefighter.incidents.models.metric_type import IncidentMetric, MetricType
 from firefighter.incidents.models.milestone_type import MilestoneType
+from firefighter.incidents.models.partner import Partner
 from firefighter.incidents.models.priority import Priority
 from firefighter.incidents.models.severity import Severity
 from firefighter.incidents.models.user import User
@@ -246,6 +252,21 @@ class Incident(models.Model):
         help_text="Reference incident ID or external link for closure context",
     )
 
+    origin = models.CharField(
+        max_length=16,
+        choices=IncidentOrigin.choices,
+        default=IncidentOrigin.INTERNAL,
+        help_text="Where the incident comes from: our own systems, or a third-party partner",
+    )
+    partner = models.ForeignKey(
+        Partner,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="incidents",
+        help_text="The partner at the origin of the incident, when origin is Partner. May be empty for historical incidents.",
+    )
+
     custom_fields = models.JSONField(
         default=dict,
         blank=True,
@@ -296,6 +317,16 @@ class Incident(models.Model):
             models.CheckConstraint(
                 name="%(app_label)s_%(class)s__status_valid",
                 check=models.Q(_status__in=IncidentStatus.values),
+            ),
+            models.CheckConstraint(
+                name="%(app_label)s_%(class)s_origin_valid",
+                check=models.Q(origin__in=IncidentOrigin.values),
+            ),
+            # A partner only makes sense for an incident coming from a partner
+            models.CheckConstraint(
+                name="%(app_label)s_%(class)s_partner_only_if_partner_origin",
+                check=models.Q(origin=IncidentOrigin.PARTNER)
+                | models.Q(partner__isnull=True),
             ),
             models.CheckConstraint(
                 name="%(app_label)s_%(class)s_closure_reason_valid",
@@ -416,8 +447,8 @@ class Incident(models.Model):
         # XXX-ZOR we should use a proper FSM abstraction
         cant_closed_reasons: list[tuple[str, str]] = []
 
-        # Allow direct closure when closure_reason is provided (bypasses normal workflow)
-        if self.closure_reason:
+        # Only a non-incident skips the workflow: a real one is mitigated before being closed
+        if self.closure_reason in REJECTION_CLOSURE_REASONS:
             return True, []
 
         if self.ignore:
@@ -782,7 +813,7 @@ class Incident(models.Model):
             old_priority=old_priority,
         )
 
-        if self.status == IncidentStatus.CLOSED:
+        if self.status.is_terminal:
             logger.debug("Close incident: sending signal")
             incident_closed.send_robust(sender=__name__, incident=self)
 
