@@ -10,12 +10,12 @@ from django.utils.translation import gettext_lazy as _
 from django_stubs_ext.db.models import TypedModelMeta
 
 if TYPE_CHECKING:
-    import datetime
+    import datetime as dt
 
 
 @dataclass
 class MilestoneData:
-    event_ts: datetime.datetime | None
+    event_ts: dt.datetime | None
 
 
 def milestone_data_factory() -> MilestoneData:

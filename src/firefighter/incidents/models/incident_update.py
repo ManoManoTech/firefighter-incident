@@ -18,7 +18,7 @@ from firefighter.incidents.models.severity import Severity
 from firefighter.incidents.models.user import User
 
 if TYPE_CHECKING:
-    import datetime
+    import datetime as dt
 
     from firefighter.incidents.models.incident import Incident  # noqa: F401
 
@@ -98,7 +98,7 @@ class IncidentUpdate(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    event_ts: datetime.datetime = models.DateTimeField(
+    event_ts: dt.datetime = models.DateTimeField(
         auto_now_add=False, editable=True
     )  # type: ignore
     event_type = models.CharField(null=True, blank=True, max_length=64)

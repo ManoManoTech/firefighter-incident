@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import datetime
+import datetime as dt
 import json
 from typing import TYPE_CHECKING
 from unittest.mock import MagicMock
@@ -546,7 +546,7 @@ class TestTimelineCorrection:
         )
 
         update.refresh_from_db()
-        assert update.event_ts == datetime.datetime.fromtimestamp(
+        assert update.event_ts == dt.datetime.fromtimestamp(
             int(corrected_time.timestamp()), tz=timezone.get_current_timezone()
         )
         compute_metrics.assert_called_once()

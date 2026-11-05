@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import datetime
+import datetime as dt
 import logging
 import re
 from typing import TYPE_CHECKING, Any, cast
@@ -102,7 +102,7 @@ class KeyEvents(MessageForm[KeyEventsTimelineForm]):
             ContextBlock(
                 elements=[
                     MarkdownTextObject(
-                        text=f"Last update: {datetime.datetime.now(tz=timezone.get_current_timezone()).strftime('%Y-%m-%d %H:%M:%S')}"
+                        text=f"Last update: {dt.datetime.now(tz=timezone.get_current_timezone()).strftime('%Y-%m-%d %H:%M:%S')}"
                     )
                 ]
             ),
