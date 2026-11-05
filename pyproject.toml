@@ -539,7 +539,7 @@ external = [
 "_version.py" = ["Q000", "UP", "I"]
 "**/settings_builder.py" = ["F403"]
 "tests/*" = ["S101", "D", "ANN", "PLR2004", "INP", "DTZ005", "TCH", "SLF001", "PLC2701"]
-"**/migrations/*" = ["PLR", "D", "ANN", "ARG", "N806", "I002"]
+"**/migrations/*" = ["PLR", "D", "ANN", "ARG", "N806", "I002", "ICN001"]
 "stubs/*" = ["ARG", "ANN", "D", "INP", "TCH"]
 "**/apps.py" = ["F401", "PLC0415"]
 "**/models.py" = ["PLC0415"]  # Lazy imports to avoid circular dependencies
@@ -606,7 +606,7 @@ dev = [
     "lazy-object-proxy>=1.9.0",
     "werkzeug>=3.0.1",
     "django-watchfiles>=0.1.0",
-    "ruff==0.16.4",
+    "ruff==0.17.3",
     "mypy-to-codeclimate>=0.0.3",
     "djade>=1.1.1",
 ]
