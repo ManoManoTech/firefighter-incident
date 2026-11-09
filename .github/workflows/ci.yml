@@ -20,7 +20,7 @@ jobs:
     runs-on: "ubuntu-latest"
     steps:
       - uses: actions/checkout@v7
-      - uses: jdx/mise-action@v4
+      - uses: jdx/mise-action@v5
         with:
           experimental: true
       # `npm ci` is the point of this job as much as the build is: it fails on
@@ -75,7 +75,7 @@ jobs:
           - 6379:6379
     steps:
       - uses: actions/checkout@v7
-      - uses: jdx/mise-action@v4.2.3
+      - uses: jdx/mise-action@v5
         with:
           experimental: true
       - name: Verify tool versions
@@ -105,7 +105,7 @@ jobs:
           pdm run collectstatic
           pdm run tests-cov
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v6
+        uses: codecov/codecov-action@v7
         if: ${{ ! env.ACT }}
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
