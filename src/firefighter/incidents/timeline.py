@@ -15,7 +15,7 @@ from django.utils.timezone import localtime, now
 from firefighter.incidents.enums import IncidentStatus
 
 if TYPE_CHECKING:
-    import datetime
+    import datetime as dt
 
     from firefighter.incidents.models.incident import Incident
 
@@ -95,14 +95,14 @@ STATUS_HINTS: dict[IncidentStatus, str] = {
 
 class TimelineEntry(NamedTuple):
     label: str
-    event_ts: datetime.datetime | None
+    event_ts: dt.datetime | None
     """None if this milestone was never recorded via the Key Events form."""
 
 
 class TimelineStep(NamedTuple):
     label: str
     emoji: str
-    event_ts: datetime.datetime | None
+    event_ts: dt.datetime | None
     occurrences: int
     required: bool
 
@@ -114,7 +114,7 @@ class TimelineIssue(NamedTuple):
 
 def get_status_timeline(
     incident: Incident,
-) -> list[tuple[IncidentStatus, datetime.datetime]]:
+) -> list[tuple[IncidentStatus, dt.datetime]]:
     """Every status transition, in chronological order, including reopen cycles.
 
     The declaration `OPEN` row always anchors to `incident.created_at` (the
@@ -127,7 +127,7 @@ def get_status_timeline(
     reopen (MITIGATED -> INVESTIGATING/MITIGATING) shows every visit,
     matching the full audit trail rendered in the Jira post-mortem timeline.
     """
-    timeline: list[tuple[IncidentStatus, datetime.datetime]] = [
+    timeline: list[tuple[IncidentStatus, dt.datetime]] = [
         (IncidentStatus.OPEN, incident.created_at)
     ]
     updates = incident.incidentupdate_set.filter(_status__isnull=False).order_by(
@@ -190,13 +190,13 @@ def get_canonical_steps(incident: Incident) -> list[TimelineStep]:
     single timestamp and carries its occurrence count instead.
     """
     milestone_updates = milestone_timestamps(incident)
-    status_occurrences: dict[IncidentStatus, list[datetime.datetime]] = {}
+    status_occurrences: dict[IncidentStatus, list[dt.datetime]] = {}
     for status, event_ts in get_status_timeline(incident):
         status_occurrences.setdefault(status, []).append(event_ts)
 
     steps: list[TimelineStep] = []
     for label, emoji, source, required in EXPECTED_STEPS:
-        step_ts: datetime.datetime | None
+        step_ts: dt.datetime | None
         if isinstance(source, str):
             step_ts = milestone_updates.get(source)
             count = 1 if step_ts is not None else 0
@@ -220,7 +220,7 @@ def find_timeline_issues(steps: list[TimelineStep]) -> list[TimelineIssue]:
     declared_at = next(
         (step.event_ts for step in steps if step.label == "Declared"), None
     )
-    previous: tuple[str, datetime.datetime] | None = None
+    previous: tuple[str, dt.datetime] | None = None
     for step in steps:
         label = step.label
         event_ts = step.event_ts
@@ -260,7 +260,7 @@ def find_timeline_issues(steps: list[TimelineStep]) -> list[TimelineIssue]:
     return issues
 
 
-def format_delta(delta: datetime.timedelta) -> str:
+def format_delta(delta: dt.timedelta) -> str:
     """Human-readable duration, keeping the two most significant units."""
     seconds = int(abs(delta).total_seconds())
     days, seconds = divmod(seconds, 86400)
@@ -274,7 +274,7 @@ def format_delta(delta: datetime.timedelta) -> str:
     return " ".join(parts[:2]) if parts else "0s"
 
 
-def milestone_timestamps(incident: Incident) -> dict[str, datetime.datetime]:
+def milestone_timestamps(incident: Incident) -> dict[str, dt.datetime]:
     """The recorded `event_ts` of each milestone, newest row winning per type.
 
     Explicit ordering: without it `Meta.ordering` ("-event_ts") applies and

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import datetime
+import datetime as dt
 import logging
 from datetime import timedelta
 from typing import TYPE_CHECKING, Any
@@ -105,7 +105,7 @@ def has_user_had_the_same_role_recently(
     user: User, role_type: IncidentRoleType
 ) -> bool:
     recently_td = timedelta(days=ROLE_REMINDER_MIN_DAYS_INTERVAL)
-    before_recent = datetime.datetime.now(tz=TZ) - recently_td
+    before_recent = dt.datetime.now(tz=TZ) - recently_td
     return IncidentRole.objects.filter(
         user=user, role_type=role_type, updated_at__gte=before_recent
     ).exists()
