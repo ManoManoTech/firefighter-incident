@@ -25,6 +25,14 @@ updates:
     directory: "/"
     patterns: ["*"]
     multi-ecosystem-group: "all-dependencies"
+    ignore:
+      # Babel 8 breaks `npm install`: @rollup/plugin-babel (7.1.0, latest)
+      # still declares a peer dependency on @babel/core ^7.0.0.
+      # Remove once a @rollup/plugin-babel release supports Babel 8.
+      - dependency-name: "@babel/core"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@babel/preset-env"
+        update-types: ["version-update:semver-major"]
     # Security updates are not scheduled: batch them in one pull request
     groups:
       npm-security:
