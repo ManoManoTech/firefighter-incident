@@ -7,7 +7,10 @@ node = "22"
 # of PDM" and silently re-resolve, so --frozen-lockfile stops being frozen and
 # CI installs versions the lock does not pin. See the pdm-version guard in
 # .github/workflows/ci.yml.
-pdm = "2.28.0"
+# The "locked" extra pins pdm's own dependencies: plain pdm 2.28.0 accepts
+# hishel>=1.0.0 and crashes on import with hishel 2.0.0
+# (AttributeError: module 'hishel' has no attribute 'SyncSqliteStorage').
+pdm = { version = "2.28.0", extras = "locked" }
 act = "0.2.77"
 
 [hooks]
