@@ -6,6 +6,8 @@
              {% endif %}
              {% if status.value == IncidentStatus.CLOSED %}
                bg-neutral-300 text-neutral-600
+             {% elif status.value == IncidentStatus.REJECTED %}
+               bg-neutral-100 text-neutral-500 line-through
              {% elif status.value == IncidentStatus.MITIGATED %}
                bg-success text-success-content
              {% elif status.value == IncidentStatus.POST_MORTEM %}

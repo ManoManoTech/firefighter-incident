@@ -19,6 +19,11 @@ from typing import TYPE_CHECKING, Any, NamedTuple
 from django import forms
 
 from firefighter.incidents.enums import IncidentStatus
+from firefighter.incidents.forms.origin import (
+    ORIGIN_FIELD,
+    PARTNER_FIELD,
+    OriginFieldsMixin,
+)
 from firefighter.incidents.models.incident_update import IncidentUpdate
 from firefighter.incidents.models.milestone_type import MilestoneType
 from firefighter.incidents.timeline import (
@@ -76,7 +81,7 @@ def _hint_from_summary(milestone: MilestoneType) -> str:
     return summary[:1].upper() + summary[1:]
 
 
-class IncidentTimelineForm(forms.Form):
+class IncidentTimelineForm(OriginFieldsMixin):
     """Every correctable key event of an incident, in canonical order.
 
     Two kinds of fields, both keyed to survive round-tripping through Slack's
@@ -107,6 +112,13 @@ class IncidentTimelineForm(forms.Form):
     field_prefix: str = ""
     """Prefixed to every field name, so each Slack surface owns its action ids."""
 
+    # The origin is recorded here at mitigation, where the Commander describes what
+    # happened. A message saves on every change and cannot hold a text input: no
+    # "add a partner" here (the Edit and Close modals offer it), and origin Partner
+    # may be set before the partner is picked.
+    origin_allows_new_partner = False
+    origin_requires_partner = False
+
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         self.incident = kwargs.pop("incident")
         self.user = kwargs.pop("user", None)
@@ -114,6 +126,8 @@ class IncidentTimelineForm(forms.Form):
         self._milestone_updates = milestone_timestamps(self.incident)
         self._status_rows = self._collect_status_rows()
         self.generate_fields_dynamically()
+        self.origin_prefix = self.field_prefix
+        self.add_origin_fields(self.incident)
 
     def generate_fields_dynamically(self) -> None:
         for spec in self._field_specs():
@@ -211,6 +225,7 @@ class IncidentTimelineForm(forms.Form):
 
     def save(self) -> None:
         """Save each changed field in place."""
+        origin_changed = False
         for field_name in self.changed_data:
             key = field_name.removeprefix(self.field_prefix)
             value = self.cleaned_data[field_name]
@@ -218,6 +233,10 @@ class IncidentTimelineForm(forms.Form):
                 self._save_milestone(key.removeprefix("milestone_"), value)
             elif key.startswith("status_"):
                 self._save_status(key.removeprefix("status_"), value)
+            elif key in {ORIGIN_FIELD, PARTNER_FIELD}:
+                origin_changed = True
+        if origin_changed:
+            self.save_origin_fields(self.incident, self.user)
 
     def _save_milestone(self, event_type: str, value: datetime | None) -> None:
         if value is None:

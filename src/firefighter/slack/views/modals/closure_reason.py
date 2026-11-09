@@ -19,7 +19,12 @@ from slack_sdk.models.blocks.blocks import (
 )
 from slack_sdk.models.views import View
 
-from firefighter.incidents.enums import ClosureReason, IncidentStatus
+from firefighter.incidents.enums import (
+    OFFERED_CLOSURE_REASONS,
+    ClosureReason,
+    IncidentStatus,
+    status_for_closure_reason,
+)
 from firefighter.slack.slack_templating import slack_block_footer, slack_block_separator
 from firefighter.slack.utils import respond
 from firefighter.slack.views.modals.base_modal.base import SlackModal
@@ -56,37 +61,42 @@ class ClosureReasonModal(IncidentSelectableModalMixin, SlackModal):
         change submitted in the same step). Values are serialized into
         `private_metadata` so they survive the round-trip to Slack.
         """
-        # Build closure reason options (exclude RESOLVED)
-        closure_options = [
-            Option(
-                value=choice[0],
-                label=choice[1],
-            )
-            for choice in ClosureReason.choices
-            if choice[0] != ClosureReason.RESOLVED
-        ]
-
         blocks: list[Block] = [
             SectionBlock(
-                text=f"*Closure Reason Required for Incident #{incident.id}*\n_{incident.title}_"
+                text=f"*Close incident #{incident.id}*\n_{incident.title}_"
             ),
             ContextBlock(
                 elements=[
                     MarkdownTextObject(
-                        text=f"⚠️ This incident is currently in *{incident.status.label}* status.\nA closure reason is required to close incidents from this status."
+                        text=f"This incident is currently in *{incident.status.label}* status. "
+                        "Closing it now means it was not a real incident: it will be *Rejected* "
+                        "and kept out of the incident statistics. A real incident, even one "
+                        "caused by a partner, follows the normal workflow until it is mitigated."
                     )
                 ]
             ),
             DividerBlock(),
             InputBlock(
                 block_id="closure_reason",
-                label="Closure Reason",
+                label="Why was it not a real incident?",
                 element=StaticSelectElement(
                     action_id="select_closure_reason",
-                    options=closure_options,
-                    placeholder="Select a reason...",
+                    options=[
+                        Option(value=reason.value, label=reason.label)
+                        for reason in OFFERED_CLOSURE_REASONS
+                    ],
+                    placeholder="Select...",
                 ),
-                hint="Why is this incident being closed directly?",
+            ),
+            InputBlock(
+                block_id="closure_message",
+                label="Closure Message",
+                element=PlainTextInputElement(
+                    action_id="input_closure_message",
+                    multiline=True,
+                    placeholder="Brief explanation of why this incident is being closed...",
+                ),
+                hint="This message will be added to the incident timeline",
             ),
             InputBlock(
                 block_id="closure_reference",
@@ -98,16 +108,6 @@ class ClosureReasonModal(IncidentSelectableModalMixin, SlackModal):
                 ),
                 hint="Related incident ID or external reference",
                 optional=True,
-            ),
-            InputBlock(
-                block_id="closure_message",
-                label="Closure Message",
-                element=PlainTextInputElement(
-                    action_id="input_closure_message",
-                    multiline=True,
-                    placeholder="Brief explanation of why this incident is being closed...",
-                ),
-                hint="This message will be added to the incident timeline",
             ),
             slack_block_separator(),
             slack_block_footer(),
@@ -139,6 +139,18 @@ class ClosureReasonModal(IncidentSelectableModalMixin, SlackModal):
         )
         message = state_values["closure_message"]["input_closure_message"]["value"]
         carry_over = _extract_carry_over(body)
+        # A modal opened before the reasons changed may still send "resolved" or
+        # "external": a real incident is never closed early, it goes on to mitigation
+        if closure_reason not in OFFERED_CLOSURE_REASONS:
+            ack(
+                response_action="errors",
+                errors={
+                    "closure_reason": "A real incident is not closed early: mitigate it first. "
+                    "Pick a reason only if it was not a real incident."
+                },
+            )
+            return False
+        target_status = status_for_closure_reason(closure_reason)
 
         # For early closure (OPEN/INVESTIGATING), we bypass normal workflow checks
         # For normal closure (MITIGATED/POST_MORTEM), we must validate key events
@@ -193,7 +205,7 @@ class ClosureReasonModal(IncidentSelectableModalMixin, SlackModal):
             # Create incident update with closure
             incident.create_incident_update(
                 created_by=user,
-                status=IncidentStatus.CLOSED,
+                status=target_status,
                 message=message,
                 event_type="closure_reason",
                 **carry_over,
@@ -212,7 +224,7 @@ class ClosureReasonModal(IncidentSelectableModalMixin, SlackModal):
                 respond(
                     body=body,
                     text=(
-                        f"✅ Incident #{incident.id} has been closed.\n"
+                        f"✅ Incident #{incident.id} has been {target_status.label.lower()}.\n"
                         f"*Reason:* {ClosureReason(closure_reason).label}\n"
                         f"*Message:* {message}"
                         + (

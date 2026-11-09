@@ -40,6 +40,9 @@ class TestGenerateFieldsDynamically:
             # Editable milestones outside the seven canonical steps come before
             # Post-mortem, which closes the sequence.
             "milestone_recovered",
+            # The origin is recorded with the key events, at mitigation. No partner
+            # list without partners, and no "add a partner" text input in a message.
+            "origin",
         ]
 
     @staticmethod

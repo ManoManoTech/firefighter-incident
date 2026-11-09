@@ -10,9 +10,14 @@ from django.dispatch.dispatcher import receiver
 from jira.exceptions import JIRAError
 from requests.exceptions import RequestException
 
-from firefighter.incidents.enums import DOWNGRADE_WORKFLOW_EVENT_TYPE, IncidentStatus
+from firefighter.incidents.enums import (
+    DOWNGRADE_WORKFLOW_EVENT_TYPE,
+    ClosureReason,
+    IncidentOrigin,
+    IncidentStatus,
+)
 from firefighter.incidents.models.incident import Incident
-from firefighter.incidents.signals import incident_updated
+from firefighter.incidents.signals import incident_origin_updated, incident_updated
 from firefighter.raid.client import RAID_JIRA_WORKFLOW_NAME, client
 from firefighter.raid.utils import normalize_cache_value
 
@@ -100,6 +105,69 @@ def _read_jira_status(incident: Incident) -> str | None:
             exc_info=True,
         )
         return None
+
+
+def _rejection_comment(incident: Incident, incident_update: IncidentUpdate) -> str:
+    """The exact rejection reason: the Jira reason field only has coarse options."""
+    reason = (
+        ClosureReason(incident.closure_reason).label
+        if incident.closure_reason
+        else "not a real incident"
+    )
+    lines = [f"Incident #{incident.id} was closed as rejected in IMPACT: {reason}."]
+    if incident.closure_reference:
+        lines.append(f"Reference: {incident.closure_reference}")
+    if incident_update.message:
+        lines.append(incident_update.message)
+    return "\n".join(lines)
+
+
+def _reject_ticket(incident: Incident, incident_update: IncidentUpdate) -> None:
+    """Reject the Jira ticket of a REJECTED incident, then close it.
+
+    "Reject" is applied on purpose, with the reason field and the comment its screen
+    requires: the path-finder never takes it. From "Reporter validation" or "Closed",
+    where it is not available, the ticket only gets the comment (and is closed).
+    """
+    if _is_stale_status_update(incident, incident_update):
+        return
+    ticket_id = incident.jira_ticket.id
+    for step in (JIRA_STATUS_REPORTER_VALIDATION, JIRA_STATUS_CLOSED):
+        _set_impact_to_jira_cache(incident.id, "status", step)
+    comment = _rejection_comment(incident, incident_update)
+    current_status = (_read_jira_status(incident) or "").casefold()
+    try:
+        if current_status == JIRA_STATUS_CLOSED.casefold():
+            client.add_comment(ticket_id, comment)
+            return
+        if current_status == JIRA_STATUS_REPORTER_VALIDATION.casefold():
+            client.add_comment(ticket_id, comment)
+        else:
+            reason_field = settings.RAID_JIRA_REJECT_REASON_FIELD
+            reason_value = settings.RAID_JIRA_REJECT_REASON_VALUES.get(
+                incident.closure_reason or ""
+            )
+            client.transition_issue_by_name(
+                ticket_id,
+                settings.RAID_JIRA_REJECT_TRANSITION,
+                fields=(
+                    {reason_field: {"value": reason_value}}
+                    if reason_field and reason_value
+                    else {}
+                ),
+                comment=comment,
+            )
+        client.transition_issue_auto(ticket_id, JIRA_STATUS_CLOSED, RAID_JIRA_WORKFLOW_NAME)
+        logger.info(
+            "Rejected Jira ticket %s for incident #%s (%s)",
+            ticket_id,
+            incident.id,
+            incident.closure_reason,
+        )
+    except Exception:
+        logger.exception(
+            "Failed to reject Jira ticket %s for incident #%s", ticket_id, incident.id
+        )
 
 
 def _transition_through_pending_resolution(
@@ -215,6 +283,12 @@ def incident_updated_close_ticket_when_mitigated_or_postmortem(
     # it goes on, on its Jira ticket. Leave the ticket open and tell its watchers instead.
     if incident_update.event_type == DOWNGRADE_WORKFLOW_EVENT_TYPE:
         _comment_downgrade_workflow(incident, incident_update)
+        return
+
+    # Not a real incident: the ticket is rejected (with the reason the transition
+    # requires), not resolved, so that Jira tells it apart from a real incident.
+    if incident_update.status == IncidentStatus.REJECTED:
+        _reject_ticket(incident, incident_update)
         return
 
     # Special case: when Impact moves to INVESTIGATING or MITIGATING, Jira must go
@@ -468,4 +542,38 @@ def incident_status_post_save_fallback(
             instance.status,
             instance.jira_ticket.id,
             getattr(instance, "id", "unknown"),
+        )
+
+
+PARTNER_CAUSED_LABEL = "partner-caused"
+PARTNER_LABEL_PREFIX = "partner:"
+
+
+@receiver(signal=incident_origin_updated)
+def incident_origin_updated_sync_jira_labels(
+    sender: Any, incident: Incident, **kwargs: Any
+) -> None:
+    """Mirror the origin as labels on the Jira ticket: `partner-caused`, `partner:<slug>`.
+
+    Labels need no Jira configuration and can be filtered in JQL right away.
+    """
+    jira_ticket = getattr(incident, "jira_ticket", None)
+    if jira_ticket is None:
+        return
+    try:
+        labels = [
+            label
+            for label in client.get_issue_labels(jira_ticket.id)
+            if label != PARTNER_CAUSED_LABEL and not label.startswith(PARTNER_LABEL_PREFIX)
+        ]
+        if incident.origin == IncidentOrigin.PARTNER:
+            labels.append(PARTNER_CAUSED_LABEL)
+            if incident.partner is not None:
+                labels.append(f"{PARTNER_LABEL_PREFIX}{incident.partner.slug}")
+        client.update_issue_fields(jira_ticket.id, labels=labels)
+    except Exception:
+        logger.exception(
+            "Failed to update the origin labels of Jira ticket %s for incident #%s",
+            jira_ticket.id,
+            incident.id,
         )

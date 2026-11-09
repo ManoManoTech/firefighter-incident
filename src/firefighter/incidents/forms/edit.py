@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+from typing import Any
+
 from django import forms
 
+from firefighter.incidents.forms.origin import OriginFieldsMixin
 from firefighter.incidents.models import Environment
 
 
@@ -10,7 +13,7 @@ def initial_environments() -> list[Environment]:
     return list(Environment.objects.filter(default=True))
 
 
-class EditMetaForm(forms.Form):
+class EditMetaForm(OriginFieldsMixin):
     title = forms.CharField(
         label="Title",
         max_length=128,
@@ -33,3 +36,13 @@ class EditMetaForm(forms.Form):
         initial=initial_environments,
         required=True,
     )
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        # The origin is often known before mitigation (e.g. a provider outage)
+        self.add_origin_fields(incident=None)
+
+    def clean(self) -> dict[str, Any] | None:
+        cleaned_data = super().clean()
+        self.clean_origin_fields()
+        return cleaned_data

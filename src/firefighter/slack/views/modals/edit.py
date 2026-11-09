@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Any
 from slack_sdk.models.views import View
 
 from firefighter.incidents.forms.edit import EditMetaForm
+from firefighter.incidents.forms.origin import origin_initial
 from firefighter.incidents.models import Environment
 from firefighter.slack.views.modals.base_modal.base import ModalForm
 
@@ -74,6 +75,7 @@ class EditMetaModal(ModalForm[EditMetaFormSlack]):
                 "title": incident.title,
                 "description": incident.description,
                 "environment": environments,
+                **origin_initial(incident),
             },
         ).slack_blocks()
 
@@ -108,6 +110,7 @@ class EditMetaModal(ModalForm[EditMetaFormSlack]):
                     "title": incident.title,
                     "description": incident.description,
                     "environment": current_environments,
+                    **origin_initial(incident),
                 }
             },
         )
@@ -138,8 +141,11 @@ class EditMetaModal(ModalForm[EditMetaFormSlack]):
             if changed_key in {"description", "title"}:
                 update_kwargs[changed_key] = form.cleaned_data[changed_key]
 
+        origin_changed = form.save_origin_fields(incident, user)
+
         if len(update_kwargs) == 0 and not update_custom_fields:
-            logger.warning("No update to incident")
+            if not origin_changed:
+                logger.warning("No update to incident")
             return
 
         # Save custom_fields if updated
