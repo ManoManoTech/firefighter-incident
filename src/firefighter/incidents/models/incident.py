@@ -236,9 +236,6 @@ class Incident(models.Model):
         blank=True,
         help_text="Timestamp when incident status changed to MITIGATED",
     )
-    closed_at = models.DateTimeField(
-        null=True, blank=True
-    )  # XXX-ZOR make this an event
     closure_reason = models.CharField(
         max_length=50,
         choices=ClosureReason.choices,
