@@ -23,65 +23,139 @@ from firefighter.jira_app.utils import get_transitions_to_apply
 INCOMING, IN_PROGRESS, CLOSED = 10, 20, 30
 
 
+def _status(step: int, status_id: int, name: str) -> dict[str, Any]:
+    return {
+        "id": f"S<{step}>",
+        "name": name,
+        "stepId": step,
+        "statusId": status_id,
+        "initial": step == 1,
+        "x": 0,
+        "y": 0,
+    }
+
+
+def _transition(
+    name: str, source: str, target: str, *, initial: bool = False
+) -> dict[str, Any]:
+    return {
+        "id": name,
+        "name": name,
+        "sourceId": source,
+        "targetId": target,
+        "actionId": 1,
+        "initial": initial,
+        "globalTransition": False,
+        "loopedTransition": False,
+        "transitionOptions": [],
+        "sourceAngle": 0,
+        "targetAngle": 0,
+    }
+
+
 def _workflow_designer_layout() -> dict[str, Any]:
     """Raw workflow designer payload: Incoming -> In progress -> Closed, Closed -> Incoming.
 
     Ids use the designer encoding (``S<n>`` steps, ``I<n>`` initial transition) and
     camelCase keys, plus layout-only keys the client drops.
     """
-
-    def status(step: int, status_id: int, name: str) -> dict[str, Any]:
-        return {
-            "id": f"S<{step}>",
-            "name": name,
-            "stepId": step,
-            "statusId": status_id,
-            "initial": step == 1,
-            "x": 0,
-            "y": 0,
-        }
-
-    def transition(
-        name: str, source: str, target: str, *, initial: bool = False
-    ) -> dict[str, Any]:
-        return {
-            "id": name,
-            "name": name,
-            "sourceId": source,
-            "targetId": target,
-            "actionId": 1,
-            "initial": initial,
-            "globalTransition": False,
-            "loopedTransition": False,
-            "transitionOptions": [],
-            "sourceAngle": 0,
-            "targetAngle": 0,
-        }
-
     return {
         "layout": {
             "statuses": [
-                status(1, INCOMING, "Incoming"),
-                status(2, IN_PROGRESS, "In progress"),
-                status(3, CLOSED, "Closed"),
+                _status(1, INCOMING, "Incoming"),
+                _status(2, IN_PROGRESS, "In progress"),
+                _status(3, CLOSED, "Closed"),
             ],
             "transitions": [
-                transition("Create", "I<1>", "S<1>", initial=True),
-                transition("Start", "S<1>", "S<2>"),
-                transition("Close", "S<2>", "S<3>"),
-                transition("Reopen", "S<3>", "S<1>"),
+                _transition("Create", "I<1>", "S<1>", initial=True),
+                _transition("Start", "S<1>", "S<2>"),
+                _transition("Close", "S<2>", "S<3>"),
+                _transition("Reopen", "S<3>", "S<1>"),
+            ],
+        }
+    }
+
+
+def _offered_transitions(
+    layout: dict[str, Any], status_id: int, unavailable: frozenset[str] = frozenset()
+) -> list[dict[str, Any]]:
+    """The transitions Jira offers on an issue in `status_id` (REST format).
+
+    Every transition leaving that status in the layout, except the `unavailable`
+    ones: those whose workflow condition fails on the issue.
+    """
+    status_of_step = {s["id"]: s["statusId"] for s in layout["layout"]["statuses"]}
+    return [
+        {"id": t["name"], "name": t["name"], "to": {"id": str(status_of_step[t["targetId"]])}}
+        for t in layout["layout"]["transitions"]
+        if status_of_step.get(t["sourceId"]) == status_id
+        and t["name"] not in unavailable
+    ]
+
+
+def _offer_transitions_of(
+    jira_api: Mock, layout: dict[str, Any], unavailable: frozenset[str] = frozenset()
+) -> None:
+    """Make the mocked Jira offer the layout's transitions from the issue's status."""
+    jira_api.transitions.side_effect = lambda _issue_id: _offered_transitions(
+        layout, int(jira_api.issue.return_value.fields.status.id), unavailable
+    )
+
+
+# Status ids of the live "Incident workflow - v2023.03.13"
+IW_INCOMING, IW_IN_PROGRESS, IW_CLOSED = 1, 3, 6
+PENDING_RESOLUTION, REPORTER_VALIDATION = 10873, 10874
+
+
+def _incident_workflow_layout() -> dict[str, Any]:
+    """The incident workflow around "Reporter validation", as the designer draws it.
+
+    The designer lists "Go back to incoming" from "Reporter validation", but that
+    transition has a condition: Jira does not offer it on a mitigated incident.
+    """
+    return {
+        "layout": {
+            "statuses": [
+                _status(1, IW_INCOMING, "Incoming"),
+                _status(2, PENDING_RESOLUTION, "Pending resolution"),
+                _status(3, IW_IN_PROGRESS, "In Progress"),
+                _status(4, REPORTER_VALIDATION, "Reporter validation"),
+                _status(5, IW_CLOSED, "Closed"),
+            ],
+            "transitions": [
+                _transition("Create", "I<1>", "S<1>", initial=True),
+                _transition("Route", "S<1>", "S<2>"),
+                _transition("Reject", "S<1>", "S<4>"),
+                _transition("Start resolution", "S<2>", "S<3>"),
+                _transition("Reject", "S<2>", "S<4>"),
+                _transition("Cancel resolution", "S<3>", "S<2>"),
+                _transition("Complete resolution", "S<3>", "S<4>"),
+                _transition("Reject", "S<3>", "S<4>"),
+                _transition("Go back to incoming", "S<4>", "S<1>"),
+                _transition("Go back to resolution", "S<4>", "S<3>"),
+                _transition("Validate", "S<4>", "S<5>"),
             ],
         }
     }
 
 
 @pytest.fixture
+def incident_workflow_jira_api(workflow_jira_api: Mock) -> Mock:
+    layout = _incident_workflow_layout()
+    workflow_jira_api._session.get.return_value.json.return_value = layout
+    _offer_transitions_of(
+        workflow_jira_api, layout, unavailable=frozenset({"Go back to incoming"})
+    )
+    return workflow_jira_api
+
+
+@pytest.fixture
 def workflow_jira_api(mock_jira_api: Mock) -> Mock:
+    layout = _workflow_designer_layout()
     mock_jira_api.server_url = "https://jira.example"
     mock_jira_api._options = {"headers": {"X-Test": "1"}}
-    mock_jira_api._session.get.return_value.json.return_value = (
-        _workflow_designer_layout()
-    )
+    mock_jira_api._session.get.return_value.json.return_value = layout
+    _offer_transitions_of(mock_jira_api, layout)
     return mock_jira_api
 
 
@@ -324,6 +398,52 @@ class TestTransitionIssueAuto:
             jira_client.transition_issue_auto(42, "Closed", "My workflow")
 
         assert workflow_jira_api.transition_issue.call_count == 1
+
+    @staticmethod
+    def test_reopening_from_reporter_validation_uses_an_offered_transition(
+        jira_client: JiraClient, incident_workflow_jira_api: Mock
+    ) -> None:
+        """Mitigated -> Mitigating: the shortest path drawn in the workflow starts with
+        "Go back to incoming", which Jira does not offer on the issue."""
+        incident_workflow_jira_api.issue.return_value = _issue_at(REPORTER_VALIDATION)
+
+        jira_client.transition_issue_auto(42, "Pending resolution", "My workflow")
+
+        applied = [
+            c.kwargs["transition"]
+            for c in incident_workflow_jira_api.transition_issue.call_args_list
+        ]
+        assert applied == ["Go back to resolution", "Cancel resolution"]
+
+    @staticmethod
+    def test_an_offered_reject_is_not_taken(
+        jira_client: JiraClient, incident_workflow_jira_api: Mock
+    ) -> None:
+        incident_workflow_jira_api.issue.return_value = _issue_at(IW_INCOMING)
+
+        jira_client.transition_issue_auto(42, "Reporter validation", "My workflow")
+
+        applied = [
+            c.kwargs["transition"]
+            for c in incident_workflow_jira_api.transition_issue.call_args_list
+        ]
+        assert applied == ["Route", "Start resolution", "Complete resolution"]
+
+    @staticmethod
+    def test_no_offered_way_leaves_the_issue_unchanged_without_error(
+        jira_client: JiraClient,
+        incident_workflow_jira_api: Mock,
+        caplog: pytest.LogCaptureFixture,
+    ) -> None:
+        incident_workflow_jira_api.transitions.side_effect = None
+        incident_workflow_jira_api.transitions.return_value = []
+        incident_workflow_jira_api.issue.return_value = _issue_at(REPORTER_VALIDATION)
+
+        jira_client.transition_issue_auto(42, "Pending resolution", "My workflow")
+
+        incident_workflow_jira_api.transition_issue.assert_not_called()
+        assert "No transition path found for issue 42" in caplog.text
+        assert not [r for r in caplog.records if r.levelno >= logging.ERROR]
 
 
 def test_get_issue_status_name(jira_client: JiraClient, mock_jira_api: Mock) -> None:

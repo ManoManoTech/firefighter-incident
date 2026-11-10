@@ -138,9 +138,21 @@ class JiraClient:
         issue = self.jira.issue(issue_id)
         current_status_id = int(issue.fields.status.id)
 
+        # Only start with a transition Jira offers on this issue: the workflow
+        # graph also holds transitions whose condition fails here (e.g. "Go back
+        # to incoming" from "Reporter validation").
+        available_transitions = {
+            int(t["to"]["id"]): t["name"]
+            for t in self.jira.transitions(issue_id)
+            if t["name"] not in EXCLUDED_TRANSITION_NAMES
+        }
+
         # Get transitions to apply
         transitions_to_apply = get_transitions_to_apply(
-            current_status_id, transitions_info, closed_state_id
+            current_status_id,
+            transitions_info,
+            closed_state_id,
+            available_transitions=available_transitions,
         )
 
         if len(transitions_to_apply) == 0:

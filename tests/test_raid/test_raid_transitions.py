@@ -359,3 +359,34 @@ def test__get_transitions_still_drops_initial_transitions() -> None:
     transitions_info = JiraClient._get_transitions(workflow)  # type: ignore[arg-type]
 
     assert transitions_info == []
+
+
+def test_path_starts_with_a_transition_jira_offers() -> None:
+    # Reopening a mitigated incident: from "Reporter validation" to "Pending
+    # resolution". The graph ties "Go back to incoming" + "Route" with "Go back to
+    # resolution" + "Cancel resolution", and the BFS picks the former. But "Go back
+    # to incoming" has a workflow condition: Jira does not offer it on the issue.
+    info = _incident_workflow_transitions()
+    offered = {
+        _IN_PROGRESS: "Go back to resolution",
+        _CODE_REVIEW: "Code Review",
+    }
+
+    assert get_transitions_to_apply(_REPORTER_VALIDATION, info, _PENDING) == [
+        "Go back to incoming",
+        "Route",
+    ]
+    assert get_transitions_to_apply(
+        _REPORTER_VALIDATION, info, _PENDING, available_transitions=offered
+    ) == ["Go back to resolution", "Cancel resolution"]
+
+
+def test_no_path_when_jira_offers_no_way_out() -> None:
+    info = _incident_workflow_transitions()
+
+    assert (
+        get_transitions_to_apply(
+            _REPORTER_VALIDATION, info, _PENDING, available_transitions={}
+        )
+        == []
+    )
