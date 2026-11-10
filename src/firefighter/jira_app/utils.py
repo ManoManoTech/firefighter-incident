@@ -98,11 +98,26 @@ def get_transitions_to_apply(
     transitions_info: list[StatusTransitionInfo],
     closed_state_id: _StatusId,
     terminal_status_names: frozenset[str] = TERMINAL_STATUS_NAMES,
+    available_transitions: dict[_TargetStatusId, _TransitionName] | None = None,
 ) -> list[_StatusName]:
+    """Return the names of the transitions leading to `closed_state_id`.
+
+    `available_transitions` (target status id -> transition name) lists what Jira
+    actually offers from the current status. The workflow graph cannot tell: a
+    transition with a condition (e.g. "Go back to incoming" from "Reporter
+    validation") is drawn in the workflow but may not be offered on this issue.
+    When given, it replaces the graph's edges out of the current status.
+    """
     # Get path to target state
     statuses_targets: dict[_StatusId, set[_TargetStatusId]] = {
         k["status_id"]: k["target_statuses"] for k in transitions_info
     }
+    statuses_transitions_names: dict[
+        _StatusId, dict[_TargetStatusId, _TransitionName]
+    ] = {k["status_id"]: k["transition_to_status"] for k in transitions_info}
+    if available_transitions is not None:
+        statuses_targets[current_status_id] = set(available_transitions)
+        statuses_transitions_names[current_status_id] = available_transitions
     # Identify terminal statuses (e.g. "Closed") by name so the path-finder never
     # routes *through* them to reach a non-terminal target. The target itself is
     # exempt (handled in _transition_path), so closing an issue still works.
@@ -119,9 +134,6 @@ def get_transitions_to_apply(
     )
 
     # Get transitions to apply from path
-    statuses_transitions_names: dict[
-        _StatusId, dict[_TargetStatusId, _TransitionName]
-    ] = {k["status_id"]: k["transition_to_status"] for k in transitions_info}
     return _states_to_transitions_names(statuses_transitions_names, path_states)
 
 
