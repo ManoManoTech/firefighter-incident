@@ -10,11 +10,22 @@ from slack_sdk.errors import SlackApiError
 
 from firefighter.incidents.enums import IncidentStatus
 from firefighter.incidents.factories import IncidentFactory, UserFactory
+from firefighter.incidents.models.environment import Environment
 from firefighter.incidents.models.incident import Incident
+from firefighter.incidents.models.incident_update import IncidentUpdate
 from firefighter.incidents.models.priority import Priority
-from firefighter.slack.factories import IncidentChannelFactory, SlackUserFactory
-from firefighter.slack.messages.slack_messages import SlackMessageIncidentEscalatedDM
+from firefighter.slack.factories import (
+    IncidentChannelFactory,
+    SlackConversationFactory,
+    SlackUserFactory,
+)
+from firefighter.slack.messages.slack_messages import (
+    SlackMessageIncidentEscalatedDM,
+    SlackMessageIncidentStatusUpdated,
+)
+from firefighter.slack.models.conversation import Conversation
 from firefighter.slack.signals.incident_updated import (
+    incident_updated_broadcast_handler,
     incident_updated_open_channel_on_escalation_handler,
 )
 from firefighter.slack.tasks.open_escalated_incident_channel import (
@@ -33,6 +44,19 @@ def _incident(
         priority=Priority.objects.get(value=priority_value),
         _status=status,
         created_by=declarer,
+        environment=Environment.objects.get(value="PRD"),
+        private=False,
+    )
+
+
+def _escalation_update(incident: Incident, created_by=None) -> IncidentUpdate:
+    """The update the Jira priority sync records: no author, the new priority."""
+    return IncidentUpdate.objects.create(
+        incident=incident,
+        priority=incident.priority,
+        created_by=created_by,
+        message=f"Priority synced from Jira ({incident.priority.value})",
+        event_type="jira_priority_sync",
     )
 
 
@@ -42,15 +66,17 @@ def _escalate(
     old_priority_value: int = 4,
     created_by=None,
     updated_fields: tuple[str, ...] = ("priority_id",),
-) -> None:
-    incident_update = MagicMock(created_by_id=created_by.id if created_by else None)
-    incident_updated_open_channel_on_escalation_handler(
+    handler=incident_updated_open_channel_on_escalation_handler,
+) -> IncidentUpdate:
+    incident_update = _escalation_update(incident, created_by)
+    handler(
         sender="update_status",
         incident=incident,
         incident_update=incident_update,
         updated_fields=list(updated_fields),
         old_priority=Priority.objects.get(value=old_priority_value),
     )
+    return incident_update
 
 
 @pytest.fixture
@@ -67,16 +93,21 @@ class TestEscalationReceiver:
         incident = _incident()
         escalator = UserFactory.create()
 
-        _escalate(incident, created_by=escalator)
+        update = _escalate(incident, created_by=escalator)
 
-        mock_task.delay.assert_called_once_with(incident.id, str(escalator.id))
+        mock_task.delay.assert_called_once_with(
+            incident.id,
+            str(escalator.id),
+            str(update.id),
+            str(Priority.objects.get(value=4).id),
+        )
 
     def test_jira_sync_escalation_has_no_author(self, mock_task):
         incident = _incident()
 
         _escalate(incident, created_by=None)
 
-        mock_task.delay.assert_called_once_with(incident.id, None)
+        assert mock_task.delay.call_args.args[1] is None
 
     @pytest.mark.parametrize(
         ("old_priority_value", "new_priority_value"),
@@ -114,6 +145,51 @@ class TestEscalationReceiver:
         _escalate(incident, updated_fields=("_status",))
 
         mock_task.delay.assert_not_called()
+
+
+@pytest.fixture
+def mock_broadcasts():
+    with patch(
+        "firefighter.slack.signals.incident_updated.publish_broadcasts"
+    ) as mocked:
+        yield mocked
+
+
+@pytest.mark.django_db
+class TestEscalationBroadcast:
+    """The escalation of an incident with no channel is announced once the channel exists."""
+
+    def test_leaves_the_announcement_to_the_channel_opening(self, mock_broadcasts):
+        incident = _incident()
+
+        _escalate(incident, handler=incident_updated_broadcast_handler)
+
+        mock_broadcasts.assert_not_called()
+
+    def test_announces_at_once_when_the_incident_already_has_a_channel(
+        self, mock_broadcasts
+    ):
+        incident = _incident()
+        IncidentChannelFactory.create(incident=incident)
+        incident.refresh_from_db()
+
+        update = _escalate(incident, handler=incident_updated_broadcast_handler)
+
+        mock_broadcasts.assert_called_once()
+        assert mock_broadcasts.call_args.kwargs["incident_update"] == update
+
+    def test_announces_other_updates_of_an_incident_without_a_channel(
+        self, mock_broadcasts
+    ):
+        incident = _incident()
+
+        _escalate(
+            incident,
+            updated_fields=("_status",),
+            handler=incident_updated_broadcast_handler,
+        )
+
+        mock_broadcasts.assert_called_once()
 
 
 @pytest.fixture(autouse=True)
@@ -266,6 +342,91 @@ class TestOpenEscalatedIncidentChannel:
         dm.assert_called_once()
         assert "has disabled private messages from bots" in caplog.text
         assert not [r for r in caplog.records if r.levelno >= logging.ERROR]
+
+
+@pytest.fixture
+def tech_incidents():
+    """The messages posted in any conversation, with a #tech-incidents channel to post in."""
+    SlackConversationFactory.create(tag="tech_incidents")
+    with patch.object(Conversation, "send_message_and_save", autospec=True) as send:
+        yield send
+
+
+def _announcements(send) -> list[str]:
+    """Titles of the incident updates posted in #tech-incidents."""
+    return [
+        call.args[1].title_text
+        for call in send.call_args_list
+        if call.args[0].tag == "tech_incidents"
+        and isinstance(call.args[1], SlackMessageIncidentStatusUpdated)
+    ]
+
+
+@pytest.mark.django_db
+@pytest.mark.usefixtures("channel_opener", "mock_slack", "mock_jira")
+class TestEscalationAnnouncement:
+    def _open(self, incident: Incident) -> None:
+        open_escalated_incident_channel(
+            incident.id,
+            None,
+            str(_escalation_update(incident).id),
+            str(Priority.objects.get(value=4).id),
+        )
+
+    def test_names_the_new_channel(self, tech_incidents):
+        send = tech_incidents
+        incident = _incident(priority_value=3)
+
+        self._open(incident)
+
+        channel_name = Incident.objects.get(pk=incident.id).conversation.name
+        assert _announcements(send) == [
+            f"Incident #{channel_name} has escalated from P4 to P3."
+        ]
+
+    def test_is_posted_even_when_the_channel_could_not_be_opened(
+        self, tech_incidents, channel_opener
+    ):
+        send = tech_incidents
+        channel_opener.send.side_effect = None
+        incident = _incident(priority_value=3)
+
+        self._open(incident)
+
+        assert _announcements(send) == [
+            f"Incident #{incident.id} has escalated from P4 to P3."
+        ]
+
+    def test_a_task_queued_before_the_deploy_announces_nothing(self, tech_incidents):
+        send = tech_incidents
+        incident = _incident(priority_value=3)
+
+        open_escalated_incident_channel(incident.id)
+
+        assert _announcements(send) == []
+
+    def test_an_announcement_failure_does_not_prevent_the_dm(self, mock_slack, caplog):
+        _, dm = mock_slack
+        incident = _incident(priority_value=3)
+        with patch(
+            "firefighter.slack.signals.incident_updated.publish_broadcasts",
+            side_effect=SlackApiError("channel_not_found", {"ok": False}),
+        ):
+            self._open(incident)
+
+        dm.assert_called_once()
+        assert "Could not announce the escalation" in caplog.text
+
+    def test_a_missing_update_is_not_announced(self, tech_incidents, caplog):
+        send = tech_incidents
+        incident = _incident(priority_value=3)
+
+        open_escalated_incident_channel(
+            incident.id, None, "00000000-0000-0000-0000-000000000000", None
+        )
+
+        assert _announcements(send) == []
+        assert "escalation not announced" in caplog.text
 
 
 @pytest.mark.django_db

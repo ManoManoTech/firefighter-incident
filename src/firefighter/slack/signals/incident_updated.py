@@ -28,8 +28,8 @@ from firefighter.slack.rules import (
     should_publish_in_it_deploy_channel,
 )
 from firefighter.slack.tasks.open_escalated_incident_channel import (
-    needs_escalation_channel,
     open_escalated_incident_channel,
+    opens_escalation_channel,
 )
 
 if TYPE_CHECKING:
@@ -107,12 +107,18 @@ def incident_updated_broadcast_handler(
 
     Kept out of the incident-channel handler on purpose: broadcast channels are
     independent, and losing one must never suppress what responders rely on.
+
+    The escalation of an incident with no channel yet is announced by the task that opens
+    its channel, so the announcement can name it.
     """
+    old_priority: Priority | None = kwargs.get("old_priority")
+    if opens_escalation_channel(incident, updated_fields, old_priority):
+        return
     publish_broadcasts(
         incident=incident,
         incident_update=incident_update,
         status_changed=bool("_status" in updated_fields),
-        old_priority=kwargs.get("old_priority"),
+        old_priority=old_priority,
     )
 
 
@@ -183,14 +189,17 @@ def incident_updated_open_channel_on_escalation_handler(
     several Slack calls, and this signal runs inside the Jira webhook request.
     """
     old_priority: Priority | None = kwargs.get("old_priority")
-    if "priority_id" not in updated_fields or old_priority is None:
-        return
-    if old_priority.value <= 3 or not needs_escalation_channel(incident):
+    if old_priority is None or not opens_escalation_channel(
+        incident, updated_fields, old_priority
+    ):
         return
 
     escalated_by_id = incident_update.created_by_id
     open_escalated_incident_channel.delay(
-        incident.id, str(escalated_by_id) if escalated_by_id else None
+        incident.id,
+        str(escalated_by_id) if escalated_by_id else None,
+        str(incident_update.id),
+        str(old_priority.id),
     )
 
 
