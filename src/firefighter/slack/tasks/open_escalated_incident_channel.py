@@ -4,11 +4,15 @@ P4/P5 incidents have no Slack channel, only a Jira ticket. When one is escalated
 priority (from IMPACT or through the Jira priority sync), it needs the same channel as an
 incident declared critical: this task opens it, through the same signal as a declaration, so
 responders are invited from the incident category and the channel is fully set up.
+
+The escalation is announced in the broadcast channels by this task, once the channel exists, so
+the announcement names it (it used to be posted before, as "Incident #None").
 """
 
 from __future__ import annotations
 
 import logging
+from typing import TYPE_CHECKING
 
 from celery import shared_task
 from django.conf import settings
@@ -17,9 +21,14 @@ from slack_sdk.errors import SlackApiError
 
 from firefighter.incidents.enums import IncidentStatus
 from firefighter.incidents.models.incident import Incident
+from firefighter.incidents.models.incident_update import IncidentUpdate
+from firefighter.incidents.models.priority import Priority
 from firefighter.incidents.models.user import User
 from firefighter.incidents.signals import create_incident_conversation
 from firefighter.slack.messages.slack_messages import SlackMessageIncidentEscalatedDM
+
+if TYPE_CHECKING:
+    from collections.abc import Collection
 
 logger = logging.getLogger(__name__)
 
@@ -36,15 +45,37 @@ def needs_escalation_channel(incident: Incident) -> bool:
     )
 
 
+def opens_escalation_channel(
+    incident: Incident, updated_fields: Collection[str], old_priority: Priority | None
+) -> bool:
+    """Whether this incident update escalates a P4/P5 incident that has no channel yet.
+
+    The channel is then opened by `open_escalated_incident_channel`, which also announces the
+    escalation: the `incident_updated` receivers rely on this single rule to stay consistent.
+    """
+    return (
+        "priority_id" in updated_fields
+        and old_priority is not None
+        and old_priority.value > 3
+        and needs_escalation_channel(incident)
+    )
+
+
 @shared_task(name="slack.open_escalated_incident_channel")
 def open_escalated_incident_channel(
-    incident_id: int, escalated_by_id: str | None = None
+    incident_id: int,
+    escalated_by_id: str | None = None,
+    incident_update_id: str | None = None,
+    old_priority_id: str | None = None,
 ) -> None:
-    """Open the incident channel, then tell the Jira ticket and the people involved.
+    """Open the incident channel, announce the escalation, then tell the Jira ticket and the people involved.
 
     Args:
         incident_id: the escalated incident.
         escalated_by_id: the user who escalated it, None when it came from the Jira sync.
+        incident_update_id: the update that escalated it, announced in the broadcast channels.
+            None for a task queued before this argument existed: nothing is announced.
+        old_priority_id: the priority before the escalation.
     """
     # Two escalations close together (e.g. duplicated Jira webhooks) must open one channel.
     if not cache.add(
@@ -62,8 +93,12 @@ def open_escalated_incident_channel(
         "open_escalated_incident_channel", incident=incident, announce_globally=False
     )
     incident = Incident.objects.select_related("priority", "created_by").get(pk=incident_id)
-    if not hasattr(incident, "conversation"):
+    channel_opened = hasattr(incident, "conversation")
+    if not channel_opened:
         logger.warning("Could not open the channel of escalated incident #%s", incident_id)
+    # Announced even without a channel: the escalation of a critical incident must not go unseen
+    _announce_escalation(incident, incident_update_id, old_priority_id)
+    if not channel_opened:
         return
 
     escalated_by = (
@@ -75,6 +110,36 @@ def open_escalated_incident_channel(
 
     _comment_jira_ticket(incident)
     _notify_people_involved(incident, escalated_by)
+
+
+def _announce_escalation(
+    incident: Incident, incident_update_id: str | None, old_priority_id: str | None
+) -> None:
+    if incident_update_id is None:
+        return
+    # Imported here: the signal receivers module imports this task
+    from firefighter.slack.signals.incident_updated import publish_broadcasts
+
+    incident_update = IncidentUpdate.objects.filter(pk=incident_update_id).first()
+    if incident_update is None:
+        logger.warning(
+            "Update %s of escalated incident #%s not found: escalation not announced",
+            incident_update_id,
+            incident.id,
+        )
+        return
+    old_priority = (
+        Priority.objects.filter(pk=old_priority_id).first() if old_priority_id else None
+    )
+    try:
+        publish_broadcasts(
+            incident=incident,
+            incident_update=incident_update,
+            old_priority=old_priority,
+        )
+    except Exception:
+        # Whatever failed, the Jira comment and the DMs must still go out
+        logger.exception("Could not announce the escalation of incident #%s", incident.id)
 
 
 def _comment_jira_ticket(incident: Incident) -> None:

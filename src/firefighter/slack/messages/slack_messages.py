@@ -600,17 +600,18 @@ class SlackMessageIncidentStatusUpdated(SlackMessageSurface):
         self.incident = incident
         self.incident_update = incident_update
         self.in_channel = in_channel
+        # An incident without a channel (P4/P5, or a channel that could not be opened) is
+        # named by its id, as on the Slack home tab
+        name = incident.slack_channel_name or incident.id
 
         if self.in_channel:
             self.title_text = "A new incident update has been posted"
         elif incident.status == IncidentStatus.MITIGATED and status_changed:
-            self.title_text = f":large_green_circle:  Incident #{incident.slack_channel_name} has been {incident.status.label}.  :large_green_circle:"
+            self.title_text = f":large_green_circle:  Incident #{name} has been {incident.status.label}.  :large_green_circle:"
         elif old_priority is not None and old_priority.value > 3:
-            self.title_text = f"Incident #{incident.slack_channel_name} has escalated from {old_priority.name} to {incident.priority.name}."
+            self.title_text = f"Incident #{name} has escalated from {old_priority.name} to {incident.priority.name}."
         else:
-            self.title_text = (
-                f"Incident #{incident.slack_channel_name} has received an update."
-            )
+            self.title_text = f"Incident #{name} has received an update."
         super().__init__()
 
     def get_blocks(self) -> list[Block]:
