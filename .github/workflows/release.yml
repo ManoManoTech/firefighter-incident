@@ -101,8 +101,8 @@ jobs:
         env:
           VALIDATED_SHA: ${{ steps.validate.outputs.validated_sha }}
         run: |
-          # Fetch the main branch since a shallow checkout is used by default
-          git fetch origin main --unshallow
+          # The checkout above has the full history of main: no fetch needed
+          # (`git fetch --unshallow` fails on a complete repository)
           if ! git branch --contains "${VALIDATED_SHA}" | grep -E '(^|\s)main$'; then
             echo "The specified sha is not on the main branch" >&2
             exit 1
@@ -113,6 +113,8 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - sdist_wheels
+      # Nothing is published unless the tag and the sha are valid
+      - validate-tag
     # If you don't set an input tag, it's a dry run (no uploads).
     if: ${{ inputs.tag }}
     environment:
