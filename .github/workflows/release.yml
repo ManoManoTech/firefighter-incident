@@ -25,8 +25,6 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          # Build the released commit, the same one the tag and the Docker image use
-          ref: ${{ inputs.sha || 'main' }}
           fetch-depth: 0
       - name: Validate inputs
         id: validate
