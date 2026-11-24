@@ -34,6 +34,27 @@ def update_usergroups_members_from_slack_celery(
     return {"failed_groups": [x.usergroup_id for x in fails]}
 
 
+def _log_missing_usergroup(usergroup: UserGroup) -> None:
+    """Log a usergroup that Slack no longer returns, with what still depends on it.
+
+    `usergroups.list` omits disabled groups, so a group disabled or deleted in Slack
+    lands here. It stays an ERROR on purpose: the team must be told when a group
+    used by FireFighter goes away, and the message names what to clean up.
+    """
+    categories = sorted(usergroup.incident_categories.values_list("name", flat=True))
+    linked = (
+        f"Linked incident categories: {', '.join(categories)}."
+        if categories
+        else "Not linked to any incident category."
+    )
+    logger.error(
+        "Slack usergroup @%s (%s) not found in Slack (deleted or disabled). %s Its members are no longer synced.",
+        usergroup.handle,
+        usergroup.usergroup_id,
+        linked,
+    )
+
+
 @slack_client
 def update_usergroups_members_from_slack(
     client: WebClient = DefaultWebClient,
@@ -61,7 +82,7 @@ def update_usergroups_members_from_slack(
             usergroups_data, group_slack_id=usergroup.usergroup_id
         )
         if usergroup_data is None:
-            logger.error(f"Could not find usergroup {usergroup.usergroup_id} in Slack")
+            _log_missing_usergroup(usergroup)
             continue
         if not isinstance(usergroup.usergroup_id, str):
             err_msg = f"Usergroup {usergroup} has invalid usergroup_id {usergroup.usergroup_id}"  # type: ignore[unreachable]
