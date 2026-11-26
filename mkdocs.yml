@@ -125,6 +125,7 @@ nav:
           - Incident Workflows: architecture/incident-workflows.md
           - Decisions:
               - "ADR-0001: Rejected status and incident origin": architecture/adr/0001-rejected-status-and-incident-origin.md
+              - "ADR-0002: Alert webhooks use the incidents API": architecture/adr/0002-alert-webhooks-use-the-incidents-api.md
           - UI Guidelines: contributing/ui.md
           - UX Guidelines: contributing/ux.md
           - Docs Guidelines: contributing/documentation.md
