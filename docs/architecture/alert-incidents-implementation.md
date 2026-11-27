@@ -5,7 +5,7 @@ Working notes for [ADR-0002](adr/0002-alert-webhooks-use-the-incidents-api.md): 
 ## To settle before accepting the ADR
 
 - [x] **Monitor tags in the webhook.** Confirmed with a test monitor: `$TAGS[incident_category]` gives the value of the monitor's tag, and `$ALERT_PRIORITY` gives the priority as `P3`.
-- [x] **Two values for one tag key.** Observed: the webhook sends one value, the last in alphabetical order. A monitor tagged `env:prd` on data in `env:stg` sends `stg` in `$TAGS[env]`; tagged `env:zzz` on the same data, it sends `zzz`. Neither the monitor nor the data wins as such. Consequence: an alert must carry a single `env` value, and the setup guide says so.
+- [x] **Two values for one tag key.** Observed: the webhook sends one value, the last in alphabetical order. A monitor tagged `env:prd` on data in `env:stg` sends `stg` in `$TAGS[env]`; tagged `env:zzz` on the same data, it sends `zzz`. Neither the monitor nor the data wins as such. Consequence: an alert must carry a single `env` value, so the setup guide asks for no `env` tag on a monitor whose data already carries one. In every test call the monitor was tagged too: a call where the `env` of the data is the only value was not observed, though the data's value was in `$TAGS` each time.
 - [ ] **A webhook as the recipient of a notification rule.** The API takes recipients in the format of a monitor mention, with a condition on the transition (`transition_type:is_alert`); a webhook handle fits, but no existing rule uses one. Creating a rule needs a Datadog permission that monitor owners may not have, so it could not be tested: to confirm with a Datadog administrator. The fallback is confirmed: a mention of the webhook inside the alert condition of the monitor message calls it on the trigger and not on the recovery.
 - [ ] **`$ALERT_STATUS` and `$ALERT_SCOPE`.** Observed on a metric monitor and a logs monitor. `$ALERT_STATUS` is a full sentence with the metric, its scope and the threshold for a metric monitor, and is empty for a logs monitor. `$ALERT_SCOPE` is empty for a simple alert and gives the group (`env:stg`) for a multi alert. So either line of the description can be blank, and both are for a logs monitor that is a simple alert. To decide: accept blank lines, since the links are always there, or have the route drop a line whose value is empty. Other types of monitor were not observed.
 - [x] **One call per group.** Observed: a multi-alert monitor whose two groups trigger together calls the webhook twice, a fraction of a second apart. The `dedup_key` makes the second call return the incident of the first, and which group gives the incident its title is a matter of arrival order. A group can also have an empty value, which gives a title such as `[Triggered on {env:}] name`.
@@ -14,10 +14,10 @@ Working notes for [ADR-0002](adr/0002-alert-webhooks-use-the-incidents-api.md): 
 
 ### Observed on existing monitors
 
-Read from existing monitors and the alert events they produced, without a webhook call. An event shows what Datadog holds, not what a webhook sends: the points above stay open.
+Read from existing monitors and the alert events they produced, before the test with a webhook. An event shows what Datadog holds, not what a webhook sends: the test above gave the rest.
 
 - **Monitor tags reach the alert event**, on triggers and on recoveries, for the log monitors observed.
-- **A key carried by both the monitor and the group gives two values.** A monitor tagged `service:a` and grouped by service produces events with `service:a` and `service:b`. The same will happen with `env`.
+- **A key carried by both the monitor and the group gives two values.** A monitor tagged `service:a` and grouped by service produces events with `service:a` and `service:b`. The test confirmed the same for `env`.
 - **`category` is already used as a tag key** by monitors, for another purpose. The category tag is therefore `incident_category`. No alert event carries an `impact` tag.
 - **Tag values are rewritten on the event**: a value starting with `@` arrives with `_` instead. A category id, a UUID, is not affected.
 - **Titles pass 128 characters in practice**: a monitor grouped by service, with the service repeated in its name, gives a title of about 140 characters.
@@ -67,11 +67,12 @@ The steps of the Slack declaration are reused:
 | Priority | Missing | Uses P3 |
 | Environment | Missing | Uses the default environment |
 | Environment | `prod` | Reads it as `prd` |
+| Environment | Unknown, such as a mistyped tag or the empty value of a group | Uses the default environment |
 | Category | Missing, unknown or disabled for creation | Uses the default category, once one is designated |
 
 When a value was replaced, a line added at the end of the description says which one.
 
-Still rejected: a missing or invalid token, a body that is not valid JSON, an empty title, and a priority or an environment that is given but unknown. Rejected calls are logged with their `dedup_key`.
+Still rejected: a missing or invalid token, a body that is not valid JSON, an empty title, and a priority that is given but unknown. Rejected calls are logged with their `dedup_key`.
 
 ### 4. Jira reporter for a user without a Jira account
 
@@ -92,7 +93,7 @@ The condition is the missing Slack account, not Datadog: the message serves any 
 
 ## Order
 
-1. Settle the points above with one test monitor.
+1. Settle the points still open above. The test with real monitors is done: what remains is one question for a Datadog administrator and three choices.
 2. Extract the Jira step (no behaviour change), then the Jira reporter fallback.
 3. Change the route: complete incident, accepted fields, replacement rules.
 4. The ownership message.

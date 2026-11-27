@@ -72,10 +72,10 @@ Set this on the monitor. Its message does not change.
 | Tag `impact:true` | Opt-in | The monitor creates no incident |
 | Priority, P1 to P3 | Priority of the incident | P3 |
 | Tag `incident_category:<category id>` | Category of the incident: who is invited, and the category of the Jira ticket | The default category |
-| `env:<environment value>`, such as `env:prd`, on the monitored data or as a tag of the monitor | Environment of the incident | The default environment |
 
 - **Only P1 to P3 monitors opt in**, for now. Nothing enforces it: a P4 or P5 monitor tagged `impact:true` creates an incident and a Jira ticket, without a Slack channel.
-- **The category is an id**, to look up in FireFighter: a category name is not unique and does not survive as a Datadog tag. The tag key is `incident_category` and not `category`, a common key that monitors may already use for something else.- **The environment** is a FireFighter environment value. `prod` is read as `prd`. An alert must carry a single `env` value: when the monitor is tagged with one value and the data it watches carries another, Datadog sends the last of the two in alphabetical order, which may be neither the one you meant. Tag the monitor with the same value as its data, or only when the data has none.
+- **The category is an id**, to look up in FireFighter: a category name is not unique and does not survive as a Datadog tag. The tag key is `incident_category` and not `category`, a common key that monitors may already use for something else.- **The environment is not set on the monitor.** It comes from the `env` of the data the monitor watches, when its query is scoped to one environment or grouped by `env`. `prod` is read as `prd`, and a value FireFighter does not know is replaced by the default environment.
+- **Add an `env:<environment value>` tag only when the query has no `env`.** Without it the incident gets the default environment. Never tag a monitor with a value other than the one of its data: Datadog then sends the last of the two in alphabetical order, which may not be the one you meant.
 - **Keep the name of the monitor short.** Datadog puts the priority, the transition and the group that fired in front of it in the title, as in `[P3] [Triggered on {env:prd}] name`, and FireFighter truncates a title at 128 characters.
 
 The monitors that create incidents are found by filtering the monitor list on `impact:true`.
