@@ -4,12 +4,22 @@ Working notes for [ADR-0002](adr/0002-alert-webhooks-use-the-incidents-api.md): 
 
 ## To settle before accepting the ADR
 
-- [ ] **Monitor tags in the webhook.** Existing alert events carry the tags of their monitor, of the group that fired and of the query scope, and Datadog documents `$TAGS` as the tags of the event. One real call has to confirm that `$TAGS[category]` and `$TAGS[env]` are filled.
-- [ ] **Two `env` values.** `env` is a tag key reserved by Datadog. What `$TAGS[env]` gives when the monitor and the monitored service carry different values was not observed.
+- [ ] **Monitor tags in the webhook.** Existing alert events carry the tags of their monitor, of the group that fired and of the query scope, and Datadog documents `$TAGS` as the tags of the event. One real call has to confirm that `$TAGS[incident_category]` and `$TAGS[env]` are filled.
+- [ ] **Two values for one tag key.** `env` is a tag key reserved by Datadog. What `$TAGS[env]` gives when the monitor and the group that fired carry different values was not observed.
 - [ ] **A webhook as the recipient of a notification rule.** The API takes recipients in the format of a monitor mention, with a condition on the transition (`transition_type:is_alert`); a webhook handle fits, but no existing rule uses one. Fallback: mention the webhook in the message of each opted-in monitor, inside its alert condition.
 - [ ] **`$ALERT_STATUS` and `$ALERT_SCOPE`.** They are not filled the same way by every type of monitor (a logs monitor needs the status added by hand), and one may come out empty.
 - [ ] **The default category.** FireFighter has a default environment and a default priority (a `default` flag on each), but no default category. An existing category has to be designated, not a new one created: which one, and how (a `default` flag, or a setting). Until then a missing or unusable category is rejected.
 - [ ] **The title prefix.** `$EVENT_TITLE` is `[Triggered on {group}] name of the monitor`. With a long group it passes 128 characters and the truncation cuts the name. Either monitors keep short names and groups, or the route drops the prefix.
+
+### Observed on existing monitors
+
+Read from existing monitors and the alert events they produced, without a webhook call. An event shows what Datadog holds, not what a webhook sends: the points above stay open.
+
+- **Monitor tags reach the alert event**, on triggers and on recoveries, for the log monitors observed.
+- **A key carried by both the monitor and the group gives two values.** A monitor tagged `service:a` and grouped by service produces events with `service:a` and `service:b`. The same will happen with `env`.
+- **`category` is already used as a tag key** by monitors, for another purpose. The category tag is therefore `incident_category`. No alert event carries an `impact` tag.
+- **Tag values are rewritten on the event**: a value starting with `@` arrives with `_` instead. A category id, a UUID, is not affected.
+- **Titles pass 128 characters in practice**: a monitor grouped by service, with the service repeated in its name, gives a title of about 140 characters.
 
 ## What to build
 

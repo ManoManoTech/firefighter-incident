@@ -42,7 +42,7 @@ In *Integrations > Webhooks*, create one webhook:
       "title": "$EVENT_TITLE",
       "description": "A Datadog monitor is alerting and opened this incident automatically. Nobody has looked at it yet: please take ownership and investigate.\n\nWhat fired: $ALERT_STATUS\nWhere: $ALERT_SCOPE\n\nAlert: $LINK\nMonitor: https://<datadog site>/monitors/$ALERT_ID",
       "priority": "$ALERT_PRIORITY",
-      "incident_category_id": "$TAGS[category]",
+      "incident_category_id": "$TAGS[incident_category]",
       "environment": "$TAGS[env]",
       "dedup_key": "datadog-monitor-$ALERT_ID"
     }
@@ -71,11 +71,12 @@ Set this on the monitor. Its message does not change.
 |---|---|---|
 | Tag `impact:true` | Opt-in | The monitor creates no incident |
 | Priority, P1 to P3 | Priority of the incident | P3 |
-| Tag `category:<category id>` | Category of the incident: who is invited, and the category of the Jira ticket | The default category |
+| Tag `incident_category:<category id>` | Category of the incident: who is invited, and the category of the Jira ticket | The default category |
 | Tag `env:<environment value>`, such as `env:prd` | Environment of the incident | The default environment |
 
 - **Only P1 to P3 monitors opt in**, for now. Nothing enforces it: a P4 or P5 monitor tagged `impact:true` creates an incident and a Jira ticket, without a Slack channel.
-- **The category is an id**, to look up in FireFighter: a category name is not unique and does not survive as a Datadog tag.
+- **The category is an id**, to look up in FireFighter: a category name is not unique and does not survive as a Datadog tag. The tag key is `incident_category` and not `category`, a common key that monitors may already use for something else.
+- **Do not reuse a tag key of the group that fires.** A monitor tagged `env:prd` and grouped by `env` sends both values, and the environment cannot be read.
 - **The environment** is a FireFighter environment value. `prod` is read as `prd`.
 - **Keep the name of the monitor short.** Datadog puts the transition and the group that fired in front of it in the title, and FireFighter truncates a title at 128 characters.
 
